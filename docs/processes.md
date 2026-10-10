@@ -72,13 +72,13 @@ errno; the parent mappings remain untouched. Kernel C continuations are not
 forked. This native return convention is for the upcoming ABI, not PDP-11
 binary compatibility.
 
-Until filesystem ownership hooks are implemented, fork rejects processes with
-file, directory-inode, or shared-text references with EBUSY. Current test and
-builder processes hold none. Descriptors, inode lifetime, signals, executable
-loading, FPU state, and user TLS require later implementation. Fatal user faults
+Step 13 adds file and directory reference ownership across fork/exec/exit;
+see [files.md](files.md). Fork still rejects unsupported foreign references and
+shared-text references with EBUSY. ELF executable loading is implemented;
+signals, FPU state and user TLS require later implementation. Fatal user faults
 still panic the kernel rather than terminating just the offending process.
 
-Exit saves status and cumulative tick accounting, marks the process a zombie,
+Exit first closes descriptors and releases directory references, then saves status and cumulative tick accounting, marks the process a zombie,
 wakes its parent, and reparents its children to live PID 1 (or bootstrap PID 0
 when PID 1 is absent or exiting). It cannot free its active stack or address
 space. After switching to the scheduler stack and kernel CR3, the scheduler

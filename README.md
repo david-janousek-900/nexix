@@ -39,6 +39,9 @@ mount/lookup/read/write APIs, sparse files and chained block allocation. Boot
 tests mount a small generated fixture and execute an ELF read from it. The
 production exec catalog remains embedded until filesystem integration. See
 [filesystem foundation](docs/filesystem.md).
+File descriptors now support regular I/O, creation, truncation, links, stat,
+cwd, dup, close-on-exec and blocking pipes, with reference ownership across
+fork/exec/exit. See [file operations and pipes](docs/files.md).
 
 ## Build and boot
 
@@ -58,6 +61,7 @@ make test-syscall
 make userland
 make test-libc
 make test-fs
+make test-files
 ```
 
 For an initial build on an x86_64 Linux host with GCC/binutils, use
@@ -102,10 +106,12 @@ program catalog includes native assembly and C fixtures. Libc startup and
 initial wrappers are implemented; rebuilt V7 programs and the remaining libc
 services are pending. `make TOOLCHAIN_PREFIX= test-libc` runs the C userland
 tests with 16 MiB RAM (`build/libc-16M.log`).
+`make TOOLCHAIN_PREFIX= test-files` exercises file operations, descriptor
+ownership, permissions and blocking pipes with 16 MiB RAM (`build/files-16M.log`).
 
 ## Roadmap
 
-Version **0.1.0** covers these 20 steps. Steps 1–12 are implemented; step 13
+Version **0.1.0** covers these 20 steps. Steps 1–13 are implemented; step 14
 is next. Regression tests accompany implementation throughout the roadmap.
 
 1. Import V7 sources and preserve licensing.

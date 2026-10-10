@@ -1,10 +1,12 @@
 /* V7 sys1.c exec replacement semantics with a native ELF64 image. */
 #include "exec.h"
+#include "files.h"
 #include "uaccess.h"
 #include "segments.h"
 #include <nexix/errno.h>
 extern const uint8_t _binary_build_exec_test_elf_start[], _binary_build_exec_test_elf_end[];
 extern const uint8_t _binary_build_libc_test_elf_start[], _binary_build_libc_test_elf_end[];
+extern const uint8_t _binary_build_files_test_elf_start[], _binary_build_files_test_elf_end[];
 /* Single CPU, IRQs disabled throughout exec; bounded scratch avoids using the
  * guarded 16 KiB kernel stack for the argument strings. */
 static struct exec_args scratch;
@@ -48,12 +50,12 @@ int proc_exec(uintptr_t path, uintptr_t argv, uintptr_t envp, struct interrupt_f
     } else if (equal(name, "/bin/libc-test")) {
         file = _binary_build_libc_test_elf_start; end = _binary_build_libc_test_elf_end;
         comm = "libc-test";
+    } else if (equal(name, "/bin/files-test")) {
+        file = _binary_build_files_test_elf_start; end = _binary_build_files_test_elf_end;
+        comm = "files-test";
     } else return -NX_ENOENT;
     struct user *u = p->p_user;
-    /* Filesystem reference ownership and close-on-exec are added with FDs. */
-    if (p->p_textp) return -NX_EBUSY;
-    for (unsigned i = 0; i < V7_NOFILE; ++i)
-        if (u->u_ofile[i]) return -NX_EBUSY;
+    if (p->p_textp || !files_refs_valid(u)) return -NX_EBUSY;
     scratch.used = 0;
     error = vector(&p->p_vm, argv, &scratch.argc, scratch.argv);
     if (!error) error = vector(&p->p_vm, envp, &scratch.envc, scratch.envp);
@@ -67,6 +69,7 @@ int proc_exec(uintptr_t path, uintptr_t argv, uintptr_t envp, struct interrupt_f
     p->p_size = image.size;
     vm_activate(&p->p_vm);
     exec_image_release(&old);
+    files_exec(u);
     u->u_tsize = image.text;
     u->u_dsize = image.data + image.bss;
     u->u_ssize = EXEC_STACK_PAGES * PAGE_SIZE;

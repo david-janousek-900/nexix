@@ -1,13 +1,26 @@
 #ifndef NEXIX_ABI_SYSCALL_H
 #define NEXIX_ABI_SYSCALL_H
-/* Native x86_64 ABI, version 1. Shared with assembly and future libc. */
+/* Native x86_64 ABI, version 1. Shared with assembly and libc. */
 #define NX_ABI_VERSION 1
 #define NX_SYS_EXIT 1
 #define NX_SYS_FORK 2
+#define NX_SYS_READ 3
+#define NX_SYS_WRITE 4
+#define NX_SYS_OPEN 5
+#define NX_SYS_CLOSE 6
 #define NX_SYS_WAIT 7
+#define NX_SYS_CREAT 8
+#define NX_SYS_LINK 9
+#define NX_SYS_UNLINK 10
 #define NX_SYS_EXEC 11
+#define NX_SYS_CHDIR 12
+#define NX_SYS_STAT 18
+#define NX_SYS_LSEEK 19
 #define NX_SYS_GETPID 20
 #define NX_SYS_GETUID 24
+#define NX_SYS_FSTAT 28
+#define NX_SYS_DUP 41
+#define NX_SYS_PIPE 42
 #define NX_SYS_TIMES 43
 #define NX_SYS_GETGID 47
 #define NX_SYS_EXECVE 59
@@ -17,6 +30,8 @@
 #define NX_SYS_GETPPID 65
 #define NX_SYS_GETEUID 66
 #define NX_SYS_GETEGID 67
+#define NX_SYS_DUP2 68
+#define NX_SYS_FCNTL 69
 #define NX_CLK_TCK 100
 #ifndef __ASSEMBLER__
 #include <stdint.h>

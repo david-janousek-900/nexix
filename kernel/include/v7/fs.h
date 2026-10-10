@@ -20,7 +20,8 @@ struct v7fs {
     unsigned cursor;
     struct v7fs_cache cache[V7FS_CACHE];
 };
-/* Single mount, no inode reference ownership yet. Kernel buffers/pathnames.
+/* Kernel buffers/pathnames and decoded inode copies. Reference ownership
+ * belongs to the files layer, not this storage API.
  * Caller serializes the entire operation (kernel: IRQs disabled), and never
  * mutates backing storage behind the mount/cache. Initialize fs to zero.
  * Writes are synchronous; a write-I/O failure poisons the mount until remount.
@@ -35,5 +36,14 @@ int v7fs_write(struct v7fs *, v7_ino_t, int64_t offset, const void *, size_t cou
  * No duplicate-free detection or full filesystem consistency scan. */
 int v7fs_alloc_block(struct v7fs *, uint32_t *block);
 int v7fs_free_block(struct v7fs *, uint32_t block);
+bool v7fs_access(const struct v7fs_inode *, uint16_t uid, uint16_t gid, unsigned bits);
+int v7fs_lookup_user(struct v7fs *, v7_ino_t, const char *, v7_ino_t *, uint16_t uid, uint16_t gid);
+int v7fs_truncate(struct v7fs *, v7_ino_t);
+int v7fs_release_inode(struct v7fs *, v7_ino_t); /* nlink zero, no live references */
+/* Names are trusted, zero-padded/truncated V7 components. Caller checks
+ * credentials; release_inode additionally requires exclusive ownership. */
+int v7fs_create(struct v7fs *, v7_ino_t parent, const char name[V7_DIRSIZ], uint16_t mode, uint16_t uid, uint16_t gid, v7_ino_t *);
+int v7fs_link(struct v7fs *, v7_ino_t ino, v7_ino_t parent, const char name[V7_DIRSIZ]);
+int v7fs_unlink(struct v7fs *, v7_ino_t parent, const char name[V7_DIRSIZ], v7_ino_t *);
 void filesystem_selftest(void);
 #endif

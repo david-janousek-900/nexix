@@ -86,9 +86,9 @@ Absolute lookup begins at inode 2; relative lookup uses the supplied cwd inode.
 Repeated slashes, dot and dot-dot use directory entries. A trailing slash
 requires a directory. Following V7 nami.c, components longer than 14 bytes are
 truncated for comparison, rather than assigned a modern long-name format.
-There are no symlinks, nested mount points, chroot handling or credential checks
-in this kernel-only API. Permission checks belong to the future process/file
-interface; callers must not expose these helpers directly as unchecked syscalls.
+There are no symlinks, nested mount points or chroot handling in this kernel-only
+API. The step 13 file layer uses credential-checked lookup and checks access before exposing storage operations as syscalls; see
+[files.md](files.md).
 
 Allocation consumes the on-disk V7 free stack, zeroes returned blocks, and
 writes metadata synchronously. Freeing rebuilds chained stacks. The generator
@@ -109,8 +109,8 @@ it does not repair damaged disk metadata. Writes are not journaled or crash
 atomic. Allocation may leave owned empty indirect branches after ENOSPC, which
 can be reused by a subsequent write. Power-loss recovery is not implemented.
 
-Step 13 adds file-descriptor operations, inode/file reference ownership,
-namespace creation/removal, truncation and pipes. Timestamps, access checks,
+Step 13 implements file-descriptor operations, inode/file reference ownership,
+permission checks, namespace creation/removal, truncation and pipes. Timestamp updates,
 filesystem-backed exec pathname integration, and additional services are still
 pending. The production exec catalog remains embedded; only the step 12 test
 reads an ELF file from this filesystem and runs it through the existing loader.

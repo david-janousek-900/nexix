@@ -77,7 +77,8 @@ Also implemented:
   registration order. `_exit` bypasses callbacks. There are no stdio streams
   to flush yet; successful exec replaces the callback state with fresh BSS.
 
-There are no declarations for unimplemented file or heap services. String
+Step 13 adds file and pipe wrappers and headers; see [files.md](files.md).
+There are no declarations for unimplemented heap services. String
 functions follow their usual C buffer contracts; they do not validate pointers
 or allocate storage. getenv returns a pointer into the environment, not a copy.
 The wait-status helpers expose exited and signaled status encodings; kernel

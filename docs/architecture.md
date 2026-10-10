@@ -143,6 +143,7 @@ sparse growth and chained free-block allocation use the retained disk formats.
 A 29-sector cache uses synchronous writes. Callers serialize whole operations;
 write errors disable the mount until remount. Boot tests temporarily mount a
 generated RAM fixture and execute an ELF read through these APIs. Permanent
-root mounting, process/file reference ownership, file descriptors and production
-filesystem-backed exec integration remain pending. See
+root mounting and production filesystem-backed exec integration remain pending.
+The file layer now manages descriptors and inode ownership across fork/exec/exit,
+with checked namespace operations and blocking pipes; see [files.md](files.md). See
 [filesystem.md](filesystem.md) for API contracts and format limits.

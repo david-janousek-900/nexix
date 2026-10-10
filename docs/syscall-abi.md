@@ -28,7 +28,7 @@ truncates a syscall number to select a handler.
 
 Errors use negative values in RAX, not V7's carry-bit protocol. V7 errno values
 1–34 are preserved; ENOSYS=35 is a Nexix extension. Unknown and unimplemented
-numbers return -ENOSYS. A future libc wrapper converts negative errno to its
+numbers return -ENOSYS. The native libc wrapper converts negative errno to its
 usual failure result and `errno`. Carry and direction flags are preserved;
 callers must inspect RAX to recognize an error.
 
@@ -65,10 +65,20 @@ four-byte status, even though its pointer occupies an eight-byte argument slot.
 |---|---|---|---|
 | 1 | exit | status | Does not return; low eight bits become wait status bits 8–15 |
 | 2 | fork | None | Child PID in parent, zero in child |
+| 3, 4 | read, write | fd, buffer, count | Bytes transferred |
+| 5 | open | Path, flags, optional creation mode | Lowest free descriptor |
+| 6 | close | fd | Zero |
 | 7 | wait | Writable int32 status pointer, or NULL | Reaped child PID; ECHILD if none |
+| 8 | creat | Path, mode | Writable descriptor; creates/truncates |
+| 9, 10 | link, unlink | Old/new paths, or path | Zero |
 | 11 | exec | Pathname, argv | Replace image with empty environment |
+| 12 | chdir | Path | Zero |
+| 18, 28 | stat, fstat | Path/fd, writable nx_stat pointer | Zero |
+| 19 | lseek | fd, signed offset, whence | New offset |
 | 20 | getpid | None | Current PID |
 | 24 | getuid | None | Real UID |
+| 41 | dup | fd | Lowest free descriptor |
+| 42 | pipe | Writable int32[2] pointer | Zero; descriptors in output |
 | 43 | times | Writable nx_tms pointer | Elapsed uptime ticks |
 | 47 | getgid | None | Real GID |
 | 59 | execve | Pathname, argv, envp | Replace image |
@@ -77,12 +87,15 @@ four-byte status, even though its pointer occupies an eight-byte argument slot.
 | 65 | getppid | None | Parent PID |
 | 66 | geteuid | None | Effective UID |
 | 67 | getegid | None | Effective GID |
+| 68 | dup2 | fd, target | Target descriptor |
+| 69 | fcntl | fd, command, optional value | Flags or zero |
 
-Calls 64–67 are native extensions beyond V7's 64-entry table. The separate
+Calls 64–69 are native extensions beyond V7's 64-entry table. The separate
 identity calls and wait status pointer replace V7's secondary-register returns.
 Only RAX changes on normal syscall return. Successful exec installs a new entry
-frame. Time, files, terminal operations,
-and signals are not implemented by the dispatcher yet.
+frame. File/pipe semantics, flag values and the 48-byte stat record are
+documented in [files.md](files.md). Wall-clock time, terminal operations and
+signals remain pending.
 
 Wait validates its output range before blocking or consuming a zombie. An
 invalid non-NULL pointer returns EFAULT even when no child exists. A failed

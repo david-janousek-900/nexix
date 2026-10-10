@@ -135,3 +135,16 @@ generated `build/root-test.img`. Tests cover lookup, all indirect levels,
 sparse reads/writes, free-list exhaustion/reuse, remount persistence, ELF
 execution from a filesystem file, malformed metadata and device fault handling.
 See [filesystem.md](filesystem.md) for API coverage and remaining work.
+
+
+File descriptors and pipes (step 13): successful boots require `NEXIX_FILES_OK`,
+`NEXIX_PIPE_OK` and `NEXIX_FILES_CLEANUP_OK`. `make TOOLCHAIN_PREFIX= test-files`
+runs the native C acceptance fixture with 16 MiB RAM; normal smoke uses 128 MiB.
+Coverage includes descriptor exhaustion, shared offsets across fork/dup, dup2,
+flags, creation/umask, append/truncation, namespace operations and open-unlinked
+lifetime, stat/cwd, permission errors, close-on-exec, failed exec preservation,
+pipe transfer/EOF/EPIPE and deterministic blocked-writer wakeup. Repeated runs
+restore all file/inode/pipe pools and exact physical-page/free-block/free-inode
+counts. Host tests cover permission selection and directory search, complete
+indirect-tree reclamation, inode exhaustion/reuse, directory growth, remount
+and read-only mutation rejection. See [files.md](files.md).

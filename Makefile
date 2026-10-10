@@ -6,7 +6,7 @@ OBJCOPY = $(TOOLCHAIN_PREFIX)objcopy
 PYTHON ?= python3
 QEMU ?= qemu-system-x86_64
 CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-stack-protector -fno-pie -m64 -mno-red-zone -mgeneral-regs-only -fno-asynchronous-unwind-tables -Ikernel/include -Iinclude -MMD -MP
-OBJECTS = build/boot.o build/main.o build/serial.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o build/elf.o build/exec.o build/exec_test.o build/exec_image.o build/libc_test.o build/libc_image.o build/block.o build/v7fs.o build/fs_test.o build/root_image.o
+OBJECTS = build/boot.o build/main.o build/serial.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o build/elf.o build/exec.o build/exec_test.o build/exec_image.o build/libc_test.o build/libc_image.o build/block.o build/v7fs.o build/fs_test.o build/root_image.o build/files.o build/files_test.o build/files_image.o
 HOST_CC ?= cc
 .DEFAULT_GOAL := all
 -include $(OBJECTS:.o=.d)
@@ -127,7 +127,7 @@ test-unit: build/memory-test build/v7-types-test build/uaccess-test build/filesy
 	./build/uaccess-test
 	./build/filesystem-test build/root-test.img
 
-test: test-unit smoke build/test-ud.iso build/test-pf.iso build/test-memory.iso test-paging test-user test-fs
+test: test-unit smoke build/test-ud.iso build/test-pf.iso build/test-memory.iso test-paging test-user test-fs test-files
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-ud.iso ud
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-pf.iso pf
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-memory.iso memory 16M
@@ -228,3 +228,21 @@ test-fs: iso
 
 build/filesystem-test: tests/filesystem.c kernel/block.c kernel/v7/fs.c kernel/include/block.h kernel/include/v7/fs.h kernel/include/v7/disk.h kernel/include/v7/types.h kernel/include/v7/constants.h include/nexix/errno.h | build
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/filesystem.c kernel/block.c kernel/v7/fs.c -o $@
+
+# Step 13: production file syscalls exercised by a native C executable.
+build/files.o: kernel/v7/files.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+build/files_test.o: kernel/files_test.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+build/files_program.o: user/files-test.c | build
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+-include build/files_program.d
+build/files-test.elf: build/crt0.o build/files_program.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/files_program.o build/libc.a -o $@
+build/files_image.o: build/files-test.elf
+	$(LD) -r -b binary $< -o build/files_raw.o
+	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/files_raw.o $@
+.PHONY: test-files
+test-files: iso
+	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso files 16M
+userland: build/files-test.elf

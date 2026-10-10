@@ -141,10 +141,10 @@ int main(int argc, char **argv)
     assert(v7fs_write(&fs, 8, 0, "x", 1, &done) == 0 && done == 1);
     reset();
     /* ENOSPC after allocating an indirect root keeps it owned and reusable. */
-    unsigned free_count = v7_disk_u16(super()->nfree);
-    assert(free_count >= 4);
     uint32_t reserve[4];
-    for (unsigned i = 0; i < 4; ++i) reserve[i] = v7_disk_u32(super()->free[free_count - 1 - i]);
+    assert(v7fs_mount(&fs, &ram.device, false) == 0);
+    for (unsigned i = 0; i < 4; ++i) assert(v7fs_alloc_block(&fs, &reserve[i]) == 0);
+    reset();
     v7_disk_put16(super()->nfree, 2);
     v7_disk_put32(super()->free[0], 0); v7_disk_put32(super()->free[1], reserve[0]);
     v7_disk_put32(super()->tfree, 1);
@@ -172,8 +172,75 @@ int main(int argc, char **argv)
     assert(v7fs_write(&fs, 5, INT64_MAX, buf, 1, &done) == -NX_EFBIG);
     assert(v7fs_write(&fs, 5, 0, buf, SIZE_MAX, &done) == -NX_EFBIG);
     assert(v7fs_read(&fs, 5, INT64_MAX, buf, SIZE_MAX, &done) == 0 && done == 0);
+    reset();
+    assert(v7fs_mount(&fs, &ram.device, false) == 0);
+    /* Reclaim complete single/double/triple trees, including sparse branches. */
+    uint32_t available = v7_disk_u32(fs.super.tfree);
+    assert(v7fs_truncate(&fs, 6) == 0);
+    assert(v7_disk_u32(fs.super.tfree) == available + 154);
+    assert(v7fs_truncate(&fs, 7) == 0);
+    assert(v7_disk_u32(fs.super.tfree) == available + 158);
+    assert(v7fs_inode_get(&fs, 7, &scratch) == 0 && scratch.size == 0);
+    for (unsigned i = 0; i < V7_NADDR; ++i) assert(scratch.addr[i] == 0);
+    assert(v7fs_truncate(&fs, 2) == -NX_EISDIR);
+    reset();
+    /* Permission selection uses effective owner/group/other; search checks
+     * run at each pathname component, including dot and dot-dot. */
+    v7_disk_put16(disk_inode(4)->mode, V7_IFDIR | 0700);
+    v7_disk_put16(disk_inode(4)->uid, 123);
+    v7_disk_put16(disk_inode(4)->gid, 456);
+    assert(v7fs_mount(&fs, &ram.device, false) == 0);
+    assert(v7fs_lookup_user(&fs, 2, "/tmp/../hello", &ino, 999, 456) == -NX_EACCES);
+    assert(v7fs_lookup_user(&fs, 2, "/tmp/../hello", &ino, 123, 999) == 0 && ino == 5);
+    assert(v7fs_inode_get(&fs, 4, &scratch) == 0);
+    assert(v7fs_access(&scratch, 123, 999, 7));
+    assert(!v7fs_access(&scratch, 999, 456, 1));
+    scratch.mode = V7_IFDIR | 0750;
+    assert(v7fs_access(&scratch, 999, 456, 5) && !v7fs_access(&scratch, 999, 456, 2));
+    assert(v7fs_access(&scratch, 0, 999, 7));
+    reset();
+    assert(v7fs_mount(&fs, &ram.device, false) == 0);
+    uint16_t free_inodes = v7_disk_u16(fs.super.tinode);
+    available = v7_disk_u32(fs.super.tfree);
+    char name[V7_DIRSIZ] = "native", alias[V7_DIRSIZ] = "alias";
+    assert(v7fs_create(&fs, 4, name, 0640, 123, 456, &ino) == 0);
+    assert(v7fs_inode_get(&fs, ino, &scratch) == 0 && scratch.uid == 123 && scratch.gid == 456);
+    assert(v7fs_create(&fs, 4, name, 0640, 123, 456, &ino) == -NX_EEXIST);
+    assert(v7fs_write(&fs, ino, 700, "Z", 1, &done) == 0 && done == 1);
+    assert(v7fs_link(&fs, ino, 4, alias) == 0);
+    assert(v7fs_inode_get(&fs, ino, &scratch) == 0 && scratch.nlink == 2);
+    assert(v7fs_release_inode(&fs, ino) == -NX_EBUSY);
+    assert(v7fs_unlink(&fs, 4, name, &ino) == 0);
+    assert(v7fs_unlink(&fs, 4, alias, &ino) == 0);
+    assert(v7fs_inode_get(&fs, ino, &scratch) == 0 && scratch.nlink == 0);
+    assert(v7fs_read(&fs, ino, 700, buf, 1, &done) == 0 && done == 1 && buf[0] == 'Z');
+    assert(v7fs_release_inode(&fs, ino) == 0 && v7fs_inode_get(&fs, ino, &scratch) == -NX_ENOENT);
+    assert(v7_disk_u32(fs.super.tfree) == available && v7_disk_u16(fs.super.tinode) == free_inodes);
+    /* Exhaust/reuse the i-list and grow a directory across a sector boundary. */
+    v7_ino_t numbers[64];
+    for (unsigned i = 0; i < free_inodes; ++i) {
+        memset(name, 0, sizeof(name)); snprintf(name, sizeof(name), "file%u", i);
+        assert(v7fs_create(&fs, 4, name, 0600, 0, 0, &numbers[i]) == 0);
+    }
+    memset(name, 0, sizeof(name)); memcpy(name, "overflow", 8);
+    ino = 0xffff;
+    assert(v7fs_create(&fs, 4, name, 0600, 0, 0, &ino) == -NX_ENOSPC && ino == 0xffff);
+    assert(v7fs_unmount(&fs) == 0 && v7fs_mount(&fs, &ram.device, false) == 0);
+    for (unsigned i = 0; i < free_inodes; ++i) {
+        memset(name, 0, sizeof(name)); snprintf(name, sizeof(name), "file%u", i);
+        assert(v7fs_unlink(&fs, 4, name, &ino) == 0 && ino == numbers[i]);
+        assert(v7fs_release_inode(&fs, ino) == 0);
+    }
+    assert(v7_disk_u16(fs.super.tinode) == free_inodes);
+    assert(v7_disk_u32(fs.super.tfree) == available - 1); /* Retained directory extension. */
+    reset();
+    assert(v7fs_mount(&fs, &ram.device, true) == 0);
+    assert(v7fs_create(&fs, 4, name, 0600, 0, 0, &ino) == -NX_EROFS);
+    assert(v7fs_link(&fs, 5, 4, name) == -NX_EROFS);
+    assert(v7fs_unlink(&fs, 4, name, &ino) == -NX_EROFS);
+    assert(v7fs_truncate(&fs, 5) == -NX_EROFS);
     assert(v7fs_unmount(&fs) == 0);
     free(image); free(original);
-    puts("PASS: block bounds, V7 metadata validation, cache, device faults, sparse gaps and write errors");
+    puts("PASS: block bounds, V7 metadata validation, cache, device faults, sparse gaps, write errors, permissions, namespace and inode/tree reclamation");
     return 0;
 }

@@ -94,7 +94,9 @@ struct file {
     uint8_t f_flag;
     uint32_t f_count;
     struct inode *f_inode;
-    v7_off_t f_offset; /* multiplexed channels deferred */
+    v7_off_t f_offset; /* shared by dup/fork */
+    uint32_t f_open_flags;
+    void *f_private; /* in-memory pipe endpoint backing */
 };
 struct buf {
     uint32_t b_flags;

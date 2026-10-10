@@ -3,6 +3,7 @@
 #include "libc_test.h"
 #include "v7/fs.h"
 #include "syscall.h"
+#include "files.h"
 #include "interrupts.h"
 #include "boot.h"
 #include "memory.h"
@@ -170,6 +171,7 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
     exec_selftest();
     libc_selftest();
     filesystem_selftest();
+    files_selftest();
     serial_puts("NEXIX_BOOT_OK\r\n");
     for (;;)
         __asm__ volatile ("sti; hlt" : : : "memory");

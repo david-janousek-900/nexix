@@ -52,22 +52,25 @@ pointer-vector entries are native 64-bit user addresses. A successful call
 returns to the new entry point and never resumes the old instruction stream.
 A failed call returns negative errno through the existing syscall ABI.
 
-Pathnames are currently resolved through two embedded catalog entries:
+Pathnames are currently resolved through three embedded catalog entries:
 `/bin/exec-test`, built from `user/exec-test.S` and `user/exec-test.ld`, and
-`/bin/libc-test`, a native C executable linked with the step 11 libc.
+`/bin/libc-test`, a native C executable linked with the step 11 libc, and
+`/bin/files-test`, the file/pipe acceptance fixture.
 Other paths return ENOENT. Filesystem lookup will replace this catalog when
-V7 filesystem support is implemented; no filesystem or permission checks are
+production filesystem-backed exec is integrated; no filesystem or permission checks are
 claimed here. Path capacity is 256 bytes including NUL. Invalid addresses
 return EFAULT; unterminated paths or oversized argument sets return E2BIG;
 invalid/unsupported ELF files return ENOEXEC; allocation failure returns ENOMEM.
-Files or shared-text references return EBUSY until ownership hooks exist.
+Managed file and cwd references survive exec. Unsupported references and
+shared-text references return EBUSY; see [files.md](files.md).
 
 Arguments are copied from the old VM into bounded kernel scratch space. A new
 VM, all segments, and the complete stack are built before changing the live
 process. Any failure releases staged frames and tables, leaving the old VM,
 register frame and process metadata intact. Successful replacement activates
 the new CR3 before releasing the old VM. PID, parent, credentials, mask and
-accounting remain intact. Caught signal dispositions reset; ignored ones
+accounting remain intact. Successful replacement closes only descriptors marked
+close-on-exec; failed exec preserves all descriptors. Caught signal dispositions reset; ignored ones
 remain. Profiling is disabled and AFORK cleared. Segment sizes, executable
 metadata and command name are updated. No set-ID behavior exists yet.
 

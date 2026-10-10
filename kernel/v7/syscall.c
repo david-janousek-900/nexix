@@ -1,5 +1,6 @@
 /* Native trap dispatch based on V7 sys/trap.c and sys/sysent.c numbering. */
 #include "syscall.h"
+#include "files.h"
 #include "exec.h"
 #include "process.h"
 #include "segments.h"
@@ -12,6 +13,11 @@ static int64_t invoke(uint64_t number, struct interrupt_frame *frame)
     struct proc *p = proc_current();
     struct user *u = p->p_user;
     switch (number) {
+    case NX_SYS_READ: case NX_SYS_WRITE: case NX_SYS_OPEN: case NX_SYS_CLOSE:
+    case NX_SYS_CREAT: case NX_SYS_LINK: case NX_SYS_UNLINK: case NX_SYS_CHDIR:
+    case NX_SYS_STAT: case NX_SYS_LSEEK: case NX_SYS_FSTAT: case NX_SYS_DUP:
+    case NX_SYS_PIPE: case NX_SYS_DUP2: case NX_SYS_FCNTL:
+        return files_syscall(number, u->u_arg);
     case NX_SYS_EXIT:
         proc_exit((u->u_arg[0] & 255) << 8);
     case NX_SYS_EXEC:

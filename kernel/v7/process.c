@@ -1,6 +1,7 @@
 /* Native adaptation of process behavior from V7 sys/{slp,sys1}.c.
  * Original sources and Caldera license are retained under reference/. */
 #include "process.h"
+#include "files.h"
 #include "segments.h"
 #include "serial.h"
 #include <limits.h>
@@ -353,9 +354,7 @@ v7_pid_t proc_fork(const struct interrupt_frame *frame)
         return result;
     }
     struct user *u = current->p_user;
-    /* Ownership hooks must exist before accepting filesystem-backed references. */
-    bool referenced = u->u_cdir || u->u_rdir || u->u_pdir || current->p_textp;
-    for (unsigned i = 0; i < V7_NOFILE; ++i) referenced |= u->u_ofile[i] != NULL;
+    bool referenced = current->p_textp || !files_refs_valid(u);
     if (referenced) {
         int result = failure(V7_EBUSY);
         proc_irq_restore(flags);
@@ -370,6 +369,7 @@ v7_pid_t proc_fork(const struct interrupt_frame *frame)
         return result;
     }
     copy(child->p_user, u, sizeof(*u));
+    files_fork(child->p_user);
     child->p_user->u_procp = child;
     child->p_user->u_ap = child->p_user->u_arg;
     child->p_user->u_error = 0;
@@ -391,6 +391,7 @@ _Noreturn void proc_exit(int32_t status)
     (void)proc_irq_save();
     if (!current) panic("exit without process");
     struct proc *p = current;
+    files_exit(p->p_user);
     p->p_xstat = status;
     p->p_utime = p->p_user->u_utime + p->p_user->u_cutime;
     p->p_stime = p->p_user->u_stime + p->p_user->u_cstime;
