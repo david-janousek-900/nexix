@@ -8,6 +8,7 @@
 /* Single COM1 terminal. All entry points run with IRQs disabled. UART receive
  * never sleeps; readers/writers use process sleep/wakeup on private channels. */
 void tty_init(void);
+void tty_set_group(struct tty *, v7_pid_t);
 int tty_open(v7_dev_t device, struct user *u, struct tty **result);
 void tty_close(struct tty *);
 unsigned tty_open_count(void);

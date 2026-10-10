@@ -80,6 +80,8 @@ static int inode_put(struct v7fs *fs, const struct v7fs_inode *inode)
     v7_disk_put16(disk->mode, inode->mode); v7_disk_put16(disk->nlink, inode->nlink);
     v7_disk_put16(disk->uid, inode->uid); v7_disk_put16(disk->gid, inode->gid);
     v7_disk_put32(disk->size, inode->size);
+    v7_disk_put32(disk->atime, inode->atime); v7_disk_put32(disk->mtime, inode->mtime);
+    v7_disk_put32(disk->ctime, inode->ctime);
     for (unsigned i = 0; i < V7_NADDR; ++i)
         if (!v7_disk_putaddr(disk->addr + i * 3, inode->addr[i])) return -NX_EIO;
     return write_block(fs, v7_itod(inode->number), bytes);
@@ -535,4 +537,17 @@ int v7fs_unlink(struct v7fs *fs, v7_ino_t parent, const char name[V7_DIRSIZ], v7
     --inode.nlink; error = inode_put(fs, &inode);
     if (!error) *out = ino;
     return error;
+}
+
+int v7fs_metadata(struct v7fs *fs, const struct v7fs_inode *value)
+{
+    int error = ready(fs, true);
+    if (error) return error;
+    struct v7fs_inode disk;
+    error = v7fs_inode_get(fs, value->number, &disk);
+    if (error) return error;
+    if ((disk.mode & V7_IFMT) != (value->mode & V7_IFMT)) return -NX_EINVAL;
+    disk.mode = value->mode; disk.uid = value->uid; disk.gid = value->gid;
+    disk.atime = value->atime; disk.mtime = value->mtime; disk.ctime = value->ctime;
+    return inode_put(fs, &disk);
 }

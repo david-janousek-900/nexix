@@ -124,6 +124,7 @@ int elf_load(const void *file, size_t length, const struct exec_args *args, stru
         struct elf_program *p = &ph[i];
         if (p->type != 1 || !p->memsz) continue;
         uintptr_t end = (p->vaddr + p->memsz + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
+        if (end > image->heap) image->heap = end;
         unsigned flags = ((p->flags & 1) ? VM_EXEC : 0) | ((p->flags & 2) ? VM_WRITE : 0);
         for (uintptr_t va = p->vaddr & ~(PAGE_SIZE - 1); va < end && !error; va += PAGE_SIZE)
             error = map_zero(image, va, flags);

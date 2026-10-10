@@ -106,7 +106,7 @@ void filesystem_selftest(void)
     struct proc *p = proc_alloc();
     REQUIRE(p);
     struct exec_image empty = {.vm = p->p_vm};
-    p->p_vm = image.vm; p->p_size = image.size; exec_image_release(&empty);
+    p->p_vm = image.vm; p->p_size = image.size; p->p_brk_base = p->p_brk = image.heap; exec_image_release(&empty);
     REQUIRE(proc_start_user(p, image.entry, image.stack));
     v7_pid_t pid = p->p_pid;
     proc_run();

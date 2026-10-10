@@ -14,6 +14,22 @@
 #define NX_SYS_UNLINK 10
 #define NX_SYS_EXEC 11
 #define NX_SYS_CHDIR 12
+#define NX_SYS_TIME 13
+#define NX_SYS_CHMOD 15
+#define NX_SYS_CHOWN 16
+#define NX_SYS_BRK 17
+#define NX_SYS_SETUID 23
+#define NX_SYS_STIME 25
+#define NX_SYS_ALARM 27
+#define NX_SYS_PAUSE 29
+#define NX_SYS_UTIME 30
+#define NX_SYS_ACCESS 33
+#define NX_SYS_NICE 34
+#define NX_SYS_SYNC 36
+#define NX_SYS_KILL 37
+#define NX_SYS_SETPGRP 39
+#define NX_SYS_SETGID 46
+#define NX_SYS_SIGNAL 48
 #define NX_SYS_STAT 18
 #define NX_SYS_LSEEK 19
 #define NX_SYS_GETPID 20
@@ -35,6 +51,8 @@
 #define NX_SYS_GETEGID 67
 #define NX_SYS_DUP2 68
 #define NX_SYS_FCNTL 69
+#define NX_SYS_SIGRETURN 70
+#define NX_SYS_GETPGRP 71
 #define NX_CLK_TCK 100
 #ifndef __ASSEMBLER__
 #include <stdint.h>

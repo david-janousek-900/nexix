@@ -44,7 +44,8 @@ struct proc {
     void *p_argument;
     uint64_t p_deadline, p_preemptions;
     unsigned p_slice;
-    bool p_timed_sleep;
+    bool p_timed_sleep, p_interruptible;
+    uintptr_t p_brk_base, p_brk;
 };
 struct direct { v7_ino_t d_ino; char d_name[V7_DIRSIZ]; };
 struct user {
@@ -64,6 +65,7 @@ struct user {
     uintptr_t u_arg[6]; /* six full-width native syscall arguments */
     size_t u_tsize, u_dsize, u_ssize; /* bytes */
     uintptr_t u_signal[V7_NSIG];
+    uintptr_t u_restorer[V7_NSIG];
     v7_time_t u_utime, u_stime, u_cutime, u_cstime;
     struct interrupt_frame *u_ar0;
     struct { uintptr_t pr_base, pr_off; size_t pr_size; uint32_t pr_scale; } u_prof;

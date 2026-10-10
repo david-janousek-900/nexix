@@ -41,7 +41,7 @@ void libc_selftest(void)
         struct exec_image image = {0};
         REQUIRE(elf_load(_binary_build_libc_test_elf_start, length, &args, &image) == 0);
         struct exec_image empty = {.vm = p->p_vm};
-        p->p_vm = image.vm; p->p_size = image.size;
+        p->p_vm = image.vm; p->p_size = image.size; p->p_brk_base = p->p_brk = image.heap;
         exec_image_release(&empty);
         p->p_uid = p->p_user->u_uid = 321; p->p_user->u_ruid = 123;
         p->p_user->u_gid = 456; p->p_user->u_rgid = 654; p->p_user->u_cmask = 022;

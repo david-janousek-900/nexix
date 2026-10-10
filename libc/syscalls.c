@@ -83,3 +83,54 @@ int stty(int fd, const struct sgttyb *settings)
 int gtty(int fd, struct sgttyb *settings)
 { return call(NX_SYS_GTTY, fd, (long)(uintptr_t)settings, 0); }
 int isatty(int fd) { struct sgttyb settings; return gtty(fd, &settings) == 0; }
+
+#include <signal.h>
+#include <time.h>
+#include <utime.h>
+extern void __nx_signal_return(void);
+sighandler_t signal(int n, sighandler_t handler)
+{
+    long value = nx_syscall6(NX_SYS_SIGNAL, n, (long)(uintptr_t)handler,
+        (long)(uintptr_t)__nx_signal_return, 0, 0, 0);
+    if (value < 0) { errno = -value; return SIG_ERR; }
+    return (sighandler_t)(uintptr_t)value;
+}
+int kill(pid_t pid, int n) { return call(NX_SYS_KILL, pid, n, 0); }
+int raise(int n) { return kill(getpid(), n); }
+unsigned alarm(unsigned seconds) { return call(NX_SYS_ALARM, seconds, 0, 0); }
+int pause(void) { return call(NX_SYS_PAUSE, 0, 0, 0); }
+int setuid(uid_t id) { return call(NX_SYS_SETUID, id, 0, 0); }
+int setgid(gid_t id) { return call(NX_SYS_SETGID, id, 0, 0); }
+int nice(int increment) { return call(NX_SYS_NICE, increment, 0, 0); }
+pid_t getpgrp(void) { return call(NX_SYS_GETPGRP, 0, 0, 0); }
+pid_t setpgrp(void) { return call(NX_SYS_SETPGRP, 0, 0, 0); }
+time_t time(time_t *out) { return call(NX_SYS_TIME, (long)(uintptr_t)out, 0, 0); }
+int stime(const time_t *value) { return call(NX_SYS_STIME, (long)(uintptr_t)value, 0, 0); }
+int access(const char *path, int mode) { return call(NX_SYS_ACCESS, (long)(uintptr_t)path, mode, 0); }
+int chmod(const char *path, mode_t mode) { return call(NX_SYS_CHMOD, (long)(uintptr_t)path, mode, 0); }
+int chown(const char *path, uid_t uid, gid_t gid) { return call(NX_SYS_CHOWN, (long)(uintptr_t)path, uid, gid); }
+int utime(const char *path, const struct utimbuf *value)
+{ return call(NX_SYS_UTIME, (long)(uintptr_t)path, (long)(uintptr_t)value, 0); }
+void sync(void) { (void)call(NX_SYS_SYNC, 0, 0, 0); }
+int brk(void *address)
+{
+    if (!address) { errno = ENOMEM; return -1; }
+    return call(NX_SYS_BRK, (long)(uintptr_t)address, 0, 0);
+}
+void *sbrk(intptr_t increment)
+{
+    long old = call(NX_SYS_BRK, 0, 0, 0);
+    if (old < 0) return (void *)-1;
+    uintptr_t next;
+    if (increment >= 0) {
+        if ((uintptr_t)increment > UINTPTR_MAX - (uintptr_t)old) { errno = ENOMEM; return (void *)-1; }
+        next = (uintptr_t)old + increment;
+    } else {
+        uintptr_t magnitude = 0 - (uintptr_t)increment;
+        if (magnitude > (uintptr_t)old) { errno = ENOMEM; return (void *)-1; }
+        next = (uintptr_t)old - magnitude;
+    }
+    if (!next) { errno = ENOMEM; return (void *)-1; }
+    if (increment && call(NX_SYS_BRK, next, 0, 0) < 0) return (void *)-1;
+    return (void *)(uintptr_t)old;
+}

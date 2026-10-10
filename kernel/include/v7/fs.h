@@ -38,6 +38,8 @@ int v7fs_alloc_block(struct v7fs *, uint32_t *block);
 int v7fs_free_block(struct v7fs *, uint32_t block);
 bool v7fs_access(const struct v7fs_inode *, uint16_t uid, uint16_t gid, unsigned bits);
 int v7fs_lookup_user(struct v7fs *, v7_ino_t, const char *, v7_ino_t *, uint16_t uid, uint16_t gid);
+/* Update only mode, owner and timestamps, preserving block ownership. */
+int v7fs_metadata(struct v7fs *, const struct v7fs_inode *);
 int v7fs_truncate(struct v7fs *, v7_ino_t);
 int v7fs_release_inode(struct v7fs *, v7_ino_t); /* nlink zero, no live references */
 /* Names are trusted, zero-padded/truncated V7 components. Caller checks

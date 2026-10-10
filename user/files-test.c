@@ -1,5 +1,6 @@
 /* Native ring-3 file/pipe acceptance tests. Exit status identifies a failure. */
 #include <unistd.h>
+#include <signal.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
@@ -138,6 +139,7 @@ static int inheritance(void)
 }
 int main(int argc, char **argv)
 {
+    REQUIRE(signal(SIGPIPE, SIG_IGN) != SIG_ERR);
     if (argc == 2 && !strcmp(argv[1], "permissions")) {
         struct stat st;
         REQUIRE(open("/hello", O_WRONLY) == -1 && errno == EACCES);

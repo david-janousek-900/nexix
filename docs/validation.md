@@ -164,3 +164,13 @@ is disabled for this UART pass, which requires `NEXIX_TTY_UART_OK`. The target
 also sends lines to the interactive demo and checks its response/quit behavior,
 requiring `NEXIX_TTY_DEMO_OK`. An additional PTY check verifies the interactive
 stdio multiplexer and Ctrl-A X exit (`build/tty-pty.log`). See [tty.md](tty.md).
+
+
+## Step 15 acceptance
+
+`make TOOLCHAIN_PREFIX= test-signals` boots the complete tests at 16 and 128 MiB.
+The ring-3 fixture verifies signals and handler return, invalid privilege frames,
+nested and nonlocal handler exits, alarms, interrupted I/O/wait, faults and
+SIGPIPE, heap OOM rollback, credential/metadata rules and exact page/reference
+cleanup. Host TTY tests check interrupt/quit controls and RAW preservation.
+See [signals.md](signals.md) for the ABI, coverage and success markers.

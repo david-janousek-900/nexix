@@ -2,6 +2,8 @@
  * Original sources and Caldera license are retained under reference/. */
 #include "process.h"
 #include "files.h"
+#include "signals.h"
+#include "exec.h"
 #include "segments.h"
 #include "serial.h"
 #include <limits.h>
@@ -274,6 +276,17 @@ void proc_sleep(void *channel, unsigned priority)
     current->p_pri = previous_priority;
     proc_irq_restore(flags);
 }
+int proc_sleep_interruptible(void *channel, unsigned priority)
+{
+    uintptr_t flags = proc_irq_save();
+    if (signal_pending(current)) { proc_irq_restore(flags); return -V7_EINTR; }
+    current->p_interruptible = true;
+    proc_sleep(channel, priority);
+    current->p_interruptible = false;
+    int error = signal_pending(current) ? -V7_EINTR : 0;
+    proc_irq_restore(flags);
+    return error;
+}
 unsigned proc_wakeup(void *channel)
 {
     uintptr_t flags = proc_irq_save();
@@ -379,6 +392,8 @@ v7_pid_t proc_fork(const struct interrupt_frame *frame)
     struct interrupt_frame child_frame = *frame;
     child_frame.rax = 0;
     prepare_context(child, &child_frame);
+    child->p_brk_base = current->p_brk_base;
+    child->p_brk = current->p_brk;
     child->p_pri = current->p_pri;
     child->p_stat = V7_SRUN; /* Publish only after the entire copy succeeds. */
     v7_pid_t pid = child->p_pid;
@@ -443,7 +458,9 @@ v7_pid_t proc_wait(int32_t *status)
             proc_irq_restore(flags);
             return result;
         }
-        proc_sleep(current, 30);
+        if (proc_sleep_interruptible(current, 30)) {
+            proc_irq_restore(flags); return -V7_EINTR;
+        }
     }
 }
 v7_pid_t proc_collect(int32_t *status)
@@ -469,6 +486,9 @@ void proc_timer(struct interrupt_frame *frame)
     uint64_t now = timer_ticks();
     for (unsigned i = 1; i < V7_NPROC; ++i) {
         struct proc *p = &processes[i];
+        if (p->p_clktim && now >= (uint64_t)p->p_clktim) {
+            p->p_clktim = 0; signal_post(p, NX_SIGALRM);
+        }
         if (p->p_stat == V7_SSLEEP && p->p_timed_sleep && (int64_t)(now - p->p_deadline) >= 0) {
             p->p_timed_sleep = false;
             p->p_wchan = NULL;
@@ -483,4 +503,40 @@ void proc_timer(struct interrupt_frame *frame)
         ++current->p_preemptions;
         proc_yield(); /* Resume inside this IRQ with IF=0; IRET restores IF. */
     }
+}
+
+/* Page-aligned initial heap follows the last ELF load segment. Growth rolls
+ * back all acquired leaves on failure; shrinking never removes image pages. */
+int64_t proc_brk(uintptr_t address)
+{
+    struct proc *p = current;
+    if (!p->p_brk_base) return -V7_EINVAL;
+    if (!address) return p->p_brk;
+    if (address < p->p_brk_base || address >= EXEC_STACK_TOP - (EXEC_STACK_PAGES + 1) * PAGE_SIZE)
+        return -V7_ENOMEM;
+    uintptr_t old = (p->p_brk + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
+    uintptr_t end = (address + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
+    uintptr_t cursor = old;
+    for (; cursor < end; cursor += PAGE_SIZE) {
+        uintptr_t pa = page_alloc();
+        if (pa) clear((void *)pa, PAGE_SIZE);
+        if (!pa || !vm_map(&p->p_vm, cursor, pa, VM_WRITE)) {
+            if (pa && !page_free(pa)) panic("heap failed-page release");
+            for (uintptr_t va = old; va < cursor; va += PAGE_SIZE) {
+                uintptr_t physical;
+                if (!vm_translate(&p->p_vm, va, &physical, NULL) ||
+                    !vm_unmap(&p->p_vm, va) || !page_free(physical)) panic("heap rollback");
+            }
+            return -V7_ENOMEM;
+        }
+    }
+    for (uintptr_t va = end; va < old; va += PAGE_SIZE) {
+        uintptr_t pa;
+        if (!vm_translate(&p->p_vm, va, &pa, NULL) ||
+            !vm_unmap(&p->p_vm, va) || !page_free(pa)) panic("heap shrink");
+    }
+    p->p_size = p->p_size + end - old;
+    p->p_user->u_dsize = p->p_user->u_exdata.data + p->p_user->u_exdata.bss + address - p->p_brk_base;
+    p->p_brk = address;
+    return 0;
 }

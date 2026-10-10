@@ -8,6 +8,7 @@ extern const uint8_t _binary_build_exec_test_elf_start[], _binary_build_exec_tes
 extern const uint8_t _binary_build_libc_test_elf_start[], _binary_build_libc_test_elf_end[];
 extern const uint8_t _binary_build_files_test_elf_start[], _binary_build_files_test_elf_end[];
 extern const uint8_t _binary_build_tty_test_elf_start[], _binary_build_tty_test_elf_end[];
+extern const uint8_t _binary_build_signals_test_elf_start[], _binary_build_signals_test_elf_end[];
 /* Single CPU, IRQs disabled throughout exec; bounded scratch avoids using the
  * guarded 16 KiB kernel stack for the argument strings. */
 static struct exec_args scratch;
@@ -57,6 +58,9 @@ int proc_exec(uintptr_t path, uintptr_t argv, uintptr_t envp, struct interrupt_f
     } else if (equal(name, "/bin/tty-test")) {
         file = _binary_build_tty_test_elf_start; end = _binary_build_tty_test_elf_end;
         comm = "tty-test";
+    } else if (equal(name, "/bin/signals-test")) {
+        file = _binary_build_signals_test_elf_start; end = _binary_build_signals_test_elf_end;
+        comm = "signals-test";
     } else return -NX_ENOENT;
     struct user *u = p->p_user;
     if (p->p_textp || !files_refs_valid(u)) return -NX_EBUSY;
@@ -71,6 +75,7 @@ int proc_exec(uintptr_t path, uintptr_t argv, uintptr_t envp, struct interrupt_f
     struct exec_image old = {.vm = p->p_vm};
     p->p_vm = image.vm;
     p->p_size = image.size;
+    p->p_brk_base = p->p_brk = image.heap;
     vm_activate(&p->p_vm);
     exec_image_release(&old);
     files_exec(u);
@@ -85,7 +90,7 @@ int proc_exec(uintptr_t path, uintptr_t argv, uintptr_t envp, struct interrupt_f
     while (n < V7_DIRSIZ && comm[n]) { u->u_comm[n] = comm[n]; ++n; }
     while (n < V7_DIRSIZ) u->u_comm[n++] = 0;
     for (unsigned i = 0; i < V7_NSIG; ++i)
-        if (u->u_signal[i] != 1) u->u_signal[i] = 0; /* Preserve ignored dispositions. */
+        if (u->u_signal[i] != 1) { u->u_signal[i] = 0; u->u_restorer[i] = 0; } /* Preserve ignored dispositions. */
     u->u_prof.pr_scale = 0;
     u->u_acflag &= ~1U; /* V7 AFORK cleared on successful exec. */
     *frame = (struct interrupt_frame){.rip = image.entry, .rsp = image.stack,

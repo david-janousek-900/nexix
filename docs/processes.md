@@ -43,7 +43,8 @@ CR3, updating TSS.RSP0, and switching stacks. Selection favors the lowest numeri
 priority, with round robin selection among equal priorities. A waking task keeps
 its sleep priority until `proc_sleep` resumes, then restores its previous
 priority. This prevents a completed wait from permanently outranking new tasks.
-V7's CPU-usage priority decay, swapping, and full signal behavior are deferred.
+V7's CPU-usage priority decay and swapping are deferred. Native signals and
+nice priority changes are described in [signals.md](signals.md).
 
 The 100 Hz PIT preempts a running kernel or user process after five ticks, once
 PIC EOI has been sent. The outgoing IRQ handler remains suspended on that
@@ -55,7 +56,8 @@ currently uptime in seconds, not a real-time clock value.
 `proc_sleep` sets the channel and sleeping state before switching out;
 `proc_wakeup` makes every matching sleeper runnable. Callers must disable IRQs
 across checking a shared condition and entering sleep, and must recheck the
-condition after wakeup. Interruptibility by signals is not yet implemented.
+condition after wakeup. The separate proc_sleep_interruptible API returns EINTR
+when a pending signal interrupts a pipe, TTY, wait or pause sleep.
 Deadline sleeps permit timer wakeup while the scheduler has no runnable task.
 The idle path uses an atomic STI/HLT/CLI sequence to avoid missing that wakeup.
 The bootstrap scheduler returns when no published non-zombie task remains.
@@ -75,8 +77,8 @@ binary compatibility.
 Step 13 adds file and directory reference ownership across fork/exec/exit;
 see [files.md](files.md). Fork still rejects unsupported foreign references and
 shared-text references with EBUSY. ELF executable loading is implemented;
-signals, FPU state and user TLS require later implementation. Fatal user faults
-still panic the kernel rather than terminating just the offending process.
+signals are implemented in step 15. FPU state and user TLS remain pending.
+Managed user faults deliver signals and default to terminating the process.
 
 Exit first closes descriptors and releases directory references, then saves status and cumulative tick accounting, marks the process a zombie,
 wakes its parent, and reparents its children to live PID 1 (or bootstrap PID 0
@@ -86,7 +88,8 @@ releases its data frames and page tables. Wait then collects the zombie's PID,
 encoded status and accounting, and recycles its user/stack slot. A parent with
 live children sleeps atomically on its own process entry; a parent without
 children receives ECHILD. Bootstrap collects its children without sleeping.
-Stopped-child reporting and signal-related statuses are deferred.
+Signal termination uses the low seven wait-status bits. Stopped-child reporting
+and job control remain deferred.
 
 ## Validation
 

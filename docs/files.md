@@ -98,7 +98,7 @@ under the single-CPU scheduler.
 Pipe ends survive dup/fork and remain open until the final reference to their
 open-file description closes. Closing a final end wakes blocked peers. Writing
 with no readers returns EPIPE (or a partial count after earlier progress).
-SIGPIPE and interruptible I/O await signal delivery in step 15. There is no
+Step 15 adds SIGPIPE and interruptible I/O; see [signals.md](signals.md). There is no
 nonblocking mode, select or poll. Lseek on a pipe returns ESPIPE; fstat reports
 FIFO mode and the current buffered byte count.
 

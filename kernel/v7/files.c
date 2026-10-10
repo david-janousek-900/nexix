@@ -1,6 +1,7 @@
 /* Native V7 fio/sys2/sys3/pipe ownership and descriptor semantics. */
 #include "files.h"
 #include "tty.h"
+#include "signals.h"
 #include "uaccess.h"
 #include <nexix/syscall.h>
 #include <nexix/errno.h>
@@ -201,7 +202,7 @@ static int64_t pipe_io(struct file *f, uintptr_t address, size_t count, bool wri
     size_t done = 0;
     uint8_t bytes[512];
     if (!write) {
-        while (!p->size && p->writers) proc_sleep(p, 40);
+        while (!p->size && p->writers) if (proc_sleep_interruptible(p, 40)) return -NX_EINTR;
         if (count > p->size) count = p->size;
         while (done < count) {
             size_t n = count - done; if (n > sizeof(bytes)) n = sizeof(bytes);
@@ -213,8 +214,9 @@ static int64_t pipe_io(struct file *f, uintptr_t address, size_t count, bool wri
     }
     bool atomic = count <= NX_PIPE_BUF;
     while (done < count) {
-        while (p->readers && (atomic ? NX_PIPE_BUF - p->size < count : p->size == NX_PIPE_BUF)) proc_sleep(p, 40);
-        if (!p->readers) return done ? (int64_t)done : -NX_EPIPE;
+        while (p->readers && (atomic ? NX_PIPE_BUF - p->size < count : p->size == NX_PIPE_BUF))
+            if (proc_sleep_interruptible(p, 40)) return done ? (int64_t)done : -NX_EINTR;
+        if (!p->readers) { signal_post(proc_current(), NX_SIGPIPE); return done ? (int64_t)done : -NX_EPIPE; }
         size_t n = count - done;
         if (n > NX_PIPE_BUF - p->size) n = NX_PIPE_BUF - p->size;
         if (n > sizeof(bytes)) n = sizeof(bytes);
@@ -279,6 +281,40 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
 {
     struct proc *p = proc_current(); struct user *u = p->p_user;
     uint64_t fd = args[0];
+    if (number == NX_SYS_SYNC) return root && root->failed ? -NX_EIO : 0; /* Write-through cache. */
+    if (number == NX_SYS_ACCESS || number == NX_SYS_CHMOD || number == NX_SYS_CHOWN || number == NX_SYS_UTIME) {
+        char path[256]; int error = path_copy(args[0], path); if (error) return error;
+        if (!root) return -NX_ENODEV;
+        bool access = number == NX_SYS_ACCESS;
+        if (access && args[1] > 7) return -NX_EINVAL;
+        if (number == NX_SYS_CHOWN && (args[1] > UINT16_MAX || args[2] > UINT16_MAX)) return -NX_EINVAL;
+        v7_ino_t ino;
+        error = v7fs_lookup_user(root, cwd(u), path, &ino, access ? u->u_ruid : u->u_uid, access ? u->u_rgid : u->u_gid);
+        struct v7fs_inode disk;
+        if (!error) error = v7fs_inode_get(root, ino, &disk);
+        if (error) return error;
+        if (access) {
+            if ((args[1] & 2) && root->read_only) return -NX_EROFS;
+            return v7fs_access(&disk, u->u_ruid, u->u_rgid, args[1]) ? 0 : -NX_EACCES;
+        }
+        if (u->u_uid && (number == NX_SYS_CHOWN || u->u_uid != disk.uid)) return -NX_EPERM;
+        if (number == NX_SYS_CHMOD) {
+            disk.mode = (disk.mode & ~07777) | (args[1] & (u->u_uid ? 06777 : 07777));
+        } else if (number == NX_SYS_CHOWN) { disk.uid = args[1]; disk.gid = args[2]; }
+        else {
+            int64_t times[2];
+            error = copyin(&p->p_vm, args[1], times, sizeof(times));
+            if (error) return error;
+            if (times[0] < 0 || times[0] > UINT32_MAX || times[1] < 0 || times[1] > UINT32_MAX) return -NX_EINVAL;
+            disk.atime = times[0]; disk.mtime = times[1];
+        }
+        error = v7fs_metadata(root, &disk);
+        if (!error) for (unsigned i = 0; i < V7_NINODE; ++i)
+            if (inodes[i].i_count && inodes[i].i_number == ino) {
+                inodes[i].i_mode = disk.mode; inodes[i].i_uid = disk.uid; inodes[i].i_gid = disk.gid;
+            }
+        return error;
+    }
     if (number == NX_SYS_OPEN) return open_path(u, args[0], args[1], args[2]);
     if (number == NX_SYS_CREAT) return open_path(u, args[0], NX_O_WRONLY | NX_O_CREAT | NX_O_TRUNC, args[1]);
     if (number == NX_SYS_READ || number == NX_SYS_WRITE) return io(u, fd, args[1], args[2], number == NX_SYS_WRITE);

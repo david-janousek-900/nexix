@@ -1,0 +1,106 @@
+/* Native delivery of V7 sig.c/sys4.c signals. No masks or job control. */
+#include "signals.h"
+#include "uaccess.h"
+#include "segments.h"
+#include <nexix/errno.h>
+_Static_assert(sizeof(struct interrupt_frame) == sizeof(struct nx_signal_context), "signal context size");
+_Static_assert(offsetof(struct interrupt_frame, rsp) == offsetof(struct nx_signal_context, rsp), "signal context offsets");
+static bool code(struct proc *p, uintptr_t address)
+{
+    unsigned permissions;
+    return vm_translate(&p->p_vm, address, NULL, &permissions) &&
+        (permissions & (VM_USER | VM_EXEC)) == (VM_USER | VM_EXEC);
+}
+bool signal_pending(struct proc *p)
+{
+    for (unsigned n = 1; n < V7_NSIG; ++n) {
+        unsigned bit = 1U << (n - 1);
+        if (!(p->p_sig & bit)) continue;
+        if (n != NX_SIGKILL && p->p_user->u_signal[n] == 1) p->p_sig &= ~bit;
+        else return true;
+    }
+    return false;
+}
+void signal_post(struct proc *p, unsigned n)
+{
+    if (!n || n >= V7_NSIG || p->p_stat == V7_UNUSED ||
+        p->p_stat == V7_SIDL || p->p_stat == V7_SZOMB || (p->p_flag & V7_SSYS)) return;
+    if (n != NX_SIGKILL && p->p_user->u_signal[n] == 1) return;
+    p->p_sig |= 1U << (n - 1);
+    if (p->p_stat == V7_SSLEEP && p->p_interruptible) {
+        p->p_wchan = NULL; p->p_timed_sleep = false; p->p_stat = V7_SRUN;
+    }
+}
+void signal_group(v7_pid_t group, unsigned n)
+{
+    if (!group) return;
+    for (unsigned i = 1; i < V7_NPROC; ++i) {
+        struct proc *p = (struct proc *)&proc_table()[i];
+        if (p->p_pgrp == group) signal_post(p, n);
+    }
+}
+int64_t signal_install(uint64_t n, uintptr_t handler, uintptr_t restorer)
+{
+    struct proc *p = proc_current();
+    if (!n || n >= V7_NSIG || n == NX_SIGKILL) return -NX_EINVAL;
+    if (handler > 1 && (!code(p, handler) || !code(p, restorer))) return -NX_EFAULT;
+    uintptr_t old = p->p_user->u_signal[n];
+    p->p_user->u_signal[n] = handler;
+    p->p_user->u_restorer[n] = restorer;
+    p->p_sig &= ~(1U << (n - 1)); /* Historical signal() clears pending bit. */
+    return old;
+}
+int signal_kill(int64_t pid, uint64_t n)
+{
+    if (pid < INT32_MIN || pid > INT32_MAX || n >= V7_NSIG) return -NX_EINVAL;
+    struct proc *caller = proc_current();
+    bool found = false, permitted = false;
+    for (unsigned i = 1; i < V7_NPROC; ++i) {
+        struct proc *p = (struct proc *)&proc_table()[i];
+        if (p->p_stat == V7_UNUSED || p->p_stat == V7_SIDL || p->p_stat == V7_SZOMB || (p->p_flag & V7_SSYS)) continue;
+        bool match = pid > 0 ? p->p_pid == pid : pid == 0 ? p->p_pgrp == caller->p_pgrp :
+            pid == -1 ? p->p_pid != 1 && p != caller : p->p_pgrp == -pid;
+        if (!match) continue;
+        found = true;
+        if (caller->p_user->u_uid && caller->p_user->u_uid != p->p_uid) continue;
+        permitted = true; signal_post(p, n);
+    }
+    return permitted ? 0 : found ? -NX_EPERM : -NX_ESRCH;
+}
+void signal_deliver(struct interrupt_frame *frame)
+{
+    struct proc *p = proc_current();
+    if (!p || (frame->cs & 3) != 3 || !signal_pending(p)) return;
+    unsigned n;
+    for (n = 1; n < V7_NSIG; ++n) if (p->p_sig & (1U << (n - 1))) break;
+    p->p_sig &= ~(1U << (n - 1));
+    uintptr_t handler = p->p_user->u_signal[n], restorer = p->p_user->u_restorer[n];
+    if (!handler || n == NX_SIGKILL) proc_exit(n);
+    /* Preserve the SysV red zone and align the handler as a normal call.
+     * Saved frames reside in user memory, permitting handler longjmp without
+     * retaining stale kernel frames. sigreturn validates every privilege field. */
+    if (frame->rsp < USER_BASE + 128 + sizeof(*frame) + 24) proc_exit(NX_SIGSEGV);
+    uintptr_t stack = ((frame->rsp - 128 - sizeof(*frame)) & ~15UL) - 8;
+    if (!code(p, handler) || !code(p, restorer) ||
+        !user_access_ok(&p->p_vm, stack, sizeof(*frame) + 8, true) ||
+        copyout(&p->p_vm, stack, &restorer, 8) ||
+        copyout(&p->p_vm, stack + 8, frame, sizeof(*frame))) proc_exit(NX_SIGSEGV);
+    if (n != NX_SIGILL && n != NX_SIGTRAP) p->p_user->u_signal[n] = 0;
+    frame->rip = handler; frame->rsp = stack; frame->rdi = n;
+    frame->rflags &= ~0x500UL; /* SysV requires DF clear; do not single-step entry. */
+}
+int signal_return(uintptr_t address, struct interrupt_frame *frame)
+{
+    struct proc *p = proc_current();
+    struct interrupt_frame saved;
+    int error = copyin(&p->p_vm, address, &saved, sizeof(saved));
+    if (error) return error;
+    /* Only ordinary user arithmetic, direction, trace and resume flags. */
+    if (saved.cs != USER_CS || saved.ss != USER_DS ||
+        (saved.rflags & ~0x250fd7UL) || (saved.rflags & 0x202) != 0x202 ||
+        !code(p, saved.rip) || !saved.rsp ||
+        !user_access_ok(&p->p_vm, saved.rsp - 1, 1, true)) return -NX_EINVAL;
+    saved.vector = saved.error = 0;
+    *frame = saved;
+    return 0;
+}

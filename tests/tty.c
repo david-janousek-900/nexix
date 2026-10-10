@@ -9,15 +9,16 @@
 #include <nexix/errno.h>
 static uint8_t output[32768], buffer[2048];
 static size_t output_size;
-static unsigned baud, parity, wakeups;
+static unsigned baud, parity, wakeups, signals, last_signal;
 static bool receiver_enabled;
 static struct address_space vm;
 void serial_putc(uint8_t c) { assert(output_size < sizeof(output)); output[output_size++] = c; }
 void serial_configure(unsigned rate, unsigned mode) { baud = rate; parity = mode; }
 void serial_receive_enable(void) { receiver_enabled = true; }
 unsigned proc_wakeup(void *channel) { assert(channel); ++wakeups; return 0; }
-void proc_sleep(void *channel, unsigned priority)
+int proc_sleep_interruptible(void *channel, unsigned priority)
 { (void)channel; (void)priority; fputs("unexpected empty/stopped tty in host test\n", stderr); abort(); }
+void signal_group(v7_pid_t group, unsigned n) { assert(group == 17 && (n == 2 || n == 3)); ++signals; last_signal = n; }
 _Noreturn void panic(const char *message) { fprintf(stderr, "panic: %s\n", message); abort(); }
 int copyin(const struct address_space *space, uintptr_t source, void *dest, size_t size)
 { (void)space; if (source < 4096) return -NX_EFAULT; memcpy(dest, (const void *)source, size); return 0; }
@@ -51,6 +52,11 @@ int main(void)
     assert(output_size == 6 && !memcmp(output, "x\r\nz\r\n", 6));
     sg.flags &= ~NX_ECHO;
     assert(control(t, NX_TIOCSETP, &sg) == 0);
+    feed("old\npending\003", 12);
+    assert(signals == 1 && last_signal == 2);
+    feed("new\n", 4); expect(t, "new\n", 4); /* Both queues flushed. */
+    feed("\023\034", 2); assert(signals == 2 && last_signal == 3);
+    assert(tty_io(t, &vm, (uintptr_t)"x", 1, true) == 1); /* quit releases XOFF */
     feed("a\nb\n", 4); expect(t, "a\n", 2); expect(t, "b\n", 2);
     feed("hello\n", 6);
     assert(tty_io(t, &vm, (uintptr_t)buffer, 2, false) == 2 && !memcmp(buffer, "he", 2));
@@ -96,8 +102,8 @@ int main(void)
     feed("discard", 7);
     sg.flags = NX_RAW;
     assert(control(t, NX_TIOCSETN, &sg) == 0); /* mode change flushes */
-    const uint8_t binary[] = {0, 0x80, 0xff, 4, 17, 19, '\r'};
-    feed(binary, sizeof(binary)); expect(t, binary, sizeof(binary));
+    const uint8_t binary[] = {0, 0x80, 0xff, 3, 28, 4, 17, 19, '\r'};
+    feed(binary, sizeof(binary)); expect(t, binary, sizeof(binary)); assert(signals == 2);
     for (unsigned i = 0; i <= TTY_INPUT_CAPACITY; ++i) tty_receive(i);
     assert(tty_io(t, &vm, (uintptr_t)buffer, sizeof(buffer), false) == TTY_INPUT_CAPACITY);
     for (unsigned i = 0; i < TTY_INPUT_CAPACITY; ++i) assert(buffer[i] == (uint8_t)i);

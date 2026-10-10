@@ -16,7 +16,7 @@ static v7_pid_t root_pid;
 static unsigned sleeps;
 bool tty_test_gate(struct interrupt_frame *frame)
 {
-    if (!active || frame->rax < 0x500 || frame->rax > 0x503 || !proc_current()) return false;
+    if (!active || frame->rax < 0x500 || frame->rax > 0x505 || !proc_current()) return false;
     struct proc *p = proc_current();
     REQUIRE(p->p_pid == root_pid);
     if (frame->rax == 0x500) {
@@ -35,6 +35,10 @@ bool tty_test_gate(struct interrupt_frame *frame)
         while (child->p_stat == V7_SRUN) proc_yield();
         REQUIRE(child->p_stat == V7_SSLEEP && child->p_wchan);
         ++sleeps;
+        if (frame->rax == 0x504 || frame->rax == 0x505) {
+            REQUIRE(uart);
+            serial_puts(frame->rax == 0x504 ? "NEXIX_TTY_UART_INTR_READY\r\n" : "NEXIX_TTY_UART_QUIT_READY\r\n");
+        }
         if (frame->rax == 0x503) {
             REQUIRE(uart);
             serial_puts("NEXIX_TTY_UART_START_READY\r\n");
@@ -63,7 +67,7 @@ void tty_selftest(enum boot_test test)
         length = (uintptr_t)_binary_build_tty_test_elf_end - (uintptr_t)_binary_build_tty_test_elf_start;
         REQUIRE(elf_load(_binary_build_tty_test_elf_start, length, &args, &image) == 0);
         struct exec_image empty = {.vm = p->p_vm};
-        p->p_vm = image.vm; p->p_size = image.size; exec_image_release(&empty);
+        p->p_vm = image.vm; p->p_size = image.size; p->p_brk_base = p->p_brk = image.heap; exec_image_release(&empty);
         REQUIRE(proc_start_user(p, image.entry, image.stack));
         root_pid = p->p_pid; active = true;
         proc_run(); active = false;
@@ -74,7 +78,7 @@ void tty_selftest(enum boot_test test)
         REQUIRE(files_live() == 0 && tty_open_count() == 0 && page_free_count() == before);
         REQUIRE(files_mount(NULL) == 0 && v7fs_unmount(&fs) == 0);
     }
-    REQUIRE(sleeps == (test == BOOT_TEST_TTY ? 3U : 2U));
+    REQUIRE(sleeps == (test == BOOT_TEST_TTY ? 5U : 2U));
     serial_puts("NEXIX_TTY_OK\r\nNEXIX_TTY_CLEANUP_OK\r\n");
     if (test == BOOT_TEST_TTY) serial_puts("NEXIX_TTY_UART_OK\r\n");
     if (test == BOOT_TEST_TTY_DEMO) serial_puts("NEXIX_TTY_DEMO_OK\r\n");

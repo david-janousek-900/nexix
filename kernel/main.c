@@ -1,4 +1,5 @@
 #include "process.h"
+#include "signals.h"
 #include "exec.h"
 #include "libc_test.h"
 #include "v7/fs.h"
@@ -175,6 +176,7 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
     filesystem_selftest();
     files_selftest();
     tty_selftest(test);
+    signals_selftest();
     serial_puts("NEXIX_BOOT_OK\r\n");
     for (;;)
         __asm__ volatile ("sti; hlt" : : : "memory");

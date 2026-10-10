@@ -4,8 +4,8 @@ Nexix builds `build/crt0.o` and `build/libc.a` for statically linked ELF64
 programs. They are native AMD64 implementations using the Nexix syscall ABI.
 Historical PDP-11 assembly is retained under reference/ and is not linked.
 The supported interface is a foundation for rebuilding V7 userland, not a
-complete libc. File I/O, stdio, heap allocation, signal wrappers and additional
-services will be added as their kernel support becomes available.
+complete libc. File I/O, signal wrappers and brk/sbrk now have kernel support.
+Stdio, malloc and additional source compatibility are step 16 work.
 
 ## Build and startup
 
@@ -65,7 +65,8 @@ the raw signed result or negative errno and preserves callee-saved registers.
 Its declaration is in `<nexix/libc.h>`; raw calls do not change libc errno.
 The C wrappers translate errors to -1 and set positive `errno`. Success leaves
 errno unchanged. `errno` is a global in each process's private VM; threads,
-TLS-based errno and signal-time errno handling are deferred. NX errors retain
+TLS-based errno is deferred. Signal handlers must preserve errno themselves
+when needed. NX errors retain
 V7 numbers, including native ENOSYS=35, independently of host errno values.
 
 Also implemented:
@@ -79,11 +80,12 @@ Also implemented:
 
 Step 13 adds file and pipe wrappers and headers; see [files.md](files.md).
 Step 14 adds sgtty/ioctl headers and stty/gtty/ioctl/isatty; see [tty.md](tty.md).
-There are no declarations for unimplemented heap services. String
+Step 15 adds signals, brk/sbrk, setjmp/longjmp and init/shell service wrappers;
+see [signals.md](signals.md). There is no malloc yet. String
 functions follow their usual C buffer contracts; they do not validate pointers
 or allocate storage. getenv returns a pointer into the environment, not a copy.
-The wait-status helpers expose exited and signaled status encodings; kernel
-signal delivery itself remains pending.
+The wait-status helpers expose exited and signaled status encodings, including
+processes terminated by native signal delivery.
 
 ## Validation
 

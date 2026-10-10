@@ -12,7 +12,7 @@ struct exec_args {
 };
 struct exec_image {
     struct address_space vm;
-    uintptr_t entry, stack;
+    uintptr_t entry, stack, heap;
     size_t size, text, data, bss;
 };
 /* IRQs disabled; caller owns staged image until commit. No live VM mutation. */

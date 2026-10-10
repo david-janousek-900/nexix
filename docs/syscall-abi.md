@@ -34,8 +34,9 @@ callers must inspect RAX to recognize an error.
 
 Handlers currently run with interrupts disabled. They can block by switching
 out through process sleep/wait, which resumes them with interrupts disabled.
-The initial services are bounded except eager fork copies; interruptible I/O,
-signals, restart behavior, and asynchronous cancellation require later work.
+Pipe/TTY/wait/pause sleeps are interruptible by signals. Syscalls return EINTR
+or completed byte counts; automatic restart is not implemented. Eager fork and
+heap growth can require many page allocations.
 
 The private bootstrap gate is now `int $0x81`, separate from the native ABI.
 Its hooks run only while their corresponding tests are active; unknown or
@@ -73,6 +74,20 @@ four-byte status, even though its pointer occupies an eight-byte argument slot.
 | 9, 10 | link, unlink | Old/new paths, or path | Zero |
 | 11 | exec | Pathname, argv | Replace image with empty environment |
 | 12 | chdir | Path | Zero |
+| 13 | time | Optional writable time_t pointer | Wall-clock seconds |
+| 15, 16 | chmod, chown | Path, mode / UID, GID | Zero |
+| 17 | brk | New address, or zero to query | Zero, or current break |
+| 23, 46 | setuid, setgid | ID | Zero |
+| 25 | stime | Readable time_t pointer | Zero; root only |
+| 27 | alarm | Seconds | Previous remaining seconds |
+| 29 | pause | None | EINTR after a signal |
+| 30 | utime | Path, pointer to two time_t values | Zero |
+| 33 | access | Path, permission bits | Zero; real credentials |
+| 34 | nice | Signed increment | Zero |
+| 36 | sync | None | Zero, or EIO for a failed mount |
+| 37 | kill | Signed PID/group selector, signal | Zero |
+| 39 | setpgrp | None | New process group equal to PID |
+| 48 | signal | Number, handler, executable restorer | Previous handler |
 | 18, 28 | stat, fstat | Path/fd, writable nx_stat pointer | Zero |
 | 19 | lseek | fd, signed offset, whence | New offset |
 | 20 | getpid | None | Current PID |
@@ -92,13 +107,16 @@ four-byte status, even though its pointer occupies an eight-byte argument slot.
 | 68 | dup2 | fd, target | Target descriptor |
 | 69 | fcntl | fd, command, optional value | Flags or zero |
 
-Calls 64–69 are native extensions beyond V7's 64-entry table. The separate
+| 70 | sigreturn | Readable nx_signal_context pointer | Restores interrupted frame |
+| 71 | getpgrp | None | Current process group |
+
+Calls 64–71 are native extensions beyond V7's 64-entry table. The separate
 identity calls and wait status pointer replace V7's secondary-register returns.
 Only RAX changes on normal syscall return. Successful exec installs a new entry
 frame. File/pipe semantics, flag values and the 48-byte stat record are
 documented in [files.md](files.md). Terminal controls and native sgtty/tchars
-records are documented in [tty.md](tty.md). Wall-clock time and signals remain
-pending.
+records are documented in [tty.md](tty.md). Signal frames, interruption, heap
+and clock semantics are documented in [signals.md](signals.md).
 
 Wait validates its output range before blocking or consuming a zombie. An
 invalid non-NULL pointer returns EFAULT even when no child exists. A failed
@@ -142,7 +160,8 @@ a terminator, or EFAULT when the next required byte is inaccessible. It may
 leave partial output on failure; callers must check the result before using it.
 A terminator before an inaccessible page succeeds without validating the unused
 suffix. None of these helpers implements demand paging or signal recovery.
-Fatal direct user CPU faults still panic until process-fault policy is added.
+Managed user CPU faults now deliver signals; kernel and unmanaged bootstrap
+fault diagnostics remain fatal. See [signals.md](signals.md).
 
 ## Validation
 

@@ -82,7 +82,8 @@ controls are DEL (also accepting Backspace) for erase, Ctrl-U for kill, Ctrl-D
 for EOF, Ctrl-S for output stop and Ctrl-Q for output start. These editing
 controls suit current serial terminals; historical V7 defaults `#`/`@` can be
 selected through sgtty. Interrupt and quit characters are stored as Ctrl-C and
-Ctrl-backslash, but their signal behavior awaits step 15.
+Ctrl-backslash. Step 15 posts SIGINT/SIGQUIT to the terminal group, flushes
+input and resumes output; RAW keeps these bytes as ordinary data.
 
 Cooked input accumulates an editable line until newline, a configured break
 character, or EOF. CRMOD converts incoming CR to LF and outgoing LF to CR/LF.
@@ -142,7 +143,8 @@ ODDP, EVENP and XTABS; delay modes, LCASE and TANDEM are not implemented.
 
 There is no asynchronous output queue, nonblocking I/O, termios, window-size
 handling, modem/carrier detection, hangup policy or terminal job control yet.
-Signal delivery and interruptible terminal I/O are step 15 work.
+Step 15 implements signal delivery and interruptible terminal I/O; see
+[signals.md](signals.md).
 
 ## Validation
 
@@ -160,7 +162,8 @@ demonstrably asleep before waking it. All file/control operations use int 0x80.
 
 The dedicated UART run disables test-gate input injection and exchanges bytes
 through QEMU's actual COM1 chardev: cooked editing, raw NUL/high-bit bytes, a
-cbreak byte without newline, and Ctrl-S/Ctrl-Q with a demonstrably sleeping
+cbreak byte without newline, Ctrl-C/Ctrl-backslash group signals interrupting
+a sleeping child, and Ctrl-S/Ctrl-Q with a demonstrably sleeping
 writer. The automated demo waits for the response before sending the next line,
 so concurrent input echo does not obscure its output check. After each test,
 all process pages, descriptor/inode references and terminal opens are reclaimed.

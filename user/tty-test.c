@@ -1,6 +1,7 @@
 /* Native sgtty/device acceptance tests. Test-only int 0x81 injects input in
  * normal boots; the uart mode receives every byte through QEMU's real COM1. */
 #include <unistd.h>
+#include <signal.h>
 #include <fcntl.h>
 #include <sgtty.h>
 #include <sys/stat.h>
@@ -9,6 +10,8 @@
 #include <string.h>
 #define REQUIRE(c) do { if (!(c)) return __LINE__ % 250 + 1; } while (0)
 static char buffer[512];
+static volatile sig_atomic_t terminal_signal;
+static void terminal_handler(int n) { terminal_signal = n; }
 static long gate(long command, uintptr_t a, uintptr_t b)
 {
     __asm__ volatile ("int $0x81" : "+a"(command) : "D"(a), "S"(b) : "memory", "cc");
@@ -42,6 +45,21 @@ static int uart(void)
     const char cbreak_prompt[] = "NEXIX_TTY_UART_CBREAK_READY\n";
     REQUIRE(write(1, cbreak_prompt, sizeof(cbreak_prompt) - 1) == sizeof(cbreak_prompt) - 1);
     REQUIRE(read(0, buffer, 1) == 1 && buffer[0] == 'c');
+    /* Wait for the child to sleep before asking the harness for controls.
+     * Both parent and child receive the controlling-terminal group signal. */
+    for (unsigned pass = 0; pass < 2; ++pass) {
+        int n = pass ? SIGQUIT : SIGINT;
+        terminal_signal = 0;
+        REQUIRE(signal(n, terminal_handler) == SIG_DFL);
+        pid_t target = fork(); REQUIRE(target >= 0);
+        if (!target) _exit(read(0, buffer, 1) == -1 && errno == EINTR && terminal_signal == n ? 0 : 1);
+        REQUIRE(gate(pass ? 0x505 : 0x504, target, 0) == 0);
+        int status; pid_t reaped;
+        do { reaped = wait(&status); } while (reaped == -1 && errno == EINTR);
+        REQUIRE(reaped == target && WIFEXITED(status) && WEXITSTATUS(status) == 0 && terminal_signal == n);
+    }
+    const char signal_ok[] = "NEXIX_TTY_UART_SIGNALS_OK\n";
+    REQUIRE(write(1, signal_ok, sizeof(signal_ok) - 1) == sizeof(signal_ok) - 1);
     const char stop_prompt[] = "NEXIX_TTY_UART_STOP_READY\n";
     REQUIRE(write(1, stop_prompt, sizeof(stop_prompt) - 1) == sizeof(stop_prompt) - 1);
     REQUIRE(read(0, buffer, 1) == 1 && buffer[0] == 's');

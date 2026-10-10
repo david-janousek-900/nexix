@@ -48,7 +48,7 @@ void files_selftest(void)
         length = (uintptr_t)_binary_build_files_test_elf_end - (uintptr_t)_binary_build_files_test_elf_start;
         REQUIRE(elf_load(_binary_build_files_test_elf_start, length, &args, &image) == 0);
         struct exec_image empty = {.vm = p->p_vm};
-        p->p_vm = image.vm; p->p_size = image.size; exec_image_release(&empty);
+        p->p_vm = image.vm; p->p_size = image.size; p->p_brk_base = p->p_brk = image.heap; exec_image_release(&empty);
         p->p_user->u_cmask = 022;
         if (pass == 3) {
             p->p_uid = p->p_user->u_uid = p->p_user->u_ruid = 123;

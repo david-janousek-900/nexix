@@ -21,6 +21,8 @@ v7_pid_t proc_spawn(void (*entry)(void *), void *argument);
 void proc_run(void); /* Bootstrap scheduler: returns when only zombies remain. */
 void proc_yield(void);
 void proc_sleep(void *channel, unsigned priority);
+int proc_sleep_interruptible(void *channel, unsigned priority);
+int64_t proc_brk(uintptr_t address);
 unsigned proc_wakeup(void *channel);
 void proc_delay(uint64_t ticks);
 /* Fork a live CPL3 frame; parent gets PID, child's RAX is zero. Negative errno
@@ -28,7 +30,7 @@ void proc_delay(uint64_t ticks);
  * unsupported foreign/shared-text references still return EBUSY. */
 v7_pid_t proc_fork(const struct interrupt_frame *frame);
 _Noreturn void proc_exit(int32_t status); /* V7-encoded wait status */
-v7_pid_t proc_wait(int32_t *status); /* kernel pointer, optional; -ECHILD */
+v7_pid_t proc_wait(int32_t *status); /* kernel pointer, optional; -ECHILD or -EINTR */
 /* Bootstrap collects its zombies after proc_run, without a sleep context. */
 v7_pid_t proc_collect(int32_t *status);
 void proc_timer(struct interrupt_frame *frame);

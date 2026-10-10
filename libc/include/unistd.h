@@ -17,6 +17,21 @@ int pipe(int pair[2]);
 int chdir(const char *path);
 int link(const char *oldpath, const char *newpath);
 int unlink(const char *path);
+#define F_OK 0
+#define X_OK 1
+#define W_OK 2
+#define R_OK 4
+int access(const char *, int);
+int setuid(uid_t);
+int setgid(gid_t);
+int nice(int);
+pid_t getpgrp(void);
+pid_t setpgrp(void);
+unsigned alarm(unsigned);
+int pause(void);
+int brk(void *);
+void *sbrk(intptr_t);
+void sync(void);
 #define STDIN_FILENO 0
 #define STDOUT_FILENO 1
 #define STDERR_FILENO 2

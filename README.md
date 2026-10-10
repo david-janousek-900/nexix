@@ -46,6 +46,10 @@ COM1 character-device I/O now supports interrupt-driven receive, cooked line
 editing, raw/cbreak modes, echo, software flow control and sgtty/ioctl controls.
 `/dev/console` and `/dev/ttyS0` share the terminal; `/dev/tty` resolves the process's
 controlling terminal. See [serial TTY](docs/tty.md).
+Native signals now provide handlers, alarms, user-fault termination, SIGPIPE,
+and interruptible pipe/TTY/wait operations. Brk/sbrk, credentials, permissions,
+process groups and time calls provide the remaining basic init/shell services.
+See [signals and init/shell services](docs/signals.md).
 
 ## Build and boot
 
@@ -67,6 +71,7 @@ make test-libc
 make test-fs
 make test-files
 make test-tty
+make test-signals
 make run-tty
 ```
 
@@ -121,7 +126,7 @@ starts that demo: type a line and Enter, use Backspace/Ctrl-U to edit, or type
 
 ## Roadmap
 
-Version **0.1.0** covers these 20 steps. Steps 1–14 are implemented; step 15
+Version **0.1.0** covers these 20 steps. Steps 1–15 are implemented; step 16
 is next. Regression tests accompany implementation throughout the roadmap.
 
 1. Import V7 sources and preserve licensing.

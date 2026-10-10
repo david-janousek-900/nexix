@@ -2,6 +2,7 @@
 #include "tty.h"
 #include "serial.h"
 #include "uaccess.h"
+#include "signals.h"
 #include <nexix/errno.h>
 #define RECORD_END 0x100
 #define EMPTY_EOF 0x200
@@ -36,6 +37,8 @@ void tty_init(void)
     defaults(&console);
     serial_receive_enable();
 }
+void tty_set_group(struct tty *t, v7_pid_t group)
+{ if (t == &console) t->group = group; }
 unsigned tty_open_count(void) { return console.opens; }
 int tty_open(v7_dev_t dev, struct user *u, struct tty **out)
 {
@@ -95,6 +98,11 @@ void tty_receive(uint8_t c)
     if (!t->opens) return;
     if (!(t->settings.flags & NX_RAW)) {
         c &= 0177;
+        if ((c == t->chars.intr || c == t->chars.quit) && c != 0377) {
+            flush(t); resume(t);
+            signal_group(t->group, c == t->chars.intr ? NX_SIGINT : NX_SIGQUIT);
+            proc_wakeup(&t->input_channel); return;
+        }
         if (c == t->chars.start && c != 0377) { resume(t); return; }
         if (c == t->chars.stop && c != 0377) { t->stopped = true; return; }
         if (c == '\r' && (t->settings.flags & NX_CRMOD)) c = '\n';
@@ -128,14 +136,15 @@ int64_t tty_io(struct tty *t, struct address_space *vm, uintptr_t address, size_
             size_t n = count - done; if (n > sizeof(bytes)) n = sizeof(bytes);
             if (copyin(vm, address + done, bytes, n)) panic("tty write mapping changed");
             for (size_t i = 0; i < n; ++i) {
-                while (t->stopped) proc_sleep(&t->output_channel, 29);
+                while (t->stopped) if (proc_sleep_interruptible(&t->output_channel, 29))
+                    return done + i ? (int64_t)(done + i) : -NX_EINTR;
                 output(t, bytes[i]);
             }
             done += n;
         }
         return done;
     }
-    while (!t->count) proc_sleep(&t->input_channel, 28);
+    while (!t->count) if (proc_sleep_interruptible(&t->input_channel, 28)) return -NX_EINTR;
     while (done < count && t->count) {
         uint16_t value = t->input[t->head];
         t->head = (t->head + 1) % TTY_INPUT_CAPACITY; --t->count;

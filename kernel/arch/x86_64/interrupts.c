@@ -7,6 +7,7 @@
 #include "segments.h"
 #include "user_test.h"
 #include "process.h"
+#include "signals.h"
 #include "syscall.h"
 #include <nexix/errno.h>
 #include <stddef.h>
@@ -88,12 +89,21 @@ void interrupt_dispatch(struct interrupt_frame *frame)
     }
     if (frame->vector == 0x80) {
         syscall_dispatch(frame);
+        signal_deliver(frame);
         return;
     }
     if (frame->vector == 0x81) {
-        if (process_test_gate(frame) || syscall_test_gate(frame) || libc_test_gate(frame) || files_test_gate(frame) || tty_test_gate(frame) || user_mode_test_gate(frame)) return;
+        if (process_test_gate(frame) || syscall_test_gate(frame) || libc_test_gate(frame) || files_test_gate(frame) || tty_test_gate(frame) || user_mode_test_gate(frame)) { signal_deliver(frame); return; }
         frame->rax = (uint64_t)-NX_ENOSYS;
         return;
+    }
+    if (frame->vector < 32 && frame->vector != 2 && frame->vector != 8 &&
+        (frame->cs & 3) == 3 && proc_current()) {
+        unsigned n = frame->vector == 0 || frame->vector == 16 || frame->vector == 19 ? NX_SIGFPE :
+            frame->vector == 6 ? NX_SIGILL : frame->vector == 1 || frame->vector == 3 ? NX_SIGTRAP : NX_SIGSEGV;
+        /* An ignored synchronous fault cannot resume the same instruction. */
+        if (proc_current()->p_user->u_signal[n] == 1) proc_exit(n);
+        signal_post(proc_current(), n); signal_deliver(frame); return;
     }
     if (frame->vector < 32) {
         serial_puts("Nexix: trap cs="); serial_hex(frame->cs);
@@ -130,6 +140,7 @@ void interrupt_dispatch(struct interrupt_frame *frame)
             outb(0xa0, 0x20);
         outb(0x20, 0x20);
         if (frame->vector == 32) proc_timer(frame);
+        signal_deliver(frame);
         return;
     }
     panic("unexpected interrupt vector");

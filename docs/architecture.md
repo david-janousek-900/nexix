@@ -123,7 +123,7 @@ explicitly instead of writing native structures: LP64 changes cannot silently
 change the historical filesystem format.
 
 The syscall register convention, numbers, errors, and exported type widths are
-documented in [syscall-abi.md](syscall-abi.md); the signal ABI is still pending.
+documented in [syscall-abi.md](syscall-abi.md); the signal ABI is documented in [signals.md](signals.md).
 Native userland uses ELF64;
 PDP-11 a.out execution is deferred. `fork` uses eager copying.
 
