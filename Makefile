@@ -4,7 +4,7 @@ LD = $(TOOLCHAIN_PREFIX)ld
 PYTHON ?= python3
 QEMU ?= qemu-system-x86_64
 CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-stack-protector -fno-pie -m64 -mno-red-zone -mgeneral-regs-only -fno-asynchronous-unwind-tables -Ikernel/include -MMD -MP
-OBJECTS = build/boot.o build/main.o build/serial.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o
+OBJECTS = build/boot.o build/main.o build/serial.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o
 HOST_CC ?= cc
 .DEFAULT_GOAL := all
 -include $(OBJECTS:.o=.d)
@@ -28,6 +28,12 @@ build/boot_info.o: kernel/boot.c | build
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/memory.o: kernel/memory.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/paging.o: kernel/arch/x86_64/paging.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/paging_test.o: kernel/paging_test.c | build
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/interrupts.o: kernel/arch/x86_64/interrupts.c | build
@@ -74,11 +80,20 @@ build/memory-test: tests/memory.c kernel/boot.c kernel/memory.c kernel/include/b
 test-unit: build/memory-test
 	./build/memory-test
 
-test: test-unit smoke build/test-ud.iso build/test-pf.iso build/test-memory.iso
+test: test-unit smoke build/test-ud.iso build/test-pf.iso build/test-memory.iso test-paging
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-ud.iso ud
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-pf.iso pf
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-memory.iso memory 16M
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-memory.iso memory 128M
+
+.PHONY: test-paging
+test-paging: check build/test-wp.iso build/test-nx.iso build/test-unmap.iso build/test-null.iso build/test-paging-oom.iso build/test-protect.iso
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-wp.iso wp
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-nx.iso nx
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-unmap.iso unmap
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-null.iso null
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-paging-oom.iso paging-oom 16M
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-protect.iso protect
 
 clean:
 	$(PYTHON) -c 'import shutil; shutil.rmtree("build", ignore_errors=True)'

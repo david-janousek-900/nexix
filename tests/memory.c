@@ -111,6 +111,7 @@ static void allocation_tests(void)
     for (unsigned i = 0; i < 8; ++i) {
         pages[i] = page_alloc();
         assert(pages[i] && !(pages[i] % PAGE_SIZE));
+        assert(page_is_allocated(pages[i]));
         assert(pages[i] >= 4 * PAGE_SIZE && pages[i] < 16 * PAGE_SIZE);
         assert(pages[i] != 5 * PAGE_SIZE && pages[i] != 6 * PAGE_SIZE);
         assert(pages[i] != 8 * PAGE_SIZE && pages[i] != 9 * PAGE_SIZE);
@@ -121,7 +122,10 @@ static void allocation_tests(void)
     assert(!page_free(5 * PAGE_SIZE) && !page_free(8 * PAGE_SIZE));
     assert(!page_free(pages[0] + 1) && !page_free(PHYSICAL_LIMIT));
     assert(!page_free(UINTPTR_MAX));
+    assert(!page_is_allocated(0) && !page_is_allocated(PHYSICAL_LIMIT));
+    assert(!page_is_allocated(pages[0] + 1));
     assert(page_free(pages[3])); assert(!page_free(pages[3]));
+    assert(!page_is_allocated(pages[3]));
     assert(page_free_count() == 1 && page_alloc() == pages[3]);
     for (unsigned i = 0; i < 8; ++i) assert(page_free(pages[i]));
     assert(page_free_count() == 8);

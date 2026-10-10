@@ -55,6 +55,12 @@ bool boot_parse(uintptr_t address, size_t accessible_bytes, struct boot_info *in
             if (string_equal(s, "test=ud")) info->test = BOOT_TEST_UD;
             if (string_equal(s, "test=pf")) info->test = BOOT_TEST_PF;
             if (string_equal(s, "test=memory")) info->test = BOOT_TEST_MEMORY;
+            if (string_equal(s, "test=wp")) info->test = BOOT_TEST_WP;
+            if (string_equal(s, "test=nx")) info->test = BOOT_TEST_NX;
+            if (string_equal(s, "test=unmap")) info->test = BOOT_TEST_UNMAP;
+            if (string_equal(s, "test=null")) info->test = BOOT_TEST_NULL;
+            if (string_equal(s, "test=paging-oom")) info->test = BOOT_TEST_PAGING_OOM;
+            if (string_equal(s, "test=protect")) info->test = BOOT_TEST_PROTECT;
         } else if (tag->type == 3) {
             if (size < 17)
                 return false;

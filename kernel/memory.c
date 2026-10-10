@@ -98,3 +98,12 @@ bool page_free(uintptr_t address)
 }
 
 uint32_t page_free_count(void) { return free_pages; }
+
+bool page_is_allocated(uintptr_t address)
+{
+    if ((address & (PAGE_SIZE - 1)) || address >= PHYSICAL_LIMIT)
+        return false;
+    uint32_t page = address / PAGE_SIZE;
+    return (eligible[page / WORD_BITS] & bit(page)) &&
+        (allocated[page / WORD_BITS] & bit(page));
+}

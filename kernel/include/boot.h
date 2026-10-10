@@ -17,7 +17,11 @@ struct boot_module {
     struct boot_tag tag;
     uint32_t start, end;
 };
-enum boot_test { BOOT_NORMAL, BOOT_TEST_UD, BOOT_TEST_PF, BOOT_TEST_MEMORY };
+enum boot_test {
+    BOOT_NORMAL, BOOT_TEST_UD, BOOT_TEST_PF, BOOT_TEST_MEMORY,
+    BOOT_TEST_WP, BOOT_TEST_NX, BOOT_TEST_UNMAP, BOOT_TEST_NULL, BOOT_TEST_PAGING_OOM,
+    BOOT_TEST_PROTECT
+};
 struct boot_info {
     uintptr_t address;
     uint32_t size;

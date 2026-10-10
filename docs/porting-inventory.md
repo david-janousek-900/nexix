@@ -20,6 +20,8 @@ First machine-dependent audit targets:
 The reference import, bootstrap build, and an observed QEMU boot are implemented.
 IDT exception diagnostics and PIC/PIT timer interrupts are implemented as the
 first machine-support increment. Bounded Multiboot2 memory-map parsing and a
-physical-page allocator now provide the next increment. A pinned cross-toolchain remains required to
+physical-page allocator provide the next increment. Managed 4 KiB page tables,
+kernel protection, and independent address spaces are also implemented; CPL3
+entry and kernel-stack switching remain next. A pinned cross-toolchain remains required to
 close the foundation milestone.
 This inventory identifies entry points, not a completed source compatibility audit.

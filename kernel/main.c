@@ -1,6 +1,7 @@
 #include "interrupts.h"
 #include "boot.h"
 #include "memory.h"
+#include "paging.h"
 #include "serial.h"
 #include <stdint.h>
 
@@ -103,6 +104,46 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
         module_selftest(&info);
         serial_puts("NEXIX_RESERVATIONS_OK\r\n");
         serial_puts("NEXIX_MEMORY_EXHAUSTION_OK\r\n");
+    }
+    paging_init();
+    paging_selftest(test == BOOT_TEST_PAGING_OOM);
+    if (test == BOOT_TEST_WP || test == BOOT_TEST_NX ||
+        test == BOOT_TEST_UNMAP || test == BOOT_TEST_NULL || test == BOOT_TEST_PROTECT) {
+        extern char kernel_text_start[];
+        uintptr_t address = (uintptr_t)kernel_text_start;
+        if (test == BOOT_TEST_NULL)
+            address = 0;
+        if (test == BOOT_TEST_NX || test == BOOT_TEST_UNMAP || test == BOOT_TEST_PROTECT) {
+            struct address_space space = { 0 };
+            uintptr_t page = page_alloc();
+            address = USER_BASE;
+            if (!page || !vm_create(&space) ||
+                !vm_map(&space, address, page, test == BOOT_TEST_NX ? VM_EXEC : VM_WRITE))
+                panic("cannot prepare paging fault test");
+            *(uint8_t *)page = 0xc3;
+            vm_activate(&space);
+            (void)*(volatile uint8_t *)address; /* Populate the TLB before mutation. */
+            if (test == BOOT_TEST_NX) {
+                ((void (*)(void))address)(); /* Cache an executable translation. */
+                if (!vm_protect(&space, address, VM_WRITE))
+                    panic("cannot set NX paging test permission");
+            }
+            if (test == BOOT_TEST_PROTECT) {
+                *(volatile uint8_t *)address = 0xc3; /* Cache a writable translation. */
+                if (!vm_protect(&space, address, 0))
+                    panic("cannot set read-only paging test permission");
+            }
+            if (test == BOOT_TEST_UNMAP && !vm_unmap(&space, address))
+                panic("cannot unmap paging fault test");
+        }
+        serial_puts("Nexix: expected cr2="); serial_hex(address); serial_puts("\r\n");
+        if (test == BOOT_TEST_WP || test == BOOT_TEST_PROTECT)
+            *(volatile uint8_t *)address = 0;
+        else if (test == BOOT_TEST_NX)
+            ((void (*)(void))address)();
+        else
+            __asm__ volatile ("mov (%0), %%rax" : : "r"(address) : "rax", "memory");
+        panic("expected paging fault did not occur");
     }
     timer_init();
     /* Check and sleep atomically against IRQ delivery. */

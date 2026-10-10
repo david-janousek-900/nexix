@@ -1,0 +1,31 @@
+#ifndef NEXIX_PAGING_H
+#define NEXIX_PAGING_H
+#include "memory.h"
+
+#define USER_BASE PHYSICAL_LIMIT
+#define USER_LIMIT (1UL << 47)
+#define VM_WRITE 1U
+#define VM_EXEC 2U
+#define VM_USER 4U
+struct address_space { uintptr_t root; };
+
+/* Kernel-only callers; all operations currently require interrupts disabled.
+ * Spaces own page tables, but mapped data frames remain caller-owned.
+ * Initialize spaces to zero. Never copy or manually edit a live root. */
+void paging_init(void);
+const struct address_space *paging_kernel_space(void);
+bool vm_create(struct address_space *space);
+bool vm_destroy(struct address_space *space); /* Reject active/kernel spaces. */
+void vm_activate(const struct address_space *space);
+/* User mappings only, aligned addresses, allocated physical frames below 1 GiB.
+ * Permissions are VM_WRITE and/or VM_EXEC; write+execute is rejected.
+ * Existing mappings cannot be overwritten. Failed maps release new tables. */
+bool vm_map(struct address_space *space, uintptr_t virtual_address,
+            uintptr_t physical_address, unsigned permissions);
+bool vm_unmap(struct address_space *space, uintptr_t virtual_address);
+bool vm_protect(struct address_space *space, uintptr_t virtual_address, unsigned permissions);
+/* Lookup also supports the shared kernel region; returns effective permissions. */
+bool vm_translate(const struct address_space *space, uintptr_t virtual_address,
+                  uintptr_t *physical_address, unsigned *permissions);
+void paging_selftest(bool exhaustion);
+#endif

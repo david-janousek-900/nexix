@@ -12,4 +12,5 @@ uintptr_t page_alloc(void);
 /* Reject unaligned, reserved, out-of-range, and already-free addresses. */
 bool page_free(uintptr_t address);
 uint32_t page_free_count(void);
+bool page_is_allocated(uintptr_t address);
 #endif

@@ -9,7 +9,10 @@ identity-maps the first GiB, initializes COM1, and validates the boot handoff.
 It installs an IDT, reports fatal exceptions over serial, remaps the legacy PIC,
 parses GRUB's memory map, allocates 4 KiB physical pages, and handles a roughly
 100 Hz PIT timer. Kernel/low memory, boot data, modules, and firmware-reserved
-ranges are excluded from allocation. After allocation self-tests and ten timer interrupts it prints
+ranges are excluded from allocation. Managed 4 KiB page tables protect kernel
+code and read-only data, mark data non-executable, and leave page zero unmapped.
+Separate address spaces support mapping, unmapping, permission changes, and
+switching between independent user mappings. After memory/paging self-tests and ten timer interrupts it prints
 `NEXIX_TIMER_OK` and `NEXIX_BOOT_OK`, then idles with interrupts enabled.
 This foundation does not yet run V7 kernel code or userland.
 
@@ -44,6 +47,9 @@ It also tests page exhaustion/recovery with 16 MiB and 128 MiB RAM, writes every
 allocated page, and verifies that boot information and an 8,193-byte module
 remain intact. Logs are `build/memory-16M.log` and `build/memory-128M.log`.
 The bootstrap allocator currently manages only RAM below the 1 GiB mapping limit.
+`make test-paging` tests read-only writes, NX execution, unmapped and null-page
+access, and page-table allocation failure/rollback. These are also included in
+`make test`. Paging tests run in kernel mode; user-mode entry is the next step.
 
 ## Roadmap
 

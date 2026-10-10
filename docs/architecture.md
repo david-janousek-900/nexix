@@ -6,8 +6,43 @@ using the System V AMD64 calling convention and a 16-byte-aligned stack.
 All initial load segments must reside below 1 GiB. Mapping the entire first GiB
 does not imply that all mapped addresses are available RAM.
 
-The current mapping is temporary. User/kernel isolation, NX protection, and
-4 KiB page-table management are the next architecture tasks.
+The assembly bootstrap mapping is replaced by managed 4 KiB page tables after
+physical allocation is initialized. EFER.NXE enables execute protection and
+CR0.WP enforces read-only mappings even for kernel-mode writes. A CPU without
+NX support is rejected. Kernel text is read-only/executable; the Multiboot header
+and rodata are read-only/NX; remaining identity-mapped memory is writable/NX.
+Page zero is unmapped. These permissions follow page-aligned linker boundaries.
+
+The current virtual layout is:
+
+| Region | Purpose |
+| --- | --- |
+| `0 .. 1 GiB` | Shared supervisor-only identity map, with the null-page guard |
+| `1 GiB .. 128 TiB` | Independent user mappings in the lower canonical range |
+| Upper canonical range | Unmapped; not yet supported by the mapping API |
+
+Every address space owns its PML4 and initial PDPT. The PDPT entry for the first
+GiB references a shared kernel directory and remains supervisor-only, including
+when parent entries permit user access. Other branches are allocated on demand.
+This keeps kernel code, stacks, IDT, allocator state, and page-table access valid
+across CR3 switches. The initial identity map uses 515 allocated page-table pages.
+
+`vm_create`, `vm_map`, `vm_protect`, `vm_unmap`, `vm_translate`, `vm_activate`,
+and `vm_destroy` provide the address-space interface. Mapping/protection changes
+accept aligned user addresses only, reject write+execute permissions, and never
+overwrite an existing mapping. Physical frames must be allocated by the page
+allocator. This is a trusted kernel API, not a user-callable interface.
+
+Active mapping changes invalidate the address's TLB entry; switching spaces
+reloads CR3. Empty user tables are reclaimed on unmap. Creation and mapping
+failures roll back newly allocated tables. Destruction rejects active/kernel
+spaces, frees private tables, and preserves the shared kernel directory.
+Mapped data frames remain caller-owned and must be unmapped before freeing.
+All current paging operations require interrupts disabled; SMP and concurrent
+page-table mutation are deferred.
+
+The next step is user-mode entry, TSS/kernel-stack switching, and actual CPL3
+isolation tests. The current tests exercise user-tagged mappings from kernel mode.
 
 The Multiboot2 header requires a memory map. The parser bounds all tag reads,
 validates map record stride/version and address arithmetic, and requires the end
