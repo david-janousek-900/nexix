@@ -19,7 +19,9 @@ through a test interrupt gate. Two contexts use distinct kernel entry stacks.
 After the self-tests it prints `NEXIX_USER_MODE_OK`, `NEXIX_USER_STACK_OK`,
 `NEXIX_USER_TIMER_OK`, `NEXIX_USER_RETURN_OK`, and `NEXIX_BOOT_OK`, then idles
 with interrupts enabled.
-This foundation does not yet run V7 kernel code or userland.
+V7 core structure definitions are adapted for native pointers and sizes, with
+separate PDP-11 disk layouts and tested byte encoders. This foundation does not
+yet run V7 process, filesystem, or userland logic.
 
 ## Build and boot
 
@@ -42,7 +44,8 @@ This is a bootstrap convenience; a pinned cross-toolchain remains planned.
 The kernel does not link host libc. Build artifacts go into `build/`.
 `make smoke` boots one CPU with 128 MiB RAM under QEMU TCG, requires the serial
 boot and timer markers within 15 seconds, and saves `build/boot.log`.
-`make test-unit` runs host tests for boot-data parsing and the allocator.
+`make test-unit` runs host tests for boot-data parsing, the allocator, and V7
+native types and disk encodings.
 `make test` additionally boots separate images with `test=ud` and `test=pf`
 command lines. These deliberately trigger invalid-opcode and unmapped-memory
 exceptions, verifying the vector, error code, and page-fault address in serial

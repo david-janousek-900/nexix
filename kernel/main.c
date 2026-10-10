@@ -1,3 +1,4 @@
+#include "v7/core.h" /* Compile native core layout contracts in the kernel too. */
 #include "interrupts.h"
 #include "boot.h"
 #include "memory.h"

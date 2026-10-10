@@ -94,7 +94,7 @@ The tests establish register/DF preservation, hardware privilege checks, and
 double-fault entry on IST1 despite an invalid RSP0. The NMI IST is configured
 but has no dedicated hardware NMI injection test yet.
 
-Next come V7 process/type adaptation and scheduling. Process fault handling,
+V7 process/type definitions are adapted; scheduling comes next. Process fault handling,
 the syscall ABI, ELF loading, FPU state, and user TLS are not yet implemented.
 
 Keep the historical source tree pristine. Ported code belongs in `kernel/` and,

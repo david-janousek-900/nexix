@@ -89,8 +89,12 @@ build/test-memory.iso: build/nexix.elf boot/grub.cfg
 build/memory-test: tests/memory.c kernel/boot.c kernel/memory.c kernel/include/boot.h kernel/include/memory.h | build
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include tests/memory.c kernel/boot.c kernel/memory.c -o $@
 
-test-unit: build/memory-test
+build/v7-types-test: tests/v7_types.c kernel/include/v7/constants.h kernel/include/v7/types.h kernel/include/v7/disk.h kernel/include/v7/core.h kernel/include/paging.h kernel/include/memory.h | build
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include $< -o $@
+
+test-unit: build/memory-test build/v7-types-test
 	./build/memory-test
+	./build/v7-types-test
 
 test: test-unit smoke build/test-ud.iso build/test-pf.iso build/test-memory.iso test-paging test-user
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-ud.iso ud

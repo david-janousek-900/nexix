@@ -57,3 +57,10 @@ The host parser/allocator tests also pass AddressSanitizer and UBSan with leak
 detection disabled (LeakSanitizer cannot run under this session's ptrace).
 This suite does not validate process scheduling, a V7 syscall ABI, ELF loading,
 filesystems, or V7 execution; those subsystems are not implemented yet.
+
+V7 type adaptation (step 7): `make TOOLCHAIN_PREFIX= test-unit` also runs
+`build/v7-types-test`. It checks independent PDP-11 byte fixtures, rejection of
+24-bit address overflow without mutation, inode-block boundaries through inode
+65535, device encoding, and preservation of native addresses and offsets.
+Layout assertions compile in both host tests and the kernel. See
+[v7-types.md](v7-types.md) for runtime/disk widths and deferred machine features.
