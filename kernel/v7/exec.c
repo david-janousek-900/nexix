@@ -4,6 +4,7 @@
 #include "segments.h"
 #include <nexix/errno.h>
 extern const uint8_t _binary_build_exec_test_elf_start[], _binary_build_exec_test_elf_end[];
+extern const uint8_t _binary_build_libc_test_elf_start[], _binary_build_libc_test_elf_end[];
 /* Single CPU, IRQs disabled throughout exec; bounded scratch avoids using the
  * guarded 16 KiB kernel stack for the argument strings. */
 static struct exec_args scratch;
@@ -39,7 +40,15 @@ int proc_exec(uintptr_t path, uintptr_t argv, uintptr_t envp, struct interrupt_f
     char name[256];
     int error = copyinstr(&p->p_vm, path, name, sizeof(name), NULL);
     if (error) return error;
-    if (!equal(name, "/bin/exec-test")) return -NX_ENOENT;
+    const uint8_t *file, *end;
+    const char *comm;
+    if (equal(name, "/bin/exec-test")) {
+        file = _binary_build_exec_test_elf_start; end = _binary_build_exec_test_elf_end;
+        comm = "exec-test";
+    } else if (equal(name, "/bin/libc-test")) {
+        file = _binary_build_libc_test_elf_start; end = _binary_build_libc_test_elf_end;
+        comm = "libc-test";
+    } else return -NX_ENOENT;
     struct user *u = p->p_user;
     /* Filesystem reference ownership and close-on-exec are added with FDs. */
     if (p->p_textp) return -NX_EBUSY;
@@ -50,8 +59,8 @@ int proc_exec(uintptr_t path, uintptr_t argv, uintptr_t envp, struct interrupt_f
     if (!error) error = vector(&p->p_vm, envp, &scratch.envc, scratch.envp);
     if (error) return error;
     struct exec_image image = {0};
-    size_t length = (uintptr_t)_binary_build_exec_test_elf_end - (uintptr_t)_binary_build_exec_test_elf_start;
-    error = elf_load(_binary_build_exec_test_elf_start, length, &scratch, &image);
+    size_t length = (uintptr_t)end - (uintptr_t)file;
+    error = elf_load(file, length, &scratch, &image);
     if (error) return error;
     struct exec_image old = {.vm = p->p_vm};
     p->p_vm = image.vm;
@@ -65,8 +74,9 @@ int proc_exec(uintptr_t path, uintptr_t argv, uintptr_t envp, struct interrupt_f
     u->u_exdata.text = image.text;
     u->u_exdata.data = image.data;
     u->u_exdata.bss = image.bss;
-    const char comm[] = "exec-test";
-    for (unsigned i = 0; i < V7_DIRSIZ; ++i) u->u_comm[i] = i < sizeof(comm) ? comm[i] : 0;
+    unsigned n = 0;
+    while (n < V7_DIRSIZ && comm[n]) { u->u_comm[n] = comm[n]; ++n; }
+    while (n < V7_DIRSIZ) u->u_comm[n++] = 0;
     for (unsigned i = 0; i < V7_NSIG; ++i)
         if (u->u_signal[i] != 1) u->u_signal[i] = 0; /* Preserve ignored dispositions. */
     u->u_prof.pr_scale = 0;

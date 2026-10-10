@@ -31,6 +31,9 @@ not run yet. A native `int 0x80` syscall ABI now supports process lifecycle,
 identity queries, tick accounting, umask, and yielding. User-copy helpers reject
 invalid pointers and protect read-only pages. The bootstrap test gate uses
 `int 0x81`; it remains separate from the supported native interface.
+Native libc startup and a static library now run a C ELF64 program at CPL3,
+with syscall wrappers, errno, environment access, string/memory functions,
+and exit callbacks. See [libc foundation](docs/libc.md).
 
 ## Build and boot
 
@@ -47,6 +50,8 @@ make smoke
 make test
 make test-process
 make test-syscall
+make userland
+make test-libc
 ```
 
 For an initial build on an x86_64 Linux host with GCC/binutils, use
@@ -86,12 +91,14 @@ and the supporting ABI, user-copy, error, and fork markers. See the
 and supported calls. ELF64 loading and atomic exec replacement are implemented;
 see [execution ABI](docs/exec.md). `make TOOLCHAIN_PREFIX= test-exec` runs the
 ELF and fork/exec/wait tests with 16 MiB RAM (`build/exec-16M.log`). The current
-program source is an embedded native assembly fixture. Libc and rebuilt V7
-user programs remain to be implemented.
+program catalog includes native assembly and C fixtures. Libc startup and
+initial wrappers are implemented; rebuilt V7 programs and the remaining libc
+services are pending. `make TOOLCHAIN_PREFIX= test-libc` runs the C userland
+tests with 16 MiB RAM (`build/libc-16M.log`).
 
 ## Roadmap
 
-Version **0.1.0** covers these 20 steps. Steps 1–10 are implemented; step 11
+Version **0.1.0** covers these 20 steps. Steps 1–11 are implemented; step 12
 is next. Regression tests accompany implementation throughout the roadmap.
 
 1. Import V7 sources and preserve licensing.

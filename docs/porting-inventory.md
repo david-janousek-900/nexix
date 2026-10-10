@@ -31,7 +31,10 @@ Native syscall dispatch now follows V7's call numbering for its initial supporte
 services, with a defined x86_64 register ABI and validated user-memory access.
 ELF64 loading, native startup stacks, and V7-numbered exec/execve replacement
 are implemented using an embedded executable catalog; see [exec.md](exec.md).
-File/inode reference ownership, signal delivery, and remaining services
+Native libc startup, syscall/error wrappers, string/memory functions and
+basic exit/environment support are implemented and run a C ELF64 fixture at
+CPL3; see [libc.md](libc.md). Rebuilt V7 programs, file/inode reference ownership,
+signal delivery, and remaining services
 are pending; see [syscall-abi.md](syscall-abi.md).
 A pinned cross-toolchain remains required to
 close the foundation milestone.

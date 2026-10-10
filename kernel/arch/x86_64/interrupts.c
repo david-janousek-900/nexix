@@ -1,3 +1,4 @@
+#include "libc_test.h"
 #include "interrupts.h"
 #include "io.h"
 #include "serial.h"
@@ -88,7 +89,7 @@ void interrupt_dispatch(struct interrupt_frame *frame)
         return;
     }
     if (frame->vector == 0x81) {
-        if (process_test_gate(frame) || syscall_test_gate(frame) || user_mode_test_gate(frame)) return;
+        if (process_test_gate(frame) || syscall_test_gate(frame) || libc_test_gate(frame) || user_mode_test_gate(frame)) return;
         frame->rax = (uint64_t)-NX_ENOSYS;
         return;
     }

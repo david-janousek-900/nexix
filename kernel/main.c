@@ -1,5 +1,6 @@
 #include "process.h"
 #include "exec.h"
+#include "libc_test.h"
 #include "syscall.h"
 #include "interrupts.h"
 #include "boot.h"
@@ -166,6 +167,7 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
     process_selftest();
     syscall_selftest();
     exec_selftest();
+    libc_selftest();
     serial_puts("NEXIX_BOOT_OK\r\n");
     for (;;)
         __asm__ volatile ("sti; hlt" : : : "memory");

@@ -1,0 +1,40 @@
+#ifndef NEXIX_LIBC_ERRNO_H
+#define NEXIX_LIBC_ERRNO_H
+#include <nexix/errno.h>
+extern int errno;
+#define EPERM NX_EPERM
+#define ENOENT NX_ENOENT
+#define ESRCH NX_ESRCH
+#define EINTR NX_EINTR
+#define EIO NX_EIO
+#define ENXIO NX_ENXIO
+#define E2BIG NX_E2BIG
+#define ENOEXEC NX_ENOEXEC
+#define EBADF NX_EBADF
+#define ECHILD NX_ECHILD
+#define EAGAIN NX_EAGAIN
+#define ENOMEM NX_ENOMEM
+#define EACCES NX_EACCES
+#define EFAULT NX_EFAULT
+#define ENOTBLK NX_ENOTBLK
+#define EBUSY NX_EBUSY
+#define EEXIST NX_EEXIST
+#define EXDEV NX_EXDEV
+#define ENODEV NX_ENODEV
+#define ENOTDIR NX_ENOTDIR
+#define EISDIR NX_EISDIR
+#define EINVAL NX_EINVAL
+#define ENFILE NX_ENFILE
+#define EMFILE NX_EMFILE
+#define ENOTTY NX_ENOTTY
+#define ETXTBSY NX_ETXTBSY
+#define EFBIG NX_EFBIG
+#define ENOSPC NX_ENOSPC
+#define ESPIPE NX_ESPIPE
+#define EROFS NX_EROFS
+#define EMLINK NX_EMLINK
+#define EPIPE NX_EPIPE
+#define EDOM NX_EDOM
+#define ERANGE NX_ERANGE
+#define ENOSYS NX_ENOSYS
+#endif

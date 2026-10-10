@@ -115,5 +115,13 @@ ELF64 execution (step 10): every successful boot requires `NEXIX_ELF_OK`,
 runs the complete normal boot with 16 MiB RAM (`build/exec-16M.log`), including
 malformed ELF rejection, partial-allocation rollback, argument/environment
 stacks, and an actual CPL3 fork/exec/wait sequence. See [exec.md](exec.md).
-The full suite uses test-exec for its low-memory normal boot; test-process and
-test-syscall remain available separately.
+The full suite now uses test-libc for its low-memory normal boot; test-process,
+test-syscall and test-exec remain available separately.
+
+Native libc (step 11): every successful boot requires `NEXIX_LIBC_ABI_OK` and
+`NEXIX_LIBC_OK`. `make TOOLCHAIN_PREFIX= test-libc` runs the normal boot with
+16 MiB RAM (`build/libc-16M.log`), including a real C program linked with native
+crt0/libc, argument/environment startup, six-argument register conversion,
+callee-saved registers, errno translation, fork/exec/wait, strings, exit
+callbacks and page/process cleanup. Empty and maximum-size startup vectors
+are also exercised. See [libc.md](libc.md) for the supported interface.

@@ -98,9 +98,11 @@ mov $20, %eax       # NX_SYS_GETPID
 int $0x80          # signed result in RAX
 ```
 
-A future six-argument C wrapper must bind argument four to R10, rather than RCX,
-and declare a memory clobber so the compiler orders buffer accesses around the
-trap. Libc startup and wrappers remain step 11.
+The native libc's external assembly nx_syscall6 entry converts the SysV C
+calling convention into this register ABI, including argument four in R10 and
+the sixth value from the caller's stack. Its ordinary external call also orders
+memory accesses around the trap. Libc startup and initial wrappers are
+implemented in step 11; see [libc.md](libc.md).
 
 ## Safe user access
 
@@ -155,4 +157,4 @@ New success markers are NEXIX_SYSCALL_ABI_OK, NEXIX_UACCESS_OK,
 NEXIX_SYSCALL_ERRORS_OK, NEXIX_SYSCALL_FORK_OK and NEXIX_SYSCALL_OK, followed by
 NEXIX_BOOT_OK. Transcripts are `build/boot.log` and `build/syscall-16M.log`.
 Step 10 implements ELF64 loading, exec, and argument/environment construction;
-see [exec.md](exec.md). Step 11 adds native libc startup and wrappers.
+see [exec.md](exec.md). Step 11 implements native libc startup and initial wrappers; see [libc.md](libc.md).

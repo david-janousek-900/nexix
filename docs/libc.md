@@ -1,0 +1,106 @@
+# Native libc foundation (step 11)
+
+Nexix builds `build/crt0.o` and `build/libc.a` for statically linked ELF64
+programs. They are native AMD64 implementations using the Nexix syscall ABI.
+Historical PDP-11 assembly is retained under reference/ and is not linked.
+The supported interface is a foundation for rebuilding V7 userland, not a
+complete libc. File I/O, stdio, heap allocation, signal wrappers and additional
+services will be added as their kernel support becomes available.
+
+## Build and startup
+
+```
+make TOOLCHAIN_PREFIX= userland
+make TOOLCHAIN_PREFIX= test-libc
+```
+
+The first command builds the startup object, archive, and `build/libc-test.elf`.
+The second boots the complete tests in QEMU with 16 MiB RAM and saves
+`build/libc-16M.log`. Normal `make TOOLCHAIN_PREFIX= smoke` runs them with
+128 MiB. `make -j3 TOOLCHAIN_PREFIX= test` includes all regression groups.
+
+User C compilation is freestanding with `-nostdinc`, using only Nexix headers
+and the compiler's freestanding headers (stddef/stdint and similar). It does
+not use host OS headers or host libc. Linking uses ld with `-nostdlib`, the
+startup object first, application objects next, and the archive last. The
+shared `user/user.ld` places programs at USER_BASE with separate RX and RW/NX
+segments and a non-executable stack declaration. For example:
+
+```
+ld -nostdlib -z max-page-size=0x1000 -T user/user.ld \
+   build/crt0.o program.o build/libc.a -o program.elf
+```
+
+Compile application objects with the Makefile's USER_CFLAGS and the same
+compiler used for libc. The current target uses integer/pointer code only
+(`-mgeneral-regs-only`), no red zone, no PIE, no stack protector or unwind tables.
+Floating-point/SIMD state, TLS, shared libraries and constructors are deferred.
+A generated ELF requires Nexix and cannot run using the host's syscall ABI.
+
+`_start` reads the step 10 stack, initializes `environ`, clears DF, clears the
+frame pointer and calls `main(argc, argv, envp)` using the SysV AMD64 calling
+convention and stack alignment. A conventional two-argument main also works;
+the third argument is available to programs which use it. Returning from main
+calls `exit` with its return value. Empty argument/environment vectors and the
+loader's maximum 64 entries per vector are supported. See [exec.md](exec.md)
+for the initial stack layout and argument limits.
+
+## Interfaces
+
+Headers live under `libc/include/`; native kernel ABI definitions remain under
+`include/nexix/`. Public PID, UID/GID, mode, offset and clock types match the
+native ABI. `wait` writes a four-byte int, and `struct tms` contains four
+signed 64-bit tick counts. CLK_TCK is 100.
+
+Implemented wrappers:
+
+- `_exit`, fork, wait, getpid, getppid.
+- getuid, geteuid, getgid, getegid, umask, times, sched_yield.
+- execve and execv. Following V7's libc behavior, execv calls execve with
+  `environ`; the raw kernel exec syscall 11 instead uses an empty environment.
+
+The assembly `nx_syscall6` entry converts seven SysV C arguments (number and
+six full-width values) into RAX/RDI/RSI/RDX/R10/R8/R9 for `int 0x80`. It returns
+the raw signed result or negative errno and preserves callee-saved registers.
+Its declaration is in `<nexix/libc.h>`; raw calls do not change libc errno.
+The C wrappers translate errors to -1 and set positive `errno`. Success leaves
+errno unchanged. `errno` is a global in each process's private VM; threads,
+TLS-based errno and signal-time errno handling are deferred. NX errors retain
+V7 numbers, including native ENOSYS=35, independently of host errno values.
+
+Also implemented:
+
+- memcpy, memmove, memset, memcmp.
+- strlen, strcmp, strncmp, strcpy, strncpy, strchr, strrchr.
+- getenv, reading the current `environ` vector.
+- exit and atexit, with 32 statically stored callbacks executed in reverse
+  registration order. `_exit` bypasses callbacks. There are no stdio streams
+  to flush yet; successful exec replaces the callback state with fresh BSS.
+
+There are no declarations for unimplemented file or heap services. String
+functions follow their usual C buffer contracts; they do not validate pointers
+or allocate storage. getenv returns a pointer into the environment, not a copy.
+The wait-status helpers expose exited and signaled status encodings; kernel
+signal delivery itself remains pending.
+
+## Validation
+
+The real C fixture at `/bin/libc-test` is loaded and run at CPL3 using crt0 and
+the archive. It checks arguments/environ, empty and full vectors, stack
+alignment, zeroed BSS, six full-width syscall arguments and callee-saved
+register preservation. A bootstrap-only int 0x81 helper inspects the arguments
+saved by the real int 0x80 call; libc itself uses only the production gate.
+
+Further tests cover raw/translated errors, successful-call errno retention,
+identities, tick accounting, umask, yielding, overlapping memory moves,
+unsigned byte comparisons, string boundaries and getenv lookup. Fork checks
+private errno/data, followed by execve with a changed environment and execv
+with the retained environment. Returning from main exercises exit callbacks
+and ordinary exit statuses. A separate child fills the callback table and
+verifies `_exit` bypasses it. Each test run recovers all VM pages and process
+slots. A failure status identifies the C fixture's failing CHECK line when
+that process exits directly.
+
+Every successful boot requires `NEXIX_LIBC_ABI_OK` and `NEXIX_LIBC_OK` before
+`NEXIX_BOOT_OK`. These tests do not claim that V7 init or shell has been rebuilt.
+Step 12 adds the block interface, RAM root device and V7 filesystem.

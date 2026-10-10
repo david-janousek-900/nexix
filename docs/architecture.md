@@ -108,7 +108,9 @@ permissions and full ranges before copyin/out through the physical identity map.
 ELF64 loading builds private staged images and a native argc/argv/envp stack.
 Exec activates a complete new image before releasing the old VM; failures leave
 the old process runnable. An embedded program catalog provides temporary path
-lookup until filesystem support. See [exec.md](exec.md). Process fault handling,
+lookup until filesystem support. See [exec.md](exec.md). Native crt0, a static
+libc archive and a C fixture exercise the same startup stack and syscall ABI;
+see [libc.md](libc.md). Process fault handling,
 FPU state, and user TLS remain pending.
 
 Keep the historical source tree pristine. Ported code belongs in `kernel/` and,
