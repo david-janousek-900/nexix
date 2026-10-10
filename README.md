@@ -19,9 +19,13 @@ through a test interrupt gate. Two contexts use distinct kernel entry stacks.
 After the self-tests it prints `NEXIX_USER_MODE_OK`, `NEXIX_USER_STACK_OK`,
 `NEXIX_USER_TIMER_OK`, `NEXIX_USER_RETURN_OK`, and `NEXIX_BOOT_OK`, then idles
 with interrupts enabled.
-V7 core structure definitions are adapted for native pointers and sizes, with
-separate PDP-11 disk layouts and tested byte encoders. This foundation does not
-yet run V7 process, filesystem, or userland logic.
+V7 core structures use native pointers and sizes, with separate PDP-11 disk
+layouts and tested byte encoders. Native process code now provides guarded
+per-process stacks, context switching, timer preemption, sleep/wakeup, eager
+user-memory fork, exit, wait, and orphan reparenting. Boot tests exercise kernel
+tasks and a ring 3 parent/child pair, then reclaim their resources. This is a
+native adaptation of V7 process behavior; filesystem logic and V7 userland do
+not run yet. The process test gate is not a published syscall ABI.
 
 ## Build and boot
 
@@ -36,6 +40,7 @@ make iso
 make run
 make smoke
 make test
+make test-process
 ```
 
 For an initial build on an x86_64 Linux host with GCC/binutils, use
@@ -44,6 +49,9 @@ This is a bootstrap convenience; a pinned cross-toolchain remains planned.
 The kernel does not link host libc. Build artifacts go into `build/`.
 `make smoke` boots one CPU with 128 MiB RAM under QEMU TCG, requires the serial
 boot and timer markers within 15 seconds, and saves `build/boot.log`.
+`make test-process` runs process scheduling and lifecycle checks with 16 MiB
+RAM; normal `make smoke` also runs them with 128 MiB. See
+[processes](docs/processes.md) for implemented behavior and limitations.
 `make test-unit` runs host tests for boot-data parsing, the allocator, and V7
 native types and disk encodings.
 `make test` additionally boots separate images with `test=ud` and `test=pf`
@@ -65,8 +73,8 @@ stack when the ordinary entry stack is unusable. These tests are included in
 `make test`; `make -j3 TOOLCHAIN_PREFIX= test` runs independent groups concurrently.
 Logs are `build/user-*.log`. Deliberate fatal-fault cases print `PANIC`; the
 harness requires the expected vector, error, originating privilege, and address.
-The test gate is not yet a V7 syscall interface. Process scheduling, ELF loading,
-and real user programs remain to be implemented.
+The test gate is not yet a V7 syscall interface. ELF loading, the supported
+syscall ABI, and V7 user programs remain to be implemented.
 
 ## Roadmap
 

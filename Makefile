@@ -4,7 +4,7 @@ LD = $(TOOLCHAIN_PREFIX)ld
 PYTHON ?= python3
 QEMU ?= qemu-system-x86_64
 CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-stack-protector -fno-pie -m64 -mno-red-zone -mgeneral-regs-only -fno-asynchronous-unwind-tables -Ikernel/include -MMD -MP
-OBJECTS = build/boot.o build/main.o build/serial.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o
+OBJECTS = build/boot.o build/main.o build/serial.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o
 HOST_CC ?= cc
 .DEFAULT_GOAL := all
 -include $(OBJECTS:.o=.d)
@@ -38,6 +38,18 @@ build/paging_test.o: kernel/paging_test.c | build
 
 build/segments.o: kernel/arch/x86_64/segments.c | build
 	$(CC) $(CFLAGS) -c $< -o $@
+
+build/process.o: kernel/v7/process.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/process_test.o: kernel/process_test.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/context.o: kernel/arch/x86_64/context.S | build
+	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
+
+build/process_blob.o: kernel/arch/x86_64/process_test.S | build
+	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
 
 build/user_test.o: kernel/user_test.c | build
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -96,7 +108,7 @@ test-unit: build/memory-test build/v7-types-test
 	./build/memory-test
 	./build/v7-types-test
 
-test: test-unit smoke build/test-ud.iso build/test-pf.iso build/test-memory.iso test-paging test-user
+test: test-unit smoke build/test-ud.iso build/test-pf.iso build/test-memory.iso test-paging test-user test-process
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-ud.iso ud
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-pf.iso pf
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-memory.iso memory 16M
@@ -124,3 +136,7 @@ test-user: check build/test-user-kernel.iso build/test-user-ro.iso build/test-us
 
 clean:
 	$(PYTHON) -c 'import shutil; shutil.rmtree("build", ignore_errors=True)'
+
+.PHONY: test-process
+test-process: iso
+	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso process 16M

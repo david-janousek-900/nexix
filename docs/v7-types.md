@@ -7,7 +7,8 @@ and retained license are documented in `reference/README.md`.
 `core.h` defines process, per-process user data, inode, open file, buffer, and
 shared text structures. Historical field names remain recognizable. These are
 internal kernel contracts, not a published libc/syscall ABI. They compile in the
-freestanding kernel but are not yet instantiated as running V7 processes.
+freestanding kernel and are now used by the native process scheduler described
+in [processes.md](processes.md).
 
 Runtime offsets and time values are signed 64-bit. PIDs are signed 32-bit;
 inode numbers, user/group IDs, and device IDs retain unsigned 16-bit ranges.
@@ -19,7 +20,7 @@ The names are prefixed where necessary to coexist with host headers in tests.
 
 Each process owns an address-space descriptor, a kernel stack range, a context,
 and a pointer to its user data. The context reserves RBX, RBP, R12–R15, RSP and
-RIP for a future switch implementation. There is no switch routine yet. Zombie
+RIP for the native switch implementation in `arch/x86_64/context.S`. Zombie
 status and accounting fields are explicit rather than overlaying `struct proc`
 with V7's `struct xproc`. There is no fixed-address global `u` or kernel stack
 embedded in the user structure. Future code must obtain user data from the
@@ -31,7 +32,8 @@ FPU support and interrupted-syscall continuation need explicit x86_64 designs.
 Executable metadata records native entry and byte sizes; ELF parsing is later.
 Multiplexed channels and swapping are deferred. Preserved historical flag values
 in `constants.h` describe source compatibility, not implemented capabilities.
-Scheduling must reconcile V7's original 60 Hz accounting with our 100 Hz PIT.
+The native scheduler accounts in 100 Hz PIT ticks; future libc exports must
+reflect this rate rather than V7's original 60 Hz.
 
 `disk.h` represents disk records using byte arrays, never native pointer-bearing
 structures. Inodes occupy 64 bytes, directory entries 16 bytes, and superblocks
@@ -47,5 +49,7 @@ filesystem code must validate signed sizes/times and native-to-disk ranges.
 patterns, address overflow rejection, inode-block boundaries, all major/minor
 pairs, and the freestanding ELF build. `make TOOLCHAIN_PREFIX= smoke` verifies
 the existing QEMU boot path. Filesystem I/O and serialization of entire records
-remain step 12. Step 8 implements process ownership and scheduling using these
-structures; it must establish allocation, teardown, and active-process rules.
+remain step 12. Step 8 now implements process ownership and scheduling using
+these structures;
+[processes.md](processes.md) describes allocation, teardown, and active-process
+rules.

@@ -8,7 +8,7 @@ mode = sys.argv[3] if len(sys.argv) > 3 else "boot"
 user_faults = {"user-kernel": (14, 5), "user-ro": (14, 7), "user-nx": (14, 21),
                "user-priv": (13, 0), "user-io": (13, 0), "user-int": (13, 258),
                "user-df": (8, 0)}
-if mode not in ("boot", "ud", "pf", "memory", "wp", "nx", "unmap", "null",
+if mode not in ("boot", "process", "ud", "pf", "memory", "wp", "nx", "unmap", "null",
                 "paging-oom", "protect", "user-bad-stack") and mode not in user_faults:
     sys.exit("FAIL: unknown smoke mode")
 ram = sys.argv[4] if len(sys.argv) > 4 else "128M"
@@ -30,12 +30,13 @@ except subprocess.TimeoutExpired:
     except subprocess.TimeoutExpired:
         process.kill()
         output, _ = process.communicate()
-log = Path("build") / (f"memory-{ram}.log" if mode == "memory" else f"{mode}.log")
+log = Path("build") / (f"memory-{ram}.log" if mode == "memory" else
+                        f"process-{ram}.log" if mode == "process" else f"{mode}.log")
 log.write_bytes(output)
 sys.stdout.buffer.write(output)
 if exited_early:
     sys.exit(f"FAIL: QEMU exited unexpectedly ({process.returncode}); see {log}")
-if mode in ("boot", "memory", "paging-oom", "user-bad-stack"):
+if mode in ("boot", "process", "memory", "paging-oom", "user-bad-stack"):
     if (b"NEXIX_BOOT_OK\r\n" not in output or b"NEXIX_TIMER_OK\r\n" not in output
             or b"NEXIX_MEMORY_OK\r\n" not in output
             or b"NEXIX_PAGING_OK\r\n" not in output or b"PANIC" in output
@@ -43,6 +44,9 @@ if mode in ("boot", "memory", "paging-oom", "user-bad-stack"):
                    (b"NEXIX_USER_MODE_OK\r\n", b"NEXIX_USER_STACK_OK\r\n",
                     b"NEXIX_USER_TIMER_OK\r\n", b"NEXIX_USER_RETURN_OK\r\n"))):
         sys.exit(f"FAIL: boot/timer check failed; see {log}")
+    process_markers = ("SWITCH", "PREEMPT", "SLEEP", "WAIT", "SLOTS", "OOM", "FORK", "CLEANUP")
+    if any(f"NEXIX_PROCESS_{marker}_OK\r\n".encode() not in output for marker in process_markers):
+        sys.exit(f"FAIL: process scheduling/lifecycle check failed; see {log}")
     if mode == "memory" and (b"NEXIX_MEMORY_EXHAUSTION_OK\r\n" not in output
                              or b"NEXIX_RESERVATIONS_OK\r\n" not in output):
         sys.exit(f"FAIL: memory exhaustion check failed; see {log}")
@@ -50,7 +54,7 @@ if mode in ("boot", "memory", "paging-oom", "user-bad-stack"):
         sys.exit(f"FAIL: page-table allocation rollback failed; see {log}")
     if mode == "user-bad-stack" and b"NEXIX_USER_BAD_STACK_OK\r\n" not in output:
         sys.exit(f"FAIL: TSS handoff with unusable user stack failed; see {log}")
-    print("PASS: long-mode boot and repeated timer interrupt return")
+    print("PASS: boot, timer return, process scheduling, and fork/exit/wait")
 elif mode in user_faults:
     vector, error = user_faults[mode]
     fault = re.search(rb"exception vector=(0x[0-9a-f]{16}) error=(0x[0-9a-f]{16})"

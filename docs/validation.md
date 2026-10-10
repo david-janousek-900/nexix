@@ -55,8 +55,8 @@ their transcripts are `build/user-*.log`. Normal boot must also emit all four
 `make -j3 TOOLCHAIN_PREFIX= test`.
 The host parser/allocator tests also pass AddressSanitizer and UBSan with leak
 detection disabled (LeakSanitizer cannot run under this session's ptrace).
-This suite does not validate process scheduling, a V7 syscall ABI, ELF loading,
-filesystems, or V7 execution; those subsystems are not implemented yet.
+This suite does not yet validate a published V7 syscall ABI, ELF loading,
+filesystems, or V7 userland execution.
 
 V7 type adaptation (step 7): `make TOOLCHAIN_PREFIX= test-unit` also runs
 `build/v7-types-test`. It checks independent PDP-11 byte fixtures, rejection of
@@ -64,3 +64,29 @@ V7 type adaptation (step 7): `make TOOLCHAIN_PREFIX= test-unit` also runs
 65535, device encoding, and preservation of native addresses and offsets.
 Layout assertions compile in both host tests and the kernel. See
 [v7-types.md](v7-types.md) for runtime/disk widths and deferred machine features.
+
+Process scheduling and lifecycle (step 8): every successful boot checks all eight
+`NEXIX_PROCESS_*_OK` markers. `make TOOLCHAIN_PREFIX= test-process` repeats the
+normal image with 16 MiB RAM and retains `build/process-16M.log`. Tests cover:
+
+- All callee-saved integer registers across an explicit context switch,
+  including preservation of an IRQ-disabled caller.
+- Two kernel workers that require PIT preemption to complete a handshake.
+- Three wait-channel sleepers: wake all matching sleepers, preserve unrelated
+  sleepers, and return zero on repeated wakeups.
+- Idle scheduler wakeup after a deadline, blocking wait, ECHILD, encoded exit
+  status, cumulative accounting, and an orphan adopted by PID 1.
+- All free process slots reserved and aborted, with EAGAIN at capacity and no
+  leaked VM roots, plus the non-root 25-process limit.
+- Ring 3 fork with independent code, stack, data, read-only, and distant mappings,
+  preserved permissions and bytes, inherited credentials and signal addresses,
+  rebased per-process pointers, and correct parent/child return values.
+- Rejection of unsupported file references before copying any pages.
+- Allocation failure at each of the sixteen allocation boundaries in that
+  fork image; every failure restores the free count and leaves the parent intact.
+- Parent/child user-mode timer preemption and register preservation, independent
+  stack/data writes, wait status, and child accounting.
+- Final recovery of every process-owned data/table page and every process slot.
+
+The process gate uses test commands only; it does not establish a libc/syscall
+ABI. Tests use integer contexts without FPU/TLS. See [processes.md](processes.md).

@@ -3,6 +3,7 @@
 #include "serial.h"
 #include "segments.h"
 #include "user_test.h"
+#include "process.h"
 #include <stddef.h>
 struct idt_gate {
     uint16_t offset_low, selector;
@@ -76,9 +77,11 @@ void interrupt_dispatch(struct interrupt_frame *frame)
         if (frame->vector == 8)
             serial_puts("NEXIX_DOUBLE_FAULT_STACK_OK\r\n");
     } else if ((frame->cs & 3) == 3) {
-        user_mode_interrupt(frame);
+        if (proc_current()) proc_user_interrupt(frame);
+        else user_mode_interrupt(frame);
     }
     if (frame->vector == 0x80) {
+        if (process_test_gate(frame)) return;
         user_mode_test_gate(frame);
         return;
     }
@@ -115,6 +118,7 @@ void interrupt_dispatch(struct interrupt_frame *frame)
         if (frame->vector >= 40)
             outb(0xa0, 0x20);
         outb(0x20, 0x20);
+        if (frame->vector == 32) proc_timer(frame);
         return;
     }
     panic("unexpected interrupt vector");

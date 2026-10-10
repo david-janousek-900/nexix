@@ -94,8 +94,15 @@ The tests establish register/DF preservation, hardware privilege checks, and
 double-fault entry on IST1 despite an invalid RSP0. The NMI IST is configured
 but has no dedicated hardware NMI injection test yet.
 
-V7 process/type definitions are adapted; scheduling comes next. Process fault handling,
-the syscall ABI, ELF loading, FPU state, and user TLS are not yet implemented.
+V7 process/type definitions and a native process scheduler are implemented.
+The scheduler changes CR3, current-process ownership, and TSS.RSP0 with interrupts
+disabled before switching integer contexts. Kernel and user tasks are preempted
+at five PIT ticks; sleeping tasks use V7-style wait channels. Eager fork copies
+private user pages and resumes a cloned user trap frame. Exit leaves a zombie;
+the scheduler releases its VM after switching stacks, and wait recycles its slot.
+See [processes.md](processes.md) for the source adaptation, ownership rules,
+and tests. Process fault handling, the syscall ABI, ELF loading, FPU state, and
+user TLS are not yet implemented.
 
 Keep the historical source tree pristine. Ported code belongs in `kernel/` and,
 later, `libc/` and `user/`. Reuse V7 process, file, and filesystem logic after

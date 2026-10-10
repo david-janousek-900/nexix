@@ -41,6 +41,8 @@ interrupt_common:
     and $-16, %rsp
     call interrupt_dispatch
     mov %rbx, %rsp
+.global arch_interrupt_return
+arch_interrupt_return:
     # Restore data selectors for the privilege level we are returning to.
     mov $0x10, %ax
     testb $3, 144(%rsp)

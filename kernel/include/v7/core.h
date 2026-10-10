@@ -11,7 +11,7 @@
 #define V7_NFILE 175
 #define V7_NINODE 200
 #define V7_NBUF 29
-/* Context layout is a contract for step 8, not an implemented switch routine. */
+/* Matches arch/x86_64/context.S; all switches run with interrupts disabled. */
 struct v7_context { uint64_t rbx, rbp, r12, r13, r14, r15, rsp, rip; };
 struct user;
 struct inode;
@@ -40,6 +40,11 @@ struct proc {
     uintptr_t p_stack_bottom, p_stack_top;
     struct v7_context p_context;
     struct user *p_user;
+    void (*p_entry)(void *);
+    void *p_argument;
+    uint64_t p_deadline, p_preemptions;
+    unsigned p_slice;
+    bool p_timed_sleep;
 };
 struct direct { v7_ino_t d_ino; char d_name[V7_DIRSIZ]; };
 struct user {
@@ -109,6 +114,7 @@ struct text {
     uint32_t x_count, x_ccount;
     uint8_t x_flag;
 };
+_Static_assert(offsetof(struct v7_context, rip) == 56, "context continuation offset");
 _Static_assert(sizeof(struct v7_context) == 64, "context register layout");
 _Static_assert(offsetof(struct v7_context, rsp) == 48, "context stack offset");
 _Static_assert(sizeof(((struct user *)0)->u_arg[0]) == 8, "native syscall slot");

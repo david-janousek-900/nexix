@@ -28,5 +28,10 @@ bool vm_protect(struct address_space *space, uintptr_t virtual_address, unsigned
 /* Lookup also supports the shared kernel region; returns effective permissions. */
 bool vm_translate(const struct address_space *space, uintptr_t virtual_address,
                   uintptr_t *physical_address, unsigned *permissions);
+/* Enumerate private user leaves in ascending address order, skipping shared
+ * kernel tables. IRQs disabled; callback must not mutate the traversed tables.
+ * Returns false on an invalid space or when the callback stops traversal. */
+bool vm_walk_user(const struct address_space *space,
+                  bool (*visit)(uintptr_t, uintptr_t, unsigned, void *), void *argument);
 void paging_selftest(bool exhaustion);
 #endif

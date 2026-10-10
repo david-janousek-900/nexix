@@ -283,3 +283,37 @@ bool paging_guard_page(uintptr_t address)
     __asm__ volatile ("invlpg (%0)" : : "r"(address) : "memory");
     return true;
 }
+
+static bool visit_table(uintptr_t address, unsigned level, uintptr_t base,
+                        unsigned permissions,
+                        bool (*visit)(uintptr_t, uintptr_t, unsigned, void *), void *argument)
+{
+    if (address == kernel_directory)
+        return true;
+    unsigned count = level == 4 ? 256 : ENTRIES; /* Lower canonical half only. */
+    for (unsigned i = 0; i < count; ++i) {
+        uint64_t entry = table(address)[i];
+        if (!(entry & PRESENT)) continue;
+        if (level > 1 && (entry & LARGE)) panic("large page in user walk");
+        uintptr_t virtual_address = base | (uintptr_t)i << (12 + 9 * (level - 1));
+        unsigned flags = permissions;
+        if (!(entry & WRITE)) flags &= ~VM_WRITE;
+        if (!(entry & USER)) flags &= ~VM_USER;
+        if (entry & NX) flags &= ~VM_EXEC;
+        if (level > 1) {
+            if (!visit_table(entry & ADDRESS, level - 1, virtual_address, flags, visit, argument))
+                return false;
+        } else if (virtual_address >= USER_BASE && (flags & VM_USER)) {
+            if (!visit(virtual_address, entry & ADDRESS, flags, argument)) return false;
+        }
+    }
+    return true;
+}
+
+bool vm_walk_user(const struct address_space *space,
+                  bool (*visit)(uintptr_t, uintptr_t, unsigned, void *), void *argument)
+{
+    if (!space || !space->root || space->root == kernel_space.root || !visit)
+        return false;
+    return visit_table(space->root, 4, 0, VM_WRITE | VM_EXEC | VM_USER, visit, argument);
+}
