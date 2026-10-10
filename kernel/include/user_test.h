@@ -4,5 +4,5 @@
 #include "interrupts.h"
 void user_mode_selftest(enum boot_test test);
 void user_mode_interrupt(struct interrupt_frame *frame);
-void user_mode_test_gate(struct interrupt_frame *frame);
+bool user_mode_test_gate(struct interrupt_frame *frame);
 #endif

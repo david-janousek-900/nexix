@@ -61,7 +61,8 @@ are not zeroed. Initialization and the current callers run with interrupts
 disabled; future concurrent callers must serialize access. The boot buffer and
 modules remain reserved until an explicit reclamation mechanism is implemented.
 
-The IDT contains 256 interrupt gates, with only vector `0x80` callable by user
+The IDT contains 256 interrupt gates. Vectors `0x80` (native syscalls) and
+`0x81` (bootstrap tests) are callable by user
 code for the bootstrap test harness. Assembly stubs normalize
 exception error codes, save all general registers, align the C call stack, and
 restore interrupted execution with `iretq`. Exceptions report vector, error,
@@ -85,7 +86,7 @@ the user stack. Interrupt entry loads kernel data selectors and clears DF;
 The C handler validates that CPL3 frames landed on the configured kernel stack.
 Fatal diagnostics include CS, SS, saved RSP, and the kernel frame address.
 
-The `0x80` test gate provides checkpoint, tick-query, and completion operations
+The `0x81` test gate provides checkpoint, tick-query, and completion operations
 only while a bootstrap test context is active. Completion explicitly restores
 the saved kernel C continuation with interrupts disabled. This single-core,
 non-reentrant harness is not a scheduler or a published syscall ABI. Successful
@@ -101,8 +102,10 @@ at five PIT ticks; sleeping tasks use V7-style wait channels. Eager fork copies
 private user pages and resumes a cloned user trap frame. Exit leaves a zombie;
 the scheduler releases its VM after switching stacks, and wait recycles its slot.
 See [processes.md](processes.md) for the source adaptation, ownership rules,
-and tests. Process fault handling, the syscall ABI, ELF loading, FPU state, and
-user TLS are not yet implemented.
+and tests. The [native syscall ABI](syscall-abi.md) uses the DPL3 `0x80` interrupt
+gate and saved-frame IRETQ return. User-copy helpers validate effective user
+permissions and full ranges before copyin/out through the physical identity map.
+Process fault handling, ELF loading, FPU state, and user TLS remain pending.
 
 Keep the historical source tree pristine. Ported code belongs in `kernel/` and,
 later, `libc/` and `user/`. Reuse V7 process, file, and filesystem logic after
@@ -113,8 +116,9 @@ alignment, varargs, signal frames, and compiler assumptions. Encode disk records
 explicitly instead of writing native structures: LP64 changes cannot silently
 change the historical filesystem format.
 
-Before implementing user program execution, document the syscall register convention,
-numbers, errors, exported type widths, and signal ABI. Native userland uses ELF64;
+The syscall register convention, numbers, errors, and exported type widths are
+documented in [syscall-abi.md](syscall-abi.md); the signal ABI is still pending.
+Native userland uses ELF64;
 PDP-11 a.out execution is deferred. Start `fork` with eager copying.
 
 Networking will use an e1000 driver and lwIP's raw callback API. Serialize stack

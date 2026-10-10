@@ -27,7 +27,7 @@ user_blob_success:
     jne user_failed
     xor %eax, %eax
     std
-    int $0x80
+    int $0x81
     cmp $0x1234, %eax
     jne user_failed
     pushfq
@@ -37,14 +37,14 @@ user_blob_success:
     cld
 user_wait:
     mov $1, %eax
-    int $0x80
+    int $0x81
     cmp $10, %eax
     jb user_wait
     mov $2, %eax
-    int $0x80
+    int $0x81
 user_failed:
     mov $255, %eax
-    int $0x80
+    int $0x81
     ud2
 user_blob_kernel:
     mov (%rdi), %rax
@@ -67,7 +67,7 @@ user_blob_int:
     jmp user_failed
 user_blob_bad_stack:
     mov $3, %eax
-    int $0x80
+    int $0x81
     jmp user_failed
 user_blob_end:
 .section .note.GNU-stack,"",@progbits

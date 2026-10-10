@@ -38,9 +38,10 @@ static void check_registers(const struct interrupt_frame *f)
     REQUIRE(f->r12 == 0xcccc && f->r13 == 0xdddd && f->r14 == 0xeeee && f->r15 == 0xffff);
 }
 
-void user_mode_test_gate(struct interrupt_frame *frame)
+bool user_mode_test_gate(struct interrupt_frame *frame)
 {
-    REQUIRE(running.active && frame->cs == USER_CS && frame->ss == USER_DS);
+    if (!running.active) return false;
+    REQUIRE(frame->cs == USER_CS && frame->ss == USER_DS);
     ++running.gates;
     if (running.test == BOOT_TEST_USER_BAD_STACK && frame->rax == 3) {
         running.completed = true;
@@ -53,11 +54,11 @@ void user_mode_test_gate(struct interrupt_frame *frame)
         REQUIRE(!running.checkpoint && (frame->rflags & 0x400));
         running.checkpoint = true;
         frame->rax = 0x1234;
-        return;
+        return true;
     case 1:
         REQUIRE(running.checkpoint);
         frame->rax = running.timer_interrupts;
-        return;
+        return true;
     case 2:
         REQUIRE(running.checkpoint && running.timer_interrupts >= 10);
         running.completed = true;

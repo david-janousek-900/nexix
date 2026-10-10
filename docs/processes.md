@@ -91,7 +91,7 @@ Stopped-child reporting and signal-related statuses are deferred.
 ## Validation
 
 Normal boot runs kernel scheduling tests followed by a ring 3 fork/exit/wait
-test through a deliberately limited test interrupt gate. Its commands 0x100,
+test through the deliberately limited `int 0x81` test interrupt gate. Its commands 0x100,
 0x101, 0x102 and 0x104 exercise fork, wait, exit and tick accounting only while
 the process test is active. This gate is not a supported syscall interface.
 The tests finish by reclaiming every process and checking the physical free
@@ -111,5 +111,5 @@ Successful serial output includes `NEXIX_PROCESS_SWITCH_OK`,
 `NEXIX_PROCESS_CLEANUP_OK`, followed by `NEXIX_BOOT_OK`. Detailed assertions and
 failure cases are listed in [validation.md](validation.md).
 
-Step 9 establishes syscall entry, numbering, return/error conventions, and safe
-access to user memory; step 10 adds ELF64 loading and exec.
+Step 9 now provides the separate native `int 0x80` interface with safe user access;
+see [syscall-abi.md](syscall-abi.md). Step 10 adds ELF64 loading and exec.

@@ -61,7 +61,7 @@ struct user {
     struct direct u_dent;
     struct file *u_ofile[V7_NOFILE];
     uint8_t u_pofile[V7_NOFILE];
-    uintptr_t u_arg[6]; /* native argument slots; syscall ABI still pending */
+    uintptr_t u_arg[6]; /* six full-width native syscall arguments */
     size_t u_tsize, u_dsize, u_ssize; /* bytes */
     uintptr_t u_signal[V7_NSIG];
     v7_time_t u_utime, u_stime, u_cutime, u_cstime;

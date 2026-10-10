@@ -4,6 +4,8 @@
 #include "segments.h"
 #include "user_test.h"
 #include "process.h"
+#include "syscall.h"
+#include <nexix/errno.h>
 #include <stddef.h>
 struct idt_gate {
     uint16_t offset_low, selector;
@@ -44,7 +46,8 @@ void interrupts_init(void)
             .offset_high = address >> 32,
         };
     }
-    idt[0x80].attributes = 0xee; /* Bootstrap test gate, not the V7 syscall ABI. */
+    idt[0x80].attributes = 0xee; /* Native syscall ABI. */
+    idt[0x81].attributes = 0xee; /* Bootstrap test gate; hooks check active state. */
     struct idt_pointer pointer = { sizeof(idt) - 1, (uintptr_t)idt };
     __asm__ volatile ("lidt %0" : : "m"(pointer) : "memory");
     /* Remap legacy PICs to vectors 32..47 and mask all IRQs. */
@@ -81,8 +84,12 @@ void interrupt_dispatch(struct interrupt_frame *frame)
         else user_mode_interrupt(frame);
     }
     if (frame->vector == 0x80) {
-        if (process_test_gate(frame)) return;
-        user_mode_test_gate(frame);
+        syscall_dispatch(frame);
+        return;
+    }
+    if (frame->vector == 0x81) {
+        if (process_test_gate(frame) || syscall_test_gate(frame) || user_mode_test_gate(frame)) return;
+        frame->rax = (uint64_t)-NX_ENOSYS;
         return;
     }
     if (frame->vector < 32) {

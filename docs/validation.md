@@ -55,8 +55,7 @@ their transcripts are `build/user-*.log`. Normal boot must also emit all four
 `make -j3 TOOLCHAIN_PREFIX= test`.
 The host parser/allocator tests also pass AddressSanitizer and UBSan with leak
 detection disabled (LeakSanitizer cannot run under this session's ptrace).
-This suite does not yet validate a published V7 syscall ABI, ELF loading,
-filesystems, or V7 userland execution.
+This suite does not yet validate ELF loading, filesystems, or V7 userland execution.
 
 V7 type adaptation (step 7): `make TOOLCHAIN_PREFIX= test-unit` also runs
 `build/v7-types-test`. It checks independent PDP-11 byte fixtures, rejection of
@@ -88,5 +87,24 @@ normal image with 16 MiB RAM and retains `build/process-16M.log`. Tests cover:
   stack/data writes, wait status, and child accounting.
 - Final recovery of every process-owned data/table page and every process slot.
 
-The process gate uses test commands only; it does not establish a libc/syscall
-ABI. Tests use integer contexts without FPU/TLS. See [processes.md](processes.md).
+The process test gate uses `int 0x81` commands only; the native ABI uses `int 0x80`. Tests use integer contexts without FPU/TLS. See [processes.md](processes.md).
+
+Native syscalls and safe user access (step 9): successful boot requires
+NEXIX_SYSCALL_ABI_OK, NEXIX_UACCESS_OK, NEXIX_SYSCALL_ERRORS_OK,
+NEXIX_SYSCALL_FORK_OK and NEXIX_SYSCALL_OK. `make TOOLCHAIN_PREFIX= test-syscall`
+boots the ordinary image with 16 MiB and saves `build/syscall-16M.log`; the full
+suite includes this run. `make test-process` remains available for the same
+16 MiB normal boot with `build/process-16M.log` as its transcript.
+
+The new host user-copy tests use independent mappings and noncontiguous backing,
+cover full-range atomic rejection, effective supervisor/read-only permissions,
+overflow and canonical-range limits, zero length, NUL termination at boundaries,
+capacity exhaustion, and partial string failure. They pass AddressSanitizer and
+UBSan with leak detection disabled. Ring 3 tests exercise six full-width argument
+registers, every preserved GPR, CF/DF/IF, error clearing, supported identity/mask
+calls, high-bit and unsupported syscall numbers, invalid output addresses,
+unaligned cross-page output, and a native fork/wait/exit sequence. The child
+confirms the parent is blocked in wait before exiting; an earlier invalid status
+pointer leaves the child available to reap. Parent and child memory remain
+independent, tick accounting is collected, and all process resources are freed.
+See [syscall-abi.md](syscall-abi.md) for the ABI and exact service scope.

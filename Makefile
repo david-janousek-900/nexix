@@ -3,8 +3,8 @@ CC = $(TOOLCHAIN_PREFIX)gcc
 LD = $(TOOLCHAIN_PREFIX)ld
 PYTHON ?= python3
 QEMU ?= qemu-system-x86_64
-CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-stack-protector -fno-pie -m64 -mno-red-zone -mgeneral-regs-only -fno-asynchronous-unwind-tables -Ikernel/include -MMD -MP
-OBJECTS = build/boot.o build/main.o build/serial.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o
+CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-stack-protector -fno-pie -m64 -mno-red-zone -mgeneral-regs-only -fno-asynchronous-unwind-tables -Ikernel/include -Iinclude -MMD -MP
+OBJECTS = build/boot.o build/main.o build/serial.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o
 HOST_CC ?= cc
 .DEFAULT_GOAL := all
 -include $(OBJECTS:.o=.d)
@@ -38,6 +38,18 @@ build/paging_test.o: kernel/paging_test.c | build
 
 build/segments.o: kernel/arch/x86_64/segments.c | build
 	$(CC) $(CFLAGS) -c $< -o $@
+
+build/uaccess.o: kernel/uaccess.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/syscall.o: kernel/v7/syscall.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/syscall_test.o: kernel/syscall_test.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/syscall_blob.o: kernel/arch/x86_64/syscall_test.S include/nexix/syscall.h include/nexix/errno.h | build
+	$(CC) -m64 -ffreestanding -fno-pie -Iinclude -c $< -o $@
 
 build/process.o: kernel/v7/process.c | build
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -104,11 +116,15 @@ build/memory-test: tests/memory.c kernel/boot.c kernel/memory.c kernel/include/b
 build/v7-types-test: tests/v7_types.c kernel/include/v7/constants.h kernel/include/v7/types.h kernel/include/v7/disk.h kernel/include/v7/core.h kernel/include/paging.h kernel/include/memory.h | build
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include $< -o $@
 
-test-unit: build/memory-test build/v7-types-test
+build/uaccess-test: tests/uaccess.c kernel/uaccess.c kernel/include/uaccess.h kernel/include/process.h kernel/include/paging.h kernel/include/memory.h kernel/include/boot.h kernel/include/v7/core.h kernel/include/v7/types.h kernel/include/v7/disk.h kernel/include/v7/constants.h include/nexix/errno.h | build
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/uaccess.c kernel/uaccess.c -o $@
+
+test-unit: build/memory-test build/v7-types-test build/uaccess-test
 	./build/memory-test
 	./build/v7-types-test
+	./build/uaccess-test
 
-test: test-unit smoke build/test-ud.iso build/test-pf.iso build/test-memory.iso test-paging test-user test-process
+test: test-unit smoke build/test-ud.iso build/test-pf.iso build/test-memory.iso test-paging test-user test-syscall
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-ud.iso ud
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-pf.iso pf
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-memory.iso memory 16M
@@ -140,3 +156,7 @@ clean:
 .PHONY: test-process
 test-process: iso
 	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso process 16M
+
+.PHONY: test-syscall
+test-syscall: iso
+	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso syscall 16M

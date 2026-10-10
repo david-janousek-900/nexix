@@ -1,4 +1,5 @@
 #include "process.h"
+#include "syscall.h"
 #include "interrupts.h"
 #include "boot.h"
 #include "memory.h"
@@ -162,6 +163,7 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
     serial_puts("NEXIX_TIMER_OK\r\n");
     user_mode_selftest(test);
     process_selftest();
+    syscall_selftest();
     serial_puts("NEXIX_BOOT_OK\r\n");
     for (;;)
         __asm__ volatile ("sti; hlt" : : : "memory");

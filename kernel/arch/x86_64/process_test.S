@@ -8,18 +8,18 @@ process_blob_start:
     mov $0x40004000, %r14d
     pushq $0x6789
     mov $0x100, %eax
-    int $0x80
+    int $0x81
     test %rax, %rax
     js failed
     jz child
     mov %rax, %r15
 parent_spin:
     mov $0x104, %eax
-    int $0x80
+    int $0x81
     cmp $10, %rax
     jb parent_spin
     mov $0x101, %eax
-    int $0x80
+    int $0x81
     cmp %r15, %rax
     jne failed
     cmp $0x2a00, %rdx
@@ -40,14 +40,14 @@ child:
     movq $0x789a, (%rsp)
 child_spin:
     mov $0x104, %eax
-    int $0x80
+    int $0x81
     cmp $10, %rax
     jb child_spin
     call check_regs
     mov $0x2a00, %edi
 done:
     mov $0x102, %eax
-    int $0x80
+    int $0x81
     ud2
 check_regs:
     cmp $0x1234, %rbx
@@ -59,7 +59,7 @@ check_regs:
     ret
 failed:
     mov $0x1ff, %eax
-    int $0x80
+    int $0x81
     ud2
 process_blob_end:
 .section .note.GNU-stack,"",@progbits

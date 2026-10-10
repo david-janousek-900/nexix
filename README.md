@@ -25,7 +25,10 @@ per-process stacks, context switching, timer preemption, sleep/wakeup, eager
 user-memory fork, exit, wait, and orphan reparenting. Boot tests exercise kernel
 tasks and a ring 3 parent/child pair, then reclaim their resources. This is a
 native adaptation of V7 process behavior; filesystem logic and V7 userland do
-not run yet. The process test gate is not a published syscall ABI.
+not run yet. A native `int 0x80` syscall ABI now supports process lifecycle,
+identity queries, tick accounting, umask, and yielding. User-copy helpers reject
+invalid pointers and protect read-only pages. The bootstrap test gate uses
+`int 0x81`; it remains separate from the supported native interface.
 
 ## Build and boot
 
@@ -41,6 +44,7 @@ make run
 make smoke
 make test
 make test-process
+make test-syscall
 ```
 
 For an initial build on an x86_64 Linux host with GCC/binutils, use
@@ -53,7 +57,7 @@ boot and timer markers within 15 seconds, and saves `build/boot.log`.
 RAM; normal `make smoke` also runs them with 128 MiB. See
 [processes](docs/processes.md) for implemented behavior and limitations.
 `make test-unit` runs host tests for boot-data parsing, the allocator, and V7
-native types and disk encodings.
+native types, disk encodings, and safe user-memory copies.
 `make test` additionally boots separate images with `test=ud` and `test=pf`
 command lines. These deliberately trigger invalid-opcode and unmapped-memory
 exceptions, verifying the vector, error code, and page-fault address in serial
@@ -73,8 +77,11 @@ stack when the ordinary entry stack is unusable. These tests are included in
 `make test`; `make -j3 TOOLCHAIN_PREFIX= test` runs independent groups concurrently.
 Logs are `build/user-*.log`. Deliberate fatal-fault cases print `PANIC`; the
 harness requires the expected vector, error, originating privilege, and address.
-The test gate is not yet a V7 syscall interface. ELF loading, the supported
-syscall ABI, and V7 user programs remain to be implemented.
+`make test-syscall` repeats the normal boot tests with 16 MiB RAM and saves
+`build/syscall-16M.log`. Every successful boot must also print `NEXIX_SYSCALL_OK`
+and the supporting ABI, user-copy, error, and fork markers. See the
+[native syscall ABI](docs/syscall-abi.md) for register conventions, types, errors,
+and supported calls. ELF loading and V7 user programs remain to be implemented.
 
 ## Roadmap
 
