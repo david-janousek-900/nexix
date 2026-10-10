@@ -1,5 +1,7 @@
 # Nexix
 
+Current development version: **0.1.0**.
+
 Nexix ports UNIX Seventh Edition (V7) to x86_64 and adds features including TCP/IP.
 It preserves V7 source and behavior where practical, with native ELF64 programs
 rebuilt from source rather than PDP-11 binary compatibility.
@@ -89,12 +91,32 @@ user programs remain to be implemented.
 
 ## Roadmap
 
-1. Reference-source import, build foundation, and reproducible toolchain.
-2. Long-mode boot, exceptions, memory allocation, paging, and timer interrupts.
-3. V7 processes, user address spaces, ELF64 execution, syscalls, and libc.
-4. V7 filesystem, IDE storage, terminal, init, shell, and core utilities.
-5. PCI/e1000, lwIP IPv4 integration, sockets, and basic network utilities.
-6. Automated regression tests and an experimental release.
+Version **0.1.0** covers these 20 steps. Steps 1–10 are implemented; step 11
+is next. Regression tests accompany implementation throughout the roadmap.
+
+1. Import V7 sources and preserve licensing.
+2. GRUB boot and x86_64 long mode.
+3. Serial console, exceptions, and timer interrupts.
+4. Memory-map parsing and physical-page allocation.
+5. Paging and separate address spaces.
+6. User mode, TSS, and guarded kernel stacks.
+7. Adapt V7 types and preserve disk layouts.
+8. Scheduling, sleep/wakeup, fork, exit, and wait.
+9. Native syscall ABI and safe user-memory access.
+10. ELF64 loading, exec, arguments, and environment.
+11. Native libc startup and syscall wrappers.
+12. Block interface, RAM root device, and V7 filesystem.
+13. File descriptors, file operations, and pipes.
+14. Serial TTY and terminal handling.
+15. Signals and remaining init/shell syscalls.
+16. Rebuild V7 init, shell, and basic utilities.
+17. Generate a bootable root filesystem image.
+18. Mount root and launch PID 1 and shell.
+19. Verify interactive shell operation in QEMU.
+20. Add persistent IDE-backed storage.
+
+Version **0.2.0** adds PCI/e1000, lwIP IPv4/TCP/IP integration, sockets, and
+basic network utilities.
 
 Start with single-core QEMU i440fx, serial console, and IDE storage. SMP,
 physical hardware, UEFI, IPv6, secure remote access, and self-hosting follow
