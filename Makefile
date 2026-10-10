@@ -4,7 +4,7 @@ LD = $(TOOLCHAIN_PREFIX)ld
 PYTHON ?= python3
 QEMU ?= qemu-system-x86_64
 CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-stack-protector -fno-pie -m64 -mno-red-zone -mgeneral-regs-only -fno-asynchronous-unwind-tables -Ikernel/include -Iinclude -MMD -MP
-OBJECTS = build/boot.o build/main.o build/serial.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o
+OBJECTS = build/boot.o build/main.o build/serial.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o build/elf.o build/exec.o build/exec_test.o build/exec_image.o
 HOST_CC ?= cc
 .DEFAULT_GOAL := all
 -include $(OBJECTS:.o=.d)
@@ -124,7 +124,7 @@ test-unit: build/memory-test build/v7-types-test build/uaccess-test
 	./build/v7-types-test
 	./build/uaccess-test
 
-test: test-unit smoke build/test-ud.iso build/test-pf.iso build/test-memory.iso test-paging test-user test-syscall
+test: test-unit smoke build/test-ud.iso build/test-pf.iso build/test-memory.iso test-paging test-user test-exec
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-ud.iso ud
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-pf.iso pf
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-memory.iso memory 16M
@@ -160,3 +160,21 @@ test-process: iso
 .PHONY: test-syscall
 test-syscall: iso
 	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso syscall 16M
+
+# A real, statically linked ELF64 executable; no host libc or runtime.
+build/exec_program.o: user/exec-test.S include/nexix/syscall.h include/nexix/errno.h | build
+	$(CC) -m64 -ffreestanding -fno-pie -Iinclude -c $< -o $@
+build/exec-test.elf: build/exec_program.o user/exec-test.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/exec-test.ld $< -o $@
+build/exec_image.o: build/exec-test.elf
+	$(LD) -r -b binary $< -o build/exec_raw.o
+	$(TOOLCHAIN_PREFIX)objcopy --rename-section .data=.rodata,alloc,load,readonly,data,contents build/exec_raw.o $@
+build/elf.o: kernel/elf.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+build/exec.o: kernel/v7/exec.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+build/exec_test.o: kernel/exec_test.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+.PHONY: test-exec
+test-exec: iso
+	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso exec 16M

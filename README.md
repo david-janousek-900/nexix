@@ -81,7 +81,11 @@ harness requires the expected vector, error, originating privilege, and address.
 `build/syscall-16M.log`. Every successful boot must also print `NEXIX_SYSCALL_OK`
 and the supporting ABI, user-copy, error, and fork markers. See the
 [native syscall ABI](docs/syscall-abi.md) for register conventions, types, errors,
-and supported calls. ELF loading and V7 user programs remain to be implemented.
+and supported calls. ELF64 loading and atomic exec replacement are implemented;
+see [execution ABI](docs/exec.md). `make TOOLCHAIN_PREFIX= test-exec` runs the
+ELF and fork/exec/wait tests with 16 MiB RAM (`build/exec-16M.log`). The current
+program source is an embedded native assembly fixture. Libc and rebuilt V7
+user programs remain to be implemented.
 
 ## Roadmap
 

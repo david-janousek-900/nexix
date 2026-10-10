@@ -66,10 +66,12 @@ four-byte status, even though its pointer occupies an eight-byte argument slot.
 | 1 | exit | status | Does not return; low eight bits become wait status bits 8–15 |
 | 2 | fork | None | Child PID in parent, zero in child |
 | 7 | wait | Writable int32 status pointer, or NULL | Reaped child PID; ECHILD if none |
+| 11 | exec | Pathname, argv | Replace image with empty environment |
 | 20 | getpid | None | Current PID |
 | 24 | getuid | None | Real UID |
 | 43 | times | Writable nx_tms pointer | Elapsed uptime ticks |
 | 47 | getgid | None | Real GID |
+| 59 | execve | Pathname, argv, envp | Replace image |
 | 60 | umask | Mask | Previous mask; new value restricted to 0777 |
 | 64 | yield | None | Zero after allowing scheduling |
 | 65 | getppid | None | Parent PID |
@@ -78,7 +80,8 @@ four-byte status, even though its pointer occupies an eight-byte argument slot.
 
 Calls 64–67 are native extensions beyond V7's 64-entry table. The separate
 identity calls and wait status pointer replace V7's secondary-register returns.
-Only RAX changes on normal syscall return. Time, exec, files, terminal operations,
+Only RAX changes on normal syscall return. Successful exec installs a new entry
+frame. Time, files, terminal operations,
 and signals are not implemented by the dispatcher yet.
 
 Wait validates its output range before blocking or consuming a zombie. An
@@ -151,4 +154,5 @@ validation environment.
 New success markers are NEXIX_SYSCALL_ABI_OK, NEXIX_UACCESS_OK,
 NEXIX_SYSCALL_ERRORS_OK, NEXIX_SYSCALL_FORK_OK and NEXIX_SYSCALL_OK, followed by
 NEXIX_BOOT_OK. Transcripts are `build/boot.log` and `build/syscall-16M.log`.
-Step 10 adds ELF64 loading, exec, and argument/environment construction.
+Step 10 implements ELF64 loading, exec, and argument/environment construction;
+see [exec.md](exec.md). Step 11 adds native libc startup and wrappers.

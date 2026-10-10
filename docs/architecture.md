@@ -105,7 +105,11 @@ See [processes.md](processes.md) for the source adaptation, ownership rules,
 and tests. The [native syscall ABI](syscall-abi.md) uses the DPL3 `0x80` interrupt
 gate and saved-frame IRETQ return. User-copy helpers validate effective user
 permissions and full ranges before copyin/out through the physical identity map.
-Process fault handling, ELF loading, FPU state, and user TLS remain pending.
+ELF64 loading builds private staged images and a native argc/argv/envp stack.
+Exec activates a complete new image before releasing the old VM; failures leave
+the old process runnable. An embedded program catalog provides temporary path
+lookup until filesystem support. See [exec.md](exec.md). Process fault handling,
+FPU state, and user TLS remain pending.
 
 Keep the historical source tree pristine. Ported code belongs in `kernel/` and,
 later, `libc/` and `user/`. Reuse V7 process, file, and filesystem logic after
@@ -119,7 +123,7 @@ change the historical filesystem format.
 The syscall register convention, numbers, errors, and exported type widths are
 documented in [syscall-abi.md](syscall-abi.md); the signal ABI is still pending.
 Native userland uses ELF64;
-PDP-11 a.out execution is deferred. Start `fork` with eager copying.
+PDP-11 a.out execution is deferred. `fork` uses eager copying.
 
 Networking will use an e1000 driver and lwIP's raw callback API. Serialize stack
 processing in kernel context with bounded queues, then expose blocking socket

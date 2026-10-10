@@ -1,5 +1,6 @@
 /* Native trap dispatch based on V7 sys/trap.c and sys/sysent.c numbering. */
 #include "syscall.h"
+#include "exec.h"
 #include "process.h"
 #include "segments.h"
 #include "uaccess.h"
@@ -13,6 +14,10 @@ static int64_t invoke(uint64_t number, struct interrupt_frame *frame)
     switch (number) {
     case NX_SYS_EXIT:
         proc_exit((u->u_arg[0] & 255) << 8);
+    case NX_SYS_EXEC:
+        return proc_exec(u->u_arg[0], u->u_arg[1], 0, frame);
+    case NX_SYS_EXECVE:
+        return proc_exec(u->u_arg[0], u->u_arg[1], u->u_arg[2], frame);
     case NX_SYS_FORK:
         return proc_fork(frame);
     case NX_SYS_WAIT: {
@@ -68,5 +73,6 @@ void syscall_dispatch(struct interrupt_frame *frame)
     u->u_error = result < 0 ? -result : 0;
     u->u_r.r_val1 = result;
     frame->rax = (uint64_t)result;
-    /* Every other GPR, user RSP and flags return unchanged via IRETQ. */
+    /* Normal returns preserve the saved frame; successful exec installs a new
+     * entry frame and returns directly to its entry point via IRETQ. */
 }

@@ -5,10 +5,12 @@
 #define NX_SYS_EXIT 1
 #define NX_SYS_FORK 2
 #define NX_SYS_WAIT 7
+#define NX_SYS_EXEC 11
 #define NX_SYS_GETPID 20
 #define NX_SYS_GETUID 24
 #define NX_SYS_TIMES 43
 #define NX_SYS_GETGID 47
+#define NX_SYS_EXECVE 59
 #define NX_SYS_UMASK 60
 /* Native extensions beyond the original 64-entry V7 table. */
 #define NX_SYS_YIELD 64

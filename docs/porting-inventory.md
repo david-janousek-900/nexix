@@ -29,7 +29,9 @@ implemented and exercised in QEMU. The behavior follows `slp.c` and `sys1.c`;
 PDP-11 assembly, segmentation, and swapping are replaced rather than compiled.
 Native syscall dispatch now follows V7's call numbering for its initial supported
 services, with a defined x86_64 register ABI and validated user-memory access.
-File/inode reference ownership, signals, ELF execution, and remaining services
+ELF64 loading, native startup stacks, and V7-numbered exec/execve replacement
+are implemented using an embedded executable catalog; see [exec.md](exec.md).
+File/inode reference ownership, signal delivery, and remaining services
 are pending; see [syscall-abi.md](syscall-abi.md).
 A pinned cross-toolchain remains required to
 close the foundation milestone.

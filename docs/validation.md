@@ -55,7 +55,8 @@ their transcripts are `build/user-*.log`. Normal boot must also emit all four
 `make -j3 TOOLCHAIN_PREFIX= test`.
 The host parser/allocator tests also pass AddressSanitizer and UBSan with leak
 detection disabled (LeakSanitizer cannot run under this session's ptrace).
-This suite does not yet validate ELF loading, filesystems, or V7 userland execution.
+The suite validates native ELF loading and execution, but does not yet validate
+filesystems or rebuilt V7 userland execution.
 
 V7 type adaptation (step 7): `make TOOLCHAIN_PREFIX= test-unit` also runs
 `build/v7-types-test`. It checks independent PDP-11 byte fixtures, rejection of
@@ -108,3 +109,11 @@ confirms the parent is blocked in wait before exiting; an earlier invalid status
 pointer leaves the child available to reap. Parent and child memory remain
 independent, tick accounting is collected, and all process resources are freed.
 See [syscall-abi.md](syscall-abi.md) for the ABI and exact service scope.
+
+ELF64 execution (step 10): every successful boot requires `NEXIX_ELF_OK`,
+`NEXIX_EXEC_ROLLBACK_OK` and `NEXIX_EXEC_OK`. `make TOOLCHAIN_PREFIX= test-exec`
+runs the complete normal boot with 16 MiB RAM (`build/exec-16M.log`), including
+malformed ELF rejection, partial-allocation rollback, argument/environment
+stacks, and an actual CPL3 fork/exec/wait sequence. See [exec.md](exec.md).
+The full suite uses test-exec for its low-memory normal boot; test-process and
+test-syscall remain available separately.
