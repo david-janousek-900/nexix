@@ -1,5 +1,6 @@
 /* Native V7 fio/sys2/sys3/pipe ownership and descriptor semantics. */
 #include "files.h"
+#include "tty.h"
 #include "uaccess.h"
 #include <nexix/syscall.h>
 #include <nexix/errno.h>
@@ -68,6 +69,7 @@ static int file_put(struct file *f)
     if (!valid_file(f)) panic("invalid open file release");
     if (--f->f_count) return 0;
     int error = 0;
+    if (f->f_private && !(f->f_flag & V7_FPIPE)) tty_close(f->f_private);
     if (f->f_inode) error = inode_put(f->f_inode);
     if (f->f_flag & V7_FPIPE) {
         struct pipe_buffer *p = f->f_private;
@@ -94,6 +96,7 @@ void files_exit(struct user *u)
     for (unsigned i = 0; i < V7_NOFILE; ++i) if (u->u_ofile[i]) (void)close_fd(u, i);
     if (u->u_cdir) { (void)inode_put(u->u_cdir); u->u_cdir = NULL; }
     if (u->u_rdir) { (void)inode_put(u->u_rdir); u->u_rdir = NULL; }
+    u->u_ttyp = NULL; u->u_ttyd = V7_NODEV;
 }
 void files_exec(struct user *u)
 {
@@ -151,13 +154,19 @@ static int open_path(struct user *u, uintptr_t address, uint64_t flags, uint64_t
     unsigned access = flags & NX_O_ACCMODE;
     if (!error && !created && !v7fs_access(&disk, u->u_uid, u->u_gid, access == 0 ? 4 : access == 1 ? 2 : 6)) error = -NX_EACCES;
     if (!error && access && (disk.mode & V7_IFMT) == V7_IFDIR) error = -NX_EISDIR;
-    if (!error && (disk.mode & V7_IFMT) != V7_IFREG && (disk.mode & V7_IFMT) != V7_IFDIR) error = -NX_ENODEV;
-    if (!error && access && root->read_only) error = -NX_EROFS;
+    unsigned type = error ? 0 : disk.mode & V7_IFMT;
+    if (!error && type != V7_IFREG && type != V7_IFDIR && type != V7_IFCHR) error = -NX_ENODEV;
+    if (!error && access && type == V7_IFREG && root->read_only) error = -NX_EROFS;
     if (!error) {
         f->f_inode = inode_get(ino, &disk);
         if (!f->f_inode) error = -NX_ENFILE;
     }
-    if (!error && (flags & NX_O_TRUNC)) error = v7fs_truncate(root, ino);
+    if (!error && (flags & NX_O_TRUNC) && type == V7_IFREG) error = v7fs_truncate(root, ino);
+    if (!error && type == V7_IFCHR) {
+        struct tty *tty;
+        error = tty_open(disk.addr[0], u, &tty);
+        if (!error) f->f_private = tty;
+    }
     if (error) { (void)file_put(f); return error; }
     f->f_flag = access == 0 ? V7_FREAD : access == 1 ? V7_FWRITE : V7_FREAD | V7_FWRITE;
     f->f_open_flags = flags & (NX_O_ACCMODE | NX_O_APPEND);
@@ -225,6 +234,7 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
     if (!user_access_ok(vm, address, count, !write)) return -NX_EFAULT;
     struct file *f = u->u_ofile[fd];
     if (f->f_flag & V7_FPIPE) return pipe_io(f, address, count, write);
+    if (f->f_private) return tty_io(f->f_private, vm, address, count, write);
     struct v7fs_inode inode;
     int error = v7fs_inode_get(root, f->f_inode->i_number, &inode);
     if (error) return error;
@@ -247,7 +257,7 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
 }
 static int64_t seek(struct file *f, int64_t offset, uint64_t whence)
 {
-    if (f->f_flag & V7_FPIPE) return -NX_ESPIPE;
+    if ((f->f_flag & V7_FPIPE) || f->f_private) return -NX_ESPIPE;
     int64_t base = 0;
     if (whence == NX_SEEK_CUR) base = f->f_offset;
     else if (whence == NX_SEEK_END) {
@@ -307,6 +317,16 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
     }
     if (fd >= V7_NOFILE || !u->u_ofile[fd]) return -NX_EBADF;
     struct file *f = u->u_ofile[fd];
+    if (number == NX_SYS_IOCTL || number == NX_SYS_STTY || number == NX_SYS_GTTY) {
+        uint64_t request = number == NX_SYS_IOCTL ? args[1] : number == NX_SYS_STTY ? NX_TIOCSETP : NX_TIOCGETP;
+        uintptr_t argument = number == NX_SYS_IOCTL ? args[2] : args[1];
+        if (request == NX_FIOCLEX || request == NX_FIONCLEX) {
+            u->u_pofile[fd] = request == NX_FIOCLEX ? V7_EXCLOSE : 0;
+            return 0;
+        }
+        if (!f->f_private || (f->f_flag & V7_FPIPE)) return -NX_ENOTTY;
+        return tty_ioctl(f->f_private, &p->p_vm, request, argument);
+    }
     if (number == NX_SYS_CLOSE) return close_fd(u, fd);
     if (number == NX_SYS_LSEEK) return seek(f, args[1], args[2]);
     if (number == NX_SYS_DUP || number == NX_SYS_DUP2) {

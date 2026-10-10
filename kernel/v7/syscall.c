@@ -17,6 +17,7 @@ static int64_t invoke(uint64_t number, struct interrupt_frame *frame)
     case NX_SYS_CREAT: case NX_SYS_LINK: case NX_SYS_UNLINK: case NX_SYS_CHDIR:
     case NX_SYS_STAT: case NX_SYS_LSEEK: case NX_SYS_FSTAT: case NX_SYS_DUP:
     case NX_SYS_PIPE: case NX_SYS_DUP2: case NX_SYS_FCNTL:
+    case NX_SYS_STTY: case NX_SYS_GTTY: case NX_SYS_IOCTL:
         return files_syscall(number, u->u_arg);
     case NX_SYS_EXIT:
         proc_exit((u->u_arg[0] & 255) << 8);

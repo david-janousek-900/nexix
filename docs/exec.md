@@ -52,10 +52,11 @@ pointer-vector entries are native 64-bit user addresses. A successful call
 returns to the new entry point and never resumes the old instruction stream.
 A failed call returns negative errno through the existing syscall ABI.
 
-Pathnames are currently resolved through three embedded catalog entries:
+Pathnames are currently resolved through four embedded catalog entries:
 `/bin/exec-test`, built from `user/exec-test.S` and `user/exec-test.ld`, and
 `/bin/libc-test`, a native C executable linked with the step 11 libc, and
-`/bin/files-test`, the file/pipe acceptance fixture.
+`/bin/files-test`, the file/pipe acceptance fixture, and `/bin/tty-test`,
+the terminal fixture/demo.
 Other paths return ENOENT. Filesystem lookup will replace this catalog when
 production filesystem-backed exec is integrated; no filesystem or permission checks are
 claimed here. Path capacity is 256 bytes including NUL. Invalid addresses

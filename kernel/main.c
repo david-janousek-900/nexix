@@ -4,6 +4,7 @@
 #include "v7/fs.h"
 #include "syscall.h"
 #include "files.h"
+#include "tty.h"
 #include "interrupts.h"
 #include "boot.h"
 #include "memory.h"
@@ -156,6 +157,7 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
         panic("expected paging fault did not occur");
     }
     timer_init();
+    tty_init();
     /* Check and sleep atomically against IRQ delivery. */
     for (;;) {
         __asm__ volatile ("cli" : : : "memory");
@@ -172,6 +174,7 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
     libc_selftest();
     filesystem_selftest();
     files_selftest();
+    tty_selftest(test);
     serial_puts("NEXIX_BOOT_OK\r\n");
     for (;;)
         __asm__ volatile ("sti; hlt" : : : "memory");

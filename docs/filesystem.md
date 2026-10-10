@@ -23,7 +23,8 @@ PID 1. The fixture itself is not a bootable V7 userland distribution.
 The fixture contains root, bin, tmp and dev directories; a greeting file;
 patterned data spanning direct, single and double indirection; a sparse file
 using triple indirection; a scratch file; a 14-byte filename; native ELF test
-programs; and a console device inode. Device I/O is not implemented yet.
+programs; and character-device inodes. Step 14 connects console/ttyS0 and
+controlling-tty names to COM1 through the file layer; see [tty.md](tty.md).
 `tools/mk_v7fs.py` builds this deterministic image from the generated executables.
 It writes PDP-11 short/long/three-byte address encodings independently of the
 kernel's C helpers. Host tests pin representative bytes of the generated image.
@@ -75,7 +76,8 @@ Storage layout is unchanged:
   blocks with a 16-bit count followed by PDP-11-format 32-bit addresses.
 
 Reads support regular files and directories, EOF and zero-filled sparse holes.
-Special device inodes can be inspected but their reads/writes return ENODEV.
+These storage helpers return ENODEV for special inode I/O; the file layer
+dispatches supported character devices to the terminal instead.
 Writes support existing regular files, partial sectors and sparse growth,
 allocating zeroed data/indirect blocks as needed. An old allocated sector tail
 is cleared before exposing a gap beyond EOF. The maximum file length is
@@ -87,7 +89,8 @@ Repeated slashes, dot and dot-dot use directory entries. A trailing slash
 requires a directory. Following V7 nami.c, components longer than 14 bytes are
 truncated for comparison, rather than assigned a modern long-name format.
 There are no symlinks, nested mount points or chroot handling in this kernel-only
-API. The step 13 file layer uses credential-checked lookup and checks access before exposing storage operations as syscalls; see
+API. The step 13 file layer uses credential-checked lookup and checks access
+before exposing storage operations as syscalls; see
 [files.md](files.md).
 
 Allocation consumes the on-disk V7 free stack, zeroes returned blocks, and

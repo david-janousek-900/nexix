@@ -6,7 +6,7 @@ OBJCOPY = $(TOOLCHAIN_PREFIX)objcopy
 PYTHON ?= python3
 QEMU ?= qemu-system-x86_64
 CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-stack-protector -fno-pie -m64 -mno-red-zone -mgeneral-regs-only -fno-asynchronous-unwind-tables -Ikernel/include -Iinclude -MMD -MP
-OBJECTS = build/boot.o build/main.o build/serial.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o build/elf.o build/exec.o build/exec_test.o build/exec_image.o build/libc_test.o build/libc_image.o build/block.o build/v7fs.o build/fs_test.o build/root_image.o build/files.o build/files_test.o build/files_image.o
+OBJECTS = build/boot.o build/main.o build/serial.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o build/elf.o build/exec.o build/exec_test.o build/exec_image.o build/libc_test.o build/libc_image.o build/block.o build/v7fs.o build/fs_test.o build/root_image.o build/files.o build/files_test.o build/files_image.o build/tty.o build/tty_test.o build/tty_image.o
 HOST_CC ?= cc
 .DEFAULT_GOAL := all
 -include $(OBJECTS:.o=.d)
@@ -121,13 +121,14 @@ build/v7-types-test: tests/v7_types.c kernel/include/v7/constants.h kernel/inclu
 build/uaccess-test: tests/uaccess.c kernel/uaccess.c kernel/include/uaccess.h kernel/include/process.h kernel/include/paging.h kernel/include/memory.h kernel/include/boot.h kernel/include/v7/core.h kernel/include/v7/types.h kernel/include/v7/disk.h kernel/include/v7/constants.h include/nexix/errno.h | build
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/uaccess.c kernel/uaccess.c -o $@
 
-test-unit: build/memory-test build/v7-types-test build/uaccess-test build/filesystem-test build/root-test.img
+test-unit: build/memory-test build/v7-types-test build/uaccess-test build/filesystem-test build/tty-unit-test build/root-test.img
 	./build/memory-test
 	./build/v7-types-test
 	./build/uaccess-test
 	./build/filesystem-test build/root-test.img
+	./build/tty-unit-test
 
-test: test-unit smoke build/test-ud.iso build/test-pf.iso build/test-memory.iso test-paging test-user test-fs test-files
+test: test-unit smoke build/test-ud.iso build/test-pf.iso build/test-memory.iso test-paging test-user test-fs test-files test-tty
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-ud.iso ud
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-pf.iso pf
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-memory.iso memory 16M
@@ -246,3 +247,29 @@ build/files_image.o: build/files-test.elf
 test-files: iso
 	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso files 16M
 userland: build/files-test.elf
+
+# Step 14: serial terminal and native sgtty/ioctl userland fixture.
+build/tty.o: kernel/v7/tty.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+build/tty_test.o: kernel/tty_test.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+build/tty_program.o: user/tty-test.c | build
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+-include build/tty_program.d
+build/tty-test.elf: build/crt0.o build/tty_program.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/tty_program.o build/libc.a -o $@
+build/tty_image.o: build/tty-test.elf
+	$(LD) -r -b binary $< -o build/tty_raw.o
+	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/tty_raw.o $@
+userland: build/tty-test.elf
+
+.PHONY: test-tty run-tty
+test-tty: check build/test-tty.iso build/test-tty-demo.iso
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-tty.iso tty 16M
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-tty.iso tty 128M
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-tty-demo.iso tty-demo 16M
+run-tty: check build/test-tty-demo.iso
+	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -cdrom build/test-tty-demo.iso -display none -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -mon chardev=console,mode=readline -no-reboot
+
+build/tty-unit-test: tests/tty.c kernel/v7/tty.c kernel/include/tty.h kernel/include/serial.h kernel/include/uaccess.h kernel/include/process.h kernel/include/v7/core.h include/nexix/tty.h include/nexix/errno.h | build
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/tty.c kernel/v7/tty.c -o $@

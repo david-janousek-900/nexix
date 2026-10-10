@@ -1,5 +1,6 @@
 #include "libc_test.h"
 #include "files.h"
+#include "tty.h"
 #include "interrupts.h"
 #include "io.h"
 #include "serial.h"
@@ -66,12 +67,12 @@ void interrupts_init(void)
 }
 void timer_init(void)
 {
-    /* Channel 0, rate generator, approximately 100 Hz. Enable IRQ0 only. */
+    /* Channel 0, rate generator, approximately 100 Hz. Unmask IRQ0. */
     uint16_t divisor = 1193182 / 100;
     outb(0x43, 0x34);
     outb(0x40, divisor & 0xff);
     outb(0x40, divisor >> 8);
-    outb(0x21, 0xfe);
+    outb(0x21, inb(0x21) & ~1U);
 }
 uint64_t timer_ticks(void) { return ticks; }
 void interrupt_dispatch(struct interrupt_frame *frame)
@@ -90,7 +91,7 @@ void interrupt_dispatch(struct interrupt_frame *frame)
         return;
     }
     if (frame->vector == 0x81) {
-        if (process_test_gate(frame) || syscall_test_gate(frame) || libc_test_gate(frame) || files_test_gate(frame) || user_mode_test_gate(frame)) return;
+        if (process_test_gate(frame) || syscall_test_gate(frame) || libc_test_gate(frame) || files_test_gate(frame) || tty_test_gate(frame) || user_mode_test_gate(frame)) return;
         frame->rax = (uint64_t)-NX_ENOSYS;
         return;
     }
@@ -124,6 +125,7 @@ void interrupt_dispatch(struct interrupt_frame *frame)
         }
         if (frame->vector == 32)
             ++ticks;
+        if (frame->vector == 36) serial_interrupt();
         if (frame->vector >= 40)
             outb(0xa0, 0x20);
         outb(0x20, 0x20);

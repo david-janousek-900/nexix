@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <fcntl.h>
+#include <sgtty.h>
 #include <stdarg.h>
 #include <errno.h>
 #include <sched.h>
@@ -71,3 +72,14 @@ int fcntl(int fd, int command, ...)
     }
     return call(NX_SYS_FCNTL, fd, command, value);
 }
+
+_Static_assert(sizeof(struct sgttyb) == sizeof(struct nx_sgttyb), "sgtty ABI size");
+_Static_assert(offsetof(struct sgttyb, sg_flags) == offsetof(struct nx_sgttyb, flags), "sgtty ABI offset");
+_Static_assert(sizeof(struct tchars) == sizeof(struct nx_tchars), "tchars ABI size");
+int ioctl(int fd, unsigned long request, void *argument)
+{ return call(NX_SYS_IOCTL, fd, request, (long)(uintptr_t)argument); }
+int stty(int fd, const struct sgttyb *settings)
+{ return call(NX_SYS_STTY, fd, (long)(uintptr_t)settings, 0); }
+int gtty(int fd, struct sgttyb *settings)
+{ return call(NX_SYS_GTTY, fd, (long)(uintptr_t)settings, 0); }
+int isatty(int fd) { struct sgttyb settings; return gtty(fd, &settings) == 0; }

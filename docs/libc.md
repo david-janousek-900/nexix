@@ -78,6 +78,7 @@ Also implemented:
   to flush yet; successful exec replaces the callback state with fresh BSS.
 
 Step 13 adds file and pipe wrappers and headers; see [files.md](files.md).
+Step 14 adds sgtty/ioctl headers and stty/gtty/ioctl/isatty; see [tty.md](tty.md).
 There are no declarations for unimplemented heap services. String
 functions follow their usual C buffer contracts; they do not validate pointers
 or allocate storage. getenv returns a pointer into the environment, not a copy.
@@ -105,4 +106,5 @@ that process exits directly.
 Every successful boot requires `NEXIX_LIBC_ABI_OK` and `NEXIX_LIBC_OK` before
 `NEXIX_BOOT_OK`. These tests do not claim that V7 init or shell has been rebuilt.
 Step 12 implements the block interface, RAM root device and V7 filesystem
-foundation; see [filesystem.md](filesystem.md). Step 13 adds file operations and pipes.
+foundation; see [filesystem.md](filesystem.md). Steps 13 and 14 add file
+operations, pipes and terminal controls; see [files.md](files.md) and [tty.md](tty.md).

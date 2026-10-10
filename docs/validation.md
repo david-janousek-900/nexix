@@ -148,3 +148,19 @@ restore all file/inode/pipe pools and exact physical-page/free-block/free-inode
 counts. Host tests cover permission selection and directory search, complete
 indirect-tree reclamation, inode exhaustion/reuse, directory growth, remount
 and read-only mutation rejection. See [files.md](files.md).
+
+
+Serial TTY (step 14): every successful boot requires `NEXIX_TTY_USER_WRITE_OK`,
+`NEXIX_TTY_OK` and `NEXIX_TTY_CLEANUP_OK`. Host tests cover cooked editing/echo,
+record boundaries and EOF, queue capacity/wrap/reuse, raw/cbreak, CR/tab expansion,
+baud/parity selection and ioctl validation before mutation. Native userland tests
+cover terminal descriptors, blocking read wakeup, read-only mount output,
+controlling-terminal resolution, ioctl/stty/gtty/isatty, invalid buffers without
+consumption, fork/exec inheritance and complete resource cleanup.
+`make TOOLCHAIN_PREFIX= test-tty` exchanges cooked, raw and cbreak bytes through
+real COM1 IRQ input with 16 MiB and 128 MiB RAM. It stops a writer with Ctrl-S,
+confirms the writer sleeps, then wakes it with Ctrl-Q. Test-only input injection
+is disabled for this UART pass, which requires `NEXIX_TTY_UART_OK`. The target
+also sends lines to the interactive demo and checks its response/quit behavior,
+requiring `NEXIX_TTY_DEMO_OK`. An additional PTY check verifies the interactive
+stdio multiplexer and Ctrl-A X exit (`build/tty-pty.log`). See [tty.md](tty.md).

@@ -17,6 +17,10 @@ int pipe(int pair[2]);
 int chdir(const char *path);
 int link(const char *oldpath, const char *newpath);
 int unlink(const char *path);
+#define STDIN_FILENO 0
+#define STDOUT_FILENO 1
+#define STDERR_FILENO 2
+int isatty(int fd);
 extern char **environ;
 _Noreturn void _exit(int status);
 pid_t fork(void);

@@ -77,10 +77,12 @@ four-byte status, even though its pointer occupies an eight-byte argument slot.
 | 19 | lseek | fd, signed offset, whence | New offset |
 | 20 | getpid | None | Current PID |
 | 24 | getuid | None | Real UID |
+| 31, 32 | stty, gtty | fd, sgtty pointer | Zero |
 | 41 | dup | fd | Lowest free descriptor |
 | 42 | pipe | Writable int32[2] pointer | Zero; descriptors in output |
 | 43 | times | Writable nx_tms pointer | Elapsed uptime ticks |
 | 47 | getgid | None | Real GID |
+| 54 | ioctl | fd, request, argument pointer | Zero or negative errno |
 | 59 | execve | Pathname, argv, envp | Replace image |
 | 60 | umask | Mask | Previous mask; new value restricted to 0777 |
 | 64 | yield | None | Zero after allowing scheduling |
@@ -94,8 +96,9 @@ Calls 64–69 are native extensions beyond V7's 64-entry table. The separate
 identity calls and wait status pointer replace V7's secondary-register returns.
 Only RAX changes on normal syscall return. Successful exec installs a new entry
 frame. File/pipe semantics, flag values and the 48-byte stat record are
-documented in [files.md](files.md). Wall-clock time, terminal operations and
-signals remain pending.
+documented in [files.md](files.md). Terminal controls and native sgtty/tchars
+records are documented in [tty.md](tty.md). Wall-clock time and signals remain
+pending.
 
 Wait validates its output range before blocking or consuming a zombie. An
 invalid non-NULL pointer returns EFAULT even when no child exists. A failed

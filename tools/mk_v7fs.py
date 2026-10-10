@@ -140,10 +140,11 @@ def build(blocks, exec_file, libc_file):
     image.inode(9, REG | 0o644, b'fourteen bytes\n')
     image.inode(10, REG | 0o755, exec_file.read_bytes())
     image.inode(11, REG | 0o755, libc_file.read_bytes())
-    image.inode(13, CHR | 0o600, device=0x100)
+    image.inode(13, CHR | 0o600, device=0x100, nlink=2)
+    image.inode(14, CHR | 0o600, device=0x200)
     image.directory(3, 2, [('exec-test', 10), ('libc-test', 11)])
     image.directory(4, 2, [])
-    image.directory(12, 2, [('console', 13)])
+    image.directory(12, 2, [('console', 13), ('ttyS0', 13), ('tty', 14)])
     image.directory(2, 2, [('bin', 3), ('tmp', 4), ('hello', 5), ('indirect', 6),
                            ('sparse', 7), ('scratch', 8), ('abcdefghijklmn', 9), ('dev', 12)])
     return image.finish()

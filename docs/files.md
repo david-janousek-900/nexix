@@ -18,8 +18,8 @@ make TOOLCHAIN_PREFIX= run
 128 MiB. Successful boots require `NEXIX_FILES_OK`, `NEXIX_PIPE_OK`,
 `NEXIX_FILES_CLEANUP_OK`, and the existing boot markers. The tests execute
 `user/files-test.c` as a native ELF64 program at CPL3, linked with Nexix libc.
-Boot still ends in the kernel idle loop. Interactive terminal input and a
-shell come in subsequent steps.
+Boot still ends in the kernel idle loop. Step 14 adds interactive serial TTY
+input and a demo; see [tty.md](tty.md). The V7 shell remains pending.
 
 ## Descriptors and ownership
 
@@ -66,8 +66,9 @@ Its blocks and inode slot are then reclaimed. Empty directory entry slots and
 free inode slots are reused; directories grow when necessary.
 
 Directories can be opened for reading their raw V7 directory records. Directory
-writes and directory links/unlinks are rejected. Character/block devices can be
-reported by stat, but open returns ENODEV until device/TTY dispatch is added.
+writes and directory links/unlinks are rejected. Step 14 connects supported
+character devices to the serial terminal; see [tty.md](tty.md). Other devices
+return ENODEV.
 There is no mkdir, rmdir, rename, symlink, mount syscall, chroot or supplementary
 group handling in this milestone.
 
@@ -118,4 +119,4 @@ inode slots, grow directories across sectors, remount namespace changes, exercis
 read-only mounts and verify owner/group/other search permissions. These complement
 the existing malformed metadata and injected device-I/O failure tests.
 
-Next: step 14, serial TTY and terminal handling.
+Step 14 implements serial TTY and terminal handling; see [tty.md](tty.md).

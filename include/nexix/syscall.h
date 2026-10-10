@@ -19,10 +19,13 @@
 #define NX_SYS_GETPID 20
 #define NX_SYS_GETUID 24
 #define NX_SYS_FSTAT 28
+#define NX_SYS_STTY 31
+#define NX_SYS_GTTY 32
 #define NX_SYS_DUP 41
 #define NX_SYS_PIPE 42
 #define NX_SYS_TIMES 43
 #define NX_SYS_GETGID 47
+#define NX_SYS_IOCTL 54
 #define NX_SYS_EXECVE 59
 #define NX_SYS_UMASK 60
 /* Native extensions beyond the original 64-entry V7 table. */

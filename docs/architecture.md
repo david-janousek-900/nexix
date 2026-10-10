@@ -67,7 +67,7 @@ code for the bootstrap test harness. Assembly stubs normalize
 exception error codes, save all general registers, align the C call stack, and
 restore interrupted execution with `iretq`. Exceptions report vector, error,
 RIP, and (for page faults) CR2 before halting with interrupts disabled.
-The PIC uses vectors 32..47, with only IRQ0 enabled. PIT channel 0 drives a
+The PIC uses vectors 32..47, with IRQ0 (PIT) and IRQ4 (COM1 receive) enabled. PIT channel 0 drives a
 roughly 100 Hz tick counter. Interrupt handlers acknowledge the PIC; serial
 logging stays outside the timer handler. Spurious IRQ7/IRQ15 are handled.
 
@@ -108,7 +108,7 @@ permissions and full ranges before copyin/out through the physical identity map.
 ELF64 loading builds private staged images and a native argc/argv/envp stack.
 Exec activates a complete new image before releasing the old VM; failures leave
 the old process runnable. An embedded program catalog provides temporary path
-lookup until filesystem support. See [exec.md](exec.md). Native crt0, a static
+lookup until production filesystem-backed exec integration. See [exec.md](exec.md). Native crt0, a static
 libc archive and a C fixture exercise the same startup stack and syscall ABI;
 see [libc.md](libc.md). Process fault handling,
 FPU state, and user TLS remain pending.
@@ -147,3 +147,15 @@ root mounting and production filesystem-backed exec integration remain pending.
 The file layer now manages descriptors and inode ownership across fork/exec/exit,
 with checked namespace operations and blocking pipes; see [files.md](files.md). See
 [filesystem.md](filesystem.md) for API contracts and format limits.
+
+
+## Serial terminal
+
+COM1 receive and line-status interrupts feed a bounded V7-style terminal input
+queue. Cooked editing/records, raw/cbreak input, echo, CR/tab processing and
+software flow control use the process sleep/wakeup interface. Transmit remains
+polled; no heap allocation or sleeping occurs in the receive IRQ handler.
+Character-device descriptors use the file layer's ownership across fork/exec/exit.
+Native ioctl and legacy stty/gtty export eight-byte sgtty and six-byte tchars
+records. Controlling-terminal association, the demo, test coverage and remaining
+signal/job-control work are documented in [tty.md](tty.md).

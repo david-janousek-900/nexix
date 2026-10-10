@@ -36,7 +36,7 @@ static int files(void)
     REQUIRE(read(0, &byte, 1) == 1 && byte == 'o');
     REQUIRE(close(0) == 0 && close(1) == 0 && close(2) == 0);
     REQUIRE(close(0) == -1 && errno == EBADF);
-    REQUIRE(open("/dev/console", O_RDWR) == -1 && errno == ENODEV);
+    REQUIRE(open("/dev/console", O_RDWR) == 0 && isatty(0) && close(0) == 0);
     REQUIRE(open("/", O_WRONLY) == -1 && errno == EISDIR);
     REQUIRE(open("/hello", O_RDONLY | O_TRUNC) == -1 && errno == EINVAL);
     REQUIRE(nx_syscall6(NX_SYS_OPEN, (long)(uintptr_t)"/hello", 1UL << 40, 0, 0, 0, 0) == -EINVAL);
@@ -141,6 +141,7 @@ int main(int argc, char **argv)
     if (argc == 2 && !strcmp(argv[1], "permissions")) {
         struct stat st;
         REQUIRE(open("/hello", O_WRONLY) == -1 && errno == EACCES);
+        REQUIRE(open("/dev/console", O_RDWR) == -1 && errno == EACCES);
         REQUIRE(open("/tmp/private", O_CREAT | O_WRONLY, 0600) == -1 && errno == EACCES);
         REQUIRE(unlink("/hello") == -1 && errno == EACCES);
         REQUIRE(link("/hello", "/tmp/private") == -1 && errno == EACCES);

@@ -79,6 +79,11 @@ static void parser_tests(void)
     memcpy(cmd + 1, "test=memory", 12); finish();
     assert(parse(&info) && info.test == BOOT_TEST_MEMORY);
     memset(cmd + 1, 'x', 12); assert(!parse(&info));
+    begin(); map_add(&entry, 1, 24); cmd = append(1, 22);
+    memcpy(cmd + 1, "test=tty-demo", 14); finish();
+    assert(parse(&info) && info.test == BOOT_TEST_TTY_DEMO);
+    memset(cmd + 1, 0, 14); memcpy(cmd + 1, "test=tty", 9);
+    assert(parse(&info) && info.test == BOOT_TEST_TTY);
 
     begin(); map_add(&entry, 1, 24);
     struct boot_module *module = append(3, 17);

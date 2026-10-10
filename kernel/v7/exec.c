@@ -7,6 +7,7 @@
 extern const uint8_t _binary_build_exec_test_elf_start[], _binary_build_exec_test_elf_end[];
 extern const uint8_t _binary_build_libc_test_elf_start[], _binary_build_libc_test_elf_end[];
 extern const uint8_t _binary_build_files_test_elf_start[], _binary_build_files_test_elf_end[];
+extern const uint8_t _binary_build_tty_test_elf_start[], _binary_build_tty_test_elf_end[];
 /* Single CPU, IRQs disabled throughout exec; bounded scratch avoids using the
  * guarded 16 KiB kernel stack for the argument strings. */
 static struct exec_args scratch;
@@ -53,6 +54,9 @@ int proc_exec(uintptr_t path, uintptr_t argv, uintptr_t envp, struct interrupt_f
     } else if (equal(name, "/bin/files-test")) {
         file = _binary_build_files_test_elf_start; end = _binary_build_files_test_elf_end;
         comm = "files-test";
+    } else if (equal(name, "/bin/tty-test")) {
+        file = _binary_build_tty_test_elf_start; end = _binary_build_tty_test_elf_end;
+        comm = "tty-test";
     } else return -NX_ENOENT;
     struct user *u = p->p_user;
     if (p->p_textp || !files_refs_valid(u)) return -NX_EBUSY;

@@ -42,6 +42,10 @@ production exec catalog remains embedded until filesystem integration. See
 File descriptors now support regular I/O, creation, truncation, links, stat,
 cwd, dup, close-on-exec and blocking pipes, with reference ownership across
 fork/exec/exit. See [file operations and pipes](docs/files.md).
+COM1 character-device I/O now supports interrupt-driven receive, cooked line
+editing, raw/cbreak modes, echo, software flow control and sgtty/ioctl controls.
+`/dev/console` and `/dev/ttyS0` share the terminal; `/dev/tty` resolves the process's
+controlling terminal. See [serial TTY](docs/tty.md).
 
 ## Build and boot
 
@@ -62,6 +66,8 @@ make userland
 make test-libc
 make test-fs
 make test-files
+make test-tty
+make run-tty
 ```
 
 For an initial build on an x86_64 Linux host with GCC/binutils, use
@@ -108,10 +114,14 @@ services are pending. `make TOOLCHAIN_PREFIX= test-libc` runs the C userland
 tests with 16 MiB RAM (`build/libc-16M.log`).
 `make TOOLCHAIN_PREFIX= test-files` exercises file operations, descriptor
 ownership, permissions and blocking pipes with 16 MiB RAM (`build/files-16M.log`).
+`make TOOLCHAIN_PREFIX= test-tty` exchanges real COM1 input with 16 MiB and
+128 MiB RAM and tests an interactive demo. `make TOOLCHAIN_PREFIX= run-tty`
+starts that demo: type a line and Enter, use Backspace/Ctrl-U to edit, or type
+`quit` to finish. Ctrl-A, release, then X exits QEMU. The V7 shell remains pending.
 
 ## Roadmap
 
-Version **0.1.0** covers these 20 steps. Steps 1–13 are implemented; step 14
+Version **0.1.0** covers these 20 steps. Steps 1–14 are implemented; step 15
 is next. Regression tests accompany implementation throughout the roadmap.
 
 1. Import V7 sources and preserve licensing.
