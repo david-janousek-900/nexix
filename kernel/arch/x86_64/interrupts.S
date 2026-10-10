@@ -33,11 +33,22 @@ interrupt_common:
     push %r13
     push %r14
     push %r15
+    mov $0x10, %ax
+    mov %ax, %ds
+    mov %ax, %es
     mov %rsp, %rdi
     mov %rsp, %rbx
     and $-16, %rsp
     call interrupt_dispatch
     mov %rbx, %rsp
+    # Restore data selectors for the privilege level we are returning to.
+    mov $0x10, %ax
+    testb $3, 144(%rsp)
+    jz 1f
+    mov $0x1b, %ax
+1:
+    mov %ax, %ds
+    mov %ax, %es
     pop %r15
     pop %r14
     pop %r13

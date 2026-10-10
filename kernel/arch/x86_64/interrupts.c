@@ -1,6 +1,8 @@
 #include "interrupts.h"
 #include "io.h"
 #include "serial.h"
+#include "segments.h"
+#include "user_test.h"
 #include <stddef.h>
 struct idt_gate {
     uint16_t offset_low, selector;
@@ -14,6 +16,7 @@ struct idt_pointer {
 } __attribute__((packed));
 _Static_assert(sizeof(struct idt_gate) == 16, "IDT gate layout");
 _Static_assert(offsetof(struct interrupt_frame, vector) == 120, "ISR frame layout");
+_Static_assert(offsetof(struct interrupt_frame, cs) == 144, "ISR CS offset");
 extern const uintptr_t isr_table[256];
 static struct idt_gate idt[256] __attribute__((aligned(16)));
 static volatile uint64_t ticks;
@@ -35,10 +38,12 @@ void interrupts_init(void)
             .offset_low = address,
             .selector = 8,
             .attributes = 0x8e,
+            .ist = i == 8 ? 1 : (i == 2 ? 2 : 0),
             .offset_mid = address >> 16,
             .offset_high = address >> 32,
         };
     }
+    idt[0x80].attributes = 0xee; /* Bootstrap test gate, not the V7 syscall ABI. */
     struct idt_pointer pointer = { sizeof(idt) - 1, (uintptr_t)idt };
     __asm__ volatile ("lidt %0" : : "m"(pointer) : "memory");
     /* Remap legacy PICs to vectors 32..47 and mask all IRQs. */
@@ -65,7 +70,24 @@ void timer_init(void)
 uint64_t timer_ticks(void) { return ticks; }
 void interrupt_dispatch(struct interrupt_frame *frame)
 {
+    if (frame->vector == 8 || frame->vector == 2) {
+        if (!interrupt_stack_valid(frame))
+            panic("invalid IST entry stack");
+        if (frame->vector == 8)
+            serial_puts("NEXIX_DOUBLE_FAULT_STACK_OK\r\n");
+    } else if ((frame->cs & 3) == 3) {
+        user_mode_interrupt(frame);
+    }
+    if (frame->vector == 0x80) {
+        user_mode_test_gate(frame);
+        return;
+    }
     if (frame->vector < 32) {
+        serial_puts("Nexix: trap cs="); serial_hex(frame->cs);
+        serial_puts(" ss="); serial_hex(frame->ss);
+        serial_puts(" rsp="); serial_hex(frame->rsp);
+        serial_puts(" frame="); serial_hex((uintptr_t)frame);
+        serial_puts("\r\n");
         serial_puts("Nexix: exception vector="); serial_hex(frame->vector);
         serial_puts(" error="); serial_hex(frame->error);
         serial_puts(" rip="); serial_hex(frame->rip);

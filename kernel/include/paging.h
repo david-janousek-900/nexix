@@ -13,6 +13,7 @@ struct address_space { uintptr_t root; };
  * Spaces own page tables, but mapped data frames remain caller-owned.
  * Initialize spaces to zero. Never copy or manually edit a live root. */
 void paging_init(void);
+bool paging_guard_page(uintptr_t address); /* Permanently unmap a reserved BSS page. */
 const struct address_space *paging_kernel_space(void);
 bool vm_create(struct address_space *space);
 bool vm_destroy(struct address_space *space); /* Reject active/kernel spaces. */

@@ -15,6 +15,7 @@ SECTIONS {
     .rodata ALIGN(4K) : { *(.rodata*) } :rodata
     kernel_rodata_end = ALIGN(4K);
     .data ALIGN(4K) : { *(.data*) } :data
+    kernel_bss_start = ALIGN(4K);
     .bss ALIGN(4K) : { *(COMMON) *(.bss*) } :data
     kernel_end = ALIGN(4K);
     /DISCARD/ : { *(.eh_frame*) *(.comment) *(.note*) }

@@ -4,7 +4,7 @@ LD = $(TOOLCHAIN_PREFIX)ld
 PYTHON ?= python3
 QEMU ?= qemu-system-x86_64
 CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-stack-protector -fno-pie -m64 -mno-red-zone -mgeneral-regs-only -fno-asynchronous-unwind-tables -Ikernel/include -MMD -MP
-OBJECTS = build/boot.o build/main.o build/serial.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o
+OBJECTS = build/boot.o build/main.o build/serial.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o
 HOST_CC ?= cc
 .DEFAULT_GOAL := all
 -include $(OBJECTS:.o=.d)
@@ -35,6 +35,18 @@ build/paging.o: kernel/arch/x86_64/paging.c | build
 
 build/paging_test.o: kernel/paging_test.c | build
 	$(CC) $(CFLAGS) -c $< -o $@
+
+build/segments.o: kernel/arch/x86_64/segments.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/user_test.o: kernel/user_test.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/user_entry.o: kernel/arch/x86_64/user_entry.S | build
+	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
+
+build/user_blob.o: kernel/arch/x86_64/user_test.S | build
+	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
 
 build/interrupts.o: kernel/arch/x86_64/interrupts.c | build
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -80,7 +92,7 @@ build/memory-test: tests/memory.c kernel/boot.c kernel/memory.c kernel/include/b
 test-unit: build/memory-test
 	./build/memory-test
 
-test: test-unit smoke build/test-ud.iso build/test-pf.iso build/test-memory.iso test-paging
+test: test-unit smoke build/test-ud.iso build/test-pf.iso build/test-memory.iso test-paging test-user
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-ud.iso ud
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-pf.iso pf
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-memory.iso memory 16M
@@ -94,6 +106,17 @@ test-paging: check build/test-wp.iso build/test-nx.iso build/test-unmap.iso buil
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-null.iso null
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-paging-oom.iso paging-oom 16M
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-protect.iso protect
+
+.PHONY: test-user
+test-user: check build/test-user-kernel.iso build/test-user-ro.iso build/test-user-nx.iso build/test-user-priv.iso build/test-user-io.iso build/test-user-int.iso build/test-user-bad-stack.iso build/test-user-df.iso
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-user-kernel.iso user-kernel
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-user-ro.iso user-ro
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-user-nx.iso user-nx
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-user-priv.iso user-priv
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-user-io.iso user-io
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-user-int.iso user-int
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-user-bad-stack.iso user-bad-stack
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-user-df.iso user-df
 
 clean:
 	$(PYTHON) -c 'import shutil; shutil.rmtree("build", ignore_errors=True)'

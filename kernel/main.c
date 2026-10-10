@@ -3,6 +3,8 @@
 #include "memory.h"
 #include "paging.h"
 #include "serial.h"
+#include "segments.h"
+#include "user_test.h"
 #include <stdint.h>
 
 static uint64_t boot_checksum(const struct boot_info *info)
@@ -39,6 +41,7 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
     serial_puts("Nexix: x86_64 kernel entered\r\n");
     if (magic != 0x36d76289 || !boot_info || (boot_info & 7))
         panic("invalid Multiboot2 handoff");
+    segments_init();
     interrupts_init();
     struct boot_info info;
     if (boot_info >= PHYSICAL_LIMIT ||
@@ -106,6 +109,7 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
         serial_puts("NEXIX_MEMORY_EXHAUSTION_OK\r\n");
     }
     paging_init();
+    entry_stacks_guard();
     paging_selftest(test == BOOT_TEST_PAGING_OOM);
     if (test == BOOT_TEST_WP || test == BOOT_TEST_NX ||
         test == BOOT_TEST_UNMAP || test == BOOT_TEST_NULL || test == BOOT_TEST_PROTECT) {
@@ -155,6 +159,7 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
     }
     serial_puts("Nexix: 10 timer interrupts handled\r\n");
     serial_puts("NEXIX_TIMER_OK\r\n");
+    user_mode_selftest(test);
     serial_puts("NEXIX_BOOT_OK\r\n");
     for (;;)
         __asm__ volatile ("sti; hlt" : : : "memory");

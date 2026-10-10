@@ -12,8 +12,13 @@ parses GRUB's memory map, allocates 4 KiB physical pages, and handles a roughly
 ranges are excluded from allocation. Managed 4 KiB page tables protect kernel
 code and read-only data, mark data non-executable, and leave page zero unmapped.
 Separate address spaces support mapping, unmapping, permission changes, and
-switching between independent user mappings. After memory/paging self-tests and ten timer interrupts it prints
-`NEXIX_TIMER_OK` and `NEXIX_BOOT_OK`, then idles with interrupts enabled.
+switching between independent user mappings. A 64-bit TSS supplies guarded kernel
+entry stacks, with separate IST stacks for double faults and NMIs. Bootstrap test
+code now executes in ring 3, receives timer interrupts, and returns to the kernel
+through a test interrupt gate. Two contexts use distinct kernel entry stacks.
+After the self-tests it prints `NEXIX_USER_MODE_OK`, `NEXIX_USER_STACK_OK`,
+`NEXIX_USER_TIMER_OK`, `NEXIX_USER_RETURN_OK`, and `NEXIX_BOOT_OK`, then idles
+with interrupts enabled.
 This foundation does not yet run V7 kernel code or userland.
 
 ## Build and boot
@@ -49,7 +54,16 @@ remain intact. Logs are `build/memory-16M.log` and `build/memory-128M.log`.
 The bootstrap allocator currently manages only RAM below the 1 GiB mapping limit.
 `make test-paging` tests read-only writes, NX execution, unmapped and null-page
 access, and page-table allocation failure/rollback. These are also included in
-`make test`. Paging tests run in kernel mode; user-mode entry is the next step.
+`make test`. These paging cases run in kernel mode.
+`make test-user` exercises actual user-mode memory protection, privileged
+instructions, port I/O, and interrupt-gate permissions. It also verifies kernel
+entry with an unmapped user stack, and double-fault diagnostics using an IST
+stack when the ordinary entry stack is unusable. These tests are included in
+`make test`; `make -j3 TOOLCHAIN_PREFIX= test` runs independent groups concurrently.
+Logs are `build/user-*.log`. Deliberate fatal-fault cases print `PANIC`; the
+harness requires the expected vector, error, originating privilege, and address.
+The test gate is not yet a V7 syscall interface. Process scheduling, ELF loading,
+and real user programs remain to be implemented.
 
 ## Roadmap
 

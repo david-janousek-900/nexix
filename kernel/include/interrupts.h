@@ -1,7 +1,7 @@
 #ifndef NEXIX_INTERRUPTS_H
 #define NEXIX_INTERRUPTS_H
 #include <stdint.h>
-/* Matches interrupts.S. Only kernel-mode interrupt entry is supported. */
+/* Matches interrupts.S and the long-mode hardware frame for either CPL. */
 struct interrupt_frame {
     uint64_t r15, r14, r13, r12, r11, r10, r9, r8;
     uint64_t rdi, rsi, rbp, rdx, rcx, rbx, rax;

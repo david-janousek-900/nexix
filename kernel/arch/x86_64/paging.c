@@ -268,3 +268,18 @@ bool vm_translate(const struct address_space *space, uintptr_t address,
     }
     return false;
 }
+
+bool paging_guard_page(uintptr_t address)
+{
+    extern char kernel_bss_start[], kernel_end[];
+    if ((address & (PAGE_SIZE - 1)) || address < (uintptr_t)kernel_bss_start ||
+        address >= (uintptr_t)kernel_end || page_is_allocated(address))
+        return false;
+    uint64_t *entry = walk(&kernel_space, address, false);
+    if (!entry || !(*entry & PRESENT) || !(*entry & WRITE) || !(*entry & NX))
+        return false;
+    *entry = 0;
+    /* The kernel mapping is shared by every CR3. No globals/PCIDs are used. */
+    __asm__ volatile ("invlpg (%0)" : : "r"(address) : "memory");
+    return true;
+}

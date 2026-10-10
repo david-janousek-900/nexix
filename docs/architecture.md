@@ -41,8 +41,8 @@ Mapped data frames remain caller-owned and must be unmapped before freeing.
 All current paging operations require interrupts disabled; SMP and concurrent
 page-table mutation are deferred.
 
-The next step is user-mode entry, TSS/kernel-stack switching, and actual CPL3
-isolation tests. The current tests exercise user-tagged mappings from kernel mode.
+User-mode entry and actual CPL3 isolation tests now exercise these mappings.
+The original paging self-test still runs at CPL0.
 
 The Multiboot2 header requires a memory map. The parser bounds all tag reads,
 validates map record stride/version and address arithmetic, and requires the end
@@ -61,7 +61,8 @@ are not zeroed. Initialization and the current callers run with interrupts
 disabled; future concurrent callers must serialize access. The boot buffer and
 modules remain reserved until an explicit reclamation mechanism is implemented.
 
-The IDT contains 256 kernel-only interrupt gates. Assembly stubs normalize
+The IDT contains 256 interrupt gates, with only vector `0x80` callable by user
+code for the bootstrap test harness. Assembly stubs normalize
 exception error codes, save all general registers, align the C call stack, and
 restore interrupted execution with `iretq`. Exceptions report vector, error,
 RIP, and (for page faults) CR2 before halting with interrupts disabled.
@@ -69,10 +70,32 @@ The PIC uses vectors 32..47, with only IRQ0 enabled. PIT channel 0 drives a
 roughly 100 Hz tick counter. Interrupt handlers acknowledge the PIC; serial
 logging stays outside the timer handler. Spurious IRQ7/IRQ15 are handled.
 
-This is a kernel-only interrupt foundation: no user-mode stack switching, TSS,
-or dedicated IST stack exists yet. Stack-corruption/double-fault recovery must
-be added before relying on diagnostics for those cases. The bootstrap is not
-yet a completed machine-support layer.
+The active GDT has kernel code/data selectors `0x08`/`0x10`, user code/data
+selectors `0x23`/`0x1b` (including RPL), and a 64-bit TSS at selector `0x28`.
+`kernel_stack_set` updates TSS.RSP0 for the current context. Two static test
+contexts have separate 16 KiB entry stacks. Double faults use IST1; NMIs use
+IST2. Each stack has an unmapped guard page below it. The I/O bitmap offset
+lies beyond the TSS limit, denying user port I/O with IOPL zero.
+
+`arch_user_test_enter` builds an `iretq` frame with IF=1, IOPL=0, and cleared
+general registers except the test argument in RDI. User code runs in its own
+address space with RX code, a zeroed RW/NX stack, and an unmapped page below
+the user stack. Interrupt entry loads kernel data selectors and clears DF;
+`iretq` restores user selectors, flags, and registers on ordinary trap/IRQ return.
+The C handler validates that CPL3 frames landed on the configured kernel stack.
+Fatal diagnostics include CS, SS, saved RSP, and the kernel frame address.
+
+The `0x80` test gate provides checkpoint, tick-query, and completion operations
+only while a bootstrap test context is active. Completion explicitly restores
+the saved kernel C continuation with interrupts disabled. This single-core,
+non-reentrant harness is not a scheduler or a published syscall ABI. Successful
+contexts destroy their address spaces and release their frames; failures panic.
+The tests establish register/DF preservation, hardware privilege checks, and
+double-fault entry on IST1 despite an invalid RSP0. The NMI IST is configured
+but has no dedicated hardware NMI injection test yet.
+
+Next come V7 process/type adaptation and scheduling. Process fault handling,
+the syscall ABI, ELF loading, FPU state, and user TLS are not yet implemented.
 
 Keep the historical source tree pristine. Ported code belongs in `kernel/` and,
 later, `libc/` and `user/`. Reuse V7 process, file, and filesystem logic after
@@ -83,7 +106,7 @@ alignment, varargs, signal frames, and compiler assumptions. Encode disk records
 explicitly instead of writing native structures: LP64 changes cannot silently
 change the historical filesystem format.
 
-Before implementing user execution, document the syscall register convention,
+Before implementing user program execution, document the syscall register convention,
 numbers, errors, exported type widths, and signal ABI. Native userland uses ELF64;
 PDP-11 a.out execution is deferred. Start `fork` with eager copying.
 

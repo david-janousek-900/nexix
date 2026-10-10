@@ -30,6 +30,18 @@ Run `make TOOLCHAIN_PREFIX= test` in this environment. The suite checks:
   read-only, and require a write-protection fault.
 - Page-table exhaustion at 16 MiB: failed address-space creation and partial
   mapping allocation restore the free count and leave no mapping behind.
+- Actual CPL3 execution in two address spaces with different TSS.RSP0 stacks:
+  user stack writes, general-register and direction-flag preservation across
+  trap return, at least ten timer IRQs per context, kernel continuation return,
+  and complete test-context memory reclamation.
+- User protection faults: reading supervisor kernel memory (PF error 5),
+  writing RX user code (PF error 7), and executing the NX user stack (PF error 21).
+  These require CS=`0x23`, SS=`0x1b`, a validated kernel entry stack, and expected CR2.
+- User `cli` and port I/O cause GP error 0. User `int 0x20` cannot invoke a
+  kernel-only gate and causes GP error `0x102`.
+- An unmapped user RSP still allows entry through the TSS kernel stack.
+  An intentionally invalid TSS.RSP0 produces a double fault with diagnostics
+  on the independently guarded IST1 stack, without a triple-fault VM exit.
 
 The serial transcripts are retained in `build/boot.log`, `build/ud.log`, and
 `build/pf.log`, plus `build/memory-16M.log` and `build/memory-128M.log`.
@@ -37,7 +49,11 @@ Test images are separate from the ordinary boot image.
 Additional paging logs are `build/wp.log`, `build/nx.log`, `build/unmap.log`,
 `build/null.log`, `build/protect.log`, and `build/paging-oom.log`. `make TOOLCHAIN_PREFIX= test-paging`
 runs the protection and allocation-failure cases separately.
+`make TOOLCHAIN_PREFIX= test-user` runs the user protection and stack cases;
+their transcripts are `build/user-*.log`. Normal boot must also emit all four
+`NEXIX_USER_*_OK` markers. Independent groups can run concurrently with
+`make -j3 TOOLCHAIN_PREFIX= test`.
 The host parser/allocator tests also pass AddressSanitizer and UBSan with leak
 detection disabled (LeakSanitizer cannot run under this session's ptrace).
-This suite does not validate user-mode transitions, filesystems, or V7 execution;
-those subsystems are not implemented yet.
+This suite does not validate process scheduling, a V7 syscall ABI, ELF loading,
+filesystems, or V7 execution; those subsystems are not implemented yet.
