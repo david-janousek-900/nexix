@@ -33,7 +33,10 @@ ELF64 loading, native startup stacks, and V7-numbered exec/execve replacement
 are implemented using an embedded executable catalog; see [exec.md](exec.md).
 Native libc startup, syscall/error wrappers, string/memory functions and
 basic exit/environment support are implemented and run a C ELF64 fixture at
-CPL3; see [libc.md](libc.md). Rebuilt V7 programs, file/inode reference ownership,
+CPL3; see [libc.md](libc.md). A native adaptation of V7 filesystem algorithms
+now supports RAM-backed block I/O, mount/lookup/read/write, indirect addressing
+and chained allocation; see [filesystem.md](filesystem.md). Rebuilt V7 programs,
+file/inode reference ownership,
 signal delivery, and remaining services
 are pending; see [syscall-abi.md](syscall-abi.md).
 A pinned cross-toolchain remains required to

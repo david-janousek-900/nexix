@@ -134,3 +134,15 @@ configuration, ARP, ICMP, UDP, and TCP. Pin lwIP and retain its license at impor
 
 Architecture references: [Intel system programming manuals](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html)
 and [Multiboot2 boot information format](https://www.gnu.org/software/grub/manual/multiboot2/html_node/Boot-information-format.html).
+
+## Block and filesystem foundation
+
+The synchronous 512-byte block interface includes a RAM-backed device. V7
+filesystem mount, inode decoding, lookup, direct and triple-level indirect I/O,
+sparse growth and chained free-block allocation use the retained disk formats.
+A 29-sector cache uses synchronous writes. Callers serialize whole operations;
+write errors disable the mount until remount. Boot tests temporarily mount a
+generated RAM fixture and execute an ELF read through these APIs. Permanent
+root mounting, process/file reference ownership, file descriptors and production
+filesystem-backed exec integration remain pending. See
+[filesystem.md](filesystem.md) for API contracts and format limits.

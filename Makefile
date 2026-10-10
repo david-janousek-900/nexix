@@ -6,7 +6,7 @@ OBJCOPY = $(TOOLCHAIN_PREFIX)objcopy
 PYTHON ?= python3
 QEMU ?= qemu-system-x86_64
 CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-stack-protector -fno-pie -m64 -mno-red-zone -mgeneral-regs-only -fno-asynchronous-unwind-tables -Ikernel/include -Iinclude -MMD -MP
-OBJECTS = build/boot.o build/main.o build/serial.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o build/elf.o build/exec.o build/exec_test.o build/exec_image.o build/libc_test.o build/libc_image.o
+OBJECTS = build/boot.o build/main.o build/serial.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o build/elf.o build/exec.o build/exec_test.o build/exec_image.o build/libc_test.o build/libc_image.o build/block.o build/v7fs.o build/fs_test.o build/root_image.o
 HOST_CC ?= cc
 .DEFAULT_GOAL := all
 -include $(OBJECTS:.o=.d)
@@ -121,12 +121,13 @@ build/v7-types-test: tests/v7_types.c kernel/include/v7/constants.h kernel/inclu
 build/uaccess-test: tests/uaccess.c kernel/uaccess.c kernel/include/uaccess.h kernel/include/process.h kernel/include/paging.h kernel/include/memory.h kernel/include/boot.h kernel/include/v7/core.h kernel/include/v7/types.h kernel/include/v7/disk.h kernel/include/v7/constants.h include/nexix/errno.h | build
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/uaccess.c kernel/uaccess.c -o $@
 
-test-unit: build/memory-test build/v7-types-test build/uaccess-test
+test-unit: build/memory-test build/v7-types-test build/uaccess-test build/filesystem-test build/root-test.img
 	./build/memory-test
 	./build/v7-types-test
 	./build/uaccess-test
+	./build/filesystem-test build/root-test.img
 
-test: test-unit smoke build/test-ud.iso build/test-pf.iso build/test-memory.iso test-paging test-user test-libc
+test: test-unit smoke build/test-ud.iso build/test-pf.iso build/test-memory.iso test-paging test-user test-fs
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-ud.iso ud
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-pf.iso pf
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-memory.iso memory 16M
@@ -208,3 +209,22 @@ build/libc_test.o: kernel/libc_test.c | build
 userland: build/crt0.o build/libc.a build/libc-test.elf
 test-libc: iso
 	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso libc 16M
+
+# Small V7 filesystem fixture; a bootable init/shell root is step 17.
+build/root-test.img: tools/mk_v7fs.py build/exec-test.elf build/libc-test.elf
+	$(PYTHON) tools/mk_v7fs.py --exec build/exec-test.elf --libc build/libc-test.elf --output $@
+build/root_image.o: build/root-test.img
+	$(LD) -r -b binary $< -o build/root_raw.o
+	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/root_raw.o $@
+build/block.o: kernel/block.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+build/v7fs.o: kernel/v7/fs.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+build/fs_test.o: kernel/fs_test.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+.PHONY: test-fs
+test-fs: iso
+	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso fs 16M
+
+build/filesystem-test: tests/filesystem.c kernel/block.c kernel/v7/fs.c kernel/include/block.h kernel/include/v7/fs.h kernel/include/v7/disk.h kernel/include/v7/types.h kernel/include/v7/constants.h include/nexix/errno.h | build
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/filesystem.c kernel/block.c kernel/v7/fs.c -o $@

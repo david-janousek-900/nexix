@@ -26,14 +26,19 @@ layouts and tested byte encoders. Native process code now provides guarded
 per-process stacks, context switching, timer preemption, sleep/wakeup, eager
 user-memory fork, exit, wait, and orphan reparenting. Boot tests exercise kernel
 tasks and a ring 3 parent/child pair, then reclaim their resources. This is a
-native adaptation of V7 process behavior; filesystem logic and V7 userland do
-not run yet. A native `int 0x80` syscall ABI now supports process lifecycle,
+native adaptation of V7 process behavior; rebuilt V7 userland does not run yet.
+A native `int 0x80` syscall ABI now supports process lifecycle,
 identity queries, tick accounting, umask, and yielding. User-copy helpers reject
 invalid pointers and protect read-only pages. The bootstrap test gate uses
 `int 0x81`; it remains separate from the supported native interface.
 Native libc startup and a static library now run a C ELF64 program at CPL3,
 with syscall wrappers, errno, environment access, string/memory functions,
 and exit callbacks. See [libc foundation](docs/libc.md).
+A synchronous block interface, RAM disk and V7 filesystem now support kernel
+mount/lookup/read/write APIs, sparse files and chained block allocation. Boot
+tests mount a small generated fixture and execute an ELF read from it. The
+production exec catalog remains embedded until filesystem integration. See
+[filesystem foundation](docs/filesystem.md).
 
 ## Build and boot
 
@@ -52,6 +57,7 @@ make test-process
 make test-syscall
 make userland
 make test-libc
+make test-fs
 ```
 
 For an initial build on an x86_64 Linux host with GCC/binutils, use
@@ -64,7 +70,8 @@ boot and timer markers within 15 seconds, and saves `build/boot.log`.
 RAM; normal `make smoke` also runs them with 128 MiB. See
 [processes](docs/processes.md) for implemented behavior and limitations.
 `make test-unit` runs host tests for boot-data parsing, the allocator, and V7
-native types, disk encodings, and safe user-memory copies.
+native types, disk encodings, safe user-memory copies, and filesystem/device
+validation.
 `make test` additionally boots separate images with `test=ud` and `test=pf`
 command lines. These deliberately trigger invalid-opcode and unmapped-memory
 exceptions, verifying the vector, error code, and page-fault address in serial
@@ -98,7 +105,7 @@ tests with 16 MiB RAM (`build/libc-16M.log`).
 
 ## Roadmap
 
-Version **0.1.0** covers these 20 steps. Steps 1–11 are implemented; step 12
+Version **0.1.0** covers these 20 steps. Steps 1–12 are implemented; step 13
 is next. Regression tests accompany implementation throughout the roadmap.
 
 1. Import V7 sources and preserve licensing.

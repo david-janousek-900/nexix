@@ -56,7 +56,7 @@ their transcripts are `build/user-*.log`. Normal boot must also emit all four
 The host parser/allocator tests also pass AddressSanitizer and UBSan with leak
 detection disabled (LeakSanitizer cannot run under this session's ptrace).
 The suite validates native ELF loading and execution, but does not yet validate
-filesystems or rebuilt V7 userland execution.
+rebuilt V7 userland execution. Native V7 filesystem APIs are tested in step 12.
 
 V7 type adaptation (step 7): `make TOOLCHAIN_PREFIX= test-unit` also runs
 `build/v7-types-test`. It checks independent PDP-11 byte fixtures, rejection of
@@ -115,8 +115,8 @@ ELF64 execution (step 10): every successful boot requires `NEXIX_ELF_OK`,
 runs the complete normal boot with 16 MiB RAM (`build/exec-16M.log`), including
 malformed ELF rejection, partial-allocation rollback, argument/environment
 stacks, and an actual CPL3 fork/exec/wait sequence. See [exec.md](exec.md).
-The full suite now uses test-libc for its low-memory normal boot; test-process,
-test-syscall and test-exec remain available separately.
+The full suite now uses test-fs for its low-memory normal boot; test-process,
+test-syscall, test-exec and test-libc remain available separately.
 
 Native libc (step 11): every successful boot requires `NEXIX_LIBC_ABI_OK` and
 `NEXIX_LIBC_OK`. `make TOOLCHAIN_PREFIX= test-libc` runs the normal boot with
@@ -125,3 +125,13 @@ crt0/libc, argument/environment startup, six-argument register conversion,
 callee-saved registers, errno translation, fork/exec/wait, strings, exit
 callbacks and page/process cleanup. Empty and maximum-size startup vectors
 are also exercised. See [libc.md](libc.md) for the supported interface.
+
+Block devices and V7 filesystem (step 12): successful boots require
+`NEXIX_BLOCK_OK`, `NEXIX_V7FS_READ_OK`, `NEXIX_V7FS_ALLOC_OK`,
+`NEXIX_V7FS_WRITE_OK`, `NEXIX_V7FS_EXEC_OK` and `NEXIX_V7FS_OK`.
+`make TOOLCHAIN_PREFIX= test-fs` runs the complete normal boot with 16 MiB RAM
+(`build/fs-16M.log`). Host filesystem tests run under test-unit against the
+generated `build/root-test.img`. Tests cover lookup, all indirect levels,
+sparse reads/writes, free-list exhaustion/reuse, remount persistence, ELF
+execution from a filesystem file, malformed metadata and device fault handling.
+See [filesystem.md](filesystem.md) for API coverage and remaining work.

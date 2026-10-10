@@ -103,4 +103,5 @@ that process exits directly.
 
 Every successful boot requires `NEXIX_LIBC_ABI_OK` and `NEXIX_LIBC_OK` before
 `NEXIX_BOOT_OK`. These tests do not claim that V7 init or shell has been rebuilt.
-Step 12 adds the block interface, RAM root device and V7 filesystem.
+Step 12 implements the block interface, RAM root device and V7 filesystem
+foundation; see [filesystem.md](filesystem.md). Step 13 adds file operations and pipes.
