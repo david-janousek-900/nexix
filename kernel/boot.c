@@ -52,6 +52,7 @@ bool boot_parse(uintptr_t address, size_t accessible_bytes, struct boot_info *in
             if (command_seen || !string_valid(s, size - 8))
                 return false;
             command_seen = true;
+            if (string_equal(s, "test=selftest")) info->test = BOOT_TEST_SELFTEST;
             if (string_equal(s, "test=ud")) info->test = BOOT_TEST_UD;
             if (string_equal(s, "test=pf")) info->test = BOOT_TEST_PF;
             if (string_equal(s, "test=memory")) info->test = BOOT_TEST_MEMORY;

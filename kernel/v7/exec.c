@@ -35,9 +35,11 @@ int proc_exec(uintptr_t path, uintptr_t argv, uintptr_t envp, struct interrupt_f
     char name[256];
     int error = copyinstr(&p->p_vm, path, name, sizeof(name), NULL);
     if (error) return error;
-    const struct embedded_program *program = userland_program(name);
-    if (!program) return -NX_ENOENT;
-    const uint8_t *file = program->start, *end = program->end;
+    const struct embedded_program *program = NULL;
+    if (!files_exec_enabled()) {
+        program = userland_program(name);
+        if (!program) return -NX_ENOENT;
+    }
     const char *comm = name;
     for (const char *c = name; *c; ++c) if (*c == '/') comm = c + 1;
     struct user *u = p->p_user;
@@ -47,8 +49,8 @@ int proc_exec(uintptr_t path, uintptr_t argv, uintptr_t envp, struct interrupt_f
     if (!error) error = vector(&p->p_vm, envp, &scratch.envc, scratch.envp);
     if (error) return error;
     struct exec_image image = {0};
-    size_t length = (uintptr_t)end - (uintptr_t)file;
-    error = elf_load(file, length, &scratch, &image);
+    error = files_exec_enabled() ? files_load_exec(name, &scratch, &image) :
+        elf_load(program->start, (uintptr_t)program->end - (uintptr_t)program->start, &scratch, &image);
     if (error) return error;
     struct exec_image old = {.vm = p->p_vm};
     p->p_vm = image.vm;

@@ -169,6 +169,10 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
     }
     serial_puts("Nexix: 10 timer interrupts handled\r\n");
     serial_puts("NEXIX_TIMER_OK\r\n");
+    if (test == BOOT_NORMAL) {
+        proc_init();
+        rootfs_start();
+    }
     user_mode_selftest(test);
     process_selftest();
     syscall_selftest();
@@ -180,6 +184,7 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
     signals_selftest();
     v7_userland_selftest();
     rootfs_selftest();
+    root_exec_selftest();
     serial_puts("NEXIX_BOOT_OK\r\n");
     for (;;)
         __asm__ volatile ("sti; hlt" : : : "memory");

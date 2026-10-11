@@ -6,50 +6,23 @@ Nexix ports UNIX Seventh Edition (V7) to x86_64 and adds features including TCP/
 It preserves V7 source and behavior where practical, with native ELF64 programs
 rebuilt from source rather than PDP-11 binary compatibility.
 
-Current implementation: a freestanding Multiboot2 bootstrap enters long mode,
-identity-maps the first GiB, initializes COM1, and validates the boot handoff.
-It installs an IDT, reports fatal exceptions over serial, remaps the legacy PIC,
-parses GRUB's memory map, allocates 4 KiB physical pages, and handles a roughly
-100 Hz PIT timer. Kernel/low memory, boot data, modules, and firmware-reserved
-ranges are excluded from allocation. Managed 4 KiB page tables protect kernel
-code and read-only data, mark data non-executable, and leave page zero unmapped.
-Separate address spaces support mapping, unmapping, permission changes, and
-switching between independent user mappings. A 64-bit TSS supplies guarded kernel
-entry stacks, with separate IST stacks for double faults and NMIs. Bootstrap test
-code now executes in ring 3, receives timer interrupts, and returns to the kernel
-through a test interrupt gate. Two contexts use distinct kernel entry stacks.
-After the self-tests it prints `NEXIX_USER_MODE_OK`, `NEXIX_USER_STACK_OK`,
-`NEXIX_USER_TIMER_OK`, `NEXIX_USER_RETURN_OK`, and `NEXIX_BOOT_OK`, then idles
-with interrupts enabled.
-V7 core structures use native pointers and sizes, with separate PDP-11 disk
-layouts and tested byte encoders. Native process code now provides guarded
-per-process stacks, context switching, timer preemption, sleep/wakeup, eager
-user-memory fork, exit, wait, and orphan reparenting. Boot tests exercise kernel
-tasks and a ring 3 parent/child pair, then reclaim their resources. This is a
-native adaptation of V7 process behavior; rebuilt V7 userland does not run yet.
-A native `int 0x80` syscall ABI now supports process lifecycle,
-identity queries, tick accounting, umask, and yielding. User-copy helpers reject
-invalid pointers and protect read-only pages. The bootstrap test gate uses
-`int 0x81`; it remains separate from the supported native interface.
-Native libc startup and a static library now run a C ELF64 program at CPL3,
-with syscall wrappers, errno, environment access, string/memory functions,
-and exit callbacks. See [libc foundation](docs/libc.md).
-A synchronous block interface, RAM disk and V7 filesystem now support kernel
-mount/lookup/read/write APIs, sparse files and chained block allocation. Boot
-tests mount a small generated fixture and execute an ELF read from it. The
-production exec catalog remains embedded until filesystem integration. See
-[filesystem foundation](docs/filesystem.md).
-File descriptors now support regular I/O, creation, truncation, links, stat,
-cwd, dup, close-on-exec and blocking pipes, with reference ownership across
-fork/exec/exit. See [file operations and pipes](docs/files.md).
-COM1 character-device I/O now supports interrupt-driven receive, cooked line
-editing, raw/cbreak modes, echo, software flow control and sgtty/ioctl controls.
-`/dev/console` and `/dev/ttyS0` share the terminal; `/dev/tty` resolves the process's
-controlling terminal. See [serial TTY](docs/tty.md).
-Native signals now provide handlers, alarms, user-fault termination, SIGPIPE,
-and interruptible pipe/TTY/wait operations. Brk/sbrk, credentials, permissions,
-process groups and time calls provide the remaining basic init/shell services.
-See [signals and init/shell services](docs/signals.md).
+Nexix now boots into the rebuilt V7 Bourne shell on COM1. The kernel mounts a
+writable RAM copy of the packaged V7 filesystem and launches `/etc/init` as
+PID 1. Init starts the single-user shell; native ELF64 programs execute from
+filesystem paths. See [booting Nexix](docs/booting.md).
+
+The kernel provides protected x86_64 address spaces, guarded kernel stacks,
+physical-page allocation, scheduling, timer preemption, eager fork, exit/wait
+and orphan reparenting. Its native syscall ABI validates user-memory access.
+File descriptors support regular files, directories, links, pipes, permissions
+and descriptor ownership across fork/exec/exit. COM1 provides cooked editing,
+raw/cbreak modes, echo, flow control and controlling-terminal signals.
+
+Native libc supports the retained V7 init, shell and seven utilities. Signals,
+alarms, brk/sbrk, credentials, process groups and time calls supply their basic
+services. The original V7 reference sources and historical disk encodings are
+preserved. Root changes last for the QEMU session; persistent storage follows
+in step 20. TCP/IP is planned for version 0.2.0.
 
 ## Build and boot
 
@@ -62,6 +35,7 @@ On Debian/Ubuntu the runtime tools are provided by `grub-common`, `grub-pc-bin`,
 make check
 make iso
 make run
+make test-boot
 make smoke
 make test
 make test-process
@@ -79,7 +53,9 @@ For an initial build on an x86_64 Linux host with GCC/binutils, use
 `make TOOLCHAIN_PREFIX= check` (and the same override for other targets).
 This is a bootstrap convenience; a pinned cross-toolchain remains planned.
 The kernel does not link host libc. Build artifacts go into `build/`.
-`make smoke` boots one CPU with 128 MiB RAM under QEMU TCG, requires the serial
+`make run` displays the shell prompt. Ctrl-D closes the shell and init starts
+a replacement; Ctrl-A, release, then X exits QEMU.
+`make smoke` boots the `test=selftest` regression ISO with one CPU with 128 MiB RAM under QEMU TCG, requires the serial
 boot and timer markers within 15 seconds, and saves `build/boot.log`.
 `make test-process` runs process scheduling and lifecycle checks with 16 MiB
 RAM; normal `make smoke` also runs them with 128 MiB. See
@@ -106,27 +82,26 @@ stack when the ordinary entry stack is unusable. These tests are included in
 `make test`; `make -j3 TOOLCHAIN_PREFIX= test` runs independent groups concurrently.
 Logs are `build/user-*.log`. Deliberate fatal-fault cases print `PANIC`; the
 harness requires the expected vector, error, originating privilege, and address.
-`make test-syscall` repeats the normal boot tests with 16 MiB RAM and saves
-`build/syscall-16M.log`. Every successful boot must also print `NEXIX_SYSCALL_OK`
+`make test-syscall` repeats the regression boot tests with 16 MiB RAM and saves
+`build/syscall-16M.log`. Every successful regression boot must also print `NEXIX_SYSCALL_OK`
 and the supporting ABI, user-copy, error, and fork markers. See the
 [native syscall ABI](docs/syscall-abi.md) for register conventions, types, errors,
 and supported calls. ELF64 loading and atomic exec replacement are implemented;
 see [execution ABI](docs/exec.md). `make TOOLCHAIN_PREFIX= test-exec` runs the
 ELF and fork/exec/wait tests with 16 MiB RAM (`build/exec-16M.log`). The current
 program catalog includes native assembly and C fixtures. Libc startup and
-initial wrappers are implemented; rebuilt V7 programs and the remaining libc
-services are pending. `make TOOLCHAIN_PREFIX= test-libc` runs the C userland
+wrappers and the libc support needed by the rebuilt V7 programs are implemented. `make TOOLCHAIN_PREFIX= test-libc` runs the C userland
 tests with 16 MiB RAM (`build/libc-16M.log`).
 `make TOOLCHAIN_PREFIX= test-files` exercises file operations, descriptor
 ownership, permissions and blocking pipes with 16 MiB RAM (`build/files-16M.log`).
 `make TOOLCHAIN_PREFIX= test-tty` exchanges real COM1 input with 16 MiB and
 128 MiB RAM and tests an interactive demo. `make TOOLCHAIN_PREFIX= run-tty`
 starts that demo: type a line and Enter, use Backspace/Ctrl-U to edit, or type
-`quit` to finish. Ctrl-A, release, then X exits QEMU. The rebuilt V7 shell runs in automated tests; normal interactive startup is pending.
+`quit` to finish. Ctrl-A, release, then X exits QEMU. Normal `make TOOLCHAIN_PREFIX= run` starts the V7 shell.
 
 ## Roadmap
 
-Version **0.1.0** covers these 20 steps. Steps 1–17 are implemented; step 18
+Version **0.1.0** covers these 20 steps. Steps 1–18 are implemented; step 19
 is next. Regression tests accompany implementation throughout the roadmap.
 
 1. Import V7 sources and preserve licensing.
@@ -161,10 +136,8 @@ the first release. See [architecture notes](docs/architecture.md) and
 `make TOOLCHAIN_PREFIX= v7-userland` builds V7 init, the Bourne shell and
 seven utilities as native ELF64 executables. `make TOOLCHAIN_PREFIX= test-v7`
 tests the rebuilt shell and utilities in QEMU with 16 MiB and 128 MiB RAM.
-Init is built and checked by the ELF loader; launching it as PID 1 follows in
-step 18. See [V7 userland](docs/userland.md).
+Normal boot now launches init as PID 1 and runs its single-user shell. See [V7 userland](docs/userland.md).
 
 `make TOOLCHAIN_PREFIX= rootfs` packages the programs and startup files into
 `build/root.img`. `make TOOLCHAIN_PREFIX= test-rootfs` validates the image on
-the host and in QEMU. See [root image](docs/root-image.md). Permanent root
-mounting and PID 1 startup are the next step.
+the host and in QEMU. See [root image](docs/root-image.md). Root mounting and PID 1 startup are implemented; see [booting](docs/booting.md).

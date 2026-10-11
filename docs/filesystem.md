@@ -16,8 +16,8 @@ make -j3 TOOLCHAIN_PREFIX= test
 The build generates `build/root-test.img`, a 1024-block (512 KiB) V7 filesystem
 fixture, and embeds its immutable bytes in the kernel. The boot test copies it
 into writable RAM, mounts it temporarily, tests it, then unmounts it. This is the
-RAM root-device foundation; normal boot does not yet mount a permanent root or
-launch init. Step 17 now builds the init/shell root image; see [root-image.md](root-image.md).
+RAM root-device foundation. Normal boot now mounts the production image and
+launches init; see [booting.md](booting.md). Step 17 now builds the init/shell root image; see [root-image.md](root-image.md).
 Step 18 mounts it for PID 1. The fixture itself is not a bootable V7 userland distribution.
 
 The fixture contains root, bin, tmp and dev directories; a greeting file;
@@ -113,10 +113,9 @@ atomic. Allocation may leave owned empty indirect branches after ENOSPC, which
 can be reused by a subsequent write. Power-loss recovery is not implemented.
 
 Step 13 implements file-descriptor operations, inode/file reference ownership,
-permission checks, namespace creation/removal, truncation and pipes. Timestamp updates,
-filesystem-backed exec pathname integration, and additional services are still
-pending. The production exec catalog remains embedded; only the step 12 test
-reads an ELF file from this filesystem and runs it through the existing loader.
+permission checks, namespace creation/removal, truncation and pipes. Step 15 adds metadata timestamps and step 18 adds filesystem-backed exec.
+Normal boot runs programs from the production root. The embedded catalog is
+retained for regression fixtures.
 
 ## Validation
 
@@ -124,7 +123,7 @@ Every successful QEMU boot requires `NEXIX_BLOCK_OK`, `NEXIX_V7FS_READ_OK`,
 `NEXIX_V7FS_ALLOC_OK`, `NEXIX_V7FS_WRITE_OK`, `NEXIX_V7FS_EXEC_OK` and
 `NEXIX_V7FS_OK` before `NEXIX_BOOT_OK`. `test-fs` uses 16 MiB RAM and logs to
 `build/fs-16M.log`; smoke uses 128 MiB. The full suite uses test-fs as its
-low-memory normal boot; the earlier test-process/syscall/exec/libc targets
+low-memory regression boot; the earlier test-process/syscall/exec/libc targets
 remain available separately.
 
 Boot tests cover paths, directories, special inodes, EOF, all indirection

@@ -12,7 +12,7 @@ struct process_stack { uint8_t guard[PAGE_SIZE], bytes[ENTRY_STACK_SIZE]; };
 static struct process_stack stacks[V7_NPROC] __attribute__((aligned(PAGE_SIZE)));
 static struct proc processes[V7_NPROC];
 static struct user users[V7_NPROC];
-static struct proc *current;
+static struct proc *current, *init_process;
 static struct v7_context scheduler;
 static unsigned cursor;
 static v7_pid_t next_pid;
@@ -227,6 +227,14 @@ bool proc_start_user(struct proc *p, uintptr_t entry, uintptr_t stack)
     p->p_stat = V7_SRUN;
     return true;
 }
+bool proc_start_init(struct proc *p, uintptr_t entry, uintptr_t stack)
+{
+    require_locked();
+    if (init_process || !member(p) || p->p_pid != 1 || p->p_ppid ||
+        !proc_start_user(p, entry, stack)) return false;
+    init_process = p;
+    return true;
+}
 v7_pid_t proc_spawn(void (*entry)(void *), void *argument)
 {
     uintptr_t flags = proc_irq_save();
@@ -405,6 +413,7 @@ _Noreturn void proc_exit(int32_t status)
 {
     (void)proc_irq_save();
     if (!current) panic("exit without process");
+    if (current == init_process) panic("init exited");
     struct proc *p = current;
     files_exit(p->p_user);
     p->p_xstat = status;

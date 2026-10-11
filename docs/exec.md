@@ -52,12 +52,14 @@ pointer-vector entries are native 64-bit user addresses. A successful call
 returns to the new entry point and never resumes the old instruction stream.
 A failed call returns negative errno through the existing syscall ABI.
 
-Pathnames are currently resolved through the embedded catalog in
-`kernel/v7/catalog.c`. It includes acceptance fixtures, `/etc/init`, `/bin/sh`
-and the seven rebuilt V7 utilities; see [userland.md](userland.md).
-Other paths return ENOENT. Filesystem lookup will replace this catalog when
-production filesystem-backed exec is integrated; no filesystem or permission checks are
-claimed here. Path capacity is 256 bytes including NUL. Invalid addresses
+Normal boot resolves paths in the mounted root filesystem using effective
+credentials and cwd. Regular files need execute permission and at least one
+execute bit. Set-ID modes are rejected with ENOEXEC. The ELF loader streams
+inode contents directly into staged pages; read failures return EIO and reclaim
+the staged image. Missing files return ENOENT; search/execute permission failures
+return EACCES. The embedded catalog in `kernel/v7/catalog.c` remains available
+only for regression fixture mounts. See [booting.md](booting.md).
+Path capacity is 256 bytes including NUL. Invalid addresses
 return EFAULT; unterminated paths or oversized argument sets return E2BIG;
 invalid/unsupported ELF files return ENOEXEC; allocation failure returns ENOMEM.
 Managed file and cwd references survive exec. Unsupported references and

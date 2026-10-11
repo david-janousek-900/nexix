@@ -17,6 +17,7 @@ void proc_abort(struct proc *p);
 bool proc_map_page(struct proc *p, uintptr_t address, unsigned permissions,
                    const void *contents); /* contents: NULL or one full page */
 bool proc_start_user(struct proc *p, uintptr_t entry, uintptr_t stack);
+bool proc_start_init(struct proc *p, uintptr_t entry, uintptr_t stack);
 v7_pid_t proc_spawn(void (*entry)(void *), void *argument);
 void proc_run(void); /* Bootstrap scheduler: returns when only zombies remain. */
 void proc_yield(void);

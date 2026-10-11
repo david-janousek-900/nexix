@@ -4,6 +4,11 @@
 #include "v7/fs.h"
 #include <nexix/file.h>
 /* IRQs disabled; one root filesystem, kernel-owned tables. */
+struct exec_args;
+struct exec_image;
+int files_mount_root(struct v7fs *); /* Production mount enables filesystem exec. */
+bool files_exec_enabled(void);
+int files_load_exec(const char *, const struct exec_args *, struct exec_image *);
 int files_mount(struct v7fs *); /* NULL detaches, EBUSY if references remain */
 bool files_refs_valid(const struct user *);
 void files_fork(struct user *);

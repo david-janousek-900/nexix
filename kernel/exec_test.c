@@ -26,6 +26,14 @@ static void reject(size_t length, size_t offset, uint64_t value, unsigned width)
     REQUIRE(elf_load(corrupted, length, &args, &image) == -NX_ENOEXEC);
     REQUIRE(!image.vm.root && page_free_count() == before);
 }
+static int read_failure(void *context, size_t offset, void *buffer, size_t count)
+{
+    unsigned *remaining=context;
+    if (!(*remaining)--) return -NX_EIO;
+    const uint8_t *source=_binary_build_exec_test_elf_start+offset;
+    for(size_t i=0;i<count;++i)((uint8_t *)buffer)[i]=source[i];
+    return 0;
+}
 void exec_selftest(void)
 {
     const uint8_t *file = _binary_build_exec_test_elf_start;
@@ -41,6 +49,13 @@ void exec_selftest(void)
     uint32_t before = page_free_count();
     struct exec_image image = {0};
     REQUIRE(elf_load(file, 63, &args, &image) == -NX_ENOEXEC);
+    /* Header, program headers and segment reads fail independently; staged
+     * address spaces/pages must be rolled back after any read failure. */
+    for(unsigned fail=0;fail<4;++fail){
+        unsigned remaining=fail;
+        REQUIRE(elf_load_reader(read_failure,&remaining,length,&args,&image)==-NX_EIO);
+        REQUIRE(!image.vm.root && page_free_count()==before);
+    }
     size_t phoff = get(file + 32, 8);
     reject(length, 0, 0, 1);
     reject(length, 4, 1, 1); /* ELF32 */

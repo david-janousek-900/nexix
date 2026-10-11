@@ -3,6 +3,7 @@
 #include "tty.h"
 #include "signals.h"
 #include "uaccess.h"
+#include "exec.h"
 #include <nexix/syscall.h>
 #include <nexix/errno.h>
 #define NPIPE 32
@@ -11,6 +12,7 @@ static struct pipe_buffer pipes[NPIPE];
 static struct file table[V7_NFILE];
 static struct inode inodes[V7_NINODE];
 static struct v7fs *root;
+static bool root_exec;
 static void zero(void *p, size_t n) { uint8_t *b = p; for (size_t i = 0; i < n; ++i) b[i] = 0; }
 static bool valid_inode(const struct inode *p)
 { for (unsigned i = 0; i < V7_NINODE; ++i) if (p == &inodes[i]) return p->i_count != 0; return false; }
@@ -28,7 +30,7 @@ int files_mount(struct v7fs *fs)
 {
     if (files_live()) return -NX_EBUSY;
     if (fs && !fs->mounted) return -NX_ENODEV;
-    root = fs; return 0;
+    root = fs; root_exec = false; return 0;
 }
 bool files_refs_valid(const struct user *u)
 {
@@ -111,6 +113,30 @@ static int path_copy(uintptr_t address, char path[256])
 { return copyinstr(&proc_current()->p_vm, address, path, 256, NULL); }
 static int lookup_path(struct user *u, const char *path, v7_ino_t *ino)
 { return v7fs_lookup_user(root, cwd(u), path, ino, u->u_uid, u->u_gid); }
+bool files_exec_enabled(void) { return root_exec; }
+int files_mount_root(struct v7fs *fs)
+{
+    if (!fs) return -NX_EINVAL;
+    int error = files_mount(fs);
+    if (!error) root_exec = true;
+    return error;
+}
+int files_load_exec(const char *path, const struct exec_args *args, struct exec_image *image)
+{
+    if (!root_exec || !proc_current()) return -NX_ENODEV;
+    struct user *u = proc_current()->p_user;
+    v7_ino_t ino;
+    int error = lookup_path(u, path, &ino);
+    if (error) return error;
+    struct v7fs_inode node;
+    error = v7fs_inode_get(root, ino, &node);
+    if (error) return error;
+    /* V7 root still requires at least one execute bit. No set-ID exec yet. */
+    if ((node.mode & V7_IFMT) != V7_IFREG || !(node.mode & 0111) ||
+        !v7fs_access(&node, u->u_uid, u->u_gid, 1)) return -NX_EACCES;
+    if (node.mode & (V7_ISUID | V7_ISGID)) return -NX_ENOEXEC;
+    return elf_load_inode(root, ino, args, image);
+}
 static int parent_path(struct user *u, const char *path, v7_ino_t *parent, char name[V7_DIRSIZ])
 {
     char prefix[256]; unsigned length = 0, split = 0;

@@ -93,7 +93,7 @@ and job control remain deferred.
 
 ## Validation
 
-Normal boot runs kernel scheduling tests followed by a ring 3 fork/exit/wait
+The regression boot runs kernel scheduling tests followed by a ring 3 fork/exit/wait
 test through the deliberately limited `int 0x81` test interrupt gate. Its commands 0x100,
 0x101, 0x102 and 0x104 exercise fork, wait, exit and tick accounting only while
 the process test is active. This gate is not a supported syscall interface.
@@ -103,7 +103,7 @@ count against its starting value.
 Run:
 
 ```sh
-make TOOLCHAIN_PREFIX= smoke          # 128 MiB normal boot
+make TOOLCHAIN_PREFIX= smoke          # 128 MiB regression boot
 make TOOLCHAIN_PREFIX= test-process   # same checks with 16 MiB RAM
 make -j3 TOOLCHAIN_PREFIX= test        # complete regression suite
 ```
@@ -116,3 +116,6 @@ failure cases are listed in [validation.md](validation.md).
 
 Step 9 now provides the separate native `int 0x80` interface with safe user access;
 see [syscall-abi.md](syscall-abi.md). Step 10 adds ELF64 loading and exec.
+
+Step 18 starts the first user process as PID 1 during normal boot. Its exit is
+a fatal error; orphan adoption continues to use PID 1. See [booting.md](booting.md).

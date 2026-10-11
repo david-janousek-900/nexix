@@ -142,8 +142,8 @@ filesystem mount, inode decoding, lookup, direct and triple-level indirect I/O,
 sparse growth and chained free-block allocation use the retained disk formats.
 A 29-sector cache uses synchronous writes. Callers serialize whole operations;
 write errors disable the mount until remount. Boot tests temporarily mount a
-generated RAM fixture and execute an ELF read through these APIs. Permanent
-root mounting and production filesystem-backed exec integration remain pending.
+generated RAM fixture and execute an ELF read through these APIs. Normal boot now mounts the production root in writable RAM, streams ELF
+segments from inodes and launches init as PID 1; see [booting.md](booting.md).
 The file layer now manages descriptors and inode ownership across fork/exec/exit,
 with checked namespace operations and blocking pipes; see [files.md](files.md). See
 [filesystem.md](filesystem.md) for API contracts and format limits.

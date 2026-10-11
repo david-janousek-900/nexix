@@ -94,10 +94,10 @@ build/nexix.iso: build/nexix.elf boot/grub.cfg
 
 iso: check build/nexix.iso
 run: iso
-	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -cdrom build/nexix.iso -display none -serial stdio -monitor none -no-reboot
+	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -cdrom build/nexix.iso -display none -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -mon chardev=console,mode=readline -no-reboot
 
-smoke: iso
-	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso
+smoke: check build/test-selftest.iso
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso
 
 build/test-%.iso: build/nexix.elf boot/grub.cfg
 	mkdir -p build/iso-$*/boot/grub
@@ -158,12 +158,12 @@ clean:
 	$(PYTHON) -c 'import shutil; shutil.rmtree("build", ignore_errors=True)'
 
 .PHONY: test-process
-test-process: iso
-	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso process 16M
+test-process: check build/test-selftest.iso
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso process 16M
 
 .PHONY: test-syscall
-test-syscall: iso
-	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso syscall 16M
+test-syscall: check build/test-selftest.iso
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso syscall 16M
 
 # A real, statically linked ELF64 executable; no host libc or runtime.
 build/exec_program.o: user/exec-test.S include/nexix/syscall.h include/nexix/errno.h | build
@@ -180,8 +180,8 @@ build/exec.o: kernel/v7/exec.c | build
 build/exec_test.o: kernel/exec_test.c | build
 	$(CC) $(CFLAGS) -c $< -o $@
 .PHONY: test-exec
-test-exec: iso
-	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso exec 16M
+test-exec: check build/test-selftest.iso
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso exec 16M
 
 # Native userland: compiler freestanding headers plus Nexix headers only.
 USER_CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-builtin -fno-stack-protector -fno-pie -m64 -mno-red-zone -mgeneral-regs-only -fno-asynchronous-unwind-tables -nostdinc -isystem $(shell $(CC) -print-file-name=include) -Ilibc/include -Iinclude -MMD -MP
@@ -208,8 +208,8 @@ build/libc_test.o: kernel/libc_test.c | build
 	$(CC) $(CFLAGS) -c $< -o $@
 .PHONY: userland test-libc
 userland: build/crt0.o build/libc.a build/libc-test.elf
-test-libc: iso
-	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso libc 16M
+test-libc: check build/test-selftest.iso
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso libc 16M
 
 # Small V7 filesystem fixture; a bootable init/shell root is step 17.
 build/root-test.img: tools/mk_v7fs.py build/exec-test.elf build/libc-test.elf
@@ -224,8 +224,8 @@ build/v7fs.o: kernel/v7/fs.c | build
 build/fs_test.o: kernel/fs_test.c | build
 	$(CC) $(CFLAGS) -c $< -o $@
 .PHONY: test-fs
-test-fs: iso
-	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso fs 16M
+test-fs: check build/test-selftest.iso
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso fs 16M
 
 build/filesystem-test: tests/filesystem.c kernel/block.c kernel/v7/fs.c kernel/include/block.h kernel/include/v7/fs.h kernel/include/v7/disk.h kernel/include/v7/types.h kernel/include/v7/constants.h include/nexix/errno.h | build
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/filesystem.c kernel/block.c kernel/v7/fs.c -o $@
@@ -244,8 +244,8 @@ build/files_image.o: build/files-test.elf
 	$(LD) -r -b binary $< -o build/files_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/files_raw.o $@
 .PHONY: test-files
-test-files: iso
-	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso files 16M
+test-files: check build/test-selftest.iso
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso files 16M
 userland: build/files-test.elf
 
 # Step 14: serial terminal and native sgtty/ioctl userland fixture.
@@ -291,9 +291,9 @@ build/signals_image.o: build/signals-test.elf
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/signals_raw.o $@
 userland: build/signals-test.elf
 .PHONY: test-signals
-test-signals: iso
-	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso signals 16M
-	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso signals 128M
+test-signals: check build/test-selftest.iso
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso signals 16M
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso signals 128M
 
 build/libc_setjmp.o: libc/arch/x86_64/setjmp.S | build
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
@@ -338,9 +338,9 @@ build/v7_test_image.o: build/v7-test.elf
 	$(LD) -r -b binary $< -o build/v7_test_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/v7_test_raw.o $@
 .PHONY: test-v7
-test-v7: iso
-	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso v7 16M
-	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso v7 128M
+test-v7: check build/test-selftest.iso
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso v7 16M
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso v7 128M
 build/nexix.elf: $(V7_IMAGES)
 
 .SECONDARY: $(addprefix build/v7-,$(addsuffix .o,$(V7_COMMANDS)))
@@ -358,12 +358,34 @@ build/rootfs_test.o: kernel/rootfs_test.c | build
 OBJECTS += build/boot_root_image.o build/rootfs_test.o
 build/nexix.elf: build/boot_root_image.o build/rootfs_test.o
 -include build/rootfs_test.d
-test-rootfs: iso test-root-image
-	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso rootfs 16M
-	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso rootfs 128M
+test-rootfs: check build/test-selftest.iso test-root-image
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso rootfs 16M
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso rootfs 128M
 test: test-rootfs
 
 .PHONY: test-root-image
 test-root-image: build/root.img
 	$(PYTHON) tests/root_image.py
 test-unit: test-root-image
+
+build/root_boot.o: kernel/root_boot.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+OBJECTS += build/root_boot.o
+build/nexix.elf: build/root_boot.o
+-include build/root_boot.d
+
+build/root_exec_program.o: user/root-exec-test.c | build
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/libc.a -o $@
+build/root_exec_image.o: build/root-exec-test.elf
+	$(LD) -r -b binary $< -o build/root_exec_raw.o
+	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/root_exec_raw.o $@
+OBJECTS += build/root_exec_image.o
+build/nexix.elf: build/root_exec_image.o
+-include build/root_exec_program.d
+.PHONY: test-boot
+test-boot: iso
+	$(PYTHON) tools/boot_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/boot_smoke.py $(QEMU) build/nexix.iso 128M
+test: test-boot

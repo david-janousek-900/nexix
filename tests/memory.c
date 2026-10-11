@@ -82,6 +82,8 @@ static void parser_tests(void)
     begin(); map_add(&entry, 1, 24); cmd = append(1, 22);
     memcpy(cmd + 1, "test=tty-demo", 14); finish();
     assert(parse(&info) && info.test == BOOT_TEST_TTY_DEMO);
+    memset(cmd + 1, 0, 14); memcpy(cmd + 1, "test=selftest", 14);
+    assert(parse(&info) && info.test == BOOT_TEST_SELFTEST);
     memset(cmd + 1, 0, 14); memcpy(cmd + 1, "test=tty", 9);
     assert(parse(&info) && info.test == BOOT_TEST_TTY);
 

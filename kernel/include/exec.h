@@ -16,6 +16,12 @@ struct exec_image {
     size_t size, text, data, bss;
 };
 /* IRQs disabled; caller owns staged image until commit. No live VM mutation. */
+/* Reader must fill exactly count bytes or return negative errno. */
+typedef int (*elf_reader)(void *context, size_t offset, void *buffer, size_t count);
+int elf_load_reader(elf_reader, void *context, size_t length,
+                    const struct exec_args *, struct exec_image *);
+struct v7fs;
+int elf_load_inode(struct v7fs *, v7_ino_t, const struct exec_args *, struct exec_image *);
 int elf_load(const void *file, size_t length, const struct exec_args *, struct exec_image *);
 void exec_image_release(struct exec_image *);
 int proc_exec(uintptr_t path, uintptr_t argv, uintptr_t envp, struct interrupt_frame *);

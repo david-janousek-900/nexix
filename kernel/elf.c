@@ -1,5 +1,6 @@
 #include "exec.h"
 #include "uaccess.h"
+#include "v7/fs.h"
 #include <nexix/errno.h>
 
 struct elf_header {
@@ -61,13 +62,14 @@ static void populate(struct exec_image *image, uintptr_t va, const void *src, si
         va += n; s += n; length -= n;
     }
 }
-int elf_load(const void *file, size_t length, const struct exec_args *args, struct exec_image *image)
+int elf_load_reader(elf_reader read, void *context, size_t length, const struct exec_args *args, struct exec_image *image)
 {
     if (image->vm.root) return -NX_EINVAL;
     *image = (struct exec_image){0};
     struct elf_header h;
     if (length < sizeof(h)) return -NX_ENOEXEC;
-    bytes_copy(&h, file, sizeof(h));
+    int error = read(context, 0, &h, sizeof(h));
+    if (error) return error;
     if (h.ident[0] != 0x7f || h.ident[1] != 'E' || h.ident[2] != 'L' || h.ident[3] != 'F' ||
         h.ident[4] != 2 || h.ident[5] != 1 || h.ident[6] != 1 || h.ident[7] || h.ident[8] || h.type != 2 ||
         h.machine != 62 || h.version != 1 || h.flags || h.ehsize != sizeof(h) ||
@@ -75,7 +77,8 @@ int elf_load(const void *file, size_t length, const struct exec_args *args, stru
         h.phoff > length || h.phnum > (length - h.phoff) / sizeof(struct elf_program))
         return -NX_ENOEXEC;
     struct elf_program ph[MAX_PHDR];
-    bytes_copy(ph, (const uint8_t *)file + h.phoff, h.phnum * sizeof(*ph));
+    error = read(context, h.phoff, ph, h.phnum * sizeof(*ph));
+    if (error) return error;
     bool entry = false, load = false;
     size_t total = 0;
     for (unsigned i = 0; i < h.phnum; ++i) {
@@ -119,7 +122,7 @@ int elf_load(const void *file, size_t length, const struct exec_args *args, stru
         if (n == args->used) return -NX_EINVAL;
     }
     if (!vm_create(&image->vm)) return -NX_ENOMEM;
-    int error = 0;
+    error = 0;
     for (unsigned i = 0; i < h.phnum && !error; ++i) {
         struct elf_program *p = &ph[i];
         if (p->type != 1 || !p->memsz) continue;
@@ -128,7 +131,14 @@ int elf_load(const void *file, size_t length, const struct exec_args *args, stru
         unsigned flags = ((p->flags & 1) ? VM_EXEC : 0) | ((p->flags & 2) ? VM_WRITE : 0);
         for (uintptr_t va = p->vaddr & ~(PAGE_SIZE - 1); va < end && !error; va += PAGE_SIZE)
             error = map_zero(image, va, flags);
-        if (!error) populate(image, p->vaddr, (const uint8_t *)file + p->offset, p->filesz);
+        for (size_t copied = 0; copied < p->filesz && !error;) {
+            uintptr_t va = p->vaddr + copied, pa;
+            if (!vm_translate(&image->vm, va, &pa, NULL)) panic("missing staged exec mapping");
+            size_t count = PAGE_SIZE - (va & (PAGE_SIZE - 1));
+            if (count > p->filesz - copied) count = p->filesz - copied;
+            error = read(context, p->offset + copied, (void *)pa, count);
+            copied += count;
+        }
         if (p->flags & 1) image->text += p->memsz;
         else { image->data += p->filesz; image->bss += p->memsz - p->filesz; }
     }
@@ -149,4 +159,31 @@ int elf_load(const void *file, size_t length, const struct exec_args *args, stru
     populate(image, image->stack, words, n * sizeof(uint64_t));
     image->entry = h.entry;
     return 0;
+}
+
+static int memory_read(void *context, size_t offset, void *buffer, size_t count)
+{
+    bytes_copy(buffer, (const uint8_t *)context + offset, count);
+    return 0;
+}
+int elf_load(const void *file, size_t length, const struct exec_args *args, struct exec_image *image)
+{
+    return elf_load_reader(memory_read, (void *)file, length, args, image);
+}
+struct inode_source { struct v7fs *fs; v7_ino_t ino; };
+static int inode_read(void *context, size_t offset, void *buffer, size_t count)
+{
+    struct inode_source *source = context;
+    size_t done;
+    int error = v7fs_read(source->fs, source->ino, offset, buffer, count, &done);
+    return error ? error : done == count ? 0 : -NX_EIO;
+}
+int elf_load_inode(struct v7fs *fs, v7_ino_t ino, const struct exec_args *args, struct exec_image *image)
+{
+    struct v7fs_inode node;
+    int error = v7fs_inode_get(fs, ino, &node);
+    if (error) return error;
+    if ((node.mode & V7_IFMT) != V7_IFREG) return -NX_EACCES;
+    struct inode_source source = {fs, ino};
+    return elf_load_reader(inode_read, &source, node.size, args, image);
 }

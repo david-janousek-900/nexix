@@ -42,6 +42,6 @@ loader pages are reclaimed and the temporary mount is released. Required
 markers are `NEXIX_ROOT_IMAGE_OK` and `NEXIX_ROOT_ELF_OK`; logs are
 `build/rootfs-16M.log` and `build/rootfs-128M.log`.
 
-Normal boot still finishes self-tests and idles. Permanent writable root
-mounting, filesystem-backed exec and launching PID 1 belong to step 18.
+Step 18 now mounts a writable RAM copy of the volume and launches init and
+the single-user shell; see [booting.md](booting.md).
 Interactive acceptance follows in step 19; persistent IDE storage in step 20.

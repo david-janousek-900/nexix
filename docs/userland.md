@@ -27,9 +27,8 @@ driver also checks stdio, formatting, allocation and epoch conversion.
 Cleanup verifies pages, filesystem blocks/inodes, descriptors and TTY references.
 The test is also included in `make TOOLCHAIN_PREFIX= test`.
 
-For this acceptance stage, executable images are embedded in the kernel and
-resolved through its temporary exec catalog. Directory listings still show the
-small filesystem fixture rather than the executable catalog. Step 17 packages
-programs into `build/root.img`; see [root-image.md](root-image.md); step 18 mounts it and launches init as PID 1;
-step 19 verifies interactive operation. Normal boot still runs self-tests and
-idles. The rebuilt init lifecycle is not yet exercised as PID 1.
+The step 16 acceptance fixtures retain an embedded exec catalog and their
+small test filesystem. Normal boot now uses the production root image and
+filesystem-backed exec, runs init as PID 1 and starts the single-user shell;
+see [booting.md](booting.md). Step 19 broadens interactive acceptance; persistent
+IDE storage follows in step 20.

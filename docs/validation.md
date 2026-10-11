@@ -15,7 +15,7 @@ Run `make TOOLCHAIN_PREFIX= test` in this environment. The suite checks:
 - Host tests for bounded boot tag parsing, malformed/duplicate/extended maps,
   address overflow, overlapping reservations, partial pages, invalid frees,
   allocation uniqueness, exhaustion, and reuse.
-- QEMU allocation/free self-test during normal boot. Additional 16 MiB and
+- QEMU allocation/free self-test during regression boot. Additional 16 MiB and
   128 MiB runs exhaust physical pages, write every byte, reclaim all pages,
   restore the original free count, and preserve boot data and a loaded module.
 - Paging self-test: effective kernel permissions, null guard, independent maps
@@ -50,7 +50,7 @@ Additional paging logs are `build/wp.log`, `build/nx.log`, `build/unmap.log`,
 `build/null.log`, `build/protect.log`, and `build/paging-oom.log`. `make TOOLCHAIN_PREFIX= test-paging`
 runs the protection and allocation-failure cases separately.
 `make TOOLCHAIN_PREFIX= test-user` runs the user protection and stack cases;
-their transcripts are `build/user-*.log`. Normal boot must also emit all four
+their transcripts are `build/user-*.log`. Regression boot must also emit all four
 `NEXIX_USER_*_OK` markers. Independent groups can run concurrently with
 `make -j3 TOOLCHAIN_PREFIX= test`.
 The host parser/allocator tests also pass AddressSanitizer and UBSan with leak
@@ -95,7 +95,7 @@ NEXIX_SYSCALL_ABI_OK, NEXIX_UACCESS_OK, NEXIX_SYSCALL_ERRORS_OK,
 NEXIX_SYSCALL_FORK_OK and NEXIX_SYSCALL_OK. `make TOOLCHAIN_PREFIX= test-syscall`
 boots the ordinary image with 16 MiB and saves `build/syscall-16M.log`; the full
 suite includes this run. `make test-process` remains available for the same
-16 MiB normal boot with `build/process-16M.log` as its transcript.
+16 MiB regression boot with `build/process-16M.log` as its transcript.
 
 The new host user-copy tests use independent mappings and noncontiguous backing,
 cover full-range atomic rejection, effective supervisor/read-only permissions,
@@ -112,14 +112,14 @@ See [syscall-abi.md](syscall-abi.md) for the ABI and exact service scope.
 
 ELF64 execution (step 10): every successful boot requires `NEXIX_ELF_OK`,
 `NEXIX_EXEC_ROLLBACK_OK` and `NEXIX_EXEC_OK`. `make TOOLCHAIN_PREFIX= test-exec`
-runs the complete normal boot with 16 MiB RAM (`build/exec-16M.log`), including
+runs the complete regression boot with 16 MiB RAM (`build/exec-16M.log`), including
 malformed ELF rejection, partial-allocation rollback, argument/environment
 stacks, and an actual CPL3 fork/exec/wait sequence. See [exec.md](exec.md).
-The full suite now uses test-fs for its low-memory normal boot; test-process,
+The full suite now uses test-fs for its low-memory regression boot; test-process,
 test-syscall, test-exec and test-libc remain available separately.
 
 Native libc (step 11): every successful boot requires `NEXIX_LIBC_ABI_OK` and
-`NEXIX_LIBC_OK`. `make TOOLCHAIN_PREFIX= test-libc` runs the normal boot with
+`NEXIX_LIBC_OK`. `make TOOLCHAIN_PREFIX= test-libc` runs the regression boot with
 16 MiB RAM (`build/libc-16M.log`), including a real C program linked with native
 crt0/libc, argument/environment startup, six-argument register conversion,
 callee-saved registers, errno translation, fork/exec/wait, strings, exit
@@ -129,7 +129,7 @@ are also exercised. See [libc.md](libc.md) for the supported interface.
 Block devices and V7 filesystem (step 12): successful boots require
 `NEXIX_BLOCK_OK`, `NEXIX_V7FS_READ_OK`, `NEXIX_V7FS_ALLOC_OK`,
 `NEXIX_V7FS_WRITE_OK`, `NEXIX_V7FS_EXEC_OK` and `NEXIX_V7FS_OK`.
-`make TOOLCHAIN_PREFIX= test-fs` runs the complete normal boot with 16 MiB RAM
+`make TOOLCHAIN_PREFIX= test-fs` runs the complete regression boot with 16 MiB RAM
 (`build/fs-16M.log`). Host filesystem tests run under test-unit against the
 generated `build/root-test.img`. Tests cover lookup, all indirect levels,
 sparse reads/writes, free-list exhaustion/reuse, remount persistence, ELF
@@ -194,3 +194,16 @@ and boots QEMU at 16 MiB and 128 MiB. `NEXIX_ROOT_IMAGE_OK` and
 read from the volume. Host tests check file bytes, directory link counts,
 complete block ownership/free-list accounting, spare inodes, reproducibility
 and insufficient-space rejection. See [root-image.md](root-image.md).
+
+## Step 18 acceptance
+
+`make TOOLCHAIN_PREFIX= test-boot` boots the normal production ISO at 16 MiB
+and 128 MiB. It checks PID 1 startup, PID 2 shell commands, writable root I/O,
+execution of a copied program and init restarting the shell after console EOF.
+Component tests now use `test=selftest` rather than starting init. They require
+`NEXIX_ROOT_EXEC_USER_OK`, `NEXIX_ROOT_EXEC_OK` and
+`NEXIX_ROOT_EXEC_CLEANUP_OK` in addition to earlier markers. The native driver
+checks relative exec, missing catalog-only names, permission/type rejection,
+unsupported set-ID exec, malformed ELF and post-exec cleanup. Injected loader
+read failures verify rollback before and after allocating staged pages.
+See [booting.md](booting.md) for commands and transcripts.
