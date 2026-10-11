@@ -1,6 +1,8 @@
 # Root and PID 1 startup (step 18)
 
-Run `make TOOLCHAIN_PREFIX= run` on an x86_64 Linux host with GCC/binutils.
+Run `make run` on an x86_64 Linux host with GCC/binutils. Host tools are the
+default; an installed cross-toolchain can be selected with
+`make TOOLCHAIN_PREFIX=x86_64-elf- run`.
 GRUB loads Nexix, the kernel initializes memory, interrupts and the serial TTY,
 then mounts the primary IDE master as the root. `make run` attaches
 `build/nexix.img`, initially copied from the packaged `build/root.img`.

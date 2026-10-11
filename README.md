@@ -26,7 +26,7 @@ See [persistent storage](docs/storage.md). TCP/IP is planned for version 0.2.0.
 
 ## Build and boot
 
-Dependencies: GNU Make, Python 3, an `x86_64-elf` GCC/binutils cross-toolchain,
+Dependencies: GNU Make, Python 3, host GCC/binutils on x86_64 Linux,
 GRUB's BIOS modules and `grub-mkrescue`, xorriso, and `qemu-system-x86_64`.
 On Debian/Ubuntu the runtime tools are provided by `grub-common`, `grub-pc-bin`,
 `xorriso`, and `qemu-system-x86`.
@@ -51,9 +51,9 @@ make test-signals
 make run-tty
 ```
 
-For an initial build on an x86_64 Linux host with GCC/binutils, use
-`make TOOLCHAIN_PREFIX= check` (and the same override for other targets).
-This is a bootstrap convenience; a pinned cross-toolchain remains planned.
+Host GCC/binutils are used by default; `make run` needs no variable overrides.
+To use an installed cross-toolchain, run `make TOOLCHAIN_PREFIX=x86_64-elf- run`
+(or the same override for other targets). A pinned cross-toolchain remains planned.
 The kernel does not link host libc. Build artifacts go into `build/`.
 
 `make clean` deletes the entire `build/` directory, including the persistent

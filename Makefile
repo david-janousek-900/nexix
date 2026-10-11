@@ -1,4 +1,6 @@
-TOOLCHAIN_PREFIX ?= x86_64-elf-
+# Host GCC/binutils are the default bootstrap tools on x86_64 Linux.
+# Override with TOOLCHAIN_PREFIX=x86_64-elf- for a cross-toolchain.
+TOOLCHAIN_PREFIX ?=
 CC = $(TOOLCHAIN_PREFIX)gcc
 LD = $(TOOLCHAIN_PREFIX)ld
 AR = $(TOOLCHAIN_PREFIX)ar
