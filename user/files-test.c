@@ -4,11 +4,13 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
+#include <stdio.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <nexix/libc.h>
 #define REQUIRE(c) do { if (!(c)) return __LINE__ % 250 + 1; } while (0)
 static char payload[12000], buffer[12000];
+extern int stdio_test(void);
 static int child_wait(pid_t child, int code)
 {
     int status = -1;
@@ -163,6 +165,7 @@ int main(int argc, char **argv)
         return 42;
     }
     int error = files(); if (error) return error;
+    error=stdio_test();if(error)return error;
     error = pipes(); if (error) return error;
     return inheritance();
 }

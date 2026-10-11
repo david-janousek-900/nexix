@@ -15,6 +15,7 @@
 extern int libc_register_test(void);
 extern int libc_alignment_test(void);
 extern int fpu_process_test(void);
+extern int libc_scan_test(void);
 static int exit_order;
 static int zeroed[1024];
 static void first(void) { CHECK(exit_order == 1); _exit(42); }
@@ -165,6 +166,7 @@ int main(int argc, char **argv, char **envp)
     CHECK(errno == EFAULT); /* Success does not clear errno. */
     CHECK(fpu_process_test());
     numbers(); errno = EFAULT;
+    int scan_error=libc_scan_test();if(scan_error)_exit(scan_error);errno=EFAULT;
     CHECK(wait(NULL) == -1 && errno == ECHILD);
     CHECK(execve("/missing", argv, environ) == -1 && errno == ENOENT);
     volatile uintptr_t invalid_vector = 1;

@@ -11,6 +11,14 @@ void *calloc(size_t, size_t);
 void *realloc(void *, size_t);
 void qsort(void *, size_t, size_t, int (*)(const void *, const void *));
 int atoi(const char *);
+long atol(const char *);
+long strtol(const char *,char **,int);
+unsigned long strtoul(const char *,char **,int);
+int abs(int);
+long labs(long);
+#define RAND_MAX 32767
+int rand(void);
+void srand(unsigned);
 double atof(const char *);
 double strtod(const char *, char **);
 char *ecvt(double, int, int *, int *);

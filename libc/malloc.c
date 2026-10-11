@@ -25,4 +25,3 @@ void qsort(void *base,size_t count,size_t size,int (*cmp)(const void *,const voi
     for(size_t i=1;i<count;++i)for(size_t j=i;j&&cmp(bytes+(j-1)*size,bytes+j*size)>0;--j)
         for(size_t k=0;k<size;++k){unsigned char c=bytes[(j-1)*size+k];bytes[(j-1)*size+k]=bytes[j*size+k];bytes[j*size+k]=c;}
 }
-int atoi(const char *s){int neg=0,n=0;while(*s==' '||*s=='\t')++s;if(*s=='-'||*s=='+')neg=*s++=='-';while(*s>='0'&&*s<='9')n=n*10+*s++-'0';return neg?-n:n;}

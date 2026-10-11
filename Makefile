@@ -187,7 +187,7 @@ test-exec: check build/test-selftest.iso
 
 # Native userland: compiler freestanding headers plus Nexix headers only.
 USER_CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-builtin -fno-stack-protector -fno-pie -m64 -mno-red-zone -mno-avx -fno-asynchronous-unwind-tables -nostdinc -isystem $(shell $(CC) -print-file-name=include) -Ilibc/include -Iinclude -MMD -MP
-LIBC_OBJECTS = build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o build/libc_float.o build/libc_convert.o
+LIBC_OBJECTS = build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o build/libc_float.o build/libc_convert.o build/libc_scan.o build/libc_ctype.o build/libc_numbers.o
 -include $(LIBC_OBJECTS:.o=.d) build/libc_program.d
 build/crt0.o: libc/arch/x86_64/crt0.S | build
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
@@ -201,8 +201,8 @@ build/libc_program.o: user/libc-test.c | build
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 build/libc_abi.o: user/libc-test-abi.S include/nexix/syscall.h | build
 	$(CC) -m64 -ffreestanding -fno-pie -Iinclude -c $< -o $@
-build/libc-test.elf: build/crt0.o build/libc_program.o build/libc_abi.o build/fpu_program.o build/libc.a build/libm.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/libc_program.o build/libc_abi.o build/fpu_program.o build/libc.a build/libm.a build/libc.a -o $@
+build/libc-test.elf: build/crt0.o build/libc_program.o build/libc_scan_program.o build/libc_abi.o build/fpu_program.o build/libc.a build/libm.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/libc_program.o build/libc_scan_program.o build/libc_abi.o build/fpu_program.o build/libc.a build/libm.a build/libc.a -o $@
 build/libc_image.o: build/libc-test.elf
 	$(LD) -r -b binary $< -o build/libc_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/libc_raw.o $@
@@ -240,8 +240,8 @@ build/files_test.o: kernel/files_test.c | build
 build/files_program.o: user/files-test.c | build
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 -include build/files_program.d
-build/files-test.elf: build/crt0.o build/files_program.o build/libc.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/files_program.o build/libc.a -o $@
+build/files-test.elf: build/crt0.o build/files_program.o build/stdio_program.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/files_program.o build/stdio_program.o build/libc.a -o $@
 build/files_image.o: build/files-test.elf
 	$(LD) -r -b binary $< -o build/files_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/files_raw.o $@
@@ -468,3 +468,11 @@ build/libm.a: $(LIBM_OBJECTS)
 userland: build/libm.a
 .PHONY: test-fpu
 test-fpu: test-signals
+build/libc_scan_program.o: user/libc-scan-test.c | build
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+-include build/libc_scan_program.d
+build/stdio_program.o: user/stdio-test.c | build
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+-include build/stdio_program.d
+.PHONY: test-stdio
+test-stdio: test-signals

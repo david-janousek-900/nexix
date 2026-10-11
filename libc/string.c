@@ -66,3 +66,9 @@ char *strrchr(const char *s, int c)
     do { if (*s == value) last = s; } while (*s++);
     return (char *)last;
 }
+char *strcat(char *restrict dst,const char *restrict src)
+{ strcpy(dst+strlen(dst),src);return dst; }
+char *strncat(char *restrict dst,const char *restrict src,size_t n)
+{ size_t end=strlen(dst),i=0;while(i<n&&src[i]){dst[end+i]=src[i];++i;}dst[end+i]=0;return dst; }
+char *index(const char *s,int c){return strchr(s,c);}
+char *rindex(const char *s,int c){return strrchr(s,c);}

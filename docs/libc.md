@@ -116,3 +116,8 @@ Step 25 adds binary64 `frexp`, `ldexp`, `modf`, `fmod`, decimal `atof`/`strtod`,
 [floating-point.md](floating-point.md) for numeric contracts and limitations.
 `build/libm.a` contains native adaptations of all 16 retained libm C files;
 link math callers with `build/libm.a build/libc.a` after their objects.
+
+Step 25 also adds scanf/fscanf/sscanf and their va_list variants, stream pushback,
+fdopen/freopen, gets/getw/putw, V7 character classification and string aliases,
+native integer conversions and the V7 rand sequence. See
+[libc-coverage.md](libc-coverage.md) for behavior and remaining compatibility work.

@@ -42,7 +42,9 @@
       "status": "partial",
       "description": "Original inputs are supplied in the full archive. Adapt declarations and layouts to the native ABI; complete Nexix libc coverage remains partial.",
       "evidence": [
-        "reference/v7/usr/include"
+        "reference/v7/usr/include",
+        "libc/include/ctype.h",
+        "docs/libc-coverage.md"
       ],
       "locations": [
         "/usr/include"
@@ -22213,10 +22215,11 @@
         }
       ],
       "blockers": [
-        "Audit widths, representations, assembly and required native APIs."
+        "Complete account/crypt, process-pipe, tty/account lookup, temporary-file, profiling and ELF symbol interfaces and native header coverage.",
+        "Adapt remaining callers of internal V7 FILE layouts and remote printf conventions; validate all consuming programs."
       ],
       "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
+        "Native libc is partial; implemented scanf/stream and general helpers are documented in docs/libc-coverage.md."
       ],
       "acceptance": [
         "Verify buffered stdio, account lookup, allocation, strings, time, syscall errors and native startup using consuming programs.",

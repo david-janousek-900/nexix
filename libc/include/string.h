@@ -12,4 +12,8 @@ char *strcpy(char *__restrict dst, const char *__restrict src);
 char *strncpy(char *__restrict dst, const char *__restrict src, size_t n);
 char *strchr(const char *s, int c);
 char *strrchr(const char *s, int c);
+char *strcat(char *__restrict, const char *__restrict);
+char *strncat(char *__restrict, const char *__restrict, size_t);
+char *index(const char *, int);
+char *rindex(const char *, int);
 #endif

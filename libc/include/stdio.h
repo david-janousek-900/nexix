@@ -8,9 +8,14 @@
 #define SEEK_SET NX_SEEK_SET
 #define SEEK_CUR NX_SEEK_CUR
 #define SEEK_END NX_SEEK_END
-typedef struct nx_stream { int fd, used, error, eof; } FILE;
+typedef struct nx_stream { int fd, used, error, eof, readable, writable, pushback, pushed; } FILE;
 extern FILE *stdin, *stdout, *stderr;
 FILE *fopen(const char *, const char *);
+FILE *fdopen(int, const char *);
+FILE *freopen(const char *, const char *, FILE *);
+int ungetc(int, FILE *);
+int getw(FILE *);
+int putw(int, FILE *);
 int fclose(FILE *);
 int fflush(FILE *);
 int fileno(FILE *);
@@ -24,6 +29,7 @@ int putchar(int);
 int fputs(const char *, FILE *);
 int puts(const char *);
 char *fgets(char *, int, FILE *);
+char *gets(char *);
 size_t fread(void *, size_t, size_t, FILE *);
 size_t fwrite(const void *, size_t, size_t, FILE *);
 int fseek(FILE *, long, int);
@@ -39,4 +45,10 @@ int vsnprintf(char *, size_t, const char *, va_list);
 int snprintf(char *, size_t, const char *, ...);
 int sprintf(char *, const char *, ...);
 void perror(const char *);
+int scanf(const char *, ...);
+int fscanf(FILE *, const char *, ...);
+int sscanf(const char *, const char *, ...);
+int vfscanf(FILE *, const char *, va_list);
+int vscanf(const char *, va_list);
+int vsscanf(const char *, const char *, va_list);
 #endif
