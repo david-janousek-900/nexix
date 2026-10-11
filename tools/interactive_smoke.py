@@ -6,12 +6,20 @@ import select
 import subprocess
 import sys
 import time
+import tempfile
 
 ram = sys.argv[3] if len(sys.argv) > 3 else '128M'
+disk_directory = tempfile.TemporaryDirectory(prefix='nexix-shell-')
+ide = len(sys.argv) > 4 and sys.argv[4] == 'ide'
+extra = []
+if ide:
+    disk = Path(disk_directory.name) / 'root.img'
+    disk.write_bytes(Path('build/root.img').read_bytes())
+    extra = ['-boot', 'd', '-drive', f'file={disk},format=raw,if=ide,index=0']
 try:
     process = subprocess.Popen([sys.argv[1], '-machine', 'pc', '-accel', 'tcg',
         '-cpu', 'qemu64', '-smp', '1', '-m', ram, '-cdrom', sys.argv[2],
-        '-display', 'none', '-serial', 'stdio', '-monitor', 'none', '-no-reboot'],
+        '-display', 'none', '-serial', 'stdio', '-monitor', 'none', '-no-reboot'] + extra,
         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 except FileNotFoundError:
     sys.exit('FAIL: QEMU is not installed')
@@ -61,6 +69,16 @@ def cat_ready(name, pipeline=False):
 
 try:
     expect(rb'NEXIX_INIT_PID1\r\nNEXIX_BOOT_OK\r\n# ')
+    stage = 'empty prompt lines'
+    for _ in range(10):
+        command(b'')
+        command(b'   ')
+        command(b'# comment only')
+    stage = 'queued empty lines'
+    send(b'\n' * 32)
+    for _ in range(32):
+        expect(rb'# ')
+    command(b'echo EMPTY_LINES_OK', b'EMPTY_LINES_OK\n')
     stage = 'line editing'
     command(b'echo EDIT_X\bY\r', b'EDIT_Y\n')
     command(b'echo DEL_X\x7fY', b'DEL_Y\n')
@@ -128,6 +146,17 @@ try:
         marker = f'SESSION_{i:02d}'.encode()
         command(b'echo ' + marker, marker + b'\n')
     command(b'echo FINAL_PID_$$; ls /tmp', b'FINAL_PID_2\n')
+    stage = 'carriage returns'
+    for _ in range(10):
+        command(b'\r')
+    send(b'\r\n')
+    expect(rb'# ')
+    expect(rb'# ')
+    stage = 'shell EOF and restart'
+    for _ in range(3):
+        send(b'\x04')
+        expect(rb'# ')
+        command(b'echo RESTART_OK', b'RESTART_OK\n')
 except (RuntimeError, BrokenPipeError) as problem:
     error = str(problem)
 finally:
@@ -139,8 +168,9 @@ finally:
         process.kill()
         remaining, _ = process.communicate()
     output.extend(remaining)
-log = Path('build') / f'interactive-{ram}.log'
+log = Path('build') / (f'interactive-{ram}' + ('-ide.log' if ide else '.log'))
 log.write_bytes(output)
+disk_directory.cleanup()
 if not error and (exited_early or b'PANIC' in output):
     error = 'unexpected QEMU exit or kernel panic'
 if error:

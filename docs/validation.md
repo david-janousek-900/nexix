@@ -289,3 +289,19 @@ boot verifies `ls -l` displays the persisted modification date before reading
 the file, then checks block/inode reclamation. Logs are `build/storage-16M.log`
 and `build/storage-128M.log`. Seed image timestamps remain reproducibly zero;
 existing files acquire times as they are accessed or modified.
+
+Interactive shell regression coverage includes repeated empty, whitespace-only
+and comment-only prompt lines, queued empty lines, carriage-return/CRLF input,
+and repeated Ctrl-D at the shell prompt followed by a command in the replacement
+single-user shell. Ctrl-D with no pending text is EOF and exits the current V7
+shell; init runs /etc/rc and returns to single-user startup while getty/login are
+not installed. Ctrl-D after pending text only delivers that text; it does not
+insert a newline or permanently close the terminal.
+
+`make TOOLCHAIN_PREFIX= test-shell` exercises RAM and disposable IDE roots at
+16M/128M. IDE logs are `build/interactive-16M-ide.log` and
+`build/interactive-128M-ide.log`; the working `build/nexix.img` is never changed.
+If input becomes unresponsive under `make run`, QEMU's monitor can be reached
+with Ctrl-A then C. Capture `info registers` and `info pic` before rebooting to
+help distinguish guest interrupt/scheduler failures from host terminal input
+problems. Ctrl-A then C returns to the guest terminal.

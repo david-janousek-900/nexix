@@ -395,6 +395,8 @@ test: test-boot
 test-shell: iso
 	$(PYTHON) tools/interactive_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/interactive_smoke.py $(QEMU) build/nexix.iso 128M
+	$(PYTHON) tools/interactive_smoke.py $(QEMU) build/nexix.iso 16M ide
+	$(PYTHON) tools/interactive_smoke.py $(QEMU) build/nexix.iso 128M ide
 test: test-shell
 
 # Preserve the working disk across builds; root.img is the seed.
