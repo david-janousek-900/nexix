@@ -14,73 +14,74 @@ HOST_CC ?= cc
 .DEFAULT_GOAL := all
 -include $(OBJECTS:.o=.d)
 
-.PHONY: all check iso run smoke test test-unit clean
+.PHONY: all build check iso run smoke test test-unit clean
 all: build/nexix.elf
 
-build:
-	mkdir -p $@
+build/.dir:
+	mkdir -p build
+	touch $@
 
-build/boot.o: kernel/arch/x86_64/boot.S | build
+build/boot.o: kernel/arch/x86_64/boot.S | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
 
-build/main.o: kernel/main.c | build
+build/main.o: kernel/main.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/serial.o: kernel/serial.c | build
+build/serial.o: kernel/serial.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/boot_info.o: kernel/boot.c | build
+build/boot_info.o: kernel/boot.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/memory.o: kernel/memory.c | build
+build/memory.o: kernel/memory.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/paging.o: kernel/arch/x86_64/paging.c | build
+build/paging.o: kernel/arch/x86_64/paging.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/paging_test.o: kernel/paging_test.c | build
+build/paging_test.o: kernel/paging_test.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/segments.o: kernel/arch/x86_64/segments.c | build
+build/segments.o: kernel/arch/x86_64/segments.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/uaccess.o: kernel/uaccess.c | build
+build/uaccess.o: kernel/uaccess.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/syscall.o: kernel/v7/syscall.c | build
+build/syscall.o: kernel/v7/syscall.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/syscall_test.o: kernel/syscall_test.c | build
+build/syscall_test.o: kernel/syscall_test.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/syscall_blob.o: kernel/arch/x86_64/syscall_test.S include/nexix/syscall.h include/nexix/errno.h | build
+build/syscall_blob.o: kernel/arch/x86_64/syscall_test.S include/nexix/syscall.h include/nexix/errno.h | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -Iinclude -c $< -o $@
 
-build/process.o: kernel/v7/process.c | build
+build/process.o: kernel/v7/process.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/process_test.o: kernel/process_test.c | build
+build/process_test.o: kernel/process_test.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/context.o: kernel/arch/x86_64/context.S | build
+build/context.o: kernel/arch/x86_64/context.S | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
 
-build/process_blob.o: kernel/arch/x86_64/process_test.S | build
+build/process_blob.o: kernel/arch/x86_64/process_test.S | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
 
-build/user_test.o: kernel/user_test.c | build
+build/user_test.o: kernel/user_test.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/user_entry.o: kernel/arch/x86_64/user_entry.S | build
+build/user_entry.o: kernel/arch/x86_64/user_entry.S | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
 
-build/user_blob.o: kernel/arch/x86_64/user_test.S | build
+build/user_blob.o: kernel/arch/x86_64/user_test.S | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
 
-build/interrupts.o: kernel/arch/x86_64/interrupts.c | build
+build/interrupts.o: kernel/arch/x86_64/interrupts.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/interrupt_stubs.o: kernel/arch/x86_64/interrupts.S | build
+build/interrupt_stubs.o: kernel/arch/x86_64/interrupts.S | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
 
 build/nexix.elf: $(OBJECTS) kernel/arch/x86_64/linker.ld
@@ -96,7 +97,8 @@ build/nexix.iso: build/nexix.elf boot/grub.cfg
 	grub-mkrescue -o $@ build/iso
 
 iso: check build/nexix.iso
-run: iso disk
+build: iso disk
+run: build
 	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -rtc base=utc -boot d -drive "file=$(DISK_IMAGE),format=raw,if=ide,index=0" -cdrom build/nexix.iso -display none -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -mon chardev=console,mode=readline -no-reboot
 
 smoke: check build/test-selftest.iso
@@ -115,13 +117,13 @@ build/test-memory.iso: build/nexix.elf boot/grub.cfg
 	sed 's|/boot/nexix.elf|/boot/nexix.elf test=memory|' boot/grub.cfg | sed '/multiboot2/a\    module2 /boot/reservation.bin allocator-test' > build/iso-memory/boot/grub/grub.cfg
 	grub-mkrescue -o $@ build/iso-memory
 
-build/memory-test: tests/memory.c kernel/boot.c kernel/memory.c kernel/include/boot.h kernel/include/memory.h | build
+build/memory-test: tests/memory.c kernel/boot.c kernel/memory.c kernel/include/boot.h kernel/include/memory.h | build/.dir
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include tests/memory.c kernel/boot.c kernel/memory.c -o $@
 
-build/v7-types-test: tests/v7_types.c kernel/include/v7/constants.h kernel/include/v7/types.h kernel/include/v7/disk.h kernel/include/v7/core.h kernel/include/paging.h kernel/include/memory.h include/nexix/fpu.h | build
+build/v7-types-test: tests/v7_types.c kernel/include/v7/constants.h kernel/include/v7/types.h kernel/include/v7/disk.h kernel/include/v7/core.h kernel/include/paging.h kernel/include/memory.h include/nexix/fpu.h | build/.dir
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude $< -o $@
 
-build/uaccess-test: tests/uaccess.c kernel/uaccess.c kernel/include/uaccess.h kernel/include/process.h kernel/include/paging.h kernel/include/memory.h kernel/include/boot.h kernel/include/v7/core.h kernel/include/v7/types.h kernel/include/v7/disk.h kernel/include/v7/constants.h include/nexix/errno.h | build
+build/uaccess-test: tests/uaccess.c kernel/uaccess.c kernel/include/uaccess.h kernel/include/process.h kernel/include/paging.h kernel/include/memory.h kernel/include/boot.h kernel/include/v7/core.h kernel/include/v7/types.h kernel/include/v7/disk.h kernel/include/v7/constants.h include/nexix/errno.h | build/.dir
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/uaccess.c kernel/uaccess.c -o $@
 
 test-unit: build/memory-test build/v7-types-test build/uaccess-test build/filesystem-test build/tty-unit-test build/root-test.img
@@ -170,18 +172,18 @@ test-syscall: check build/test-selftest.iso
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso syscall 16M
 
 # A real, statically linked ELF64 executable; no host libc or runtime.
-build/exec_program.o: user/exec-test.S include/nexix/syscall.h include/nexix/errno.h | build
+build/exec_program.o: user/exec-test.S include/nexix/syscall.h include/nexix/errno.h | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -Iinclude -c $< -o $@
 build/exec-test.elf: build/exec_program.o user/exec-test.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/exec-test.ld $< -o $@
 build/exec_image.o: build/exec-test.elf
 	$(LD) -r -b binary $< -o build/exec_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/exec_raw.o $@
-build/elf.o: kernel/elf.c | build
+build/elf.o: kernel/elf.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
-build/exec.o: kernel/v7/exec.c | build
+build/exec.o: kernel/v7/exec.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
-build/exec_test.o: kernel/exec_test.c | build
+build/exec_test.o: kernel/exec_test.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 .PHONY: test-exec
 test-exec: check build/test-selftest.iso
@@ -191,24 +193,24 @@ test-exec: check build/test-selftest.iso
 USER_CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-builtin -fno-stack-protector -fno-pie -m64 -mno-red-zone -mno-avx -fno-asynchronous-unwind-tables -nostdinc -isystem $(shell $(CC) -print-file-name=include) -Ilibc/include -Iinclude -MMD -MP
 LIBC_OBJECTS = build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o build/libc_float.o build/libc_convert.o build/libc_scan.o build/libc_ctype.o build/libc_numbers.o build/libc_bytes.o build/libc_gcvt.o build/libc_abort.o
 -include $(LIBC_OBJECTS:.o=.d) build/libc_program.d
-build/crt0.o: libc/arch/x86_64/crt0.S | build
+build/crt0.o: libc/arch/x86_64/crt0.S | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
-build/libc_syscall.o: libc/arch/x86_64/syscall.S | build
+build/libc_syscall.o: libc/arch/x86_64/syscall.S | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
-build/libc_%.o: libc/%.c | build
+build/libc_%.o: libc/%.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 build/libc.a: $(LIBC_OBJECTS)
 	$(AR) rcs $@ $^
-build/libc_program.o: user/libc-test.c | build
+build/libc_program.o: user/libc-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
-build/libc_abi.o: user/libc-test-abi.S include/nexix/syscall.h | build
+build/libc_abi.o: user/libc-test-abi.S include/nexix/syscall.h | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -Iinclude -c $< -o $@
 build/libc-test.elf: build/crt0.o build/libc_program.o build/libc_scan_program.o build/libc_helpers_program.o build/libc_abi.o build/fpu_program.o build/libc.a build/libm.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/libc_program.o build/libc_scan_program.o build/libc_helpers_program.o build/libc_abi.o build/fpu_program.o build/libc.a build/libm.a build/libc.a -o $@
 build/libc_image.o: build/libc-test.elf
 	$(LD) -r -b binary $< -o build/libc_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/libc_raw.o $@
-build/libc_test.o: kernel/libc_test.c | build
+build/libc_test.o: kernel/libc_test.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 .PHONY: userland test-libc
 userland: build/crt0.o build/libc.a build/libc-test.elf
@@ -221,25 +223,25 @@ build/root-test.img: tools/mk_v7fs.py build/exec-test.elf build/libc-test.elf
 build/root_image.o: build/root-test.img
 	$(LD) -r -b binary $< -o build/root_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/root_raw.o $@
-build/block.o: kernel/block.c | build
+build/block.o: kernel/block.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
-build/v7fs.o: kernel/v7/fs.c | build
+build/v7fs.o: kernel/v7/fs.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
-build/fs_test.o: kernel/fs_test.c | build
+build/fs_test.o: kernel/fs_test.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 .PHONY: test-fs
 test-fs: check build/test-selftest.iso
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso fs 16M
 
-build/filesystem-test: tests/filesystem.c kernel/block.c kernel/v7/fs.c kernel/include/clock.h kernel/include/block.h kernel/include/v7/fs.h kernel/include/v7/disk.h kernel/include/v7/types.h kernel/include/v7/constants.h include/nexix/errno.h | build
+build/filesystem-test: tests/filesystem.c kernel/block.c kernel/v7/fs.c kernel/include/clock.h kernel/include/block.h kernel/include/v7/fs.h kernel/include/v7/disk.h kernel/include/v7/types.h kernel/include/v7/constants.h include/nexix/errno.h | build/.dir
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/filesystem.c kernel/block.c kernel/v7/fs.c -o $@
 
 # Step 13: production file syscalls exercised by a native C executable.
-build/files.o: kernel/v7/files.c | build
+build/files.o: kernel/v7/files.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
-build/files_test.o: kernel/files_test.c | build
+build/files_test.o: kernel/files_test.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
-build/files_program.o: user/files-test.c | build
+build/files_program.o: user/files-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 -include build/files_program.d
 build/files-test.elf: build/crt0.o build/files_program.o build/stdio_program.o build/libc.a user/user.ld
@@ -253,11 +255,11 @@ test-files: check build/test-selftest.iso
 userland: build/files-test.elf
 
 # Step 14: serial terminal and native sgtty/ioctl userland fixture.
-build/tty.o: kernel/v7/tty.c | build
+build/tty.o: kernel/v7/tty.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
-build/tty_test.o: kernel/tty_test.c | build
+build/tty_test.o: kernel/tty_test.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
-build/tty_program.o: user/tty-test.c | build
+build/tty_program.o: user/tty-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 -include build/tty_program.d
 build/tty-test.elf: build/crt0.o build/tty_program.o build/libc.a user/user.ld
@@ -275,17 +277,17 @@ test-tty: check build/test-tty.iso build/test-tty-demo.iso
 run-tty: check build/test-tty-demo.iso
 	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -cdrom build/test-tty-demo.iso -display none -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -mon chardev=console,mode=readline -no-reboot
 
-build/tty-unit-test: tests/tty.c kernel/v7/tty.c kernel/include/tty.h kernel/include/serial.h kernel/include/uaccess.h kernel/include/process.h kernel/include/v7/core.h include/nexix/tty.h include/nexix/errno.h | build
+build/tty-unit-test: tests/tty.c kernel/v7/tty.c kernel/include/tty.h kernel/include/serial.h kernel/include/uaccess.h kernel/include/process.h kernel/include/v7/core.h include/nexix/tty.h include/nexix/errno.h | build/.dir
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/tty.c kernel/v7/tty.c -o $@
 
 # Step 15: signals and the remaining init/shell syscall fixture.
-build/signals.o: kernel/v7/signals.c | build
+build/signals.o: kernel/v7/signals.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
-build/signals_test.o: kernel/signals_test.c | build
+build/signals_test.o: kernel/signals_test.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
-build/libc_signal.o: libc/arch/x86_64/signal.S include/nexix/syscall.h | build
+build/libc_signal.o: libc/arch/x86_64/signal.S include/nexix/syscall.h | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -Iinclude -c $< -o $@
-build/signals_program.o: user/signals-test.c | build
+build/signals_program.o: user/signals-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 -include build/signals_program.d
 build/signals-test.elf: build/crt0.o build/signals_program.o build/signals_abi.o build/libc.a user/user.ld
@@ -299,9 +301,9 @@ test-signals: check build/test-selftest.iso
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso signals 16M
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso signals 128M
 
-build/libc_setjmp.o: libc/arch/x86_64/setjmp.S | build
+build/libc_setjmp.o: libc/arch/x86_64/setjmp.S | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
-build/signals_abi.o: user/signals-test-abi.S include/nexix/syscall.h | build
+build/signals_abi.o: user/signals-test-abi.S include/nexix/syscall.h | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -Iinclude -c $< -o $@
 
 # Native builds of retained V7 K&R sources; original reference/ stays pristine.
@@ -311,9 +313,9 @@ V7_SH_SOURCES = $(wildcard user/v7/sh/*.c)
 V7_SH_OBJECTS = $(patsubst user/v7/sh/%.c,build/v7-sh-%.o,$(V7_SH_SOURCES))
 V7_ELFS = build/v7-sh.elf $(addprefix build/v7-,$(addsuffix .elf,$(V7_COMMANDS)))
 -include $(V7_SH_OBJECTS:.o=.d) $(addprefix build/v7-,$(addsuffix .d,$(V7_COMMANDS)))
-build/v7-sh-%.o: user/v7/sh/%.c | build
+build/v7-sh-%.o: user/v7/sh/%.c | build/.dir
 	$(CC) $(V7_CFLAGS) -c $< -o $@
-build/v7-%.o: user/v7/cmd/%.c user/v7/compat.h | build
+build/v7-%.o: user/v7/cmd/%.c user/v7/compat.h | build/.dir
 	$(CC) $(V7_CFLAGS) -include user/v7/compat.h -c $< -o $@
 build/v7-sh.elf: build/crt0.o $(V7_SH_OBJECTS) build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o $(V7_SH_OBJECTS) build/libc.a -o $@
@@ -327,14 +329,14 @@ V7_IMAGES = $(addprefix build/v7_image_,$(addsuffix .o,sh init echo cat ls pwd c
 # Embedded executable images for the step 16 acceptance fixture.
 OBJECTS += $(V7_IMAGES)
 -include build/catalog.d build/v7_userland_test.d build/v7_test_program.d
-build/catalog.o: kernel/v7/catalog.c | build
+build/catalog.o: kernel/v7/catalog.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
-build/v7_userland_test.o: kernel/v7_userland_test.c | build
+build/v7_userland_test.o: kernel/v7_userland_test.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 build/v7_image_%.o: build/v7-%.elf
 	$(LD) -r -b binary $< -o build/v7_raw_$*.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/v7_raw_$*.o $@
-build/v7_test_program.o: user/v7-test.c | build
+build/v7_test_program.o: user/v7-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 build/v7-test.elf: build/crt0.o build/v7_test_program.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/v7_test_program.o build/libc.a -o $@
@@ -357,7 +359,7 @@ build/root.img: tools/mk_rootfs.py tools/mk_v7fs.py $(V7_ELFS) rootfs/etc/rc roo
 build/boot_root_image.o: build/root.img
 	$(LD) -r -b binary $< -o build/boot_root_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/boot_root_raw.o $@
-build/rootfs_test.o: kernel/rootfs_test.c | build
+build/rootfs_test.o: kernel/rootfs_test.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 OBJECTS += build/boot_root_image.o build/rootfs_test.o
 build/nexix.elf: build/boot_root_image.o build/rootfs_test.o
@@ -372,13 +374,13 @@ test-root-image: build/root.img
 	$(PYTHON) tests/root_image.py
 test-unit: test-root-image
 
-build/root_boot.o: kernel/root_boot.c | build
+build/root_boot.o: kernel/root_boot.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 OBJECTS += build/root_boot.o
 build/nexix.elf: build/root_boot.o
 -include build/root_boot.d
 
-build/root_exec_program.o: user/root-exec-test.c | build
+build/root_exec_program.o: user/root-exec-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/libc.a -o $@
@@ -406,7 +408,7 @@ test: test-shell
 .PHONY: disk test-storage
 disk: build/root.img
 	$(PYTHON) -c 'from pathlib import Path; import sys; p=Path(sys.argv[1]); p.exists() or p.write_bytes(Path("build/root.img").read_bytes())' "$(DISK_IMAGE)"
-build/ide.o: kernel/ide.c | build
+build/ide.o: kernel/ide.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 OBJECTS += build/ide.o
 build/nexix.elf: build/ide.o
@@ -415,7 +417,7 @@ test-storage: iso
 	$(PYTHON) tools/storage_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/storage_smoke.py $(QEMU) build/nexix.iso 128M
 test: test-storage
-build/ide-test: tests/ide.c tests/ide/io.h kernel/ide.c kernel/block.c kernel/include/ide.h kernel/include/block.h include/nexix/errno.h | build
+build/ide-test: tests/ide.c tests/ide/io.h kernel/ide.c kernel/block.c kernel/include/ide.h kernel/include/block.h include/nexix/errno.h | build/.dir
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Itests/ide -Ikernel/include -Iinclude tests/ide.c kernel/ide.c kernel/block.c -o $@
 test-unit: build/ide-test
 
@@ -428,14 +430,14 @@ test-inventory:
 test: test-inventory
 
 # Step 22: boot RTC and shared epoch clock.
-build/rtc.o: kernel/arch/x86_64/rtc.c | build
+build/rtc.o: kernel/arch/x86_64/rtc.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
-build/clock.o: kernel/clock.c | build
+build/clock.o: kernel/clock.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 OBJECTS += build/rtc.o build/clock.o
 build/nexix.elf: build/rtc.o build/clock.o
 -include build/rtc.d build/clock.d
-build/rtc-test: tests/rtc.c tests/rtc/io.h kernel/arch/x86_64/rtc.c kernel/clock.c kernel/include/clock.h | build
+build/rtc-test: tests/rtc.c tests/rtc/io.h kernel/arch/x86_64/rtc.c kernel/clock.c kernel/include/clock.h | build/.dir
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Itests/rtc -Ikernel/include -Iinclude tests/rtc.c kernel/arch/x86_64/rtc.c kernel/clock.c -o $@
 .PHONY: test-rtc
 test-rtc: build/rtc-test iso
@@ -445,7 +447,7 @@ test: test-rtc
 
 # Step 24: test native time code against fixed calendar/DST expectations.
 TIME_TEST_NAMES = -Derrno=nx_test_errno -Dgetenv=nx_test_getenv -Dtime=nx_test_time -Dgmtime=nx_test_gmtime -Dlocaltime=nx_test_localtime -Dctime=nx_test_ctime -Dasctime=nx_test_asctime -Dtimezone=nx_test_timezone -Dftime=nx_test_ftime
-build/time-test: tests/time.c libc/time.c libc/include/time.h libc/include/sys/timeb.h libc/include/assert.h libc/include/stdlib.h | build
+build/time-test: tests/time.c libc/time.c libc/include/time.h libc/include/sys/timeb.h libc/include/assert.h libc/include/stdlib.h | build/.dir
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -fno-builtin $(TIME_TEST_NAMES) -Ilibc/include -Iinclude tests/time.c libc/time.c -o $@
 .PHONY: test-time
 test-time: build/time-test iso
@@ -455,26 +457,26 @@ test-time: build/time-test iso
 test: test-time
 
 # Step 25: eager native x87/MMX/SSE state management.
-build/fpu.o: kernel/arch/x86_64/fpu.c | build
+build/fpu.o: kernel/arch/x86_64/fpu.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 OBJECTS += build/fpu.o
 build/nexix.elf: build/fpu.o
 -include build/fpu.d
-build/fpu_program.o: user/fpu-test.S include/nexix/syscall.h | build
+build/fpu_program.o: user/fpu-test.S include/nexix/syscall.h | build/.dir
 	$(CC) $(ASFLAGS) -Iinclude -c $< -o $@
 LIBM_OBJECTS = $(patsubst libm/v7/%.c,build/libm_%.o,$(wildcard libm/v7/*.c))
 -include $(LIBM_OBJECTS:.o=.d)
-build/libm_%.o: libm/v7/%.c | build
+build/libm_%.o: libm/v7/%.c | build/.dir
 	$(CC) $(V7_CFLAGS) -c $< -o $@
 build/libm.a: $(LIBM_OBJECTS)
 	$(AR) rcs $@ $^
 userland: build/libm.a
 .PHONY: test-fpu
 test-fpu: test-signals
-build/libc_scan_program.o: user/libc-scan-test.c | build
+build/libc_scan_program.o: user/libc-scan-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 -include build/libc_scan_program.d
-build/stdio_program.o: user/stdio-test.c | build
+build/stdio_program.o: user/stdio-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 -include build/stdio_program.d
 .PHONY: test-stdio
@@ -488,7 +490,7 @@ test-kernel-coverage:
 test-inventory: test-kernel-coverage
 
 # Step 39: compile public headers independently of host libc and check ABI records.
-build/header-abi-test: tests/header_abi.c $(wildcard libc/include/*.h libc/include/sys/*.h include/nexix/*.h) kernel/include/v7/types.h | build
+build/header-abi-test: tests/header_abi.c $(wildcard libc/include/*.h libc/include/sys/*.h include/nexix/*.h) kernel/include/v7/types.h | build/.dir
 	$(HOST_CC) -std=c11 -Wall -Wextra -Werror -ffreestanding -nostdinc -isystem $(shell $(HOST_CC) -print-file-name=include) -Ilibc/include -Iinclude -Ikernel/include $< -o $@
 .PHONY: test-header-abi
 test-header-abi: build/header-abi-test
@@ -497,7 +499,7 @@ test-header-abi: build/header-abi-test
 test-inventory: test-header-abi
 
 # Step 40: native byte/conversion, abort/assert and execle contracts.
-build/libc_helpers_program.o: user/libc-helpers-test.c | build
+build/libc_helpers_program.o: user/libc-helpers-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 -include build/libc_helpers_program.d
 .PHONY: test-libc-helpers

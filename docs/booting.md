@@ -1,6 +1,7 @@
 # Root and PID 1 startup (step 18)
 
-Run `make run` on an x86_64 Linux host with GCC/binutils. Host tools are the
+Run `make build` to create boot artifacts without launching QEMU, or `make run`
+to build and boot, on an x86_64 Linux host with GCC/binutils. Host tools are the
 default; an installed cross-toolchain can be selected with
 `make TOOLCHAIN_PREFIX=x86_64-elf- run`.
 GRUB loads Nexix, the kernel initializes memory, interrupts and the serial TTY,

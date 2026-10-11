@@ -32,9 +32,10 @@ On Debian/Ubuntu the runtime tools are provided by `grub-common`, `grub-pc-bin`,
 `xorriso`, and `qemu-system-x86`.
 
 ```sh
+make build
+make run
 make check
 make iso
-make run
 make test-boot
 make test-shell
 make test-storage
@@ -51,7 +52,9 @@ make test-signals
 make run-tty
 ```
 
-Host GCC/binutils are used by default; `make run` needs no variable overrides.
+Host GCC/binutils are used by default. `make build` creates the kernel, boot ISO
+and working disk without starting QEMU; existing working disks are preserved.
+`make run` builds as needed and starts QEMU. Neither command needs variable overrides.
 To use an installed cross-toolchain, run `make TOOLCHAIN_PREFIX=x86_64-elf- run`
 (or the same override for other targets). A pinned cross-toolchain remains planned.
 The kernel does not link host libc. Build artifacts go into `build/`.
