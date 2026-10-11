@@ -71,6 +71,10 @@ class Inventory(unittest.TestCase):
         self.entry('cmd.cat')['acceptance'] = []
         self.reject('no acceptance checks')
 
+    def test_missing_distribution_asset_is_visible(self):
+        self.manifest['requirements'] = [r for r in self.manifest['requirements'] if r['id'] != 'manual-pages']
+        self.reject('unknown related component manual-pages')
+
 
 if __name__ == '__main__':
     unittest.main()

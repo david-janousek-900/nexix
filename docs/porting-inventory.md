@@ -5,7 +5,7 @@ Nexix 0.1.0 targets multi-user boot and the full native V7 userland. The first
 This inventory accounts for the remaining work; it does not implement ports.
 
 The authoritative [manifest](v7-userland-manifest.json) owns all **1,121 files**
-under `reference/v7/usr/src`: **174 components** and **33 external/platform
+under `reference/v7/usr/src`: **174 components** and **35 external/platform
 requirements**. Components include 120 top-level command sources, 34 command
 directories, eight games, eight library directories, three build scripts and
 one top-level support header. Shared sources can have multiple owners.
@@ -126,6 +126,23 @@ Games: **arithmetic, backgammon, chess, fish, fortune, hangman, quiz, wump**.
 All are priority 14. Chess has substantial PDP-11 assembly; fortune, hangman
 and quiz also require data absent from this snapshot.
 
+## Missing distribution commands and manuals
+
+**`man` is required for Nexix 0.1.0, priority 11, step 28.** Its implementation
+and the `/usr/man` page tree are absent from this imported reference snapshot.
+They are explicitly tracked as the manifest requirements `man-command` and
+`manual-pages`, not represented as existing source files or implemented ports.
+Restore the original V7 implementation and pages, verify its exact dependencies
+and command syntax, and package the required nroff/troff macros and terminal
+tables. Acceptance includes finding/rendering representative manual sections,
+readable serial output and reference-compatible missing-page behavior.
+
+The original V7 [filesystem hierarchy manual](https://www.tuhs.org/cgi-bin/utree.pl?file=V7%2Fusr%2Fman%2Fman7%2Fhier.7)
+documents the manual tree and formatter macros. Full-distribution comparison is
+still needed to identify further commands/scripts/data missing from this import.
+The 174-component count describes supplied source components, not every program
+in the original installed V7 distribution.
+
 ## Dependencies and missing inputs
 
 Important source-confirmed chains include bc → dc and optional lib.b;
@@ -173,9 +190,12 @@ their sources alone does not provide a working native equivalent.
 | `quiz-data` | missing | `/usr/games/quiz.k/index` |
 | `v7-source-archives` | supplied | libplot backends contain source in historical .c.a archives; bootstrap extraction must support the historical archive format. |
 | `v6-compatibility` | pending_assessment | V6 syscall wrappers are supplied for historical compatibility; determine whether native variants are appropriate. |
+| `man-command` | missing | Restore original implementation; verify install path and dependencies |
+| `manual-pages` | missing | `/usr/man`; formatter macros and terminal tables |
 | `pdp11-assembly` | pending_assessment | Rewrite or retarget PDP-11 assembly; do not treat successful host compilation as native compatibility. |
 
-This is a source snapshot, not a complete installed V7 root. It has no
+This is a source snapshot, not a complete installed V7 root. It lacks `man`,
+`/usr/man`, and has no
 `usr/include`, yacc/lex installed skeletons, lint library descriptions, base word
 dictionary, lesson archives, formatter macro packages, units database, optional
 bc math library, fortune database or quiz dataset. Font/terminal-table sources
@@ -194,7 +214,8 @@ Makefile and root-image packaging declarations. Negative tests ensure missing
 sources, concealed components, unsupported claims and missing external requirements
 fail validation. New reference files must be explicitly classified.
 
-A passing check means inventory coverage and consistency. It does not prove
+A passing check means imported-source inventory coverage and consistency. It does not prove
+coverage of the complete installed V7 distribution,
 complete dependency closure, source compatibility or functional port acceptance.
 
 ## Kernel foundation

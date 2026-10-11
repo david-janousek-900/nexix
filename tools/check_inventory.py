@@ -71,6 +71,10 @@ def validate(manifest, root=ROOT):
         need(bool(requirement.get('evidence')), f'{owner}: requirement needs evidence')
         locations = requirement.get('locations')
         need(isinstance(locations, list) and all(isinstance(x, str) and x.startswith('/') for x in locations), f'{owner}: invalid target locations')
+        related = requirement.get('related_components', [])
+        need(isinstance(related, list), f'{owner}: related components must be a list')
+        for target in related if isinstance(related, list) else []:
+            need(target in ids, f'{owner}: unknown related component {target}')
     owned, installed = set(), set()
     entry_map = {}
     for entry in entries:

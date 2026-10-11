@@ -2,7 +2,7 @@
   "schema_version": 1,
   "reference_root": "reference/v7/usr/src",
   "version": "0.1.0",
-  "scope": "All checked-in V7 userland source components; kernel sources are prerequisites, not userland inventory entries.",
+  "scope": "All checked-in V7 userland source components; kernel sources are prerequisites, not userland inventory entries. Missing distribution commands/data, including man and usr/man, are recorded as external requirements; source-file coverage does not establish complete V7 distribution coverage.",
   "coverage": "Each checked-in file below reference_root is explicitly owned by at least one entry; overlapping ownership is permitted for shared sources.",
   "dependency_policy": "Confirmed edges have local evidence; inferred edges and unresolved audits are explicit. Cycles are allowed for toolchain bootstrap and runtime generators. This is not a completed symbol-level compatibility audit.",
   "timestamp_policy": "Preserve V7 atime/mtime/ctime semantics and on-disk widths; no birth-time field or higher precision.",
@@ -426,6 +426,59 @@
         "reference/v7/usr/src/libc/crt"
       ],
       "locations": []
+    },
+    {
+      "id": "man-command",
+      "category": "program",
+      "status": "missing",
+      "description": "Restore the original V7 man command from distribution material not present in the imported source snapshot; port it for 0.1.0 step 28, priority 11. Implementation form, reference installation path and exact dependency closure remain to be verified.",
+      "evidence": [
+        "reference/v7/usr",
+        "reference/v7/usr/src/cmd/troff/README"
+      ],
+      "locations": [],
+      "priority": 11,
+      "provenance_urls": [
+        "https://www.tuhs.org/cgi-bin/utree.pl?file=V7%2Fusr%2Fman%2Fman7%2Fhier.7"
+      ],
+      "related_components": [
+        "cmd.troff",
+        "cmd.col",
+        "formatter-macros",
+        "formatter-tables",
+        "manual-pages"
+      ],
+      "acceptance": [
+        "Display a known installed command manual and select a manual section using verified V7 syntax.",
+        "Verify readable COM1/COM2 output and reference-compatible behavior for missing pages and invalid requests."
+      ]
+    },
+    {
+      "id": "manual-pages",
+      "category": "data",
+      "status": "missing",
+      "description": "Restore and install V7 manual pages for commands, syscalls, libraries, devices, formats and administration; the imported reference has no usr/man tree. Add native-port differences without silently changing historical command semantics.",
+      "evidence": [
+        "reference/v7/usr",
+        "reference/v7/usr/src/cmd/troff/README"
+      ],
+      "locations": [
+        "/usr/man"
+      ],
+      "priority": 11,
+      "provenance_urls": [
+        "https://www.tuhs.org/cgi-bin/utree.pl?file=V7%2Fusr%2Fman%2Fman7%2Fhier.7"
+      ],
+      "related_components": [
+        "man-command",
+        "cmd.troff",
+        "formatter-macros",
+        "formatter-tables"
+      ],
+      "acceptance": [
+        "Package manual sections with the formatter macros and terminal tables needed by the retained man implementation.",
+        "Verify man can find and render representative command, syscall, library and administration pages."
+      ]
     }
   ],
   "entries": [
