@@ -85,9 +85,10 @@ are rejected instead of truncating. Nice adjusts the inherited niceness within
 0–39 around baseline 20 and updates runnable priority; only root can decrease
 it. CPU-usage priority decay remains pending.
 
-Time/stime use signed 64-bit seconds. The wall clock starts at epoch zero plus
-uptime; root can set it through stime. RTC initialization and calendar/timezone
-libc functions are pending. Alarms use monotonic PIT ticks independently of
+Time/stime use signed 64-bit seconds. The wall clock starts from the UTC RTC at boot
+and advances with PIT ticks; root can set it through stime. An invalid RTC
+falls back to epoch zero plus uptime with a boot diagnostic. Calendar/timezone
+libc functions remain pending. Alarms use monotonic PIT ticks independently of
 stime. Access uses real IDs, including directory search checks; open uses
 effective IDs. Chmod requires ownership or root; chown requires root. Chmod
 preserves the file type and restricts the sticky bit to root. Utimes are passed

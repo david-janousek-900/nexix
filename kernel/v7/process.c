@@ -1,6 +1,7 @@
 /* Native adaptation of process behavior from V7 sys/{slp,sys1}.c.
  * Original sources and Caldera license are retained under reference/. */
 #include "process.h"
+#include "clock.h"
 #include "files.h"
 #include "signals.h"
 #include "exec.h"
@@ -129,6 +130,7 @@ struct proc *proc_alloc(void)
         p->p_stack_bottom = (uintptr_t)stacks[i].bytes;
         p->p_stack_top = p->p_stack_bottom + ENTRY_STACK_SIZE;
         p->p_user = &users[i];
+        p->p_user->u_start = clock_now();
         if (current) {
             users[i].u_uid = current->p_user->u_uid;
             users[i].u_gid = current->p_user->u_gid;
@@ -396,7 +398,7 @@ v7_pid_t proc_fork(const struct interrupt_frame *frame)
     child->p_user->u_error = 0;
     child->p_user->u_utime = child->p_user->u_stime = 0;
     child->p_user->u_cutime = child->p_user->u_cstime = 0;
-    child->p_user->u_start = timer_ticks() / 100;
+    child->p_user->u_start = clock_now();
     struct interrupt_frame child_frame = *frame;
     child_frame.rax = 0;
     prepare_context(child, &child_frame);

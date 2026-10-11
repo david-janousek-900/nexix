@@ -1,4 +1,5 @@
 #include "process.h"
+#include "clock.h"
 #include "signals.h"
 #include "userland.h"
 #include "exec.h"
@@ -157,6 +158,12 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
         else
             __asm__ volatile ("mov (%0), %%rax" : : "r"(address) : "rax", "memory");
         panic("expected paging fault did not occur");
+    }
+    if (clock_init()) {
+        serial_puts("Nexix: RTC UTC epoch="); serial_hex(clock_now()); serial_puts("\r\n");
+        serial_puts("NEXIX_RTC_OK\r\n");
+    } else {
+        serial_puts("Nexix: RTC unavailable or invalid; clock starts at UNIX epoch\r\n");
     }
     timer_init();
     tty_init();

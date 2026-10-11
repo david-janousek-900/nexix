@@ -244,3 +244,28 @@ not completion of the remaining ports or their transitive API audits. Additional
 negative checks cover omitted installed scripts, binary-only claims, installed
 program-index gaps and provenance corruption. The original archive can be checked
 independently with `python3 tools/import_v7_reference.py /path/to/v7.tar.gz --check`.
+
+## Step 22: RTC system clock
+
+`make TOOLCHAIN_PREFIX= test-rtc` checks BCD/binary and 12/24-hour decoding,
+midnight/noon, Gregorian leap dates, century fallback, invalid fields, battery
+validity, stuck update-in-progress, inhibited updates and unstable snapshots.
+The host test also verifies PIT advancement, `stime` validation and preservation
+of the previous time after rejected updates.
+
+A bounded QEMU boot uses `-rtc base=2024-02-29T12:34:56,clock=vm` and checks the
+reported epoch against 1709210096 (allowing ten seconds for firmware/boot),
+`NEXIX_RTC_OK`, absence of panic and the normal shell prompt. Its log is
+`build/rtc-boot.log`. `make TOOLCHAIN_PREFIX= test-signals` exercises the complete
+self-test boot at 16M/128M, including userspace RTC-derived `time`, pointer-copy
+validation, privileged `stime`, and existing signal/service regressions.
+
+The initial PC platform uses CMOS century register 0x32. An unavailable century
+byte (0 or 0xff) maps years into 2000–2099; other malformed values are rejected.
+RTC snapshots must match, with UIP clear and valid battery-backed contents.
+Polling is bounded; failures leave epoch-plus-uptime and print a diagnostic.
+Reads run before timer IRQs are enabled and never alter RTC date registers.
+The RTC must hold UTC. QEMU's [RTC options](https://qemu-project.gitlab.io/qemu/system/invocation.html)
+provide UTC or fixed-date initialization. There is no ongoing resynchronization
+or RTC writeback in this step. Filesystem timestamp updates remain step 23 and
+timezone conversion remains step 24; V7 disk formats are unchanged.

@@ -74,8 +74,10 @@
       "id": "wall-clock",
       "category": "kernel",
       "status": "partial",
-      "description": "Clock advances from epoch zero; RTC initialization and ordinary inode timestamp updates are pending steps 22\u201323.",
+      "description": "UTC wall clock is initialized from RTC at boot and advances with PIT ticks; ordinary inode timestamp updates remain pending step 23.",
       "evidence": [
+        "kernel/clock.c",
+        "kernel/arch/x86_64/rtc.c",
         "kernel/v7/syscall.c",
         "kernel/v7/files.c"
       ],

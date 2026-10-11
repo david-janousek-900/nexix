@@ -94,7 +94,7 @@ build/nexix.iso: build/nexix.elf boot/grub.cfg
 
 iso: check build/nexix.iso
 run: iso disk
-	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -boot d -drive file=build/nexix.img,format=raw,if=ide,index=0 -cdrom build/nexix.iso -display none -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -mon chardev=console,mode=readline -no-reboot
+	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -rtc base=utc -boot d -drive file=build/nexix.img,format=raw,if=ide,index=0 -cdrom build/nexix.iso -display none -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -mon chardev=console,mode=readline -no-reboot
 
 smoke: check build/test-selftest.iso
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso
@@ -420,3 +420,19 @@ test-inventory:
 	$(PYTHON) tools/check_inventory.py
 	$(PYTHON) tests/inventory.py
 test: test-inventory
+
+# Step 22: boot RTC and shared epoch clock.
+build/rtc.o: kernel/arch/x86_64/rtc.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+build/clock.o: kernel/clock.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+OBJECTS += build/rtc.o build/clock.o
+build/nexix.elf: build/rtc.o build/clock.o
+-include build/rtc.d build/clock.d
+build/rtc-test: tests/rtc.c tests/rtc/io.h kernel/arch/x86_64/rtc.c kernel/clock.c kernel/include/clock.h | build
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Itests/rtc -Ikernel/include -Iinclude tests/rtc.c kernel/arch/x86_64/rtc.c kernel/clock.c -o $@
+.PHONY: test-rtc
+test-rtc: build/rtc-test iso
+	./build/rtc-test
+	$(PYTHON) tools/rtc_smoke.py $(QEMU) build/nexix.iso
+test: test-rtc

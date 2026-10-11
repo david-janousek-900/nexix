@@ -105,8 +105,8 @@ starts that demo: type a line and Enter, use Backspace/Ctrl-U to edit, or type
 
 Version **0.1.0** targets multi-user startup, the full native V7 reference
 userland, RTC-based time and correct persistent file timestamps. Steps 1–20
-provide the implemented foundation. Step 21 completes the full-distribution inventory;
-steps 22–29 remain pending. Regression tests accompany implementation.
+provide the implemented foundation. Step 21 completes the full-distribution inventory and step 22 initializes time
+from RTC at boot; steps 23–29 remain pending. Regression tests accompany implementation.
 See the [porting inventory](docs/porting-inventory.md) for priorities, dependencies
 and missing inputs.
 
@@ -132,7 +132,7 @@ and missing inputs.
 20. Add persistent IDE-backed storage.
 21. Preserve and inventory the full V7 distribution, including sources, scripts,
     libraries, supporting data and binary-only program blockers.
-22. Initialize the UTC system clock from RTC at boot.
+22. Initialize the UTC system clock from RTC at boot (implemented).
 23. Maintain and persist V7 access, modification and inode-change timestamps.
 24. Add timezone-aware libc, configurable TZ, date and touch.
 25. Complete required kernel/libc interfaces and floating-point support.
@@ -165,3 +165,13 @@ the host and in QEMU. See [root image](docs/root-image.md). Root mounting and PI
 `make TOOLCHAIN_PREFIX= test-shell` verifies the running V7 shell through COM1,
 including editing, signals, pipes, scripts, background commands and longer
 sessions. See [interactive shell acceptance](docs/interactive-shell.md).
+
+The boot RTC is interpreted as UTC; `make run` explicitly uses QEMU
+`-rtc base=utc`. Successful initialization prints `Nexix: RTC UTC epoch=...`
+and `NEXIX_RTC_OK`. Invalid or unavailable RTC data produces an explicit warning
+and leaves the clock at the UNIX epoch plus elapsed ticks. Time continues from
+the PIT after initialization; `stime` changes the system clock without writing
+the RTC. Timezone conversion and automatic file timestamps follow in steps 23–24.
+
+Run `make TOOLCHAIN_PREFIX= test-rtc` to check RTC decoding and boot with a fixed
+UTC leap-day date. Details are in [validation](docs/validation.md).

@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <time.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -38,6 +39,10 @@ static void strings(void)
 }
 int main(int argc, char **argv, char **envp)
 {
+    /* QEMU boot RTC must reach userspace through the native time syscall. */
+    time_t boot_time;
+    CHECK(time(&boot_time) >= 946684800);
+    CHECK(time(0) >= boot_time && time(0) <= boot_time + 1);
     CHECK(libc_alignment_test() && libc_register_test());
     CHECK(errno == 0);
     if (!argc) {

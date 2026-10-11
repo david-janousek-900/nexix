@@ -1,5 +1,6 @@
 /* Native trap dispatch based on V7 sys/trap.c and sys/sysent.c numbering. */
 #include "syscall.h"
+#include "clock.h"
 #include "files.h"
 #include "exec.h"
 #include "process.h"
@@ -10,7 +11,6 @@
 #include <nexix/syscall.h>
 #include <nexix/errno.h>
 
-static int64_t clock_offset; /* Epoch defaults to zero until stime(). */
 static int64_t invoke(uint64_t number, struct interrupt_frame *frame)
 {
     struct proc *p = proc_current();
@@ -58,7 +58,7 @@ static int64_t invoke(uint64_t number, struct interrupt_frame *frame)
         while (!proc_sleep_interruptible(u, 40)) {}
         return -NX_EINTR;
     case NX_SYS_TIME: {
-        int64_t now = clock_offset + timer_ticks() / NX_CLK_TCK;
+        int64_t now = clock_now();
         if (u->u_arg[0]) {
             int error = copyout(&p->p_vm, u->u_arg[0], &now, sizeof(now));
             if (error) return error;
@@ -70,8 +70,7 @@ static int64_t invoke(uint64_t number, struct interrupt_frame *frame)
         if (u->u_uid) return -NX_EPERM;
         int error = copyin(&p->p_vm, u->u_arg[0], &now, sizeof(now));
         if (error) return error;
-        if (now < 0 || now > INT64_MAX - (int64_t)(timer_ticks() / NX_CLK_TCK)) return -NX_EINVAL;
-        clock_offset = now - timer_ticks() / NX_CLK_TCK; return 0;
+        return clock_set(now) ? 0 : -NX_EINVAL;
     }
     case NX_SYS_SETUID: case NX_SYS_SETGID: {
         uintptr_t id = u->u_arg[0];
