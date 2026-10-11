@@ -18,6 +18,7 @@
 #define NX_SEEK_CUR 1
 #define NX_SEEK_END 2
 #define NX_PIPE_BUF 4096
+#define NX_NULL_DEV 0x0300
 #ifndef __ASSEMBLER__
 #include <stdint.h>
 struct nx_stat {

@@ -189,7 +189,7 @@ static int open_path(struct user *u, uintptr_t address, uint64_t flags, uint64_t
         if (!f->f_inode) error = -NX_ENFILE;
     }
     if (!error && (flags & NX_O_TRUNC) && type == V7_IFREG) error = v7fs_truncate(root, ino);
-    if (!error && type == V7_IFCHR) {
+    if (!error && type == V7_IFCHR && disk.addr[0] != NX_NULL_DEV) {
         struct tty *tty;
         error = tty_open(disk.addr[0], u, &tty);
         if (!error) f->f_private = tty;
@@ -266,6 +266,8 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
     struct v7fs_inode inode;
     int error = v7fs_inode_get(root, f->f_inode->i_number, &inode);
     if (error) return error;
+    if ((inode.mode & V7_IFMT) == V7_IFCHR && inode.addr[0] == NX_NULL_DEV)
+        return write ? (int64_t)count : 0;
     if (write && (f->f_open_flags & NX_O_APPEND)) f->f_offset = inode.size;
     size_t done = 0; uint8_t bytes[512];
     while (done < count) {

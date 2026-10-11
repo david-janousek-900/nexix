@@ -22,6 +22,13 @@ static int child_exec(const char *path, int unprivileged)
 int main(void)
 {
     CHECK(open("/dev/console",O_RDWR)==0 && dup(0)==1 && dup(0)==2);
+    int null=open("/dev/null",O_RDWR);CHECK(null>=0);
+    CHECK(write(null,"discard",7)==7 && read(null,buffer,sizeof(buffer))==0);
+    CHECK(lseek(null,7,SEEK_SET)==7 && read(null,buffer,1)==0);
+    CHECK(write(null,(void *)1,1)==-1 && errno==EFAULT);
+    CHECK(read(null,(void *)1,1)==-1 && errno==EFAULT);
+    struct stat null_stat;CHECK(fstat(null,&null_stat)==0 && (null_stat.st_mode&S_IFMT)==S_IFCHR && null_stat.st_size==0);
+    CHECK(close(null)==0);
     char *args[]={"test",NULL};
     CHECK(execv("/bin/libc-test",args)==-1 && errno==ENOENT); /* No catalog fallback. */
     CHECK(execv("/etc/passwd",args)==-1 && errno==EACCES);

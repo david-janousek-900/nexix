@@ -389,3 +389,9 @@ test-boot: iso
 	$(PYTHON) tools/boot_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/boot_smoke.py $(QEMU) build/nexix.iso 128M
 test: test-boot
+
+.PHONY: test-shell
+test-shell: iso
+	$(PYTHON) tools/interactive_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/interactive_smoke.py $(QEMU) build/nexix.iso 128M
+test: test-shell

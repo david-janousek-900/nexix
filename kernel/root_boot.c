@@ -30,6 +30,7 @@ _Noreturn void rootfs_start(void)
     if(elf_load_inode(&root_volume,ino,&init_args,&image))panic("cannot load init");
     struct proc *p=proc_alloc();
     if(!p || p->p_pid!=1)panic("cannot allocate PID 1");
+    p->p_pgrp=0; /* Init has no terminal; its console child forms the group. */
     struct exec_image empty={.vm=p->p_vm};
     p->p_vm=image.vm;p->p_size=image.size;p->p_brk_base=p->p_brk=image.heap;
     p->p_user->u_exdata.entry=image.entry;p->p_user->u_exdata.text=image.text;

@@ -207,3 +207,13 @@ checks relative exec, missing catalog-only names, permission/type rejection,
 unsupported set-ID exec, malformed ELF and post-exec cleanup. Injected loader
 read failures verify rollback before and after allocating staged pages.
 See [booting.md](booting.md) for commands and transcripts.
+
+## Step 19 acceptance
+
+`make TOOLCHAIN_PREFIX= test-shell` runs 271 command checks per production boot
+at 16 MiB and 128 MiB, using real COM1 input. It exercises line editing,
+foreground/pipeline interrupts, quit, traps, EOF, background commands, scripts,
+globbing, 5120-byte expansion and a longer fork/exec/wait session. Native root
+regression tests additionally check `/dev/null` read/write/stat/seek and invalid
+user-buffer rejection. Host and kernel image checks verify the new device inode.
+See [interactive-shell.md](interactive-shell.md) for coverage and limitations.

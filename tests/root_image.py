@@ -74,6 +74,8 @@ class RootImage(unittest.TestCase):
         self.assertEqual(inode(console)[:2], (0o20600, 2))
         self.assertEqual(inode(console)[3][0], 0x100)
         self.assertEqual(inode(lookup('/dev/tty'))[3][0], 0x200)
+        self.assertEqual(inode(lookup('/dev/null'))[0], 0o20666)
+        self.assertEqual(inode(lookup('/dev/null'))[3][0], 0x300)
 
     def test_directory_links_and_space(self):
         directories = ('/','/bin','/etc','/dev','/tmp','/usr','/usr/adm')

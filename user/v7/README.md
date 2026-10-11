@@ -8,7 +8,7 @@ are in [reference/README.md](../../reference/README.md) and
 
 The shell retains Bourne's parser, execution logic and heap allocator. Changes
 adapt pointer widths and alignment, structure member access, native startup,
-signal interfaces, dup2, null pointers, directory names and clock ticks.
+signal interfaces, dup2, null pointers, directory names, current-directory glob lookups and clock ticks.
 `native.h` and `globals.c` provide native declarations and shared definitions.
 The command ports use `compat.h` and Nexix libc. Pipe identity checks in cat and
 bounded directory names in pwd are adapted to the native filesystem interfaces.

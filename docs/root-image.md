@@ -13,11 +13,11 @@ The image includes:
 - `/etc/rc`, `/etc/ttys`, `/etc/passwd`, and `/.profile` from `rootfs/`.
 - Empty `/etc/utmp` and `/usr/adm/wtmp` accounting files.
 - `/dev/console` and `/dev/ttyS0`, two names for the same COM1 device inode,
-  plus `/dev/tty` for the controlling terminal.
+  plus `/dev/tty` for the controlling terminal and `/dev/null` for EOF/discard I/O.
 - `/bin`, `/etc`, `/dev`, `/tmp`, `/usr`, and `/usr/adm` directories.
 
 All files belong to root. Directories/programs have mode 0755, configuration
-and accounting files 0644, and terminal devices 0600. Directory link counts,
+and accounting files 0644, terminal devices 0600, and `/dev/null` 0666. Directory link counts,
 hard links, free blocks and free inodes are initialized. File timestamps are
 zero so identical source binaries and configuration produce identical bytes.
 The root profile exports PATH=/bin and HOME=/. The passwd file describes root;

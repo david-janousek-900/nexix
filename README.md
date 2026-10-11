@@ -36,6 +36,7 @@ make check
 make iso
 make run
 make test-boot
+make test-shell
 make smoke
 make test
 make test-process
@@ -101,7 +102,7 @@ starts that demo: type a line and Enter, use Backspace/Ctrl-U to edit, or type
 
 ## Roadmap
 
-Version **0.1.0** covers these 20 steps. Steps 1–18 are implemented; step 19
+Version **0.1.0** covers these 20 steps. Steps 1–19 are implemented; step 20
 is next. Regression tests accompany implementation throughout the roadmap.
 
 1. Import V7 sources and preserve licensing.
@@ -141,3 +142,7 @@ Normal boot now launches init as PID 1 and runs its single-user shell. See [V7 u
 `make TOOLCHAIN_PREFIX= rootfs` packages the programs and startup files into
 `build/root.img`. `make TOOLCHAIN_PREFIX= test-rootfs` validates the image on
 the host and in QEMU. See [root image](docs/root-image.md). Root mounting and PID 1 startup are implemented; see [booting](docs/booting.md).
+
+`make TOOLCHAIN_PREFIX= test-shell` verifies the running V7 shell through COM1,
+including editing, signals, pipes, scripts, background commands and longer
+sessions. See [interactive shell acceptance](docs/interactive-shell.md).

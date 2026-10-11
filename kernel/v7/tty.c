@@ -47,6 +47,12 @@ int tty_open(v7_dev_t dev, struct user *u, struct tty **out)
     if (!console.opens) defaults(&console);
     ++console.opens;
     if (!u->u_ttyp) { u->u_ttyp = &console; u->u_ttyd = NX_CONSOLE_DEV; }
+    /* V7 ttyopen: a process without a group joins the terminal group,
+     * creating it from its PID on the first open. Keep init outside it. */
+    if (!u->u_procp->p_pgrp) {
+        if (!console.group) console.group = u->u_procp->p_pid;
+        u->u_procp->p_pgrp = console.group;
+    }
     if (!console.group) console.group = u->u_procp->p_pgrp;
     *out = &console;
     return 0;

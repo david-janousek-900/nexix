@@ -22,8 +22,8 @@ rm /tmp/message /tmp/my-echo
 Ctrl-D on an empty line closes the single-user shell. Init waits for it,
 runs `/etc/rc`, reads the empty `/etc/ttys` configuration and starts another
 single-user shell. The historical V7 shell's interactive `exit` returns to
-its command prompt; use Ctrl-D for this lifecycle. Init remains PID 1 while
-replacement shells get new PIDs. Init termination is a fatal kernel error.
+its command prompt; use Ctrl-D for this lifecycle. Init remains PID 1 with process group zero while replacement shells get new
+PIDs and join the terminal group on console open. Init termination is a fatal kernel error.
 Ctrl-A, release, then X exits QEMU. Host signal processing is disabled on
 QEMU's multiplexed console so terminal control bytes can reach Nexix.
 
@@ -59,5 +59,5 @@ paths, unsupported set-ID exec, copied executables and resource reclamation.
 ELF callback error tests inject failures in header, program-header and segment
 reads, checking rollback after each failure.
 
-Step 19 broadens interactive shell acceptance, including terminal editing,
-interrupts and longer sessions.
+Step 19 now verifies interactive editing, interrupts, scripts and longer
+sessions; see [interactive-shell.md](interactive-shell.md).

@@ -64,9 +64,9 @@ INT	expand(as,rflg)
 			break;
 		FI
 	POOL
-	IF stat(s,&statb)>=0
+	IF stat(*s?s:".",&statb)>=0
 	    ANDF (statb.st_mode&S_IFMT)==S_IFDIR
-	    ANDF (dirf=open(s,0))>0
+	    ANDF (dirf=open(*s?s:".",0))>=0
 	THEN	dir++;
 	FI
 	count=0;

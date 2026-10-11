@@ -3,6 +3,7 @@
 #include "serial.h"
 #include "userland.h"
 #include <nexix/errno.h>
+#include <nexix/file.h>
 #define REQUIRE(c) do { if (!(c)) panic("root image self-test: " #c); } while (0)
 extern uint8_t _binary_build_root_img_start[], _binary_build_root_img_end[];
 static struct ramdisk root_ram;
@@ -43,6 +44,9 @@ void rootfs_selftest(void)
     REQUIRE(v7fs_inode_get(&root_fs,console,&node)==0 && node.mode==(V7_IFCHR|0600) && node.nlink==2 && node.addr[0]==0x100);
     REQUIRE(v7fs_lookup(&root_fs,2,"/dev/tty",&tty)==0);
     REQUIRE(v7fs_inode_get(&root_fs,tty,&node)==0 && node.addr[0]==0x200);
+    v7_ino_t null;
+    REQUIRE(v7fs_lookup(&root_fs,2,"/dev/null",&null)==0);
+    REQUIRE(v7fs_inode_get(&root_fs,null,&node)==0 && node.mode==(V7_IFCHR|0666) && node.addr[0]==NX_NULL_DEV);
     const char *config[]={"/etc/rc","/etc/ttys","/etc/passwd","/.profile","/etc/utmp","/usr/adm/wtmp"};
     for(unsigned i=0;i<sizeof(config)/sizeof(config[0]);++i){
         v7_ino_t ino;
