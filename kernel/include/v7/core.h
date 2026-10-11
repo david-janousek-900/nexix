@@ -5,6 +5,7 @@
 #include "v7/disk.h"
 #include "v7/constants.h"
 #include "paging.h"
+#include <nexix/fpu.h>
 #define V7_NPROC 150
 #define V7_NOFILE 20
 #define V7_NSIG 17
@@ -39,6 +40,7 @@ struct proc {
     struct address_space p_vm;
     uintptr_t p_stack_bottom, p_stack_top;
     struct v7_context p_context;
+    struct nx_fpu_state p_fpu;
     struct user *p_user;
     void (*p_entry)(void *);
     void *p_argument;

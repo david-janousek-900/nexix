@@ -1,7 +1,7 @@
 # Nexix x86_64 syscall ABI (step 9)
 
 The native ABI is defined by `include/nexix/syscall.h` and
-`include/nexix/errno.h`. It is version 1 of the experimental Nexix ABI, for
+`include/nexix/errno.h`. It is version 2 of the experimental Nexix ABI, for
 rebuilt ELF64 programs. It does not implement PDP-11 binary or Linux syscall
 compatibility. Call numbers retain V7's `usr/sys/sys/sysent.c` assignments where
 applicable; register conventions and pointer-bearing interfaces are native.
@@ -75,6 +75,7 @@ four-byte status, even though its pointer occupies an eight-byte argument slot.
 | 11 | exec | Pathname, argv | Replace image with empty environment |
 | 12 | chdir | Path | Zero |
 | 13 | time | Optional writable time_t pointer | Wall-clock seconds |
+| 14 | mknod | Path, inode mode, 16-bit device number | Zero; root only |
 | 15, 16 | chmod, chown | Path, mode / UID, GID | Zero |
 | 17 | brk | New address, or zero to query | Zero, or current break |
 | 23, 46 | setuid, setgid | ID | Zero |
@@ -100,6 +101,7 @@ four-byte status, even though its pointer occupies an eight-byte argument slot.
 | 54 | ioctl | fd, request, argument pointer | Zero or negative errno |
 | 59 | execve | Pathname, argv, envp | Replace image |
 | 60 | umask | Mask | Previous mask; new value restricted to 0777 |
+| 61 | chroot | Directory pathname | Zero; root only, retains cwd |
 | 64 | yield | None | Zero after allowing scheduling |
 | 65 | getppid | None | Parent PID |
 | 66 | geteuid | None | Effective UID |

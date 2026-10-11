@@ -87,6 +87,40 @@ can return a partial byte count. Filesystem write failures retain the existing
 mount poisoning policy; metadata changes are synchronous but not crash atomic.
 There is no journal or orphan recovery after reboot.
 
+## Step 25 filesystem prerequisites
+
+Native syscall 14 and libc `mknod` create regular files, empty directories and
+character/block special inodes. Effective uid zero is required. Mode permissions
+respect umask; device numbers are 16 bits. Existing names return EEXIST,
+unsupported inode types or a nonzero device for a regular file/directory return
+EINVAL, and read-only volumes return EROFS. Creating a special inode does not
+add a driver: current console/TTY/null devices work, while block-device I/O and
+mount administration remain pending.
+
+V7 mkdir constructs `.` and `..` with directory hard links; rmdir removes these
+links and then the directory's parent entry. The files layer now allows those
+link/unlink operations for effective uid zero, including dot names. Non-root
+directory linking and unlinking are rejected. Kernel inode references keep an
+open unlinked directory alive until close, just as for regular files. Reclaiming
+a device inode clears its encoded device number without freeing it as a block.
+These are historical privileged primitives; emptiness checks belong to the
+V7 rmdir program. Empty path lookup returns cwd, restoring V7 `stat("")` behavior
+used by that program. Packaging those command ports remains step 28.
+
+Native syscall 61 and libc `chroot` replace the process root directory reference
+for effective uid zero. Absolute paths use it, and `..` at that root stays there.
+All pathname operations, including access's real-id checks and exec, use the
+same resolver. Fork inherits the root reference; exec retains it; exit releases
+it. Like V7, chroot does not change cwd or revoke existing descriptors. A cwd
+outside the new root remains usable via relative paths; this is the historical
+interface rather than a modern confinement guarantee. Failed chroot leaves
+the previous reference intact.
+
+Host filesystem tests validate directory link counts, dot lookup, block/inode
+reclamation and persistent special-device encoding. Native ring-3 tests check
+privilege rejection, read-only creation, open unlinked directories/devices,
+chroot absolute/relative parent lookup, fork inheritance, and reference cleanup.
+
 ## Pipes
 
 Each pipe uses a 4096-byte ring. Reads sleep while empty with writers present,

@@ -1,5 +1,6 @@
 /* V7 sys1.c exec replacement semantics with a native ELF64 image. */
 #include "exec.h"
+#include "fpu.h"
 #include "files.h"
 #include "uaccess.h"
 #include "segments.h"
@@ -73,6 +74,8 @@ int proc_exec(uintptr_t path, uintptr_t argv, uintptr_t envp, struct interrupt_f
         if (u->u_signal[i] != 1) { u->u_signal[i] = 0; u->u_restorer[i] = 0; } /* Preserve ignored dispositions. */
     u->u_prof.pr_scale = 0;
     u->u_acflag &= ~1U; /* V7 AFORK cleared on successful exec. */
+    fpu_default(&p->p_fpu);
+    fpu_restore(&p->p_fpu);
     *frame = (struct interrupt_frame){.rip = image.entry, .rsp = image.stack,
         .cs = USER_CS, .ss = USER_DS, .rflags = 0x202};
     return 0;

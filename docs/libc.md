@@ -32,9 +32,9 @@ ld -nostdlib -z max-page-size=0x1000 -T user/user.ld \
 ```
 
 Compile application objects with the Makefile's USER_CFLAGS and the same
-compiler used for libc. The current target uses integer/pointer code only
-(`-mgeneral-regs-only`), no red zone, no PIE, no stack protector or unwind tables.
-Floating-point/SIMD state, TLS, shared libraries and constructors are deferred.
+compiler used for libc. The target supports x87/MMX/SSE/SSE2, with AVX disabled,
+no red zone, no PIE, no stack protector or unwind tables. Only kernel C retains
+`-mgeneral-regs-only`. TLS, shared libraries and constructors remain deferred.
 A generated ELF requires Nexix and cannot run using the host's syscall ABI.
 
 `_start` reads the step 10 stack, initializes `environ`, clears DF, clears the
@@ -110,3 +110,9 @@ Every successful boot requires `NEXIX_LIBC_ABI_OK` and `NEXIX_LIBC_OK` before
 Step 12 implements the block interface, RAM root device and V7 filesystem
 foundation; see [filesystem.md](filesystem.md). Steps 13 and 14 add file
 operations, pipes and terminal controls; see [files.md](files.md) and [tty.md](tty.md).
+
+Step 25 adds binary64 `frexp`, `ldexp`, `modf`, `fmod`, decimal `atof`/`strtod`,
+`ecvt`/`fcvt`, and `%f`, `%e`, `%E`, `%g`, `%G` formatting. See
+[floating-point.md](floating-point.md) for numeric contracts and limitations.
+`build/libm.a` contains native adaptations of all 16 retained libm C files;
+link math callers with `build/libm.a build/libc.a` after their objects.

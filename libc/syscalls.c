@@ -51,6 +51,9 @@ int dup(int fd) { return call(NX_SYS_DUP, fd, 0, 0); }
 int dup2(int fd, int target) { return call(NX_SYS_DUP2, fd, target, 0); }
 int pipe(int pair[2]) { return call(NX_SYS_PIPE, (long)(uintptr_t)pair, 0, 0); }
 int chdir(const char *path) { return call(NX_SYS_CHDIR, (long)(uintptr_t)path, 0, 0); }
+int chroot(const char *path) { return call(NX_SYS_CHROOT, (long)(uintptr_t)path, 0, 0); }
+int mknod(const char *path, mode_t mode, unsigned short device)
+{ return call(NX_SYS_MKNOD, (long)(uintptr_t)path, mode, device); }
 int link(const char *oldpath, const char *newpath)
 { return call(NX_SYS_LINK, (long)(uintptr_t)oldpath, (long)(uintptr_t)newpath, 0); }
 int unlink(const char *path) { return call(NX_SYS_UNLINK, (long)(uintptr_t)path, 0, 0); }

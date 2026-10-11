@@ -17,7 +17,8 @@ Ignored signals neither interrupt a sleep nor terminate the process.
 
 Delivery runs on syscall, user fault and IRQ return. Handler code and its libc
 restorer must have executable user mappings. The kernel reserves the SysV red
-zone, writes a 176-byte `nx_signal_context` to writable user stack memory and
+zone, writes a 688-byte `nx_signal_context` (176 integer bytes followed by
+512 bytes of FXSAVE64 state) to writable user stack memory and
 pushes the restorer address. Handler entry has RSP modulo 16 equal to eight,
 RDI containing the signal number, and DF/TF clear. The context immediately
 follows the return address and contains all general registers and the original
@@ -31,7 +32,9 @@ An invalid context returns EFAULT or EINVAL without replacing the live frame.
 User contexts can change their own registers; they cannot acquire kernel
 privilege. No kernel chain survives a handler, so native setjmp/longjmp can
 leave a handler without leaking signal state. These routines save SysV
-callee-saved registers, stack and return address; they do not save signal masks.
+callee-saved registers, stack, return address, x87 control and MXCSR; they do not
+save signal masks. FP contexts and their validation are described in
+[floating-point.md](floating-point.md).
 Handlers which use errno must preserve it themselves if needed.
 
 An unusable delivery stack terminates the process with SIGSEGV. Ordinary CPU

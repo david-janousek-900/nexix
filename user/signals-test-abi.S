@@ -9,6 +9,9 @@ signal_register_test:
     push %r13
     push %r14
     push %r15
+    fld1
+    mov $0x778899aa, %eax
+    movq %rax, %xmm15
     mov $NX_SYS_GETPID, %eax
     int $0x80
     mov %rax, %rdi
@@ -36,6 +39,15 @@ signal_register_test:
     cmp $0x401, %edi
     jne 1f
     test %rax, %rax
+    jne 1f
+    movq %xmm15, %rax
+    cmp $0x778899aa, %rax
+    jne 1f
+    sub $8, %rsp
+    fstpl (%rsp)
+    movabs $0x3ff0000000000000, %rax
+    cmp %rax, (%rsp)
+    lea 8(%rsp), %rsp
     jne 1f
     cmp $15, %esi
     jne 1f

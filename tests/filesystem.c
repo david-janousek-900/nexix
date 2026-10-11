@@ -218,6 +218,32 @@ int main(int argc, char **argv)
     assert(v7fs_read(&fs, ino, 700, buf, 1, &done) == 0 && done == 1 && buf[0] == 'Z');
     assert(v7fs_release_inode(&fs, ino) == 0 && v7fs_inode_get(&fs, ino, &scratch) == -NX_ENOENT);
     assert(v7_disk_u32(fs.super.tfree) == available && v7_disk_u16(fs.super.tinode) == free_inodes);
+    /* V7 mkdir/rmdir construct and dismantle directories with privileged
+     * mknod/link/unlink; device numbers must never be freed as data blocks. */
+    char dirname[V7_DIRSIZ] = "subdir", dot[V7_DIRSIZ] = ".", dotdot[V7_DIRSIZ] = "..";
+    v7_ino_t directory, removed;
+    assert(v7fs_mknod(&fs, 4, dirname, V7_IFDIR | 0755, 123, 456, 0, &directory) == 0);
+    assert(v7fs_link(&fs, directory, directory, dot) == -NX_EPERM);
+    assert(v7fs_link_privileged(&fs, directory, directory, dot, true) == 0);
+    assert(v7fs_link_privileged(&fs, 4, directory, dotdot, true) == 0);
+    assert(v7fs_lookup(&fs, 2, "/tmp/subdir/../subdir/.", &ino) == 0 && ino == directory);
+    assert(v7fs_inode_get(&fs, directory, &scratch) == 0 && scratch.nlink == 2 && scratch.size == 32);
+    assert(v7fs_truncate(&fs, directory) == -NX_EISDIR);
+    assert(v7fs_unlink(&fs, 4, dirname, &removed) == -NX_EPERM);
+    assert(v7fs_unlink_privileged(&fs, directory, dotdot, &removed, true) == 0 && removed == 4);
+    assert(v7fs_unlink_privileged(&fs, directory, dot, &removed, true) == 0 && removed == directory);
+    assert(v7fs_unlink_privileged(&fs, 4, dirname, &removed, true) == 0 && removed == directory);
+    assert(v7fs_release_inode(&fs, directory) == 0);
+    assert(v7_disk_u32(fs.super.tfree) == available && v7_disk_u16(fs.super.tinode) == free_inodes);
+    assert(v7fs_mknod(&fs, 4, dirname, V7_IFCHR | 0600, 0, 0, 0x300, &ino) == 0);
+    assert(v7fs_inode_get(&fs, ino, &scratch) == 0 && scratch.addr[0] == 0x300 && scratch.size == 0);
+    assert(v7fs_unmount(&fs) == 0 && v7fs_mount(&fs, &ram.device, false) == 0);
+    assert(v7fs_inode_get(&fs, ino, &scratch) == 0 && scratch.addr[0] == 0x300);
+    assert(v7fs_unlink(&fs, 4, dirname, &removed) == 0 && removed == ino);
+    assert(v7fs_release_inode(&fs, ino) == 0);
+    assert(v7_disk_u32(fs.super.tfree) == available && v7_disk_u16(fs.super.tinode) == free_inodes);
+    assert(v7fs_mknod(&fs, 4, dirname, 0, 0, 0, 0, &ino) == -NX_EINVAL);
+    assert(v7fs_mknod(&fs, 4, dirname, V7_IFDIR, 0, 0, 123, &ino) == -NX_EINVAL);
     /* Exhaust/reuse the i-list and grow a directory across a sector boundary. */
     v7_ino_t numbers[64];
     for (unsigned i = 0; i < free_inodes; ++i) {

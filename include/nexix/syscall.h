@@ -1,7 +1,7 @@
 #ifndef NEXIX_ABI_SYSCALL_H
 #define NEXIX_ABI_SYSCALL_H
-/* Native x86_64 ABI, version 1. Shared with assembly and libc. */
-#define NX_ABI_VERSION 1
+/* Native x86_64 ABI, version 2 (signal FP context). Shared with libc. */
+#define NX_ABI_VERSION 2
 #define NX_SYS_EXIT 1
 #define NX_SYS_FORK 2
 #define NX_SYS_READ 3
@@ -15,6 +15,7 @@
 #define NX_SYS_EXEC 11
 #define NX_SYS_CHDIR 12
 #define NX_SYS_TIME 13
+#define NX_SYS_MKNOD 14
 #define NX_SYS_CHMOD 15
 #define NX_SYS_CHOWN 16
 #define NX_SYS_BRK 17
@@ -44,6 +45,7 @@
 #define NX_SYS_IOCTL 54
 #define NX_SYS_EXECVE 59
 #define NX_SYS_UMASK 60
+#define NX_SYS_CHROOT 61
 /* Native extensions beyond the original 64-entry V7 table. */
 #define NX_SYS_YIELD 64
 #define NX_SYS_GETPPID 65

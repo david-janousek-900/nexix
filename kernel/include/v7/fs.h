@@ -38,6 +38,7 @@ int v7fs_alloc_block(struct v7fs *, uint32_t *block);
 int v7fs_free_block(struct v7fs *, uint32_t block);
 bool v7fs_access(const struct v7fs_inode *, uint16_t uid, uint16_t gid, unsigned bits);
 int v7fs_lookup_user(struct v7fs *, v7_ino_t, const char *, v7_ino_t *, uint16_t uid, uint16_t gid);
+int v7fs_lookup_root_user(struct v7fs *, v7_ino_t cwd, v7_ino_t rootino, const char *, v7_ino_t *, uint16_t uid, uint16_t gid);
 /* Update only mode, owner and timestamps, preserving block ownership. */
 #define V7FS_ATIME 1U
 #define V7FS_MTIME 2U
@@ -51,6 +52,9 @@ int v7fs_release_inode(struct v7fs *, v7_ino_t); /* nlink zero, no live referenc
 /* Names are trusted, zero-padded/truncated V7 components. Caller checks
  * credentials; release_inode additionally requires exclusive ownership. */
 int v7fs_create(struct v7fs *, v7_ino_t parent, const char name[V7_DIRSIZ], uint16_t mode, uint16_t uid, uint16_t gid, v7_ino_t *);
+int v7fs_mknod(struct v7fs *, v7_ino_t, const char[V7_DIRSIZ], uint16_t mode, uint16_t uid, uint16_t gid, uint16_t device, v7_ino_t *);
+int v7fs_link_privileged(struct v7fs *, v7_ino_t, v7_ino_t, const char[V7_DIRSIZ], bool);
+int v7fs_unlink_privileged(struct v7fs *, v7_ino_t, const char[V7_DIRSIZ], v7_ino_t *, bool);
 int v7fs_link(struct v7fs *, v7_ino_t ino, v7_ino_t parent, const char name[V7_DIRSIZ]);
 int v7fs_unlink(struct v7fs *, v7_ino_t parent, const char name[V7_DIRSIZ], v7_ino_t *);
 void filesystem_selftest(void);

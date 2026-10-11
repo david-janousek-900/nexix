@@ -13,7 +13,12 @@
 #include <nexix/libc.h>
 #define CHECK(c) do { if (!(c)) return __LINE__; } while (0)
 static volatile sig_atomic_t caught, number;
-static void handler(int n) { ++caught; number = n; }
+static void handler(int n)
+{
+    ++caught; number = n;
+    /* sigreturn must undo a handler's x87 and SSE register changes. */
+    __asm__ volatile ("fninit; pxor %%xmm15, %%xmm15" : : : "xmm15");
+}
 static int status;
 static jmp_buf jump;
 extern int signal_register_test(void);
@@ -49,6 +54,9 @@ static int signals(void)
     CHECK(nx_syscall6(NX_SYS_SIGRETURN, (long)(uintptr_t)&bad, 0, 0, 0, 0, 0) == -EINVAL);
     bad.rsp = (uintptr_t)&status + sizeof(status); bad.rip = 1;
     CHECK(nx_syscall6(NX_SYS_SIGRETURN, (long)(uintptr_t)&bad, 0, 0, 0, 0, 0) == -EINVAL);
+    bad.rip = (uintptr_t)handler;
+    bad.fpu.bytes[27] = 0x80; /* Reserved MXCSR bit: reject before FXRSTOR. */
+    CHECK(nx_syscall6(NX_SYS_SIGRETURN, (long)(uintptr_t)&bad, 0, 0, 0, 0, 0) == -EINVAL);
     CHECK(signal(SIGTERM, handler) == SIG_IGN && signal_register_test());
     CHECK(signal(SIGINT, handler) == SIG_DFL && signal(SIGTERM, nested) == SIG_DFL);
     CHECK(raise(SIGTERM) == 0 && number == SIGINT);
@@ -66,6 +74,26 @@ static int signals(void)
     pid = fork(); CHECK(pid >= 0);
     if (!pid) { __asm__ volatile ("ud2"); _exit(99); }
     CHECK(death(pid, SIGILL));
+    pid = fork(); CHECK(pid >= 0);
+    if (!pid) {
+        unsigned mxcsr = 0x1f00; /* Unmask SSE invalid-operation exception. */
+        __asm__ volatile ("ldmxcsr %0; pxor %%xmm0, %%xmm0; divsd %%xmm0, %%xmm0"
+            : : "m"(mxcsr) : "xmm0");
+        /* Some TCG versions record the exception flag without delivering #XM.
+         * Distinguish that emulator limitation from absent SSE support. */
+        __asm__ volatile ("stmxcsr %0" : "=m"(mxcsr));
+        _exit((mxcsr & 1) ? 77 : 99);
+    }
+    CHECK(wait(&status) == pid);
+    CHECK((WIFSIGNALED(status) && WTERMSIG(status) == SIGFPE) ||
+        (WIFEXITED(status) && WEXITSTATUS(status) == 77));
+    pid = fork(); CHECK(pid >= 0);
+    if (!pid) {
+        unsigned short control = 0x37e;
+        __asm__ volatile ("fninit; fldcw %0; fldz; fldz; fdivp; fwait" : : "m"(control));
+        _exit(99);
+    }
+    CHECK(death(pid, SIGFPE));
     pid = fork(); CHECK(pid >= 0);
     if (!pid) { __asm__ volatile ("movb $0, (%0)" : : "r"(1UL) : "memory"); _exit(99); }
     CHECK(death(pid, SIGSEGV));
@@ -144,11 +172,45 @@ static int services(int ro)
     CHECK(access("/hello", R_OK) == 0 && access("/missing", F_OK) == -1 && errno == ENOENT);
     struct stat st; struct utimbuf times = {100, 200};
     if (ro) {
+        CHECK(mknod("/readonly", S_IFDIR | 0755, 0) == -1 && errno == EROFS);
         CHECK(chmod("/hello", 0600) == -1 && errno == EROFS);
         CHECK(chown("/hello", 123, 456) == -1 && errno == EROFS);
         CHECK(access("/hello", W_OK) == -1 && errno == EROFS);
         CHECK(stat("/hello", &st) == 0 && (st.st_mode & 0777) == 0644 && st.st_uid == 0);
     } else {
+        struct stat parent, directory;
+        CHECK(stat("/", &parent) == 0);
+        CHECK(stat("", &directory) == 0 && directory.st_ino == parent.st_ino);
+        CHECK(mknod("/newdir", S_IFDIR | 0755, 0) == 0);
+        CHECK(link("/newdir", "/newdir/.") == 0 && link("/", "/newdir/..") == 0);
+        CHECK(stat("/newdir", &directory) == 0 && directory.st_nlink == 2);
+        pid_t isolated = fork(); CHECK(isolated >= 0);
+        if (!isolated) {
+            if (chroot("/hello") != -1 || errno != ENOTDIR) _exit(1);
+            if (chdir("/newdir") || chroot(".")) _exit(2);
+            struct stat inside;
+            if (stat("/", &inside) || inside.st_ino != directory.st_ino) _exit(3);
+            if (stat("/../../..", &inside) || inside.st_ino != directory.st_ino) _exit(4);
+            if (stat("../..", &inside) || inside.st_ino != directory.st_ino) _exit(5);
+            if (access("/hello", F_OK) != -1 || errno != ENOENT) _exit(6);
+            pid_t inherited = fork();
+            if (inherited < 0) _exit(7);
+            if (!inherited) _exit(stat("/", &inside) || inside.st_ino != directory.st_ino ? 8 : 0);
+            _exit(reap(inherited, 0) ? 0 : 9);
+        }
+        CHECK(reap(isolated, 0));
+        int held = open("/newdir", O_RDONLY); CHECK(held >= 0);
+        int created = creat("/newdir/file", 0644); CHECK(created >= 0 && close(created) == 0);
+        CHECK(unlink("/newdir/file") == 0);
+        CHECK(unlink("/newdir/..") == 0 && unlink("/newdir/.") == 0 && unlink("/newdir") == 0);
+        CHECK(fstat(held, &directory) == 0 && directory.st_nlink == 0 && close(held) == 0);
+        CHECK(stat("/", &directory) == 0 && directory.st_nlink == parent.st_nlink);
+        CHECK(mknod("/newnull", S_IFCHR | 0600, 0x300) == 0);
+        held = open("/newnull", O_RDWR); CHECK(held >= 0);
+        char byte;
+        CHECK(read(held, &byte, 1) == 0 && write(held, "x", 1) == 1);
+        CHECK(unlink("/newnull") == 0 && write(held, "y", 1) == 1 && close(held) == 0);
+        CHECK(mknod("/bad", 0170000, 0) == -1 && errno == EINVAL);
         CHECK(chmod("/hello", 0640) == 0 && chown("/hello", 123, 456) == 0);
         CHECK(utime("/hello", &times) == 0);
         CHECK(stat("/hello", &st) == 0 && (st.st_mode & 0777) == 0640 && st.st_uid == 123 && st.st_gid == 456);
@@ -160,6 +222,9 @@ static int services(int ro)
     if (!pid) {
         if (setgid(456) || setuid(123)) _exit(1);
         if (getuid() != 123 || geteuid() != 123 || getgid() != 456 || getegid() != 456) _exit(2);
+        if (mknod("/unprivileged", S_IFDIR | 0755, 0) != -1 || errno != EPERM) _exit(7);
+        if (link("/", "/directory-link") != -1 || errno != EPERM) _exit(8);
+        if (chroot("/") != -1 || errno != EPERM) _exit(9);
         if (setuid(0) != -1 || errno != EPERM || stime(&set) != -1 || errno != EPERM) _exit(3);
         if (kill(getppid(), 0) != -1 || errno != EPERM) _exit(4);
         if (access("/hello", R_OK) || nice(1) || nice(-1) != -1 || errno != EPERM) _exit(5);

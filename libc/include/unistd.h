@@ -1,6 +1,8 @@
 #ifndef NEXIX_LIBC_UNISTD_H
 #define NEXIX_LIBC_UNISTD_H
 #include <sys/types.h>
+int mknod(const char *, mode_t, unsigned short);
+int chroot(const char *);
 #include <stddef.h>
 #include <nexix/file.h>
 #define SEEK_SET NX_SEEK_SET

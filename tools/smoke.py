@@ -93,7 +93,7 @@ if mode in ("boot", "process", "syscall", "exec", "libc", "fs", "files", "signal
            ("NEXIX_ELF_OK", "NEXIX_EXEC_ROLLBACK_OK", "NEXIX_EXEC_OK")):
         sys.exit(f"FAIL: ELF/exec check failed; see {log}")
     if any(f"{marker}\r\n".encode() not in output for marker in
-           ("NEXIX_LIBC_ABI_OK", "NEXIX_LIBC_OK")):
+           ("NEXIX_LIBC_ABI_OK", "NEXIX_LIBC_OK", "NEXIX_FPU_OK", "NEXIX_FPU_USER_OK", "NEXIX_FPU_PREEMPT_OK")):
         sys.exit(f"FAIL: native libc check failed; see {log}")
     if any(f"{marker}\r\n".encode() not in output for marker in
            ("NEXIX_BLOCK_OK", "NEXIX_V7FS_READ_OK", "NEXIX_V7FS_ALLOC_OK",

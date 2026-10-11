@@ -116,8 +116,8 @@ build/test-memory.iso: build/nexix.elf boot/grub.cfg
 build/memory-test: tests/memory.c kernel/boot.c kernel/memory.c kernel/include/boot.h kernel/include/memory.h | build
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include tests/memory.c kernel/boot.c kernel/memory.c -o $@
 
-build/v7-types-test: tests/v7_types.c kernel/include/v7/constants.h kernel/include/v7/types.h kernel/include/v7/disk.h kernel/include/v7/core.h kernel/include/paging.h kernel/include/memory.h | build
-	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include $< -o $@
+build/v7-types-test: tests/v7_types.c kernel/include/v7/constants.h kernel/include/v7/types.h kernel/include/v7/disk.h kernel/include/v7/core.h kernel/include/paging.h kernel/include/memory.h include/nexix/fpu.h | build
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude $< -o $@
 
 build/uaccess-test: tests/uaccess.c kernel/uaccess.c kernel/include/uaccess.h kernel/include/process.h kernel/include/paging.h kernel/include/memory.h kernel/include/boot.h kernel/include/v7/core.h kernel/include/v7/types.h kernel/include/v7/disk.h kernel/include/v7/constants.h include/nexix/errno.h | build
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/uaccess.c kernel/uaccess.c -o $@
@@ -186,8 +186,8 @@ test-exec: check build/test-selftest.iso
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso exec 16M
 
 # Native userland: compiler freestanding headers plus Nexix headers only.
-USER_CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-builtin -fno-stack-protector -fno-pie -m64 -mno-red-zone -mgeneral-regs-only -fno-asynchronous-unwind-tables -nostdinc -isystem $(shell $(CC) -print-file-name=include) -Ilibc/include -Iinclude -MMD -MP
-LIBC_OBJECTS = build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o
+USER_CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-builtin -fno-stack-protector -fno-pie -m64 -mno-red-zone -mno-avx -fno-asynchronous-unwind-tables -nostdinc -isystem $(shell $(CC) -print-file-name=include) -Ilibc/include -Iinclude -MMD -MP
+LIBC_OBJECTS = build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o build/libc_float.o build/libc_convert.o
 -include $(LIBC_OBJECTS:.o=.d) build/libc_program.d
 build/crt0.o: libc/arch/x86_64/crt0.S | build
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
@@ -201,8 +201,8 @@ build/libc_program.o: user/libc-test.c | build
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 build/libc_abi.o: user/libc-test-abi.S include/nexix/syscall.h | build
 	$(CC) -m64 -ffreestanding -fno-pie -Iinclude -c $< -o $@
-build/libc-test.elf: build/crt0.o build/libc_program.o build/libc_abi.o build/libc.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/libc_program.o build/libc_abi.o build/libc.a -o $@
+build/libc-test.elf: build/crt0.o build/libc_program.o build/libc_abi.o build/fpu_program.o build/libc.a build/libm.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/libc_program.o build/libc_abi.o build/fpu_program.o build/libc.a build/libm.a build/libc.a -o $@
 build/libc_image.o: build/libc-test.elf
 	$(LD) -r -b binary $< -o build/libc_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/libc_raw.o $@
@@ -450,3 +450,21 @@ test-time: build/time-test iso
 	$(PYTHON) tools/time_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/time_smoke.py $(QEMU) build/nexix.iso 128M
 test: test-time
+
+# Step 25: eager native x87/MMX/SSE state management.
+build/fpu.o: kernel/arch/x86_64/fpu.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+OBJECTS += build/fpu.o
+build/nexix.elf: build/fpu.o
+-include build/fpu.d
+build/fpu_program.o: user/fpu-test.S include/nexix/syscall.h | build
+	$(CC) $(ASFLAGS) -Iinclude -c $< -o $@
+LIBM_OBJECTS = $(patsubst libm/v7/%.c,build/libm_%.o,$(wildcard libm/v7/*.c))
+-include $(LIBM_OBJECTS:.o=.d)
+build/libm_%.o: libm/v7/%.c | build
+	$(CC) $(V7_CFLAGS) -c $< -o $@
+build/libm.a: $(LIBM_OBJECTS)
+	$(AR) rcs $@ $^
+userland: build/libm.a
+.PHONY: test-fpu
+test-fpu: test-signals

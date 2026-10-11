@@ -1,4 +1,5 @@
 #include "process.h"
+#include "fpu.h"
 #include "clock.h"
 #include "signals.h"
 #include "userland.h"
@@ -165,6 +166,7 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
     } else {
         serial_puts("Nexix: RTC unavailable or invalid; clock starts at UNIX epoch\r\n");
     }
+    fpu_init();
     timer_init();
     tty_init();
     /* Check and sleep atomically against IRQ delivery. */

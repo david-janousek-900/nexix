@@ -18,12 +18,14 @@
 #define NX_NSIG 17
 #ifndef __ASSEMBLER__
 #include <stdint.h>
+#include <nexix/fpu.h>
 /* Saved interrupt frame following the handler's return address on its stack. */
 struct nx_signal_context {
     uint64_t r15, r14, r13, r12, r11, r10, r9, r8;
     uint64_t rdi, rsi, rbp, rdx, rcx, rbx, rax;
     uint64_t vector, error, rip, cs, rflags, rsp, ss;
+    struct nx_fpu_state fpu;
 };
-_Static_assert(sizeof(struct nx_signal_context) == 176, "native signal context");
+_Static_assert(sizeof(struct nx_signal_context) == 688, "native signal context");
 #endif
 #endif

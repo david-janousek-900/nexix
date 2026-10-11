@@ -107,7 +107,10 @@ Version **0.1.0** targets multi-user startup, the full native V7 reference
 userland, RTC-based time and correct persistent file timestamps. Steps 1–20
 provide the implemented foundation. Step 21 completes the full-distribution inventory and step 22 initializes time
 from RTC at boot. Step 23 maintains persistent V7 file timestamps and step 24 adds timezone
-support plus date/touch; steps 25–29 remain pending. Regression tests accompany implementation.
+support plus date/touch. Step 25 is in progress: native FP state management and
+the retained libm C sources, mknod, privileged directory operations and chroot
+are implemented; remaining kernel/libc prerequisites
+and steps 26–29 are pending. Regression tests accompany implementation.
 See the [porting inventory](docs/porting-inventory.md) for priorities, dependencies
 and missing inputs.
 
@@ -136,7 +139,8 @@ and missing inputs.
 22. Initialize the UTC system clock from RTC at boot (implemented).
 23. Maintain and persist V7 access, modification and inode-change timestamps (implemented).
 24. Add timezone-aware libc, configurable TZ, date and touch (implemented).
-25. Complete required kernel/libc interfaces and floating-point support.
+25. Complete required kernel/libc interfaces and floating-point support (in progress;
+    FP state/libraries, mknod, privileged directory links and chroot implemented).
 26. Provide independent COM1 and COM2 terminals.
 27. Boot multi-user init with getty/login, authentication and accounting.
 28. Complete native V7 userland and retarget the C/Fortran toolchain.

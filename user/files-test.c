@@ -66,8 +66,12 @@ static int files(void)
     REQUIRE(fstat(0, &st) == 0 && st.st_size == 0);
     REQUIRE(close(0) == 0 && unlink("new") == 0);
     REQUIRE(chdir("/") == 0);
-    REQUIRE(link("/", "/tmp/root") == -1 && errno == EPERM);
-    REQUIRE(unlink("/tmp") == -1 && errno == EPERM);
+    REQUIRE(stat("/", &st) == 0);
+    unsigned links = st.st_nlink;
+    REQUIRE(link("/", "/tmp/root") == 0);
+    REQUIRE(stat("/tmp/root", &st) == 0 && st.st_nlink == links + 1);
+    REQUIRE(unlink("/tmp/root") == 0 && stat("/", &st) == 0 && st.st_nlink == links);
+    REQUIRE(unlink("/tmp/missing") == -1 && errno == ENOENT);
     REQUIRE(chdir("/hello") == -1 && errno == ENOTDIR);
     /* One free descriptor: pipe must leave its output and resources intact. */
     REQUIRE(open("/hello", O_RDONLY) == 0);

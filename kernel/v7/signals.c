@@ -1,9 +1,10 @@
 /* Native delivery of V7 sig.c/sys4.c signals. No masks or job control. */
 #include "signals.h"
+#include "fpu.h"
 #include "uaccess.h"
 #include "segments.h"
 #include <nexix/errno.h>
-_Static_assert(sizeof(struct interrupt_frame) == sizeof(struct nx_signal_context), "signal context size");
+_Static_assert(sizeof(struct interrupt_frame) == offsetof(struct nx_signal_context, fpu), "signal context prefix");
 _Static_assert(offsetof(struct interrupt_frame, rsp) == offsetof(struct nx_signal_context, rsp), "signal context offsets");
 static bool code(struct proc *p, uintptr_t address)
 {
@@ -79,12 +80,16 @@ void signal_deliver(struct interrupt_frame *frame)
     /* Preserve the SysV red zone and align the handler as a normal call.
      * Saved frames reside in user memory, permitting handler longjmp without
      * retaining stale kernel frames. sigreturn validates every privilege field. */
-    if (frame->rsp < USER_BASE + 128 + sizeof(*frame) + 24) proc_exit(NX_SIGSEGV);
-    uintptr_t stack = ((frame->rsp - 128 - sizeof(*frame)) & ~15UL) - 8;
+    size_t size = sizeof(struct nx_signal_context);
+    struct nx_fpu_state fp;
+    fpu_save(&fp);
+    if (frame->rsp < USER_BASE + 128 + size + 24) proc_exit(NX_SIGSEGV);
+    uintptr_t stack = ((frame->rsp - 128 - size) & ~15UL) - 8;
     if (!code(p, handler) || !code(p, restorer) ||
-        !user_access_ok(&p->p_vm, stack, sizeof(*frame) + 8, true) ||
+        !user_access_ok(&p->p_vm, stack, size + 8, true) ||
         copyout(&p->p_vm, stack, &restorer, 8) ||
-        copyout(&p->p_vm, stack + 8, frame, sizeof(*frame))) proc_exit(NX_SIGSEGV);
+        copyout(&p->p_vm, stack + 8, frame, sizeof(*frame)) ||
+        copyout(&p->p_vm, stack + 8 + sizeof(*frame), &fp, sizeof(fp))) proc_exit(NX_SIGSEGV);
     if (n != NX_SIGILL && n != NX_SIGTRAP) p->p_user->u_signal[n] = 0;
     frame->rip = handler; frame->rsp = stack; frame->rdi = n;
     frame->rflags &= ~0x500UL; /* SysV requires DF clear; do not single-step entry. */
@@ -93,6 +98,7 @@ int signal_return(uintptr_t address, struct interrupt_frame *frame)
 {
     struct proc *p = proc_current();
     struct interrupt_frame saved;
+    struct nx_fpu_state fp;
     int error = copyin(&p->p_vm, address, &saved, sizeof(saved));
     if (error) return error;
     /* Only ordinary user arithmetic, direction, trace and resume flags. */
@@ -100,7 +106,12 @@ int signal_return(uintptr_t address, struct interrupt_frame *frame)
         (saved.rflags & ~0x250fd7UL) || (saved.rflags & 0x202) != 0x202 ||
         !code(p, saved.rip) || !saved.rsp ||
         !user_access_ok(&p->p_vm, saved.rsp - 1, 1, true)) return -NX_EINVAL;
+    if (address > UINTPTR_MAX - sizeof(saved)) return -NX_EFAULT;
+    error = copyin(&p->p_vm, address + sizeof(saved), &fp, sizeof(fp));
+    if (error) return error;
+    if (!fpu_valid(&fp)) return -NX_EINVAL;
     saved.vector = saved.error = 0;
     *frame = saved;
+    fpu_restore(&fp);
     return 0;
 }

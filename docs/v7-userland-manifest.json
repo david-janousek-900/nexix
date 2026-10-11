@@ -53,20 +53,24 @@
       "id": "kernel-abi",
       "category": "kernel",
       "status": "partial",
-      "description": "File/process/TTY syscalls exist; mount administration, accounting, tracing, profiling and complete device interfaces need auditing.",
+      "description": "File/process/TTY syscalls plus mknod, privileged V7 directory links and per-process chroot exist; mount administration, accounting, tracing, profiling and complete device interfaces remain pending.",
       "evidence": [
-        "docs/syscall-abi.md"
+        "docs/syscall-abi.md",
+        "docs/files.md"
       ],
       "locations": []
     },
     {
       "id": "floating-point",
       "category": "kernel",
-      "status": "missing",
-      "description": "Native user FP state isolation and full floating-point libc support are not implemented.",
+      "status": "partial",
+      "description": "Native x87/MMX/SSE state isolation, signal FP contexts, binary64 helpers, decimal conversion/formatting and retained libm C sources are implemented; full libc coverage and installed math headers/archive remain pending.",
       "evidence": [
-        "docs/userland.md",
-        "kernel/arch/x86_64/context.S"
+        "docs/floating-point.md",
+        "kernel/arch/x86_64/fpu.c",
+        "libc/float.c",
+        "libc/convert.c",
+        "user/libc-test.c"
       ],
       "locations": []
     },
@@ -22648,9 +22652,11 @@
           "name": "libm.a",
           "install": "/lib/libm.a",
           "role": "library",
-          "status": "not_ported",
+          "status": "partial",
           "evidence": [
-            "reference/v7/usr/src/libm/mklib"
+            "Makefile",
+            "libm/v7",
+            "docs/floating-point.md"
           ]
         },
         {
@@ -22673,7 +22679,7 @@
         }
       ],
       "priority": 7,
-      "status": "not_ported",
+      "status": "partial",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -22732,7 +22738,8 @@
         }
       ],
       "blockers": [
-        "Audit widths, representations, assembly and required native APIs."
+        "Install native math headers/archive and validate consuming V7 programs.",
+        "Complete exceptional-input and large-argument acceptance; historical gamma lacks a retained implementation C file."
       ],
       "unresolved": [
         "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."

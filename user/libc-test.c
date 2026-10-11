@@ -2,6 +2,9 @@
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
+#include <stdio.h>
+#include <setjmp.h>
 #include <errno.h>
 #include <sched.h>
 #include <sys/wait.h>
@@ -11,6 +14,7 @@
 #define CHECK(c) do { if (!(c)) _exit(__LINE__); } while (0)
 extern int libc_register_test(void);
 extern int libc_alignment_test(void);
+extern int fpu_process_test(void);
 static int exit_order;
 static int zeroed[1024];
 static void first(void) { CHECK(exit_order == 1); _exit(42); }
@@ -37,8 +41,74 @@ static void strings(void)
     CHECK(strncpy(b, "abcdef", 3) == b && !memcmp(b, "abc", 3));
     CHECK(memset(b, 1, 0) == b && b[0] == 'a');
 }
+static void numbers(void)
+{
+    int exponent;
+    double integer;
+    CHECK(frexp(8., &exponent) == .5 && exponent == 4);
+    CHECK(frexp(0x1p-1074, &exponent) == .5 && exponent == -1073);
+    CHECK(ldexp(.5, -1073) == 0x1p-1074);
+    CHECK(modf(-3.25, &integer) == -.25 && integer == -3.);
+    CHECK(modf(INFINITY, &integer) == 0 && integer == INFINITY);
+    CHECK(fmod(5.5, 2.) == 1.5 && fmod(-5.5, 2.) == -1.5);
+    CHECK(fabs(sqrt(2.) - 1.4142135623730951) < 1e-14);
+    CHECK(fabs(exp(1.) - 2.718281828459045) < 1e-14);
+    CHECK(fabs(log(2.) - .6931471805599453) < 1e-14);
+    CHECK(fabs(sin(.5) - .479425538604203) < 1e-14);
+    CHECK(fabs(cos(.5) - .8775825618903728) < 1e-14);
+    CHECK(fabs(tan(.5) - .5463024898437905) < 1e-14);
+    CHECK(fabs(atan(1.) - .7853981633974483) < 1e-14);
+    CHECK(fabs(asin(.5) - .5235987755982989) < 1e-14);
+    CHECK(fabs(acos(.5) - 1.0471975511965979) < 1e-14);
+    CHECK(fabs(pow(2., 10.) - 1024.) < 1e-10);
+    CHECK(fabs(hypot(3., 4.) - 5.) < 1e-14);
+    CHECK(fabs(sinh(1.) - 1.1752011936438014) < 1e-14);
+    CHECK(fabs(cosh(1.) - 1.5430806348152437) < 1e-14);
+    CHECK(fabs(tanh(1.) - .7615941559557649) < 1e-14);
+    CHECK(floor(-1.25) == -2. && ceil(-1.25) == -1.);
+    CHECK(fabs(j0(1.) - .7651976865579666) < 1e-14);
+    CHECK(fabs(j1(1.) - .4400505857449335) < 1e-14);
+    CHECK(fabs(jn(2, 1.) - .1149034849319005) < 1e-14);
+    CHECK(fabs(y0(1.) - .08825696421567696) < 1e-14);
+    CHECK(fabs(y1(1.) + .7812128213002887) < 1e-14);
+    CHECK(fabs(yn(2, 1.) + 1.6506826068162543) < 1e-14);
+    char *end;
+    CHECK(strtod(" \t-12.5e2tail", &end) == -1250 && !strcmp(end, "tail"));
+    CHECK(strtod("1e+tail", &end) == 1 && !strcmp(end, "e+tail"));
+    const char *none = "  +.x";
+    CHECK(strtod(none, &end) == 0 && end == none);
+    CHECK(atof(".000125") == .000125);
+    errno = 0;
+    CHECK(strtod("1e999999", &end) == INFINITY && !*end && errno == ERANGE);
+    CHECK(strtod("-1e-999999", &end) == 0 && !*end && errno == ERANGE);
+    errno = 0; CHECK(sqrt(-1.) == 0 && errno == EDOM); /* V7 domain rule. */
+    char output[128];
+    CHECK(snprintf(output, sizeof(output), "%d %.2f %.2e %.6g", 7, 12.5, .125, 1.25) == 21);
+    CHECK(!strcmp(output, "7 12.50 1.25e-01 1.25"));
+    CHECK(snprintf(output, sizeof(output), "%.2f %.0f %.4g %.2e", -.009, 9.9, .00001, 0.) > 0);
+    CHECK(!strcmp(output, "-0.01 10 1e-05 0.00e+00"));
+    CHECK(snprintf(output, sizeof(output), "%.1e %.2f", 0x1p-1074, 1e300) > 300);
+    CHECK(!strncmp(output, "4.9e-324 ", 9) && output[127] == 0);
+    CHECK(snprintf(output, 5, "%.2f", 12.5) == 5 && !strcmp(output, "12.5"));
+    CHECK(snprintf(output, sizeof(output), "%f %g", INFINITY, NAN) == 7 && !strcmp(output, "inf nan"));
+    jmp_buf environment;
+    unsigned short control;
+    unsigned mxcsr;
+    if (!setjmp(environment)) {
+        control = 0xb7f; mxcsr = 0x5f80;
+        __asm__ volatile ("fldcw %0; ldmxcsr %1" : : "m"(control), "m"(mxcsr));
+        longjmp(environment, 1);
+    }
+    __asm__ volatile ("fnstcw %0; stmxcsr %1" : "=m"(control), "=m"(mxcsr));
+    CHECK(control == 0x37f && (mxcsr & ~0x3fU) == 0x1f80);
+}
 int main(int argc, char **argv, char **envp)
 {
+    /* Fresh programs, including exec replacements, receive default controls. */
+    unsigned short control;
+    unsigned mxcsr;
+    __asm__ volatile ("fnstcw %0; stmxcsr %1" : "=m"(control), "=m"(mxcsr));
+    CHECK(control == 0x37f && mxcsr == 0x1f80);
     /* QEMU boot RTC must reach userspace through the native time syscall. */
     time_t boot_time;
     CHECK(time(&boot_time) >= 946684800);
@@ -93,6 +163,8 @@ int main(int argc, char **argv, char **envp)
     struct tms ticks;
     CHECK(times(&ticks) >= 0 && ticks.tms_cutime == 0 && ticks.tms_cstime == 0);
     CHECK(errno == EFAULT); /* Success does not clear errno. */
+    CHECK(fpu_process_test());
+    numbers(); errno = EFAULT;
     CHECK(wait(NULL) == -1 && errno == ECHILD);
     CHECK(execve("/missing", argv, environ) == -1 && errno == ENOENT);
     volatile uintptr_t invalid_vector = 1;
@@ -106,6 +178,8 @@ int main(int argc, char **argv, char **envp)
         errno = ERANGE;
         zeroed[0] = 99;
         CHECK(atexit(forbidden) == 0); /* exec replaces callback state. */
+        control = 0xb7f; mxcsr = 0x5f80;
+        __asm__ volatile ("fldcw %0; ldmxcsr %1" : : "m"(control), "m"(mxcsr));
         char *newargv[] = {argv[0], "replacement", NULL};
         char *newenv[] = {"NEXIX_TEST=changed", NULL};
         execve(argv[0], newargv, newenv);

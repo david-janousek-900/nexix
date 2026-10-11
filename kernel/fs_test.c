@@ -42,7 +42,7 @@ void filesystem_selftest(void)
     REQUIRE(v7fs_lookup(&fs, 2, "/hello/", &ino) == -NX_ENOTDIR);
     REQUIRE(v7fs_lookup(&fs, 2, "/hello/x", &ino) == -NX_ENOTDIR);
     REQUIRE(v7fs_lookup(&fs, 2, "/missing", &ino) == -NX_ENOENT);
-    REQUIRE(v7fs_lookup(&fs, 2, "", &ino) == -NX_ENOENT);
+    REQUIRE(v7fs_lookup(&fs, 2, "", &ino) == 0 && ino == 2); /* V7 stat("") is cwd. */
     const char hello[] = "Hello from the Nexix V7 filesystem!\n";
     expect_file(5, 0, hello, sizeof(hello) - 1);
     size_t done;

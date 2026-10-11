@@ -364,12 +364,12 @@ static int write_file(struct v7fs *fs, v7_ino_t number, int64_t offset, const vo
     }
     return 0;
 }
-static int lookup(struct v7fs *fs, v7_ino_t cwd, const char *path, v7_ino_t *result, uint16_t uid, uint16_t gid, bool check)
+static int lookup(struct v7fs *fs, v7_ino_t cwd, const char *path, v7_ino_t *result, uint16_t uid, uint16_t gid, bool check, v7_ino_t rootino)
 {
     int error = ready(fs, false);
     if (error) return error;
-    if (!path || !result || !*path) return -NX_ENOENT;
-    v7_ino_t current = *path == '/' ? V7_ROOTINO : cwd;
+    if (!path || !result) return -NX_ENOENT;
+    v7_ino_t current = *path == '/' ? rootino : cwd;
     struct v7fs_inode inode;
     error = v7fs_inode_get(fs, current, &inode);
     if (error) return error;
@@ -384,6 +384,7 @@ static int lookup(struct v7fs *fs, v7_ino_t cwd, const char *path, v7_ino_t *res
         unsigned n = 0;
         /* Preserve V7's truncation of long components to the first 14 bytes. */
         while (*path && *path != '/') { if (n < V7_DIRSIZ) name[n++] = *path; ++path; }
+        if (current == rootino && n == 2 && name[0] == '.' && name[1] == '.') continue;
         struct v7_disk_direct entry;
         bool found = false;
         for (uint32_t offset = 0; offset < inode.size; offset += sizeof(entry)) {
@@ -414,9 +415,11 @@ bool v7fs_access(const struct v7fs_inode *inode, uint16_t uid, uint16_t gid, uns
     return ((inode->mode >> shift) & bits) == bits;
 }
 int v7fs_lookup(struct v7fs *fs, v7_ino_t cwd, const char *path, v7_ino_t *ino)
-{ return lookup(fs, cwd, path, ino, 0, 0, false); }
+{ return lookup(fs, cwd, path, ino, 0, 0, false, V7_ROOTINO); }
 int v7fs_lookup_user(struct v7fs *fs, v7_ino_t cwd, const char *path, v7_ino_t *ino, uint16_t uid, uint16_t gid)
-{ return lookup(fs, cwd, path, ino, uid, gid, true); }
+{ return lookup(fs, cwd, path, ino, uid, gid, true, V7_ROOTINO); }
+int v7fs_lookup_root_user(struct v7fs *fs, v7_ino_t cwd, v7_ino_t rootino, const char *path, v7_ino_t *ino, uint16_t uid, uint16_t gid)
+{ return lookup(fs, cwd, path, ino, uid, gid, true, rootino); }
 /* Zero-length truncation detaches roots before reclaiming their owned trees.
  * Write errors poison the mount; no crash-atomic metadata transaction. */
 static int release_tree(struct v7fs *fs, uint32_t block, unsigned depth)
@@ -434,14 +437,15 @@ static int release_tree(struct v7fs *fs, uint32_t block, unsigned depth)
     }
     return v7fs_free_block(fs, block);
 }
-int v7fs_truncate(struct v7fs *fs, v7_ino_t ino)
+static int truncate_inode(struct v7fs *fs, v7_ino_t ino, bool directory)
 {
     int error = ready(fs, true);
     if (error) return error;
     struct v7fs_inode inode;
     error = v7fs_inode_get(fs, ino, &inode);
     if (error) return error;
-    if ((inode.mode & V7_IFMT) != V7_IFREG) return -NX_EISDIR;
+    unsigned type = inode.mode & V7_IFMT;
+    if (type != V7_IFREG && !(directory && type == V7_IFDIR)) return -NX_EISDIR;
     uint32_t roots[V7_NADDR];
     copy(roots, inode.addr, sizeof(roots));
     clear(inode.addr, sizeof(inode.addr)); inode.size = 0;
@@ -454,13 +458,20 @@ int v7fs_truncate(struct v7fs *fs, v7_ino_t ino)
     }
     return 0;
 }
+int v7fs_truncate(struct v7fs *fs, v7_ino_t ino)
+{ return truncate_inode(fs, ino, false); }
 int v7fs_release_inode(struct v7fs *fs, v7_ino_t ino)
 {
     struct v7fs_inode inode;
-    int error = v7fs_inode_get(fs, ino, &inode);
+    int error = ready(fs, true);
+    if (error) return error;
+    error = v7fs_inode_get(fs, ino, &inode);
     if (error) return error;
     if (inode.nlink) return -NX_EBUSY;
-    error = v7fs_truncate(fs, ino);
+    unsigned type = inode.mode & V7_IFMT;
+    /* Device numbers occupy addr[0]; they must never enter the free list. */
+    if (type == V7_IFREG || type == V7_IFDIR) error = truncate_inode(fs, ino, true);
+    else { clear(inode.addr, sizeof(inode.addr)); inode.size = 0; error = inode_put(fs, &inode); }
     if (error) return error;
     error = v7fs_inode_get(fs, ino, &inode);
     if (error) return error;
@@ -501,12 +512,15 @@ static int insert(struct v7fs *fs, v7_ino_t parent, uint32_t pos, const char nam
 }
 static bool reserved_name(const char name[V7_DIRSIZ])
 { return !name[0] || (name[0] == '.' && (!name[1] || (name[1] == '.' && !name[2]))); }
-int v7fs_create(struct v7fs *fs, v7_ino_t parent, const char name[V7_DIRSIZ],
-                uint16_t mode, uint16_t uid, uint16_t gid, v7_ino_t *out)
+int v7fs_mknod(struct v7fs *fs, v7_ino_t parent, const char name[V7_DIRSIZ],
+                uint16_t mode, uint16_t uid, uint16_t gid, uint16_t device, v7_ino_t *out)
 {
     int error = ready(fs, true);
     if (error) return error;
     if (reserved_name(name) || !out) return -NX_EINVAL;
+    unsigned type = mode & V7_IFMT;
+    if (type != V7_IFREG && type != V7_IFDIR && type != V7_IFCHR && type != V7_IFBLK) return -NX_EINVAL;
+    if (device && (type == V7_IFREG || type == V7_IFDIR)) return -NX_EINVAL;
     uint32_t pos; v7_ino_t existing;
     error = directory_slot(fs, parent, name, &pos, &existing);
     if (error) return error;
@@ -517,7 +531,8 @@ int v7fs_create(struct v7fs *fs, v7_ino_t parent, const char name[V7_DIRSIZ],
         if (error) return error;
         struct v7_disk_inode *disk = (void *)(bytes + v7_itoo(number) * 64);
         if (v7_disk_u16(disk->mode)) continue;
-        clear(disk, sizeof(*disk)); v7_disk_put16(disk->mode, V7_IFREG | (mode & 07777));
+        clear(disk, sizeof(*disk)); v7_disk_put16(disk->mode, mode);
+        if (type == V7_IFCHR || type == V7_IFBLK) (void)v7_disk_putaddr(disk->addr, device);
         v7_disk_put16(disk->nlink, 1); v7_disk_put16(disk->uid, uid); v7_disk_put16(disk->gid, gid);
         uint32_t now = disk_time();
         v7_disk_put32(disk->atime, now); v7_disk_put32(disk->mtime, now); v7_disk_put32(disk->ctime, now);
@@ -542,15 +557,18 @@ int v7fs_create(struct v7fs *fs, v7_ino_t parent, const char name[V7_DIRSIZ],
     }
     return -NX_ENOSPC;
 }
-int v7fs_link(struct v7fs *fs, v7_ino_t ino, v7_ino_t parent, const char name[V7_DIRSIZ])
+int v7fs_create(struct v7fs *fs, v7_ino_t parent, const char name[V7_DIRSIZ],
+                uint16_t mode, uint16_t uid, uint16_t gid, v7_ino_t *out)
+{ return v7fs_mknod(fs, parent, name, V7_IFREG | (mode & 07777), uid, gid, 0, out); }
+int v7fs_link_privileged(struct v7fs *fs, v7_ino_t ino, v7_ino_t parent, const char name[V7_DIRSIZ], bool privileged)
 {
     int error = ready(fs, true);
     if (error) return error;
-    if (reserved_name(name)) return -NX_EPERM;
+    if (!name[0] || (reserved_name(name) && !privileged)) return -NX_EPERM;
     struct v7fs_inode inode;
     error = v7fs_inode_get(fs, ino, &inode);
     if (error) return error;
-    if ((inode.mode & V7_IFMT) != V7_IFREG) return -NX_EPERM;
+    if ((inode.mode & V7_IFMT) == V7_IFDIR && !privileged) return -NX_EPERM;
     if (!inode.nlink || inode.nlink >= 32767) return -NX_EMLINK;
     uint32_t pos; v7_ino_t existing;
     error = directory_slot(fs, parent, name, &pos, &existing);
@@ -561,11 +579,13 @@ int v7fs_link(struct v7fs *fs, v7_ino_t ino, v7_ino_t parent, const char name[V7
     if (error && !fs->failed) { --inode.nlink; (void)inode_put(fs, &inode); }
     return error;
 }
-int v7fs_unlink(struct v7fs *fs, v7_ino_t parent, const char name[V7_DIRSIZ], v7_ino_t *out)
+int v7fs_link(struct v7fs *fs, v7_ino_t ino, v7_ino_t parent, const char name[V7_DIRSIZ])
+{ return v7fs_link_privileged(fs, ino, parent, name, false); }
+int v7fs_unlink_privileged(struct v7fs *fs, v7_ino_t parent, const char name[V7_DIRSIZ], v7_ino_t *out, bool privileged)
 {
     int error = ready(fs, true);
     if (error) return error;
-    if (reserved_name(name) || !out) return -NX_EPERM;
+    if (!name[0] || (reserved_name(name) && !privileged) || !out) return -NX_EPERM;
     uint32_t pos; v7_ino_t ino;
     error = directory_slot(fs, parent, name, &pos, &ino);
     if (error) return error;
@@ -573,7 +593,7 @@ int v7fs_unlink(struct v7fs *fs, v7_ino_t parent, const char name[V7_DIRSIZ], v7
     struct v7fs_inode inode;
     error = v7fs_inode_get(fs, ino, &inode);
     if (error) return error;
-    if ((inode.mode & V7_IFMT) != V7_IFREG) return -NX_EPERM;
+    if ((inode.mode & V7_IFMT) == V7_IFDIR && !privileged) return -NX_EPERM;
     if (!inode.nlink) return -NX_EIO;
     error = insert(fs, parent, pos, name, 0);
     if (error) return error;
@@ -581,6 +601,8 @@ int v7fs_unlink(struct v7fs *fs, v7_ino_t parent, const char name[V7_DIRSIZ], v7
     if (!error) *out = ino;
     return error;
 }
+int v7fs_unlink(struct v7fs *fs, v7_ino_t parent, const char name[V7_DIRSIZ], v7_ino_t *out)
+{ return v7fs_unlink_privileged(fs, parent, name, out, false); }
 
 int v7fs_metadata(struct v7fs *fs, const struct v7fs_inode *value)
 {

@@ -13,6 +13,8 @@ setjmp:
     mov %rax, 48(%rdi)
     mov (%rsp), %rax
     mov %rax, 56(%rdi)
+    stmxcsr 64(%rdi)
+    fnstcw 68(%rdi)
     xor %eax, %eax
     ret
 .size setjmp,.-setjmp
@@ -24,6 +26,8 @@ longjmp:
     jne 1f
     inc %eax
 1:
+    ldmxcsr 64(%rdi)
+    fldcw 68(%rdi)
     mov 0(%rdi), %rbx
     mov 8(%rdi), %rbp
     mov 16(%rdi), %r12

@@ -1,6 +1,7 @@
 /* Native adaptation of process behavior from V7 sys/{slp,sys1}.c.
  * Original sources and Caldera license are retained under reference/. */
 #include "process.h"
+#include "fpu.h"
 #include "clock.h"
 #include "files.h"
 #include "signals.h"
@@ -117,6 +118,7 @@ struct proc *proc_alloc(void)
             return NULL;
         }
         clear(p, sizeof(*p));
+        fpu_default(&p->p_fpu);
         clear(&users[i], sizeof(users[i]));
         clear(stacks[i].bytes, sizeof(stacks[i].bytes));
         p->p_stat = V7_SIDL;
@@ -265,6 +267,7 @@ static void switch_out(void)
 {
     require_locked();
     if (!current || !scheduling) panic("switch without process scheduler");
+    fpu_save(&current->p_fpu);
     arch_context_switch(&current->p_context, &scheduler);
 }
 void proc_yield(void)
@@ -352,6 +355,7 @@ void proc_run(void)
         current->p_slice = 0;
         vm_activate(&current->p_vm);
         kernel_stack_set(current->p_stack_bottom, current->p_stack_top);
+        fpu_restore(&current->p_fpu);
         arch_context_switch(&scheduler, &current->p_context);
         struct proc *previous = current;
         current = NULL;
@@ -392,6 +396,7 @@ v7_pid_t proc_fork(const struct interrupt_frame *frame)
         return result;
     }
     copy(child->p_user, u, sizeof(*u));
+    fpu_save(&child->p_fpu);
     files_fork(child->p_user);
     child->p_user->u_procp = child;
     child->p_user->u_ap = child->p_user->u_arg;

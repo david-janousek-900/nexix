@@ -7,10 +7,18 @@ extern const uint8_t _binary_build_libc_test_elf_start[], _binary_build_libc_tes
 static struct exec_args args;
 static bool active, checked;
 static v7_pid_t root_pid;
+static uint64_t fp_preemptions;
 bool libc_test_gate(struct interrupt_frame *frame)
 {
-    if (!active || frame->rax != 0x300 || !proc_current()) return false;
+    if (!active || frame->rax < 0x300 || frame->rax > 0x302 || !proc_current()) return false;
     struct proc *p = proc_current();
+    REQUIRE(p->p_pid == root_pid);
+    if (frame->rax == 0x301) { fp_preemptions = p->p_preemptions; frame->rax = 0; return true; }
+    if (frame->rax == 0x302) {
+        REQUIRE(p->p_preemptions > fp_preemptions);
+        serial_puts("NEXIX_FPU_PREEMPT_OK\r\n");
+        frame->rax = 0; return true;
+    }
     REQUIRE(p->p_pid == root_pid && !checked);
     const uint64_t values[] = {0x1111222233334444UL, 0x2222333344445555UL,
         0x3333444455556666UL, 0x4444555566667777UL, 0x5555666677778888UL, 0x6666777788889999UL};
@@ -57,4 +65,5 @@ void libc_selftest(void)
         for (unsigned i = 1; i < V7_NPROC; ++i) REQUIRE(proc_table()[i].p_stat == V7_UNUSED);
     }
     serial_puts("NEXIX_LIBC_OK\r\n");
+    serial_puts("NEXIX_FPU_USER_OK\r\n");
 }

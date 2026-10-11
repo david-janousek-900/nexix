@@ -1,10 +1,12 @@
-/* Integer-only, unbuffered streams for native V7 commands. */
+/* Unbuffered streams and native V7 integer/floating-point formatting. */
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <math.h>
 static FILE streams[20] = {{0,1,0,0}, {1,1,0,0}, {2,1,0,0}};
 FILE *stdin = &streams[0], *stdout = &streams[1], *stderr = &streams[2];
 FILE *fopen(const char *path, const char *mode)
@@ -64,6 +66,48 @@ int ferror(FILE *f){return f->error;}
 void clearerr(FILE *f){f->error=f->eof=0;}
 struct sink { FILE *file;char *buffer;size_t capacity,count;int failed; };
 static void emit(struct sink *s,char c){if(s->file){if(fputc(c,s->file)==EOF)s->failed=1;}else if(s->count+1<s->capacity)s->buffer[s->count]=c;++s->count;}
+static size_t floating(char *out, double value, char kind, int precision)
+{
+    size_t n = 0;
+    if (!isfinite(value)) {
+        const char *s = isnan(value) ? "nan" : "inf";
+        memcpy(out, s, 3); return 3;
+    }
+    if (precision < 0) precision = 6;
+    int point, negative, general = kind == 'g' || kind == 'G';
+    if (general && !precision) precision = 1;
+    char *digits = ecvt(value, general ? precision : precision + 1, &point, &negative);
+    int exponential = kind == 'e' || kind == 'E' || (general && (point <= -4 || point > precision));
+    if (exponential) {
+        int decimals = general ? precision - 1 : precision;
+        size_t length = strlen(digits);
+        out[n++] = length ? digits[0] : '0';
+        if (decimals) out[n++] = '.';
+        for (int i = 1; i <= decimals; ++i) out[n++] = (size_t)i < length ? digits[i] : '0';
+        if (general) { while (n && out[n - 1] == '0') --n; if (n && out[n - 1] == '.') --n; }
+        out[n++] = kind == 'E' || kind == 'G' ? 'E' : 'e';
+        int exponent = value == 0 ? 0 : point - 1;
+        out[n++] = exponent < 0 ? '-' : '+';
+        if (exponent < 0) exponent = -exponent;
+        if (exponent >= 100) out[n++] = '0' + exponent / 100;
+        out[n++] = '0' + (exponent / 10) % 10;
+        out[n++] = '0' + exponent % 10;
+    } else {
+        int decimals = general ? precision - point : precision;
+        if (decimals < 0) decimals = 0;
+        if (!general) digits = fcvt(value, decimals, &point, &negative);
+        size_t length = strlen(digits);
+        if (point <= 0) out[n++] = '0';
+        else for (int i = 0; i < point; ++i) out[n++] = (size_t)i < length ? digits[i] : '0';
+        if (decimals) out[n++] = '.';
+        for (int i = 0; i < decimals; ++i) {
+            int index = point + i;
+            out[n++] = index >= 0 && (size_t)index < length ? digits[index] : '0';
+        }
+        if (general && decimals) { while (n && out[n - 1] == '0') --n; if (n && out[n - 1] == '.') --n; }
+    }
+    return n;
+}
 static int format(struct sink *s,const char *fmt,va_list ap)
 {
     while(*fmt){if(*fmt!='%'){emit(s,*fmt++);continue;}++fmt;
@@ -73,7 +117,7 @@ static int format(struct sink *s,const char *fmt,va_list ap)
         if(*fmt=='.'){precision=0;++fmt;while(*fmt>='0'&&*fmt<='9'){if(precision<4096)precision=precision*10+*fmt-'0';++fmt;}}
         if(*fmt=='l'){wide=1;++fmt;}
         char kind=*fmt;if(!kind)break;++fmt;
-        char digits[32],*p=digits+sizeof(digits);const char *text;size_t n;char sign=0;
+        char digits[768],*p=digits+sizeof(digits);const char *text;size_t n;char sign=0;
         if(kind=='s'){text=va_arg(ap,const char *);if(!text)text="(null)";n=0;while(text[n]&&(precision<0||n<(size_t)precision))++n;}
         else if(kind=='c'){digits[0]=va_arg(ap,int);text=digits;n=1;}
         else if(kind=='%'){digits[0]='%';text=digits;n=1;}
@@ -84,6 +128,11 @@ static int format(struct sink *s,const char *fmt,va_list ap)
             else value=wide||kind=='O'?va_arg(ap,unsigned long):va_arg(ap,unsigned int);
             do{unsigned d=value%base;*--p=d<10?'0'+d:(kind=='X'?'A':'a')+d-10;value/=base;}while(value);
             text=p;n=digits+sizeof(digits)-p;
+        }else if(kind=='f'||kind=='e'||kind=='E'||kind=='g'||kind=='G'){
+            if (precision > 63) { errno=EINVAL;return -1; }
+            double value=va_arg(ap,double);
+            if(signbit(value)){sign='-';value=-value;}
+            n=floating(digits,value,kind,precision);text=digits;
         }else{errno=EINVAL;return -1;}
         size_t pad=width>(int)(n+(sign!=0))?width-n-(sign!=0):0;
         if(!left&&!zero)while(pad){emit(s,' ');--pad;}
