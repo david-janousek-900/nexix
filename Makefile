@@ -413,3 +413,10 @@ test: test-storage
 build/ide-test: tests/ide.c tests/ide/io.h kernel/ide.c kernel/block.c kernel/include/ide.h kernel/include/block.h include/nexix/errno.h | build
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Itests/ide -Ikernel/include -Iinclude tests/ide.c kernel/ide.c kernel/block.c -o $@
 test-unit: build/ide-test
+
+# Step 21: read-only source inventory and coverage checks.
+.PHONY: test-inventory
+test-inventory:
+	$(PYTHON) tools/check_inventory.py
+	$(PYTHON) tests/inventory.py
+test: test-inventory

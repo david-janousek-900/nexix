@@ -103,7 +103,12 @@ starts that demo: type a line and Enter, use Backspace/Ctrl-U to edit, or type
 
 ## Roadmap
 
-Version **0.1.0** covers these 20 steps. Steps 1–20 are implemented. Regression tests accompany implementation throughout the roadmap.
+Version **0.1.0** targets multi-user startup, the full native V7 reference
+userland, RTC-based time and correct persistent file timestamps. Steps 1–20
+provide the implemented foundation. Step 21 completes the source inventory;
+steps 22–29 remain pending. Regression tests accompany implementation.
+See the [porting inventory](docs/porting-inventory.md) for priorities, dependencies
+and missing inputs.
 
 1. Import V7 sources and preserve licensing.
 2. GRUB boot and x86_64 long mode.
@@ -125,6 +130,19 @@ Version **0.1.0** covers these 20 steps. Steps 1–20 are implemented. Regressio
 18. Mount root and launch PID 1 and shell.
 19. Verify interactive shell operation in QEMU.
 20. Add persistent IDE-backed storage.
+21. Inventory all V7 programs, libraries, supporting data and dependencies.
+22. Initialize the UTC system clock from RTC at boot.
+23. Maintain and persist V7 access, modification and inode-change timestamps.
+24. Add timezone-aware libc, configurable TZ, date and touch.
+25. Complete required kernel/libc interfaces and floating-point support.
+26. Provide independent COM1 and COM2 terminals.
+27. Boot multi-user init with getty/login, authentication and accounting.
+28. Complete native V7 userland and retarget the C/Fortran toolchain.
+29. Complete packaging, disk upgrades and release acceptance.
+
+`make TOOLCHAIN_PREFIX= test-inventory` validates reference coverage and manifest
+consistency without building or booting the kernel. Inventory completion does
+not mean the remaining programs are ported.
 
 Version **0.2.0** adds PCI/e1000, lwIP IPv4/TCP/IP integration, sockets, and
 basic network utilities.

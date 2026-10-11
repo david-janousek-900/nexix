@@ -228,3 +228,15 @@ rejection. Logs are `build/storage-{16M,128M}.log`.
 `make TOOLCHAIN_PREFIX= test-unit` also runs the simulated-port IDE driver
 checks for timeout, absence, unsupported disks, data transfer, range errors
 and failed reads/cache flushes. See [storage.md](storage.md).
+
+
+## Step 21 acceptance
+
+`make TOOLCHAIN_PREFIX= test-inventory` checks the V7 manifest without kernel
+builds or QEMU. It covers every checked-in userland reference file, validates
+component identities and dependency/evidence references, and checks implemented
+outputs against build and root-image packaging declarations. Negative tests
+exercise missing ownership, concealed components, duplicate IDs, missing
+requirements, unsupported implementation claims and absent evidence.
+See [porting-inventory.md](porting-inventory.md). This verifies inventory coverage,
+not completion of the remaining ports or their transitive API audits.
