@@ -191,7 +191,7 @@ test-exec: check build/test-selftest.iso
 
 # Native userland: compiler freestanding headers plus Nexix headers only.
 USER_CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-builtin -fno-stack-protector -fno-pie -m64 -mno-red-zone -mno-avx -fno-asynchronous-unwind-tables -nostdinc -isystem $(shell $(CC) -print-file-name=include) -Ilibc/include -Iinclude -MMD -MP
-LIBC_OBJECTS = build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o build/libc_float.o build/libc_convert.o build/libc_scan.o build/libc_ctype.o build/libc_numbers.o build/libc_bytes.o build/libc_gcvt.o build/libc_abort.o
+LIBC_OBJECTS = build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o build/libc_float.o build/libc_convert.o build/libc_scan.o build/libc_ctype.o build/libc_numbers.o build/libc_bytes.o build/libc_gcvt.o build/libc_abort.o build/libc_mktemp.o
 -include $(LIBC_OBJECTS:.o=.d) build/libc_program.d
 build/crt0.o: libc/arch/x86_64/crt0.S | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
@@ -244,8 +244,8 @@ build/files_test.o: kernel/files_test.c | build/.dir
 build/files_program.o: user/files-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 -include build/files_program.d
-build/files-test.elf: build/crt0.o build/files_program.o build/stdio_program.o build/stdio_compat_program.o build/v7_stdio_fragments.o build/libc.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/files_program.o build/stdio_program.o build/stdio_compat_program.o build/v7_stdio_fragments.o build/libc.a -o $@
+build/files-test.elf: build/crt0.o build/files_program.o build/stdio_program.o build/stdio_compat_program.o build/mktemp_program.o build/v7_stdio_fragments.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/files_program.o build/stdio_program.o build/stdio_compat_program.o build/mktemp_program.o build/v7_stdio_fragments.o build/libc.a -o $@
 build/files_image.o: build/files-test.elf
 	$(LD) -r -b binary $< -o build/files_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/files_raw.o $@
@@ -527,3 +527,16 @@ test-stdio-compat: test-stdio-adapters test-stdio test-libc-interfaces
 build/stdio_compat_program.o: user/stdio-compat-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 -include build/stdio_compat_program.d build/v7_stdio_fragments.d
+
+# Step 42: historical temporary-file naming, host edge cases and native files.
+build/mktemp_program.o: user/mktemp-test.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+-include build/mktemp_program.d
+build/mktemp-unit-test: tests/mktemp.c libc/mktemp.c libc/include/stdlib.h libc/include/unistd.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -fno-builtin -Dmktemp=nx_test_mktemp -Dgetpid=nx_test_getpid -Daccess=nx_test_access -Derrno=nx_test_errno -Ilibc/include -Iinclude tests/mktemp.c libc/mktemp.c -o $@
+.PHONY: test-mktemp
+test-mktemp: test-mktemp-unit test-stdio test-libc-interfaces
+.PHONY: test-mktemp-unit
+test-mktemp-unit: build/mktemp-unit-test
+	./build/mktemp-unit-test
+test-unit: test-mktemp-unit

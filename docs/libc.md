@@ -138,3 +138,7 @@ from complete feature behavior; libc remains partial.
 Step 41 adds [native stdio source adapters and remote formatting](stdio-compat.md).
 The packet uses captured native va_list and tail replacement; private FILE
 consumers use public routines and stable caller-owned buffers.
+
+Step 42 supplies [V7 mktemp naming](mktemp.md). It returns an available
+PID/letter-based filename without creating it; application ports must pass
+writable templates and handle the historical slash failure sentinel.

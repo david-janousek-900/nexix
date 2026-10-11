@@ -113,7 +113,7 @@ Existing VM, inode, block and descriptor cleanup assertions remain active.
 
 Remaining libc prerequisites include password/group database and crypt
 interfaces, process-pipe helpers (popen/pclose/system), tty/account lookup,
-temporary files, complete error text, profiling startup/monitor, ELF symbol
+complete error text, profiling startup/monitor, ELF symbol
 lookup, native headers and adapters for users of internal V7 FILE fields.
 Required kernel accounting, tracing/profiling, kernel-information and
 mount/raw-device interfaces are also unfinished. Their wrappers must accompany
@@ -128,3 +128,7 @@ Step 40 adds [V7 scalar/byte/conversion helpers](libc-helpers.md), including
 returning abort, historical disk-address packing, gcvt, tell, execle and
 exit-based assertions. Public declaration/export coverage is checked separately
 from complete feature behavior; libc remains partial.
+
+Step 42 adds [V7 mktemp](mktemp.md), preserving PID-based naming, a–y
+collision retries and the historical slash failure sentinel. It does not create
+or reserve files. Consuming programs remain assigned to their port steps.

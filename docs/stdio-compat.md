@@ -103,5 +103,5 @@ floating register classes and stack arguments, long values, star width/precision
 reuse, nested replacement, discarded suffixes, preceding outer arguments,
 truncation and size-only output, format errors, NULL/ended/cyclic packets, and
 file error propagation. Existing stdio, signal, process and cleanup regressions
-run in the same self-test boot. `test-libc-interfaces` now checks 194 public
+run in the same self-test boot. At step 41, `test-libc-interfaces` checked 194 public
 function declarations: 183 exports and 11 deferred passwd/group functions.
