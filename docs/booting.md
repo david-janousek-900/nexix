@@ -2,7 +2,9 @@
 
 Run `make TOOLCHAIN_PREFIX= run` on an x86_64 Linux host with GCC/binutils.
 GRUB loads Nexix, the kernel initializes memory, interrupts and the serial TTY,
-then copies `build/root.img` into writable RAM and mounts it as the root.
+then mounts the primary IDE master as the root. `make run` attaches
+`build/nexix.img`, initially copied from the packaged `build/root.img`.
+Without that device, the kernel uses a writable RAM copy of the packaged root.
 It reads `/etc/init` through the V7 filesystem and builds a native ELF64 user
 address space. The first process receives PID 1; init forks the initial shell,
 which receives PID 2 and opens `/dev/console`. The console displays `# `.
@@ -27,9 +29,9 @@ PIDs and join the terminal group on console open. Init termination is a fatal ke
 Ctrl-A, release, then X exits QEMU. Host signal processing is disabled on
 QEMU's multiplexed console so terminal control bytes can reach Nexix.
 
-Root storage is writable RAM. Changes survive shell restarts within the same
-QEMU session, but a new boot copies the original image again. Persistent IDE
-storage is step 20. Getty/login and multi-user startup are not implemented.
+IDE root changes survive QEMU restarts. See [storage.md](storage.md) for disk
+creation, preservation and resetting. Diskless boots use a fresh RAM root.
+Getty/login and multi-user startup are not implemented.
 The mounted root has the current working directory fallback `/`; a chdir
 acquires a managed inode reference normally.
 

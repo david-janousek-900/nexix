@@ -2,10 +2,12 @@
 #include "files.h"
 #include "serial.h"
 #include "tty.h"
+#include "ide.h"
 #include <nexix/errno.h>
 extern const uint8_t _binary_build_root_img_start[], _binary_build_root_img_end[];
 static uint8_t root_bytes[1024 * V7_BSIZE];
 static struct ramdisk root_device;
+static struct block_device ide_device;
 static struct v7fs root_volume;
 static struct exec_args init_args;
 static void mount_root(void)
@@ -20,7 +22,15 @@ static void mount_root(void)
 }
 _Noreturn void rootfs_start(void)
 {
-    mount_root();
+    int error=ide_init(&ide_device);
+    if(error==-NX_ENODEV) {
+        mount_root();
+        serial_puts("NEXIX_ROOT_RAM\r\n");
+    } else {
+        if(error || v7fs_mount(&root_volume,&ide_device,false) ||
+           files_mount_root(&root_volume)) panic("cannot mount IDE root");
+        serial_puts("NEXIX_ROOT_IDE\r\nNEXIX_ROOT_MOUNTED\r\n");
+    }
     v7_ino_t ino;
     if(v7fs_lookup(&root_volume,V7_ROOTINO,"/etc/init",&ino))panic("missing init");
     const char name[]="/etc/init";

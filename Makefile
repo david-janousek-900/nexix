@@ -93,8 +93,8 @@ build/nexix.iso: build/nexix.elf boot/grub.cfg
 	grub-mkrescue -o $@ build/iso
 
 iso: check build/nexix.iso
-run: iso
-	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -cdrom build/nexix.iso -display none -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -mon chardev=console,mode=readline -no-reboot
+run: iso disk
+	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -boot d -drive file=build/nexix.img,format=raw,if=ide,index=0 -cdrom build/nexix.iso -display none -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -mon chardev=console,mode=readline -no-reboot
 
 smoke: check build/test-selftest.iso
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso
@@ -122,6 +122,7 @@ build/uaccess-test: tests/uaccess.c kernel/uaccess.c kernel/include/uaccess.h ke
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/uaccess.c kernel/uaccess.c -o $@
 
 test-unit: build/memory-test build/v7-types-test build/uaccess-test build/filesystem-test build/tty-unit-test build/root-test.img
+	./build/ide-test
 	./build/memory-test
 	./build/v7-types-test
 	./build/uaccess-test
@@ -155,7 +156,7 @@ test-user: check build/test-user-kernel.iso build/test-user-ro.iso build/test-us
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-user-df.iso user-df
 
 clean:
-	$(PYTHON) -c 'import shutil; shutil.rmtree("build", ignore_errors=True)'
+	$(PYTHON) -c 'from pathlib import Path; import shutil; p=Path("build"); [(shutil.rmtree(q) if q.is_dir() else q.unlink()) for q in p.iterdir() if q.name != "nexix.img"] if p.exists() else None'
 
 .PHONY: test-process
 test-process: check build/test-selftest.iso
@@ -395,3 +396,20 @@ test-shell: iso
 	$(PYTHON) tools/interactive_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/interactive_smoke.py $(QEMU) build/nexix.iso 128M
 test: test-shell
+
+# Preserve the working disk across builds; root.img is the seed.
+.PHONY: disk test-storage
+disk: build/root.img
+	$(PYTHON) -c 'from pathlib import Path; p=Path("build/nexix.img"); p.exists() or p.write_bytes(Path("build/root.img").read_bytes())'
+build/ide.o: kernel/ide.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+OBJECTS += build/ide.o
+build/nexix.elf: build/ide.o
+-include build/ide.d
+test-storage: iso
+	$(PYTHON) tools/storage_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/storage_smoke.py $(QEMU) build/nexix.iso 128M
+test: test-storage
+build/ide-test: tests/ide.c tests/ide/io.h kernel/ide.c kernel/block.c kernel/include/ide.h kernel/include/block.h include/nexix/errno.h | build
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Itests/ide -Ikernel/include -Iinclude tests/ide.c kernel/ide.c kernel/block.c -o $@
+test-unit: build/ide-test

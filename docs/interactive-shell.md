@@ -53,4 +53,5 @@ exits QEMU. See [booting.md](booting.md) for startup and storage behavior.
 This remains V7 shell behavior: there are no modern job-control commands,
 readline/history or bash extensions. Cooked input lines are limited to 256
 bytes; expanded arguments also obey the native exec limits. Persistent IDE
-storage is step 20; networking belongs to version 0.2.0.
+storage is implemented in step 20; see [storage.md](storage.md). Networking
+belongs to version 0.2.0.

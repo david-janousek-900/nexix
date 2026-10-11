@@ -7,7 +7,7 @@ It preserves V7 source and behavior where practical, with native ELF64 programs
 rebuilt from source rather than PDP-11 binary compatibility.
 
 Nexix now boots into the rebuilt V7 Bourne shell on COM1. The kernel mounts a
-writable RAM copy of the packaged V7 filesystem and launches `/etc/init` as
+persistent IDE-backed V7 filesystem and launches `/etc/init` as
 PID 1. Init starts the single-user shell; native ELF64 programs execute from
 filesystem paths. See [booting Nexix](docs/booting.md).
 
@@ -21,8 +21,8 @@ raw/cbreak modes, echo, flow control and controlling-terminal signals.
 Native libc supports the retained V7 init, shell and seven utilities. Signals,
 alarms, brk/sbrk, credentials, process groups and time calls supply their basic
 services. The original V7 reference sources and historical disk encodings are
-preserved. Root changes last for the QEMU session; persistent storage follows
-in step 20. TCP/IP is planned for version 0.2.0.
+preserved. `make run` keeps root changes in `build/nexix.img` across boots.
+See [persistent storage](docs/storage.md). TCP/IP is planned for version 0.2.0.
 
 ## Build and boot
 
@@ -37,6 +37,7 @@ make iso
 make run
 make test-boot
 make test-shell
+make test-storage
 make smoke
 make test
 make test-process
@@ -102,8 +103,7 @@ starts that demo: type a line and Enter, use Backspace/Ctrl-U to edit, or type
 
 ## Roadmap
 
-Version **0.1.0** covers these 20 steps. Steps 1–19 are implemented; step 20
-is next. Regression tests accompany implementation throughout the roadmap.
+Version **0.1.0** covers these 20 steps. Steps 1–20 are implemented. Regression tests accompany implementation throughout the roadmap.
 
 1. Import V7 sources and preserve licensing.
 2. GRUB boot and x86_64 long mode.

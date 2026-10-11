@@ -217,3 +217,14 @@ globbing, 5120-byte expansion and a longer fork/exec/wait session. Native root
 regression tests additionally check `/dev/null` read/write/stat/seek and invalid
 user-buffer rejection. Host and kernel image checks verify the new device inode.
 See [interactive-shell.md](interactive-shell.md) for coverage and limitations.
+
+## Step 20 acceptance
+
+`make TOOLCHAIN_PREFIX= test-storage` boots disposable IDE roots three times
+at each of 16 MiB and 128 MiB. It verifies persisted contents and hard links,
+append/unlink, execution of copied ELF files through single-indirect blocks,
+allocation after deletion, restored free-block/inode totals and invalid-root
+rejection. Logs are `build/storage-{16M,128M}.log`.
+`make TOOLCHAIN_PREFIX= test-unit` also runs the simulated-port IDE driver
+checks for timeout, absence, unsupported disks, data transfer, range errors
+and failed reads/cache flushes. See [storage.md](storage.md).

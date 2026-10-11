@@ -41,7 +41,7 @@ multi-sector generic transfer can have completed an earlier prefix.
 The filesystem uses a 29-entry sector cache. Reads fill it on demand with round
 robin replacement; failed reads never publish cache entries. Writes go to the
 device synchronously and update any cached copy. There is no delayed-write
-queue, DMA, interrupt-driven driver or buffer sleep/wakeup yet. IDE is step 20.
+queue, DMA, interrupt-driven driver or buffer sleep/wakeup yet. Step 20 adds a polling IDE driver; see [storage.md](storage.md).
 
 Callers serialize complete filesystem operations; current kernel callers keep
 interrupts disabled. Backing memory, device callbacks and device flags must
