@@ -1,0 +1,1196 @@
+{
+  "schema_version": 1,
+  "version": "0.1.0",
+  "roadmap": "README.md",
+  "inventory": "docs/v7-userland-manifest.json",
+  "policy": "Every component and requirement has explicit owning/supporting roadmap steps; mappings establish planned coverage, not implementation or symbol-level compatibility. README step statuses and manifest implementation/input statuses are distinct.",
+  "components": {
+    "build.cmake": [
+      353
+    ],
+    "build.in": [
+      352
+    ],
+    "build.makeall": [
+      354
+    ],
+    "cmd.ac": [
+      239
+    ],
+    "cmd.accton": [
+      240
+    ],
+    "cmd.adb": [
+      258,
+      259,
+      260
+    ],
+    "cmd.ar": [
+      179
+    ],
+    "cmd.arcv": [
+      180
+    ],
+    "cmd.as": [
+      181,
+      182,
+      183,
+      184
+    ],
+    "cmd.at": [
+      242
+    ],
+    "cmd.atrun": [
+      243
+    ],
+    "cmd.awk": [
+      174,
+      175,
+      176
+    ],
+    "cmd.bas": [
+      215
+    ],
+    "cmd.basename": [
+      119
+    ],
+    "cmd.bc": [
+      209
+    ],
+    "cmd.bs": [
+      256
+    ],
+    "cmd.c": [
+      197,
+      198,
+      199,
+      200
+    ],
+    "cmd.cal": [
+      120
+    ],
+    "cmd.calendar": [
+      245
+    ],
+    "cmd.cat": [
+      16,
+      36
+    ],
+    "cmd.cb": [
+      166
+    ],
+    "cmd.cc": [
+      201
+    ],
+    "cmd.checkeq": [
+      271
+    ],
+    "cmd.chgrp": [
+      121
+    ],
+    "cmd.chmod": [
+      122
+    ],
+    "cmd.chown": [
+      123
+    ],
+    "cmd.clri": [
+      227
+    ],
+    "cmd.cmp": [
+      139
+    ],
+    "cmd.col": [
+      140
+    ],
+    "cmd.comm": [
+      141
+    ],
+    "cmd.cp": [
+      16
+    ],
+    "cmd.cpp": [
+      178
+    ],
+    "cmd.cron": [
+      244
+    ],
+    "cmd.crypt": [
+      247
+    ],
+    "cmd.cu": [
+      298
+    ],
+    "cmd.date": [
+      24
+    ],
+    "cmd.dc": [
+      208
+    ],
+    "cmd.dcheck": [
+      228
+    ],
+    "cmd.dd": [
+      225
+    ],
+    "cmd.deroff": [
+      272
+    ],
+    "cmd.df": [
+      223
+    ],
+    "cmd.diff": [
+      143
+    ],
+    "cmd.diff3": [
+      144
+    ],
+    "cmd.diffh": [
+      142
+    ],
+    "cmd.dmesg": [
+      251
+    ],
+    "cmd.du": [
+      224
+    ],
+    "cmd.dump": [
+      232
+    ],
+    "cmd.dumpdir": [
+      233
+    ],
+    "cmd.echo": [
+      16
+    ],
+    "cmd.ed": [
+      145
+    ],
+    "cmd.egrep": [
+      147
+    ],
+    "cmd.eqn": [
+      268
+    ],
+    "cmd.expr": [
+      124
+    ],
+    "cmd.f77": [
+      203,
+      204,
+      205,
+      206
+    ],
+    "cmd.factor": [
+      210
+    ],
+    "cmd.fgrep": [
+      148
+    ],
+    "cmd.file": [
+      125
+    ],
+    "cmd.find": [
+      149
+    ],
+    "cmd.getty": [
+      98
+    ],
+    "cmd.graph": [
+      294
+    ],
+    "cmd.grep": [
+      146
+    ],
+    "cmd.icheck": [
+      229
+    ],
+    "cmd.init": [
+      16,
+      101
+    ],
+    "cmd.iostat": [
+      252
+    ],
+    "cmd.join": [
+      150
+    ],
+    "cmd.kill": [
+      126
+    ],
+    "cmd.ld": [
+      185,
+      186,
+      187
+    ],
+    "cmd.learn": [
+      283,
+      284,
+      285
+    ],
+    "cmd.lex": [
+      171,
+      172,
+      173
+    ],
+    "cmd.lint": [
+      261,
+      262
+    ],
+    "cmd.ln": [
+      16
+    ],
+    "cmd.login": [
+      99,
+      100
+    ],
+    "cmd.look": [
+      151
+    ],
+    "cmd.ls": [
+      16
+    ],
+    "cmd.m4": [
+      167
+    ],
+    "cmd.mail": [
+      248
+    ],
+    "cmd.make": [
+      168
+    ],
+    "cmd.makekey": [
+      246
+    ],
+    "cmd.mesg": [
+      97
+    ],
+    "cmd.mip": [
+      192
+    ],
+    "cmd.mkdir": [
+      127
+    ],
+    "cmd.mkfs": [
+      222
+    ],
+    "cmd.mknod": [
+      219
+    ],
+    "cmd.mount": [
+      220
+    ],
+    "cmd.mv": [
+      128
+    ],
+    "cmd.ncheck": [
+      230
+    ],
+    "cmd.neqn": [
+      269
+    ],
+    "cmd.newgrp": [
+      104
+    ],
+    "cmd.nice": [
+      129
+    ],
+    "cmd.nm": [
+      188
+    ],
+    "cmd.od": [
+      152
+    ],
+    "cmd.osh": [
+      130
+    ],
+    "cmd.passwd": [
+      102
+    ],
+    "cmd.pcc": [
+      193,
+      194,
+      195,
+      196
+    ],
+    "cmd.plot": [
+      293
+    ],
+    "cmd.pr": [
+      153
+    ],
+    "cmd.prep": [
+      277
+    ],
+    "cmd.primes": [
+      211
+    ],
+    "cmd.prof": [
+      257
+    ],
+    "cmd.ps": [
+      253
+    ],
+    "cmd.pstat": [
+      254
+    ],
+    "cmd.ptx": [
+      273
+    ],
+    "cmd.pwd": [
+      16
+    ],
+    "cmd.quot": [
+      231
+    ],
+    "cmd.random": [
+      212
+    ],
+    "cmd.ranlib": [
+      191
+    ],
+    "cmd.ratfor": [
+      216
+    ],
+    "cmd.refer": [
+      274,
+      275
+    ],
+    "cmd.restor": [
+      234
+    ],
+    "cmd.rev": [
+      154
+    ],
+    "cmd.rm": [
+      16
+    ],
+    "cmd.rmdir": [
+      131
+    ],
+    "cmd.roff": [
+      263
+    ],
+    "cmd.sa": [
+      241
+    ],
+    "cmd.sed": [
+      155
+    ],
+    "cmd.sh": [
+      16,
+      19
+    ],
+    "cmd.size": [
+      189
+    ],
+    "cmd.sleep": [
+      132
+    ],
+    "cmd.sort": [
+      156
+    ],
+    "cmd.sp": [
+      157
+    ],
+    "cmd.spell": [
+      278,
+      279
+    ],
+    "cmd.spline": [
+      213
+    ],
+    "cmd.split": [
+      158
+    ],
+    "cmd.standalone": [
+      344,
+      345,
+      346,
+      347,
+      348,
+      349,
+      350
+    ],
+    "cmd.strip": [
+      190
+    ],
+    "cmd.struct": [
+      217,
+      218
+    ],
+    "cmd.stty": [
+      95
+    ],
+    "cmd.su": [
+      103
+    ],
+    "cmd.sum": [
+      226
+    ],
+    "cmd.sync": [
+      133
+    ],
+    "cmd.tabs": [
+      159
+    ],
+    "cmd.tail": [
+      160
+    ],
+    "cmd.tar": [
+      235
+    ],
+    "cmd.tbl": [
+      270
+    ],
+    "cmd.tc": [
+      295
+    ],
+    "cmd.tee": [
+      161
+    ],
+    "cmd.test": [
+      134
+    ],
+    "cmd.time": [
+      255
+    ],
+    "cmd.tk": [
+      296
+    ],
+    "cmd.touch": [
+      24
+    ],
+    "cmd.tp": [
+      236
+    ],
+    "cmd.tr": [
+      162
+    ],
+    "cmd.troff": [
+      264,
+      265,
+      266,
+      267
+    ],
+    "cmd.tsort": [
+      163
+    ],
+    "cmd.tty": [
+      96
+    ],
+    "cmd.umount": [
+      221
+    ],
+    "cmd.uniq": [
+      164
+    ],
+    "cmd.units": [
+      214
+    ],
+    "cmd.update": [
+      237
+    ],
+    "cmd.uucp": [
+      299,
+      300,
+      301,
+      302,
+      303,
+      304
+    ],
+    "cmd.vpr": [
+      297
+    ],
+    "cmd.wall": [
+      107
+    ],
+    "cmd.wc": [
+      165
+    ],
+    "cmd.who": [
+      105
+    ],
+    "cmd.write": [
+      106
+    ],
+    "cmd.xsend": [
+      249,
+      250
+    ],
+    "cmd.yacc": [
+      169,
+      170,
+      173
+    ],
+    "cmd.yes": [
+      135
+    ],
+    "distribution.boot-kernels": [
+      1,
+      2,
+      351
+    ],
+    "distribution.boot-support": [
+      349
+    ],
+    "distribution.config": [
+      17,
+      24,
+      94,
+      101
+    ],
+    "distribution.devices": [
+      14,
+      19,
+      30,
+      53,
+      69,
+      70,
+      71,
+      72,
+      74,
+      75,
+      76,
+      77,
+      92
+    ],
+    "distribution.dictionary": [
+      280
+    ],
+    "distribution.documents": [
+      288
+    ],
+    "distribution.game-data": [
+      305
+    ],
+    "distribution.headers": [
+      7,
+      39,
+      82
+    ],
+    "distribution.kernel": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      18,
+      19,
+      20,
+      22,
+      23,
+      25,
+      26,
+      27,
+      30,
+      31,
+      32,
+      38,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      89,
+      90,
+      91
+    ],
+    "distribution.library-data": [
+      87,
+      170,
+      171,
+      173,
+      214,
+      265,
+      268,
+      269,
+      270,
+      274,
+      278,
+      281,
+      285,
+      304
+    ],
+    "distribution.manuals": [
+      286,
+      287
+    ],
+    "distribution.public": [
+      282
+    ],
+    "distribution.spool": [
+      238,
+      304
+    ],
+    "game.arithmetic": [
+      306
+    ],
+    "game.backgammon": [
+      307
+    ],
+    "game.banner": [
+      318,
+      319
+    ],
+    "game.bcd": [
+      320,
+      321
+    ],
+    "game.bj": [
+      322,
+      323
+    ],
+    "game.checkers": [
+      324,
+      325
+    ],
+    "game.chess": [
+      313,
+      314
+    ],
+    "game.ching": [
+      316
+    ],
+    "game.cno": [
+      326,
+      327
+    ],
+    "game.cubic": [
+      328,
+      329
+    ],
+    "game.fish": [
+      308
+    ],
+    "game.fortune": [
+      309
+    ],
+    "game.hangman": [
+      310
+    ],
+    "game.maze": [
+      330,
+      331
+    ],
+    "game.moo": [
+      332,
+      333
+    ],
+    "game.phx": [
+      334,
+      335
+    ],
+    "game.ppt": [
+      336,
+      337
+    ],
+    "game.quiz": [
+      311
+    ],
+    "game.reversi": [
+      338,
+      339
+    ],
+    "game.ttt": [
+      340,
+      341
+    ],
+    "game.words": [
+      315
+    ],
+    "game.words1": [
+      342,
+      343
+    ],
+    "game.wump": [
+      312
+    ],
+    "lib.libF77": [
+      112,
+      113,
+      114,
+      118
+    ],
+    "lib.libI77": [
+      115,
+      116,
+      117,
+      118
+    ],
+    "lib.libc": [
+      11,
+      28,
+      33,
+      34,
+      35,
+      36,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      60,
+      61,
+      67,
+      68,
+      79,
+      82
+    ],
+    "lib.libdbm": [
+      111
+    ],
+    "lib.libfpsim": [
+      81
+    ],
+    "lib.libm": [
+      29,
+      80
+    ],
+    "lib.libmp": [
+      109,
+      110
+    ],
+    "lib.libplot": [
+      289,
+      290,
+      291,
+      292
+    ],
+    "script.1": [
+      317
+    ],
+    "script.calendar": [
+      245
+    ],
+    "script.diff3": [
+      144
+    ],
+    "script.false": [
+      136
+    ],
+    "script.lint": [
+      262
+    ],
+    "script.lookbib": [
+      276
+    ],
+    "script.lorder": [
+      202
+    ],
+    "script.man": [
+      287
+    ],
+    "script.nohup": [
+      138
+    ],
+    "script.pcc": [
+      196
+    ],
+    "script.plot": [
+      293
+    ],
+    "script.spell": [
+      279
+    ],
+    "script.struct": [
+      218
+    ],
+    "script.true": [
+      137
+    ],
+    "support.prep-header": [
+      277
+    ]
+  },
+  "requirements": {
+    "accounting": [
+      56,
+      100,
+      239,
+      240,
+      241
+    ],
+    "accounts": [
+      44,
+      45,
+      46,
+      47,
+      50,
+      94,
+      95,
+      96,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108
+    ],
+    "bc-math": [
+      88,
+      209
+    ],
+    "bibliography-data": [
+      274,
+      275,
+      276,
+      280
+    ],
+    "elf-toolchain": [
+      177,
+      178,
+      179,
+      180,
+      181,
+      182,
+      183,
+      184,
+      185,
+      186,
+      187,
+      188,
+      189,
+      190,
+      191,
+      192,
+      193,
+      194,
+      195,
+      196,
+      197,
+      198,
+      199,
+      200,
+      201,
+      202,
+      203,
+      204,
+      205,
+      206,
+      207
+    ],
+    "floating-point": [
+      25,
+      26,
+      27,
+      28,
+      29,
+      80,
+      81
+    ],
+    "formatter-macros": [
+      281,
+      286,
+      287,
+      288
+    ],
+    "formatter-tables": [
+      265,
+      266,
+      267
+    ],
+    "fortune-data": [
+      305,
+      309
+    ],
+    "headers": [
+      7,
+      39,
+      82
+    ],
+    "historical-devices": [
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      289,
+      290,
+      291,
+      292,
+      293,
+      294,
+      295,
+      296,
+      297,
+      344,
+      345,
+      346,
+      347,
+      348,
+      349,
+      350
+    ],
+    "kernel-abi": [
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      18,
+      38,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79
+    ],
+    "kernel-information": [
+      62,
+      251,
+      252,
+      253,
+      254
+    ],
+    "learn-lessons": [
+      87,
+      283,
+      284,
+      285
+    ],
+    "learn-workdirs": [
+      283,
+      285
+    ],
+    "lex-skeletons": [
+      88,
+      171,
+      172,
+      173
+    ],
+    "lint-descriptions": [
+      261,
+      262,
+      281
+    ],
+    "man-command": [
+      287
+    ],
+    "manual-pages": [
+      286,
+      287
+    ],
+    "multi-tty": [
+      89,
+      90,
+      91,
+      92,
+      93
+    ],
+    "native-build-tools": [
+      1,
+      2,
+      17,
+      21,
+      37,
+      78,
+      83,
+      84,
+      85,
+      86,
+      177,
+      207,
+      352,
+      353,
+      354,
+      355,
+      356,
+      357,
+      358,
+      359,
+      360,
+      361
+    ],
+    "pdp11-assembly": [
+      25,
+      26,
+      27,
+      28,
+      79,
+      81,
+      181,
+      182,
+      183,
+      184,
+      192,
+      193,
+      194,
+      195,
+      197,
+      198,
+      199,
+      200,
+      203,
+      204,
+      205,
+      313,
+      344,
+      349
+    ],
+    "quiz-data": [
+      305,
+      311
+    ],
+    "raw-storage": [
+      20,
+      53,
+      54,
+      55,
+      219,
+      220,
+      221,
+      222,
+      223,
+      224,
+      225,
+      226,
+      227,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      234,
+      235,
+      236,
+      237
+    ],
+    "spell-hashes": [
+      278,
+      279
+    ],
+    "spell-lists": [
+      278,
+      279
+    ],
+    "spool-locks": [
+      238,
+      248,
+      299,
+      300,
+      301,
+      302,
+      303,
+      304
+    ],
+    "timezone": [
+      24
+    ],
+    "tracing-profiling": [
+      52,
+      57,
+      58,
+      59,
+      60,
+      61,
+      257,
+      258,
+      259,
+      260
+    ],
+    "units-data": [
+      214,
+      281
+    ],
+    "v6-compatibility": [
+      79,
+      235
+    ],
+    "v7-source-archives": [
+      87,
+      289
+    ],
+    "wall-clock": [
+      22,
+      23
+    ],
+    "word-dictionary": [
+      280,
+      310
+    ],
+    "yacc-skeleton": [
+      170
+    ]
+  },
+  "step_count": 361
+}

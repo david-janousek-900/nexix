@@ -422,6 +422,7 @@ test-unit: build/ide-test
 test-inventory:
 	$(PYTHON) tools/check_inventory.py
 	$(PYTHON) tests/inventory.py
+	$(PYTHON) tests/roadmap.py
 test: test-inventory
 
 # Step 22: boot RTC and shared epoch clock.

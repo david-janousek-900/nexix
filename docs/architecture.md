@@ -107,14 +107,15 @@ gate and saved-frame IRETQ return. User-copy helpers validate effective user
 permissions and full ranges before copyin/out through the physical identity map.
 ELF64 loading builds private staged images and a native argc/argv/envp stack.
 Exec activates a complete new image before releasing the old VM; failures leave
-the old process runnable. An embedded program catalog provides temporary path
-lookup until production filesystem-backed exec integration. See [exec.md](exec.md). Native crt0, a static
+the old process runnable. Production exec loads ELF images from the mounted filesystem. An embedded
+program catalog remains for isolated bootstrap fixtures. See [exec.md](exec.md). Native crt0, a static
 libc archive and a C fixture exercise the same startup stack and syscall ABI;
-see [libc.md](libc.md). Process fault handling,
-FPU state, and user TLS remain pending.
+see [libc.md](libc.md). Managed user faults deliver signals. Native FP state
+is preserved across process switches, fork, exec and signals (steps 25–27);
+see [floating-point.md](floating-point.md). User TLS remains outside the current ABI.
 
-Keep the historical source tree pristine. Ported code belongs in `kernel/` and,
-later, `libc/` and `user/`. Reuse V7 process, file, and filesystem logic after
+Keep the historical source tree pristine. Ported code belongs in `kernel/`,
+`libc/`, `libm/` and `user/`. Reuse V7 process, file, and filesystem logic after
 auditing PDP-11 machine dependencies; replace assembly and hardware interfaces.
 
 Audit historical integer widths, implicit declarations, pointer/integer casts,

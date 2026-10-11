@@ -80,7 +80,8 @@ Growth allocates zeroed RW/NX pages, rolls back completely on allocation failure
 and preserves the old break and data. Shrinking releases whole pages while
 keeping a partial final page. Image pages and the guarded fixed stack cannot
 be removed or overwritten. Fork copies the break and heap; exec installs a
-fresh heap. There is no allocator, demand paging or automatic stack growth yet.
+fresh heap. Libc heap allocation is implemented; demand paging and automatic stack growth
+remain outside the current memory model.
 
 Setuid/setgid follow V7: root, or a caller selecting its existing real ID, sets
 both real and effective IDs. Other changes return EPERM; wide raw arguments
@@ -126,4 +127,6 @@ Success markers are NEXIX_SIGNALS_OK, NEXIX_HEAP_OK, NEXIX_INIT_SYSCALLS_OK and
 NEXIX_SIGNALS_CLEANUP_OK, followed by NEXIX_BOOT_OK. Logs are
 `build/signals-16M.log` and `build/signals-128M.log`.
 
-Step 16 rebuilds V7 init, the shell and basic utilities. The shell and utilities run in acceptance tests; normal init startup follows in step 18.
+Step 16 rebuilds V7 init, the shell and basic utilities. The shell and utilities
+run in acceptance tests, and step 18 implements normal init/shell startup.
+Multi-user init/getty/login integration remains steps 98–108.

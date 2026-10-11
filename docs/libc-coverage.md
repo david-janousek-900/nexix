@@ -1,8 +1,8 @@
-# Step 25 libc interface progress
+# Native libc interface progress (steps 28 and 33–49)
 
 Libc remains partial. The implementations below are native interfaces for
-rebuilt V7 sources; their addition does not mark all V7 userland or step 25
-complete. The original source distribution remains unchanged.
+rebuilt V7 sources; their addition does not complete V7 userland or the remaining kernel/libc
+prerequisites (steps 38–82). The original source distribution remains unchanged.
 
 ## Input conversion
 
@@ -118,7 +118,7 @@ Required kernel accounting, tracing/profiling, kernel-information and
 mount/raw-device interfaces are also unfinished. Their wrappers must accompany
 working kernel behavior; ENOSYS stubs do not complete a port.
 
-Step 25.8 (buffered stdio and setbuf) is implemented. This completes that
-substep's stream behavior and regression coverage; the remaining step 25
-interfaces listed above are still pending. Native FILE-layout compatibility
+Step 36 (previously 25.8: buffered stdio and setbuf) is implemented. This completes that
+substep's stream behavior and regression coverage; the remaining kernel/libc
+interfaces listed above are still pending (steps 38–82). Native FILE-layout compatibility
 with callers of historical internal fields belongs to the remaining adapters.

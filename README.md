@@ -118,8 +118,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 2 partial, 1 prototype and 203 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **361 tracking steps: 36 done, 5 in progress
-and 320 to do** at this baseline. These counts are a work breakdown, not an
+The expanded roadmap below has **361 tracking steps: 37 done, 5 in progress
+and 319 to do** after step 37. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Steps 1–24 retain
 their previous scope. Completed portions of the old step 25 are separated
 into steps 25–36; its remaining work is listed individually.
@@ -147,7 +147,10 @@ steps 83–86 address these limits before full-distribution installation.
 
 See the [porting inventory](docs/porting-inventory.md) and its
 [component manifest](docs/v7-userland-manifest.json) for original inputs,
-outputs, dependencies, acceptance checks and missing sources. Older step
+outputs, dependencies, acceptance checks and missing sources. The
+[roadmap coverage map](docs/roadmap-coverage.json) and
+[coverage contract](docs/roadmap-coverage.md) connect every component and
+requirement to these step IDs; test-inventory validates the relationships. Older step
 numbers in detailed documents refer to the previous roadmap and are mapped below.
 
 ### Implementation, testing and commit rules
@@ -246,7 +249,7 @@ coverage and installation remain subject to later acceptance steps.
 
 | Step | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
-| 37 | Publish renumbered roadmap and enforce component-to-step coverage | To do | Map all 217 entries and 35 requirements; repair stale docs |
+| 37 | Publish renumbered roadmap and enforce component-to-step coverage | Done | test-inventory validates 217 components, 35 requirements and 361 steps; commit recorded in Git history |
 | 38 | Complete kernel source adaptation coverage | In progress | Foundation exists; distribution.kernel still marked not_ported |
 | 39 | Complete exported native V7 header/ABI coverage | In progress | LP64 runtime versus historical disk encodings |
 | 40 | Finish libc scalar/byte helpers and conversion contracts | In progress | Include swab, l3tol/ltol3, gcvt, abort, tell, execle and missing declared interfaces |
@@ -672,7 +675,7 @@ required before native-port acceptance.
 
 ### Execution priorities and release acceptance
 
-Start with step 37 to record coverage relationships and prerequisites. Complete
+Step 37 records coverage relationships and validates the roadmap. Complete
 staging, image and test infrastructure in steps 83–88 before expanding
 installation substantially. Prioritize account/libc and set-ID prerequisites
 needed for steps 89–108, delivering multi-user boot before the long userland tail.
@@ -704,7 +707,8 @@ assets or documented native equivalents. No required feature is silently removed
 to declare the release complete.
 
 `make TOOLCHAIN_PREFIX= test-inventory` checks full-archive coverage, byte fidelity
-and inventory consistency. It does not prove native functional acceptance or
+and inventory/roadmap consistency, including numbering, status totals and coverage
+of every component, requirement and step. It does not prove native functional acceptance or
 completion of the ports.
 
 Version **0.2.0** adds PCI/e1000, lwIP IPv4/TCP/IP integration, sockets and

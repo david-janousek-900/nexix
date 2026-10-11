@@ -18,8 +18,9 @@ make TOOLCHAIN_PREFIX= run
 128 MiB. Successful boots require `NEXIX_FILES_OK`, `NEXIX_PIPE_OK`,
 `NEXIX_FILES_CLEANUP_OK`, and the existing boot markers. The tests execute
 `user/files-test.c` as a native ELF64 program at CPL3, linked with Nexix libc.
-Boot still ends in the kernel idle loop. Step 14 adds interactive serial TTY
-input and a demo; see [tty.md](tty.md). The V7 shell remains pending.
+Normal boot starts V7 init and its single-user shell; component self-tests
+use separate boot images. Step 14 supplies serial TTY input and a demo;
+see [tty.md](tty.md) and [booting.md](booting.md).
 
 ## Descriptors and ownership
 
@@ -40,7 +41,8 @@ still return EBUSY at fork/exec.
 `files_mount()` attaches one already mounted filesystem. Detaching or switching
 returns EBUSY while managed references exist. These are internal kernel APIs,
 serialized with IRQs disabled. The boot test attaches a disposable RAM fixture,
-runs file tests, then detaches it. Permanent root attachment remains step 18.
+runs file tests, then detaches it. Production boot permanently attaches the
+RAM or IDE root in step 18; see [booting.md](booting.md).
 
 ## File and namespace calls
 
@@ -87,7 +89,7 @@ can return a partial byte count. Filesystem write failures retain the existing
 mount poisoning policy; metadata changes are synchronous but not crash atomic.
 There is no journal or orphan recovery after reboot.
 
-## Step 25 filesystem prerequisites
+## Filesystem prerequisites (steps 30–32)
 
 Native syscall 14 and libc `mknod` create regular files, empty directories and
 character/block special inodes. Effective uid zero is required. Mode permissions
@@ -105,7 +107,8 @@ open unlinked directory alive until close, just as for regular files. Reclaiming
 a device inode clears its encoded device number without freeing it as a block.
 These are historical privileged primitives; emptiness checks belong to the
 V7 rmdir program. Empty path lookup returns cwd, restoring V7 `stat("")` behavior
-used by that program. Packaging those command ports remains step 28.
+used by that program. The mkdir and rmdir command ports remain steps 127 and 131;
+the mknod command is step 219. Raw device and mount support remain steps 53–55.
 
 Native syscall 61 and libc `chroot` replace the process root directory reference
 for effective uid zero. Absolute paths use it, and `..` at that root stays there.

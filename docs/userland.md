@@ -12,7 +12,7 @@ No host libc or dynamic loader is used.
 Libc now provides buffered file streams, integer/floating formatted output, heap
 allocation, qsort, atoi, execl/execvp, alarm-based sleep and timezone-aware time conversion (see [time.md](time.md)).
 Formatting supports the integer and string forms used by these sources,
-including historical %D/%O. Step 25 supplies floating-point formatting and working V7 setbuf; full libc
+including historical %D/%O. Steps 28 and 36 supply floating-point formatting and working V7 setbuf; full libc
 coverage remains pending (see [libc-coverage.md](libc-coverage.md)). The allocator reuses
 freed blocks without splitting or coalescing them. Native utmp records have
 8-byte line/name fields and a 64-bit time field (24 bytes total); they are not

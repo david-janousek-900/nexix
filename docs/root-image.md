@@ -9,7 +9,7 @@ sector. `make TOOLCHAIN_PREFIX= iso` embeds the root image in the kernel.
 The image includes:
 
 - `/etc/init` and `/bin/sh`.
-- `/bin/echo`, `cat`, `ls`, `pwd`, `cp`, `ln`, and `rm`.
+- `/bin/echo`, `cat`, `ls`, `pwd`, `cp`, `ln`, `rm`, `date`, and `touch`.
 - `/etc/rc`, `/etc/ttys`, `/etc/passwd`, and `/.profile` from `rootfs/`.
 - Empty `/etc/utmp` and `/usr/adm/wtmp` accounting files.
 - `/dev/console` and `/dev/ttyS0`, two names for the same COM1 device inode,

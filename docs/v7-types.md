@@ -27,13 +27,15 @@ embedded in the user structure. Future code must obtain user data from the
 current process.
 
 PDP-11 segmentation registers, click addresses, separate instruction/data
-spaces, FP registers, swap jump buffers, and UNIBUS extension fields are omitted.
-FPU support and interrupted-syscall continuation need explicit x86_64 designs.
-Executable metadata records native entry and byte sizes; ELF parsing is later.
-Multiplexed channels and swapping are deferred. Preserved historical flag values
+spaces, swap jump buffers and UNIBUS extension fields are replaced by native
+address spaces and resident memory. Per-process FP state uses an aligned
+FXSAVE64 image (steps 25–27). ELF parsing/execution is implemented in step 10.
+Interruptible syscalls and signal returns use the native saved-frame ABI.
+Multiplexed channels remain steps 65–67; disk-backed swapping is outside the
+agreed 0.1.0 resident-memory model. Preserved historical flag values
 in `constants.h` describe source compatibility, not implemented capabilities.
-The native scheduler accounts in 100 Hz PIT ticks; future libc exports must
-reflect this rate rather than V7's original 60 Hz.
+The native scheduler and libc CLK_TCK account in 100 Hz PIT ticks rather than
+V7's original 60 Hz.
 
 `disk.h` represents disk records using byte arrays, never native pointer-bearing
 structures. Inodes occupy 64 bytes, directory entries 16 bytes, and superblocks
@@ -48,8 +50,8 @@ filesystem code must validate signed sizes/times and native-to-disk ranges.
 `make TOOLCHAIN_PREFIX= test-unit check` checks native layouts, known disk byte
 patterns, address overflow rejection, inode-block boundaries, all major/minor
 pairs, and the freestanding ELF build. `make TOOLCHAIN_PREFIX= smoke` verifies
-the existing QEMU boot path. Filesystem I/O and serialization of entire records
-remain step 12. Step 8 now implements process ownership and scheduling using
+the existing QEMU boot path. Filesystem I/O and record serialization
+are implemented in step 12. Step 8 now implements process ownership and scheduling using
 these structures;
 [processes.md](processes.md) describes allocation, teardown, and active-process
 rules.

@@ -1,6 +1,7 @@
 # V7 porting inventory (step 21)
 
-Nexix 0.1.0 targets multi-user boot and the full native V7 userland. The first
+Nexix 0.1.0 targets the complete V7 source distribution through native kernel,
+userland, toolchain and historical-platform equivalents, with multi-user boot. The first
 20 steps provide a bootable single-user system with persistent IDE storage.
 This inventory accounts for the remaining work; it does not implement ports.
 
@@ -24,6 +25,10 @@ and original metadata to the recorded archive. See [source provenance](../refere
 ## Manifest contract
 
 - Schema version 2 covers reference/v7, with usr/src separately identified.
+- The required roadmap_coverage path selects [roadmap-coverage.json](roadmap-coverage.json).
+  All components and requirements map to explicit README step IDs; see the
+  [coverage/status contract](roadmap-coverage.md). Step mappings describe planned
+  responsibility and do not change native implementation status.
 - Each entry has an identifier, kind, explicit reference files, outputs and
   install locations, priority, status, dependencies, blockers and acceptance checks.
 - Dependencies distinguish build, runtime and optional runtime requirements.
@@ -50,9 +55,11 @@ and original metadata to the recorded archive. See [source provenance](../refere
 
 ## Implementation priorities
 
-These are implementation order, not release exclusions. RTC, timestamps, timezone,
-kernel/libc prerequisites and multi-user terminals are steps 22–27. The remaining
-program ports belong to step 28. Shared libc support is developed as needed.
+Priorities guide implementation order, not release exclusions. The expanded
+361-step roadmap is in [README.md](../README.md#roadmap). RTC/timestamps/TZ are
+steps 22–24; kernel/libc work spans 25–82, terminals 89–93, and multi-user
+integration 94–108. Individual component ports have their own IDs in the
+[coverage map](roadmap-coverage.json); shared support is developed as needed.
 
 | Priority | Group | Top-level commands |
 |---|---|---|
@@ -148,7 +155,7 @@ The archive also supplies all 307 manual files across sections 0–8. Its defaul
 path invokes nroff with the supplied tmac.an macros; optional modes use eqn,
 neqn, troff and tc. The script and its manual differ on cached-page behavior;
 retain and document the supplied implementation rather than inventing a new one.
-Porting remains priority 11, step 28. Test section selection, missing titles,
+Porting remains priority 11: step 287 for the script and step 286 for manual pages. Test section selection, missing titles,
 `man -w`, readable serial output and available optional output modes.
 
 Restored /bin scripts and drivers:
@@ -236,6 +243,10 @@ according to their actual Nexix implementation status.
 ```sh
 make TOOLCHAIN_PREFIX= test-inventory
 ```
+
+The read-only checker also validates all 361 roadmap IDs, summary statuses,
+component/requirement mappings and step ownership, rejecting omissions and
+misleading completion mappings.
 
 The read-only checker verifies all reference bytes against the committed archive
 index, catches missing or additional files, and validates ownership of the entire

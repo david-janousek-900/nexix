@@ -73,6 +73,10 @@ class Inventory(unittest.TestCase):
         self.entry('cmd.cat')['acceptance'] = []
         self.reject('no acceptance checks')
 
+    def test_roadmap_coverage_cannot_be_disabled(self):
+        del self.manifest['roadmap_coverage']
+        self.reject('missing or invalid roadmap coverage path')
+
     def test_missing_distribution_asset_is_visible(self):
         self.manifest['requirements'] = [r for r in self.manifest['requirements'] if r['id'] != 'manual-pages']
         self.reject('unknown related component manual-pages')

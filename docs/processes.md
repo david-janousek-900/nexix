@@ -71,13 +71,15 @@ into the child user area, resets child accounting, and installs a child trap
 frame with RAX zero. The parent receives the child PID. Failed allocations
 release all copied data frames and page tables before returning a negative V7
 errno; the parent mappings remain untouched. Kernel C continuations are not
-forked. This native return convention is for the upcoming ABI, not PDP-11
-binary compatibility.
+forked. This return convention is the native Nexix syscall ABI; it does not provide
+PDP-11 binary compatibility.
 
 Step 13 adds file and directory reference ownership across fork/exec/exit;
 see [files.md](files.md). Fork still rejects unsupported foreign references and
 shared-text references with EBUSY. ELF executable loading is implemented;
-signals are implemented in step 15. FPU state and user TLS remain pending.
+signals are implemented in step 15. Steps 25–27 preserve native FP state
+across scheduling, fork, exec and signals; see [floating-point.md](floating-point.md).
+User TLS remains outside the current ABI.
 Managed user faults deliver signals and default to terminating the process.
 
 Exit first closes descriptors and releases directory references, then saves status and cumulative tick accounting, marks the process a zombie,

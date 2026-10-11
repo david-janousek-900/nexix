@@ -75,7 +75,7 @@ Also implemented:
 - strlen, strcmp, strncmp, strcpy, strncpy, strchr, strrchr.
 - getenv, reading the current `environ` vector.
 - exit and atexit, with 32 statically stored callbacks executed in reverse
-  registration order. `_exit` bypasses callbacks. Step 25 flushes buffered output after callbacks; successful exec replaces the callback and stream state with fresh BSS.
+  registration order. `_exit` bypasses callbacks. Step 36 flushes buffered output after callbacks; successful exec replaces the callback and stream state with fresh BSS.
 
 Step 13 adds file and pipe wrappers and headers; see [files.md](files.md).
 Step 14 adds sgtty/ioctl headers and stty/gtty/ioctl/isatty; see [tty.md](tty.md).
@@ -106,23 +106,24 @@ slots. A failure status identifies the C fixture's failing CHECK line when
 that process exits directly.
 
 Every successful boot requires `NEXIX_LIBC_ABI_OK` and `NEXIX_LIBC_OK` before
-`NEXIX_BOOT_OK`. These tests do not claim that V7 init or shell has been rebuilt.
+`NEXIX_BOOT_OK`. These libc fixtures alone do not prove a userland port; the rebuilt V7 init,
+shell and utilities have separate acceptance tests (see [userland.md](userland.md)).
 Step 12 implements the block interface, RAM root device and V7 filesystem
 foundation; see [filesystem.md](filesystem.md). Steps 13 and 14 add file
 operations, pipes and terminal controls; see [files.md](files.md) and [tty.md](tty.md).
 
-Step 25 adds binary64 `frexp`, `ldexp`, `modf`, `fmod`, decimal `atof`/`strtod`,
+Step 28 adds binary64 `frexp`, `ldexp`, `modf`, `fmod`, decimal `atof`/`strtod`,
 `ecvt`/`fcvt`, and `%f`, `%e`, `%E`, `%g`, `%G` formatting. See
 [floating-point.md](floating-point.md) for numeric contracts and limitations.
 `build/libm.a` contains native adaptations of all 16 retained libm C files;
 link math callers with `build/libm.a build/libc.a` after their objects.
 
-Step 25 also adds scanf/fscanf/sscanf and their va_list variants, stream pushback,
+Steps 33–35 add scanf/fscanf/sscanf and their va_list variants, stream pushback,
 fdopen/freopen, gets/getw/putw, V7 character classification and string aliases,
 native integer conversions and the V7 rand sequence. See
 [libc-coverage.md](libc-coverage.md) for behavior and remaining compatibility work.
 
-Step 25.8 adds lazy 512-byte stream buffering and working V7 setbuf. Terminal
+Step 36 (previously 25.8) adds lazy 512-byte stream buffering and working V7 setbuf. Terminal
 output and initial stderr remain unbuffered. fflush/fclose and normal exit
 flush pending output; _exit and successful exec do not. Input fflush is a V7
 no-op. See [libc-coverage.md](libc-coverage.md) for buffer ownership, seek/tell,

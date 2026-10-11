@@ -55,8 +55,9 @@ their transcripts are `build/user-*.log`. Regression boot must also emit all fou
 `make -j3 TOOLCHAIN_PREFIX= test`.
 The host parser/allocator tests also pass AddressSanitizer and UBSan with leak
 detection disabled (LeakSanitizer cannot run under this session's ptrace).
-The suite validates native ELF loading and execution, but does not yet validate
-rebuilt V7 userland execution. Native V7 filesystem APIs are tested in step 12.
+The suite validates native ELF loading and execution, rebuilt V7 userland
+(step 16), normal init/shell startup (step 18) and interactive operation
+(step 19). Native V7 filesystem APIs are tested in step 12.
 
 V7 type adaptation (step 7): `make TOOLCHAIN_PREFIX= test-unit` also runs
 `build/v7-types-test`. It checks independent PDP-11 byte fixtures, rejection of
@@ -88,7 +89,8 @@ normal image with 16 MiB RAM and retains `build/process-16M.log`. Tests cover:
   stack/data writes, wait status, and child accounting.
 - Final recovery of every process-owned data/table page and every process slot.
 
-The process test gate uses `int 0x81` commands only; the native ABI uses `int 0x80`. Tests use integer contexts without FPU/TLS. See [processes.md](processes.md).
+The process test gate uses `int 0x81` commands only; the native ABI uses `int 0x80`. The original integer-context fixtures remain; steps 25–27 add dedicated FP
+state isolation and signal-context tests. User TLS is not implemented. See [processes.md](processes.md).
 
 Native syscalls and safe user access (step 9): successful boot requires
 NEXIX_SYSCALL_ABI_OK, NEXIX_UACCESS_OK, NEXIX_SYSCALL_ERRORS_OK,
@@ -326,4 +328,4 @@ and verifies their timestamps and contents survive the third.
 `test-root-image` verifies all eleven native executables against their ELF files;
 `test-boot` checks normal shell startup and the expanded /bin listing. Existing
 IDE disks retain their previous userland. A separate `DISK_IMAGE` selects a new
-root without replacing the working disk; full disk upgrades remain step 29.
+root without replacing the working disk; full disk upgrades remain step 357.

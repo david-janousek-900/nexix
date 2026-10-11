@@ -6,6 +6,7 @@ from pathlib import Path
 import re
 import sys
 from import_v7_reference import check_reference
+from check_roadmap import validate_roadmap
 
 ROOT = Path(__file__).resolve().parents[1]
 REFERENCE = 'reference/v7'
@@ -200,6 +201,12 @@ def validate(manifest, root=ROOT):
     if any(isinstance(node, ast.Constant) and node.value == '/etc/init' for node in ast.walk(tree)):
         packaged.add('init')
     need(installed == built == packaged, f'implemented output drift: manifest={sorted(installed)}, build={sorted(built)}, packaged={sorted(packaged)}')
+    need(manifest.get('roadmap_coverage') == 'docs/roadmap-coverage.json', 'missing or invalid roadmap coverage path')
+    try:
+        coverage = json.loads((root / 'docs/roadmap-coverage.json').read_text())
+        errors.extend(validate_roadmap(manifest, coverage, (root / 'README.md').read_text()))
+    except (OSError, ValueError) as error:
+        errors.append(f'invalid roadmap coverage: {error}')
     return errors
 
 
@@ -219,6 +226,9 @@ def main():
                  if output['status'] == 'implemented'}
     print(f'PASS: V7 inventory: {len(manifest["entries"])} components, {count} reference files, '
           f'{len(manifest["requirements"])} external/platform requirements, {len(installed)} installed programs')
+    coverage = json.loads((ROOT / 'docs/roadmap-coverage.json').read_text())
+    print(f'PASS: roadmap coverage: {coverage["step_count"]} steps, '
+          f'{len(coverage["components"])} components, {len(coverage["requirements"])} requirements')
 
 
 if __name__ == '__main__':
