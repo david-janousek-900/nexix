@@ -1,6 +1,6 @@
 # Native V7 userland (step 16)
 
-Nexix builds retained V7 init, Bourne shell, echo, cat, ls, pwd, cp, ln and rm
+Nexix builds retained V7 init, Bourne shell, echo, cat, ls, pwd, cp, ln, rm, date and touch
 as static x86_64 ELF executables using Nexix startup code and libc. Active
 sources are in `user/v7`; the original `reference/v7` tree is unchanged.
 
@@ -10,7 +10,7 @@ An installed x86_64-elf toolchain can use the default prefix instead.
 No host libc or dynamic loader is used.
 
 Libc now provides unbuffered file streams, integer formatted output, heap
-allocation, qsort, atoi, execl/execvp, alarm-based sleep and UTC ctime.
+allocation, qsort, atoi, execl/execvp, alarm-based sleep and timezone-aware time conversion (see [time.md](time.md)).
 Formatting supports the integer and string forms used by these sources,
 including historical %D/%O. Floating point formatting and a full standard C
 library are pending. setbuf does not enable buffering. The allocator reuses

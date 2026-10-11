@@ -44,7 +44,7 @@ def exchange(line, expected, raw=False):
 try:
     exchange(None, re.compile(rb'NEXIX_INIT_PID1\r\nNEXIX_BOOT_OK\r\n# '))
     reply = exchange(b'echo NEXIX_INIT_CHILD_$$; pwd; ls /bin',
-                     re.compile(rb'\r\nNEXIX_INIT_CHILD_2\r\n/\r\ncat\r\ncp\r\necho\r\nln\r\nls\r\npwd\r\nrm\r\nsh\r\n# '))
+                     re.compile(rb'\r\nNEXIX_INIT_CHILD_2\r\n/\r\ncat\r\ncp\r\ndate\r\necho\r\nln\r\nls\r\npwd\r\nrm\r\nsh\r\ntouch\r\n# '))
     # A copied executable has no embedded-catalog entry: it must be read from disk.
     exchange(b'echo disk > /tmp/boot-file; cat /tmp/boot-file; cp /bin/echo /tmp/disk-echo; /tmp/disk-echo NEXIX_DISK_EXEC; rm /tmp/boot-file /tmp/disk-echo; echo NEXIX_BOOT_WRITE_OK',
              re.compile(rb'\r\ndisk\r\nNEXIX_DISK_EXEC\r\nNEXIX_BOOT_WRITE_OK\r\n# '))

@@ -84,7 +84,7 @@ try:
         seed = Path('build/root.img').read_bytes()
         disk.write_bytes(seed)
         boot(disk, [
-            ('echo persisted > /tmp/data; ln /tmp/data /tmp/link; cp /bin/echo /tmp/exec; echo STORED', response('STORED')),
+            ('echo persisted > /tmp/data; touch /tmp/data; ln /tmp/data /tmp/link; cp /bin/echo /tmp/exec; echo STORED', response('STORED')),
             # >10 sectors exercises the single-indirect map on the real device.
             ('cp /bin/sh /tmp/large; echo LARGE', response('LARGE')),
         ])
@@ -96,7 +96,7 @@ try:
         boot(disk, [
             ('cat /tmp/data; cat /tmp/link; /tmp/exec DISK_EXEC', rb'\r\npersisted\r\npersisted\r\nDISK_EXEC\r\n# '),
             ('/tmp/large -c "echo INDIRECT_EXEC"', response('INDIRECT_EXEC')),
-            ('echo updated >> /tmp/link; rm /tmp/data /tmp/exec /tmp/large; echo CHANGED', response('CHANGED')),
+            ('echo updated >> /tmp/link; touch /tmp/link; rm /tmp/data /tmp/exec /tmp/large; echo CHANGED', response('CHANGED')),
         ], rtc='2024-03-01T12:34:56')
         updated = inode_times(disk, 'link')
         if not all(1709296496 <= value <= 1709296526 for value in updated):

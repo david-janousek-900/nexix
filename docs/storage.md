@@ -59,3 +59,9 @@ and flush failures. These checks are part of `make test`.
 
 The emulator command and identify-bit definitions can be checked against the
 [QEMU IDE implementation](https://github.com/qemu/qemu/blob/master/hw/ide/core.c).
+
+`DISK_IMAGE` selects the working image (default `build/nexix.img`). For example,
+`make TOOLCHAIN_PREFIX= DISK_IMAGE=build/nexix-step24.img run` creates a separate
+root with the latest packaged programs if that path does not exist. The disk
+rule never replaces an existing image. Rebuilding updates the root seed and
+kernel, not the files on an existing persistent root.

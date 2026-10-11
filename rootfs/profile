@@ -1,3 +1,4 @@
 PATH=/bin
 HOME=/
-export PATH HOME
+TZ=GMT0
+export PATH HOME TZ

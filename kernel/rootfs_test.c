@@ -16,7 +16,7 @@ void rootfs_selftest(void)
     size_t length=(uintptr_t)_binary_build_root_img_end-(uintptr_t)_binary_build_root_img_start;
     REQUIRE(ramdisk_init(&root_ram,_binary_build_root_img_start,length,true)==0);
     REQUIRE(v7fs_mount(&root_fs,&root_ram.device,true)==0);
-    const char *paths[]={"/etc/init","/bin/sh","/bin/echo","/bin/cat","/bin/ls","/bin/pwd","/bin/cp","/bin/ln","/bin/rm"};
+    const char *paths[]={"/etc/init","/bin/sh","/bin/echo","/bin/cat","/bin/ls","/bin/pwd","/bin/cp","/bin/ln","/bin/rm","/bin/date","/bin/touch"};
     for(unsigned i=0;i<sizeof(paths)/sizeof(paths[0]);++i){
         v7_ino_t ino;struct v7fs_inode node;size_t done;
         REQUIRE(v7fs_lookup(&root_fs,2,paths[i],&ino)==0);

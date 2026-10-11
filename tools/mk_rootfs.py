@@ -3,7 +3,7 @@ import argparse
 from pathlib import Path
 from mk_v7fs import Image, DIR, REG, CHR
 
-COMMANDS = ('sh', 'echo', 'cat', 'ls', 'pwd', 'cp', 'ln', 'rm')
+COMMANDS = ('sh', 'echo', 'cat', 'ls', 'pwd', 'cp', 'ln', 'rm', 'date', 'touch')
 
 def build(blocks, programs, config):
     image = Image(blocks)
@@ -59,7 +59,7 @@ def main():
         args.output.write_bytes(data)
     except (OSError, ValueError) as error:
         parser.error(str(error))
-    print(f'Built {args.output}: {len(data)//512} V7 blocks, init, shell and 7 utilities')
+    print(f'Built {args.output}: {len(data)//512} V7 blocks, init, shell and {len(COMMANDS)-1} utilities')
 
 if __name__ == '__main__':
     main()

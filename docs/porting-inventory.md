@@ -11,7 +11,7 @@ contains 1,121 files and its original 174 component records. The full audit adds
 installed scripts, additional games, the root diagnostic source, kernel/boot
 references, and supporting-data groups. All archive contents are preserved.
 
-Only **init, sh, echo, cat, ls, pwd, cp, ln and rm** are installed native ports.
+**init, sh, echo, cat, ls, pwd, cp, ln, rm, date and touch** are installed native ports.
 Native libc is partial. The archive's **213 installed program paths** are listed
 separately; scripts and old executables in reference/v7 are not installed Nexix
 ports. **13 binary-only program components** are blocked pending source recovery
@@ -190,7 +190,7 @@ their sources alone does not provide a working native equivalent.
 | `kernel-abi` | partial | File/process/TTY syscalls exist; mount administration, accounting, tracing, profiling and complete device interfaces need auditing. |
 | `floating-point` | missing | Native user FP state isolation and full floating-point libc support are not implemented. |
 | `wall-clock` | supplied | RTC initializes the UTC system clock; inode timestamps and sync superblock time use that clock and persist in the existing V7 disk encoding. |
-| `timezone` | missing | UTC-only ctime currently; configurable TZ and local-time/DST conversion are step 24. |
+| `timezone` | supplied | Native time conversion and configurable TZ support fixed offsets, one-hour DST, explicit M rules and historical V7 US defaults; see time.md for the supported grammar. |
 | `accounts` | partial | `/etc/passwd`, `/etc/group` |
 | `multi-tty` | partial | Current UART and line discipline provide one shared COM1 console; independent COM2 and login terminals are pending. |
 | `accounting` | partial | `/etc/utmp`, `/usr/adm/wtmp` |

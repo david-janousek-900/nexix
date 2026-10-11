@@ -87,10 +87,15 @@
     {
       "id": "timezone",
       "category": "libc",
-      "status": "missing",
-      "description": "UTC-only ctime currently; configurable TZ and local-time/DST conversion are step 24.",
+      "status": "supplied",
+      "description": "Native gmtime/localtime/asctime/ctime, V7 timezone/ftime, and configurable TZ: fixed offsets, one-hour DST with M rules or historical V7 US defaults; unsupported TZ falls back to GMT.",
       "evidence": [
-        "libc/time.c"
+        "libc/time.c",
+        "libc/include/time.h",
+        "libc/include/sys/timeb.h",
+        "rootfs/profile",
+        "tests/time.c",
+        "tools/time_smoke.py"
       ],
       "locations": []
     },
@@ -3974,14 +3979,16 @@
           "name": "date",
           "install": "/bin/date",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "reference/v7/usr/src/cmd/cmake",
+            "user/v7/cmd/date.c",
+            "tools/time_smoke.py"
           ]
         }
       ],
       "priority": 1,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -4047,11 +4054,9 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
+      "blockers": [],
       "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
+        "Supported TZ grammar and native date year window are documented in docs/time.md; broader timezone database support is outside step 24."
       ],
       "acceptance": [
         "Display fixed RTC-derived dates in UTC/local time; permit root clock setting only.",
@@ -15709,14 +15714,16 @@
           "name": "touch",
           "install": "/bin/touch",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "reference/v7/usr/src/cmd/cmake",
+            "user/v7/cmd/touch.c",
+            "tools/time_smoke.py"
           ]
         }
       ],
       "priority": 1,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -15769,11 +15776,9 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
+      "blockers": [],
       "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
+        "Preserve reference touch diagnostics and read/rewrite semantics; modern touch options are not implemented."
       ],
       "acceptance": [
         "Update file times and verify stat plus cold-boot persistence.",

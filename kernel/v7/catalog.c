@@ -14,7 +14,11 @@ extern const uint8_t _binary_build_v7_pwd_elf_start[], _binary_build_v7_pwd_elf_
 extern const uint8_t _binary_build_v7_cp_elf_start[], _binary_build_v7_cp_elf_end[];
 extern const uint8_t _binary_build_v7_ln_elf_start[], _binary_build_v7_ln_elf_end[];
 extern const uint8_t _binary_build_v7_rm_elf_start[], _binary_build_v7_rm_elf_end[];
+extern const uint8_t _binary_build_v7_date_elf_start[], _binary_build_v7_date_elf_end[];
+extern const uint8_t _binary_build_v7_touch_elf_start[], _binary_build_v7_touch_elf_end[];
 static const struct embedded_program catalog[] = {
+    {"/bin/date", _binary_build_v7_date_elf_start, _binary_build_v7_date_elf_end},
+    {"/bin/touch", _binary_build_v7_touch_elf_start, _binary_build_v7_touch_elf_end},
     {"/bin/exec-test", _binary_build_exec_test_elf_start, _binary_build_exec_test_elf_end},
     {"/bin/libc-test", _binary_build_libc_test_elf_start, _binary_build_libc_test_elf_end},
     {"/bin/files-test", _binary_build_files_test_elf_start, _binary_build_files_test_elf_end},

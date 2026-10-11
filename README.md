@@ -18,7 +18,7 @@ File descriptors support regular files, directories, links, pipes, permissions
 and descriptor ownership across fork/exec/exit. COM1 provides cooked editing,
 raw/cbreak modes, echo, flow control and controlling-terminal signals.
 
-Native libc supports the retained V7 init, shell and seven utilities. Signals,
+Native libc supports the retained V7 init, shell and nine utilities. Signals,
 alarms, brk/sbrk, credentials, process groups and time calls supply their basic
 services. The original V7 reference sources and historical disk encodings are
 preserved. `make run` keeps root changes in `build/nexix.img` across boots.
@@ -106,8 +106,8 @@ starts that demo: type a line and Enter, use Backspace/Ctrl-U to edit, or type
 Version **0.1.0** targets multi-user startup, the full native V7 reference
 userland, RTC-based time and correct persistent file timestamps. Steps 1–20
 provide the implemented foundation. Step 21 completes the full-distribution inventory and step 22 initializes time
-from RTC at boot. Step 23 maintains persistent V7 file timestamps; steps 24–29
-remain pending. Regression tests accompany implementation.
+from RTC at boot. Step 23 maintains persistent V7 file timestamps and step 24 adds timezone
+support plus date/touch; steps 25–29 remain pending. Regression tests accompany implementation.
 See the [porting inventory](docs/porting-inventory.md) for priorities, dependencies
 and missing inputs.
 
@@ -135,7 +135,7 @@ and missing inputs.
     libraries, supporting data and binary-only program blockers.
 22. Initialize the UTC system clock from RTC at boot (implemented).
 23. Maintain and persist V7 access, modification and inode-change timestamps (implemented).
-24. Add timezone-aware libc, configurable TZ, date and touch.
+24. Add timezone-aware libc, configurable TZ, date and touch (implemented).
 25. Complete required kernel/libc interfaces and floating-point support.
 26. Provide independent COM1 and COM2 terminals.
 27. Boot multi-user init with getty/login, authentication and accounting.
@@ -155,7 +155,7 @@ the first release. See [architecture notes](docs/architecture.md) and
 [source provenance](reference/README.md).
 
 `make TOOLCHAIN_PREFIX= v7-userland` builds V7 init, the Bourne shell and
-seven utilities as native ELF64 executables. `make TOOLCHAIN_PREFIX= test-v7`
+nine utilities as native ELF64 executables. `make TOOLCHAIN_PREFIX= test-v7`
 tests the rebuilt shell and utilities in QEMU with 16 MiB and 128 MiB RAM.
 Normal boot now launches init as PID 1 and runs its single-user shell. See [V7 userland](docs/userland.md).
 
@@ -172,7 +172,7 @@ The boot RTC is interpreted as UTC; `make run` explicitly uses QEMU
 and `NEXIX_RTC_OK`. Invalid or unavailable RTC data produces an explicit warning
 and leaves the clock at the UNIX epoch plus elapsed ticks. Time continues from
 the PIT after initialization; `stime` changes the system clock without writing
-the RTC. Automatic V7 file timestamps are implemented; timezone conversion follows in step 24.
+the RTC. Automatic V7 file timestamps and configurable timezone conversion are implemented.
 
 Run `make TOOLCHAIN_PREFIX= test-rtc` to check RTC decoding and boot with a fixed
 UTC leap-day date. Details are in [validation](docs/validation.md).
@@ -188,3 +188,25 @@ Use `make TOOLCHAIN_PREFIX= test-storage` to verify RTC-derived timestamps and
 file changes survive three cold boots on disposable disks. Existing files with
 zero timestamps keep those values until the corresponding file operation updates
 them; new data writes set modification/change time, reads set access time.
+
+Step 24 adds V7 `date` and `touch`. To test the new packaged commands with a
+fresh persistent root while keeping the existing working disk:
+
+```sh
+make TOOLCHAIN_PREFIX= DISK_IMAGE=build/nexix-step24.img run
+```
+
+Inside Nexix:
+
+```sh
+date -u
+TZ=CET-1CEST,M3.5.0,M10.5.0/3; export TZ
+date
+touch /tmp/touched
+ls -l /tmp/touched
+```
+
+The default timezone is GMT; edit `rootfs/profile` to configure the default
+for newly generated roots. Existing disk contents are preserved across builds
+and do not automatically gain new executables or profile changes. See
+[time and timezone support](docs/time.md) for supported TZ syntax and V7 options.

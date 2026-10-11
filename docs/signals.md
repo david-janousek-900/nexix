@@ -88,7 +88,7 @@ it. CPU-usage priority decay remains pending.
 Time/stime use signed 64-bit seconds. The wall clock starts from the UTC RTC at boot
 and advances with PIT ticks; root can set it through stime. An invalid RTC
 falls back to epoch zero plus uptime with a boot diagnostic. Calendar/timezone
-libc functions remain pending. Alarms use monotonic PIT ticks independently of
+libc functions and configurable TZ are implemented in step 24; see [time.md](time.md). Alarms use monotonic PIT ticks independently of
 stime. Access uses real IDs, including directory search checks; open uses
 effective IDs. Chmod requires ownership or root; chown requires root. Chmod
 preserves the file type and restricts the sticky bit to root. Utimes are passed

@@ -167,6 +167,13 @@ static int services(int ro)
         _exit(0);
     }
     CHECK(reap(pid, 0));
+    pid = fork(); CHECK(pid >= 0);
+    if (!pid) {
+        if (setuid(123)) _exit(99);
+        execl("/bin/date", "date", "-u", "2403310100.00", (char *)0);
+        _exit(98);
+    }
+    CHECK(reap(pid, 1)); /* Native date must retain stime's root-only rule. */
     return 0;
 }
 int main(int argc, char **argv)

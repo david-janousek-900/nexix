@@ -190,7 +190,7 @@ with fresh writable roots and checks process/resource reclamation. See
 
 `make TOOLCHAIN_PREFIX= test-rootfs` checks the packaged root image on the host
 and boots QEMU at 16 MiB and 128 MiB. `NEXIX_ROOT_IMAGE_OK` and
-`NEXIX_ROOT_ELF_OK` confirm layout/device checks and loading all nine executables
+`NEXIX_ROOT_ELF_OK` confirm layout/device checks and loading all eleven executables
 read from the volume. Host tests check file bytes, directory link counts,
 complete block ownership/free-list accounting, spare inodes, reproducibility
 and insufficient-space rejection. See [root-image.md](root-image.md).
@@ -268,7 +268,7 @@ Reads run before timer IRQs are enabled and never alter RTC date registers.
 The RTC must hold UTC. QEMU's [RTC options](https://qemu-project.gitlab.io/qemu/system/invocation.html)
 provide UTC or fixed-date initialization. There is no ongoing resynchronization
 or RTC writeback in this step. Filesystem timestamp updates are implemented in
-step 23; timezone conversion remains step 24. V7 disk formats are unchanged.
+step 23; timezone conversion is implemented in step 24. V7 disk formats are unchanged.
 
 ## Step 23: persistent V7 timestamps
 
@@ -305,3 +305,25 @@ If input becomes unresponsive under `make run`, QEMU's monitor can be reached
 with Ctrl-A then C. Capture `info registers` and `info pic` before rebooting to
 help distinguish guest interrupt/scheduler failures from host terminal input
 problems. Ctrl-A then C returns to the guest terminal.
+
+## Step 24: timezone libc and V7 date/touch
+
+`make TOOLCHAIN_PREFIX= test-time` checks native time conversion against fixed
+calendar values: epoch and negative times, leap days/centuries, fractional-hour
+offsets, northern/southern DST transitions, V7 US 1974/1975 exceptions, TZ
+changes, malformed TZ fallback and ftime fields. The host harness renames the
+native symbols so its checks cannot accidentally call host time conversion.
+
+QEMU IDE-root acceptance runs at 16M/128M with a fixed RTC. It checks `date -u`,
+local timezone names, spring DST, root date setting, omitted date fields, 24:00
+rollover, malformed-input status, `touch` creation/read-rewrite/content retention
+and `-c` diagnostics. An independent decoder validates native wtmp old/new
+time-setting records. Logs are `build/time-16M.log` and `build/time-128M.log`.
+`test-signals` also executes native `date` under an unprivileged UID and requires
+exit status 1. `test-storage` now touches files on two consecutive cold boots
+and verifies their timestamps and contents survive the third.
+
+`test-root-image` verifies all eleven native executables against their ELF files;
+`test-boot` checks normal shell startup and the expanded /bin listing. Existing
+IDE disks retain their previous userland. A separate `DISK_IMAGE` selects a new
+root without replacing the working disk; full disk upgrades remain step 29.

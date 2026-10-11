@@ -62,7 +62,7 @@ class Inventory(unittest.TestCase):
         self.reject('unsafe path ../outside.c')
 
     def test_implemented_status_must_match_packaging(self):
-        self.entry('cmd.date')['outputs'][0]['status'] = 'implemented'
+        self.entry('cmd.echo')['outputs'][0]['name'] = 'inventory-unpackaged-command'
         self.reject('implemented output drift')
 
     def test_missing_external_requirement_is_visible(self):
