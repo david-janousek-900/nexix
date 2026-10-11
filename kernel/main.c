@@ -179,6 +179,7 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
     tty_selftest(test);
     signals_selftest();
     v7_userland_selftest();
+    rootfs_selftest();
     serial_puts("NEXIX_BOOT_OK\r\n");
     for (;;)
         __asm__ volatile ("sti; hlt" : : : "memory");

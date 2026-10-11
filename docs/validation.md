@@ -185,3 +185,12 @@ Required markers are `NEXIX_V7_INIT_ELF_OK`, `NEXIX_V7_USER_PROGRAM_OK`,
 the shell and utilities are actually executed at CPL3. The fixture runs twice
 with fresh writable roots and checks process/resource reclamation. See
 [userland.md](userland.md) for coverage and remaining startup work.
+
+## Step 17 acceptance
+
+`make TOOLCHAIN_PREFIX= test-rootfs` checks the packaged root image on the host
+and boots QEMU at 16 MiB and 128 MiB. `NEXIX_ROOT_IMAGE_OK` and
+`NEXIX_ROOT_ELF_OK` confirm layout/device checks and loading all nine executables
+read from the volume. Host tests check file bytes, directory link counts,
+complete block ownership/free-list accounting, spare inodes, reproducibility
+and insufficient-space rejection. See [root-image.md](root-image.md).

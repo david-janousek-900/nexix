@@ -30,6 +30,6 @@ The test is also included in `make TOOLCHAIN_PREFIX= test`.
 For this acceptance stage, executable images are embedded in the kernel and
 resolved through its temporary exec catalog. Directory listings still show the
 small filesystem fixture rather than the executable catalog. Step 17 packages
-programs into a root filesystem; step 18 mounts it and launches init as PID 1;
+programs into `build/root.img`; see [root-image.md](root-image.md); step 18 mounts it and launches init as PID 1;
 step 19 verifies interactive operation. Normal boot still runs self-tests and
 idles. The rebuilt init lifecycle is not yet exercised as PID 1.

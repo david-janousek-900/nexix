@@ -11,7 +11,7 @@ mode = sys.argv[3] if len(sys.argv) > 3 else "boot"
 user_faults = {"user-kernel": (14, 5), "user-ro": (14, 7), "user-nx": (14, 21),
                "user-priv": (13, 0), "user-io": (13, 0), "user-int": (13, 258),
                "user-df": (8, 0)}
-if mode not in ("boot", "process", "syscall", "exec", "libc", "fs", "files", "signals", "v7", "tty", "tty-demo", "ud", "pf", "memory", "wp", "nx", "unmap", "null",
+if mode not in ("boot", "process", "syscall", "exec", "libc", "fs", "files", "signals", "v7", "rootfs", "tty", "tty-demo", "ud", "pf", "memory", "wp", "nx", "unmap", "null",
                 "paging-oom", "protect", "user-bad-stack") and mode not in user_faults:
     sys.exit("FAIL: unknown smoke mode")
 ram = sys.argv[4] if len(sys.argv) > 4 else "128M"
@@ -69,12 +69,12 @@ else:
             process.kill()
             output, _ = process.communicate()
 log = Path("build") / (f"memory-{ram}.log" if mode == "memory" else
-                        f"{mode}-{ram}.log" if mode in ("process", "syscall", "exec", "libc", "fs", "files", "signals", "v7", "tty", "tty-demo") else f"{mode}.log")
+                        f"{mode}-{ram}.log" if mode in ("process", "syscall", "exec", "libc", "fs", "files", "signals", "v7", "rootfs", "tty", "tty-demo") else f"{mode}.log")
 log.write_bytes(output)
 sys.stdout.buffer.write(output)
 if exited_early:
     sys.exit(f"FAIL: QEMU exited unexpectedly ({process.returncode}); see {log}")
-if mode in ("boot", "process", "syscall", "exec", "libc", "fs", "files", "signals", "v7", "tty", "tty-demo", "memory", "paging-oom", "user-bad-stack"):
+if mode in ("boot", "process", "syscall", "exec", "libc", "fs", "files", "signals", "v7", "rootfs", "tty", "tty-demo", "memory", "paging-oom", "user-bad-stack"):
     if (b"NEXIX_BOOT_OK\r\n" not in output or b"NEXIX_TIMER_OK\r\n" not in output
             or b"NEXIX_MEMORY_OK\r\n" not in output
             or b"NEXIX_PAGING_OK\r\n" not in output or b"PANIC" in output
@@ -111,6 +111,9 @@ if mode in ("boot", "process", "syscall", "exec", "libc", "fs", "files", "signal
     if any(f"{marker}\r\n".encode() not in output for marker in
            ("NEXIX_V7_INIT_ELF_OK", "NEXIX_V7_USER_PROGRAM_OK", "NEXIX_V7_SHELL_OK", "NEXIX_V7_UTILITIES_OK", "NEXIX_V7_USERLAND_CLEANUP_OK")):
         sys.exit(f"FAIL: rebuilt V7 userland check failed; see {log}")
+    if any(f"{marker}\r\n".encode() not in output for marker in
+           ("NEXIX_ROOT_IMAGE_OK", "NEXIX_ROOT_ELF_OK")):
+        sys.exit(f"FAIL: packaged root image check failed; see {log}")
     if mode == "tty" and (replies or b"NEXIX_TTY_UART_OK\r\n" not in output
                            or b"NEXIX_TTY_UART_USER_OK\r\n" not in output
                            or b"NEXIX_TTY_UART_RESUMED\r\n" not in output
@@ -126,7 +129,7 @@ if mode in ("boot", "process", "syscall", "exec", "libc", "fs", "files", "signal
         sys.exit(f"FAIL: page-table allocation rollback failed; see {log}")
     if mode == "user-bad-stack" and b"NEXIX_USER_BAD_STACK_OK\r\n" not in output:
         sys.exit(f"FAIL: TSS handoff with unusable user stack failed; see {log}")
-    print("PASS: boot, scheduling, fork/exit/wait, native syscalls, user copies, ELF exec, native libc, V7 filesystem, file descriptors, pipes, serial TTY, signals, heap, init services, and rebuilt V7 userland")
+    print("PASS: boot, scheduling, fork/exit/wait, native syscalls, user copies, ELF exec, native libc, V7 filesystem, file descriptors, pipes, serial TTY, signals, heap, init services, rebuilt V7 userland, and packaged root image")
 elif mode in user_faults:
     vector, error = user_faults[mode]
     fault = re.search(rb"exception vector=(0x[0-9a-f]{16}) error=(0x[0-9a-f]{16})"

@@ -344,3 +344,26 @@ test-v7: iso
 build/nexix.elf: $(V7_IMAGES)
 
 .SECONDARY: $(addprefix build/v7-,$(addsuffix .o,$(V7_COMMANDS)))
+
+# Packaged 0.1.0 root, separate from the filesystem regression fixture.
+.PHONY: rootfs test-rootfs
+rootfs: build/root.img
+build/root.img: tools/mk_rootfs.py tools/mk_v7fs.py $(V7_ELFS) rootfs/etc/rc rootfs/etc/ttys rootfs/etc/passwd rootfs/profile
+	$(PYTHON) tools/mk_rootfs.py --output $@
+build/boot_root_image.o: build/root.img
+	$(LD) -r -b binary $< -o build/boot_root_raw.o
+	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/boot_root_raw.o $@
+build/rootfs_test.o: kernel/rootfs_test.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+OBJECTS += build/boot_root_image.o build/rootfs_test.o
+build/nexix.elf: build/boot_root_image.o build/rootfs_test.o
+-include build/rootfs_test.d
+test-rootfs: iso test-root-image
+	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso rootfs 16M
+	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso rootfs 128M
+test: test-rootfs
+
+.PHONY: test-root-image
+test-root-image: build/root.img
+	$(PYTHON) tests/root_image.py
+test-unit: test-root-image

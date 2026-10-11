@@ -126,7 +126,7 @@ starts that demo: type a line and Enter, use Backspace/Ctrl-U to edit, or type
 
 ## Roadmap
 
-Version **0.1.0** covers these 20 steps. Steps 1–16 are implemented; step 17
+Version **0.1.0** covers these 20 steps. Steps 1–17 are implemented; step 18
 is next. Regression tests accompany implementation throughout the roadmap.
 
 1. Import V7 sources and preserve licensing.
@@ -163,3 +163,8 @@ seven utilities as native ELF64 executables. `make TOOLCHAIN_PREFIX= test-v7`
 tests the rebuilt shell and utilities in QEMU with 16 MiB and 128 MiB RAM.
 Init is built and checked by the ELF loader; launching it as PID 1 follows in
 step 18. See [V7 userland](docs/userland.md).
+
+`make TOOLCHAIN_PREFIX= rootfs` packages the programs and startup files into
+`build/root.img`. `make TOOLCHAIN_PREFIX= test-rootfs` validates the image on
+the host and in QEMU. See [root image](docs/root-image.md). Permanent root
+mounting and PID 1 startup are the next step.

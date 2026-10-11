@@ -17,8 +17,8 @@ The build generates `build/root-test.img`, a 1024-block (512 KiB) V7 filesystem
 fixture, and embeds its immutable bytes in the kernel. The boot test copies it
 into writable RAM, mounts it temporarily, tests it, then unmounts it. This is the
 RAM root-device foundation; normal boot does not yet mount a permanent root or
-launch init. Step 17 builds the init/shell root image and step 18 mounts it for
-PID 1. The fixture itself is not a bootable V7 userland distribution.
+launch init. Step 17 now builds the init/shell root image; see [root-image.md](root-image.md).
+Step 18 mounts it for PID 1. The fixture itself is not a bootable V7 userland distribution.
 
 The fixture contains root, bin, tmp and dev directories; a greeting file;
 patterned data spanning direct, single and double indirection; a sparse file
