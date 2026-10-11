@@ -228,7 +228,7 @@ build/fs_test.o: kernel/fs_test.c | build
 test-fs: check build/test-selftest.iso
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso fs 16M
 
-build/filesystem-test: tests/filesystem.c kernel/block.c kernel/v7/fs.c kernel/include/block.h kernel/include/v7/fs.h kernel/include/v7/disk.h kernel/include/v7/types.h kernel/include/v7/constants.h include/nexix/errno.h | build
+build/filesystem-test: tests/filesystem.c kernel/block.c kernel/v7/fs.c kernel/include/clock.h kernel/include/block.h kernel/include/v7/fs.h kernel/include/v7/disk.h kernel/include/v7/types.h kernel/include/v7/constants.h include/nexix/errno.h | build
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/filesystem.c kernel/block.c kernel/v7/fs.c -o $@
 
 # Step 13: production file syscalls exercised by a native C executable.

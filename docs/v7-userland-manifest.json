@@ -73,13 +73,14 @@
     {
       "id": "wall-clock",
       "category": "kernel",
-      "status": "partial",
-      "description": "UTC wall clock is initialized from RTC at boot and advances with PIT ticks; ordinary inode timestamp updates remain pending step 23.",
+      "status": "supplied",
+      "description": "UTC wall clock is initialized from RTC at boot; V7 inode timestamps and sync superblock time use the system clock and persist in the existing disk encoding.",
       "evidence": [
         "kernel/clock.c",
         "kernel/arch/x86_64/rtc.c",
         "kernel/v7/syscall.c",
-        "kernel/v7/files.c"
+        "kernel/v7/files.c",
+        "kernel/v7/fs.c"
       ],
       "locations": []
     },

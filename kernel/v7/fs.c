@@ -1,6 +1,7 @@
 /* Native adaptation of V7 alloc.c, subr.c bmap, iget.c, rdwri.c and nami.c.
  * Original source and license are retained under reference/. */
 #include "v7/fs.h"
+#include "clock.h"
 #include <nexix/errno.h>
 static void copy(void *to, const void *from, size_t n)
 {
@@ -85,6 +86,33 @@ static int inode_put(struct v7fs *fs, const struct v7fs_inode *inode)
     for (unsigned i = 0; i < V7_NADDR; ++i)
         if (!v7_disk_putaddr(disk->addr + i * 3, inode->addr[i])) return -NX_EIO;
     return write_block(fs, v7_itod(inode->number), bytes);
+}
+/* Preserve the existing 32-bit V7 disk encoding (low 32 epoch bits). */
+static uint32_t disk_time(void) { return (uint32_t)clock_now(); }
+int v7fs_touch(struct v7fs *fs, v7_ino_t ino, unsigned flags)
+{
+    int error = ready(fs, false);
+    if (error) return error;
+    if (fs->read_only) return 0; /* V7 iupdat skips read-only mounts. */
+    struct v7fs_inode inode;
+    error = v7fs_inode_get(fs, ino, &inode);
+    if (error) return error;
+    uint32_t now = disk_time();
+    bool changed = false;
+    if ((flags & V7FS_ATIME) && inode.atime != now) { inode.atime = now; changed = true; }
+    if ((flags & V7FS_MTIME) && inode.mtime != now) { inode.mtime = now; changed = true; }
+    if ((flags & V7FS_CTIME) && inode.ctime != now) { inode.ctime = now; changed = true; }
+    return changed ? inode_put(fs, &inode) : 0;
+}
+int v7fs_sync(struct v7fs *fs)
+{
+    int error = ready(fs, false);
+    if (error || fs->read_only) return error;
+    struct v7_disk_super next = fs->super;
+    v7_disk_put32(next.time, disk_time());
+    error = write_block(fs, V7_SUPERB, &next);
+    if (!error) fs->super = next;
+    return error;
 }
 static int free_stack(struct v7fs *fs, unsigned count, const uint8_t *entries)
 {
@@ -250,7 +278,7 @@ static int bmap(struct v7fs *fs, struct v7fs_inode *inode, uint32_t logical, boo
     *result = block;
     return 0;
 }
-int v7fs_read(struct v7fs *fs, v7_ino_t number, int64_t offset, void *buffer, size_t count, size_t *done)
+static int read_file(struct v7fs *fs, v7_ino_t number, int64_t offset, void *buffer, size_t count, size_t *done)
 {
     if (!done) return -NX_EINVAL;
     *done = 0;
@@ -277,6 +305,19 @@ int v7fs_read(struct v7fs *fs, v7_ino_t number, int64_t offset, void *buffer, si
         *done += n; offset += n;
     }
     return 0;
+}
+int v7fs_read(struct v7fs *fs, v7_ino_t ino, int64_t off, void *buf, size_t n, size_t *done)
+{
+    if (!done) return -NX_EINVAL;
+    *done = 0;
+    if (off < 0 || (n && !buf)) return -NX_EINVAL;
+    /* Like readi: a nonempty read marks access even at EOF. Namespace scans
+     * use read_file directly, like namei's bread, and do not mark access. */
+    if (n) {
+        int error = v7fs_touch(fs, ino, V7FS_ATIME);
+        if (error) return error;
+    }
+    return read_file(fs, ino, off, buf, n, done);
 }
 static int write_file(struct v7fs *fs, v7_ino_t number, int64_t offset, const void *buffer, size_t count, size_t *done, bool directory)
 {
@@ -316,11 +357,10 @@ static int write_file(struct v7fs *fs, v7_ino_t number, int64_t offset, const vo
         error = write_block(fs, block, bytes);
         if (error) return error;
         offset += n; *done += n;
-        if ((uint64_t)offset > inode.size) {
-            inode.size = offset;
-            error = inode_put(fs, &inode);
-            if (error) return error;
-        }
+        if ((uint64_t)offset > inode.size) inode.size = offset;
+        inode.mtime = inode.ctime = disk_time();
+        error = inode_put(fs, &inode);
+        if (error) return error;
     }
     return 0;
 }
@@ -348,7 +388,7 @@ static int lookup(struct v7fs *fs, v7_ino_t cwd, const char *path, v7_ino_t *res
         bool found = false;
         for (uint32_t offset = 0; offset < inode.size; offset += sizeof(entry)) {
             size_t done;
-            error = v7fs_read(fs, current, offset, &entry, sizeof(entry), &done);
+            error = read_file(fs, current, offset, &entry, sizeof(entry), &done);
             if (error) return error;
             if (done != sizeof(entry)) return -NX_EIO;
             unsigned i = 0;
@@ -405,6 +445,7 @@ int v7fs_truncate(struct v7fs *fs, v7_ino_t ino)
     uint32_t roots[V7_NADDR];
     copy(roots, inode.addr, sizeof(roots));
     clear(inode.addr, sizeof(inode.addr)); inode.size = 0;
+    inode.mtime = inode.ctime = disk_time();
     error = inode_put(fs, &inode);
     if (error) return error;
     for (unsigned i = 0; i < V7_NADDR; ++i) {
@@ -441,7 +482,7 @@ static int directory_slot(struct v7fs *fs, v7_ino_t parent, const char name[V7_D
     *offset = dir.size; *number = 0;
     for (uint32_t pos = 0; pos < dir.size; pos += 16) {
         struct v7_disk_direct entry; size_t done;
-        error = v7fs_read(fs, parent, pos, &entry, sizeof(entry), &done);
+        error = read_file(fs, parent, pos, &entry, sizeof(entry), &done);
         if (error) return error;
         if (done != sizeof(entry)) return -NX_EIO;
         v7_ino_t ino = v7_disk_u16(entry.ino);
@@ -478,6 +519,8 @@ int v7fs_create(struct v7fs *fs, v7_ino_t parent, const char name[V7_DIRSIZ],
         if (v7_disk_u16(disk->mode)) continue;
         clear(disk, sizeof(*disk)); v7_disk_put16(disk->mode, V7_IFREG | (mode & 07777));
         v7_disk_put16(disk->nlink, 1); v7_disk_put16(disk->uid, uid); v7_disk_put16(disk->gid, gid);
+        uint32_t now = disk_time();
+        v7_disk_put32(disk->atime, now); v7_disk_put32(disk->mtime, now); v7_disk_put32(disk->ctime, now);
         error = write_block(fs, v7_itod(number), bytes);
         if (error) return error;
         unsigned total = v7_disk_u16(fs->super.tinode);
@@ -513,7 +556,7 @@ int v7fs_link(struct v7fs *fs, v7_ino_t ino, v7_ino_t parent, const char name[V7
     error = directory_slot(fs, parent, name, &pos, &existing);
     if (error) return error;
     if (existing) return -NX_EEXIST;
-    ++inode.nlink; error = inode_put(fs, &inode);
+    ++inode.nlink; inode.ctime = disk_time(); error = inode_put(fs, &inode);
     if (!error) error = insert(fs, parent, pos, name, ino);
     if (error && !fs->failed) { --inode.nlink; (void)inode_put(fs, &inode); }
     return error;
@@ -534,7 +577,7 @@ int v7fs_unlink(struct v7fs *fs, v7_ino_t parent, const char name[V7_DIRSIZ], v7
     if (!inode.nlink) return -NX_EIO;
     error = insert(fs, parent, pos, name, 0);
     if (error) return error;
-    --inode.nlink; error = inode_put(fs, &inode);
+    --inode.nlink; inode.ctime = disk_time(); error = inode_put(fs, &inode);
     if (!error) *out = ino;
     return error;
 }
@@ -548,6 +591,6 @@ int v7fs_metadata(struct v7fs *fs, const struct v7fs_inode *value)
     if (error) return error;
     if ((disk.mode & V7_IFMT) != (value->mode & V7_IFMT)) return -NX_EINVAL;
     disk.mode = value->mode; disk.uid = value->uid; disk.gid = value->gid;
-    disk.atime = value->atime; disk.mtime = value->mtime; disk.ctime = value->ctime;
+    disk.atime = value->atime; disk.mtime = value->mtime; disk.ctime = disk_time();
     return inode_put(fs, &disk);
 }

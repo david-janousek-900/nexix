@@ -262,12 +262,26 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
     if (!user_access_ok(vm, address, count, !write)) return -NX_EFAULT;
     struct file *f = u->u_ofile[fd];
     if (f->f_flag & V7_FPIPE) return pipe_io(f, address, count, write);
-    if (f->f_private) return tty_io(f->f_private, vm, address, count, write);
+    if (f->f_private) {
+        /* V7 readi/writei also stamp character-device inodes. Pipes have no
+         * persistent inode. Keep the established zero-count TTY behavior. */
+        if (write || count) {
+            int error = v7fs_touch(root, f->f_inode->i_number,
+                write ? V7FS_MTIME | V7FS_CTIME : V7FS_ATIME);
+            if (error) return error;
+        }
+        return tty_io(f->f_private, vm, address, count, write);
+    }
     struct v7fs_inode inode;
     int error = v7fs_inode_get(root, f->f_inode->i_number, &inode);
     if (error) return error;
-    if ((inode.mode & V7_IFMT) == V7_IFCHR && inode.addr[0] == NX_NULL_DEV)
+    if ((inode.mode & V7_IFMT) == V7_IFCHR && inode.addr[0] == NX_NULL_DEV) {
+        if (write || count) {
+            error = v7fs_touch(root, inode.number, write ? V7FS_MTIME | V7FS_CTIME : V7FS_ATIME);
+            if (error) return error;
+        }
         return write ? (int64_t)count : 0;
+    }
     if (write && (f->f_open_flags & NX_O_APPEND)) f->f_offset = inode.size;
     size_t done = 0; uint8_t bytes[512];
     while (done < count) {
@@ -309,7 +323,7 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
 {
     struct proc *p = proc_current(); struct user *u = p->p_user;
     uint64_t fd = args[0];
-    if (number == NX_SYS_SYNC) return root && root->failed ? -NX_EIO : 0; /* Write-through cache. */
+    if (number == NX_SYS_SYNC) return root ? v7fs_sync(root) : 0; /* Write-through cache plus V7 superblock time. */
     if (number == NX_SYS_ACCESS || number == NX_SYS_CHMOD || number == NX_SYS_CHOWN || number == NX_SYS_UTIME) {
         char path[256]; int error = path_copy(args[0], path); if (error) return error;
         if (!root) return -NX_ENODEV;

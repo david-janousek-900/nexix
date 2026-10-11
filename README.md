@@ -106,7 +106,8 @@ starts that demo: type a line and Enter, use Backspace/Ctrl-U to edit, or type
 Version **0.1.0** targets multi-user startup, the full native V7 reference
 userland, RTC-based time and correct persistent file timestamps. Steps 1–20
 provide the implemented foundation. Step 21 completes the full-distribution inventory and step 22 initializes time
-from RTC at boot; steps 23–29 remain pending. Regression tests accompany implementation.
+from RTC at boot. Step 23 maintains persistent V7 file timestamps; steps 24–29
+remain pending. Regression tests accompany implementation.
 See the [porting inventory](docs/porting-inventory.md) for priorities, dependencies
 and missing inputs.
 
@@ -133,7 +134,7 @@ and missing inputs.
 21. Preserve and inventory the full V7 distribution, including sources, scripts,
     libraries, supporting data and binary-only program blockers.
 22. Initialize the UTC system clock from RTC at boot (implemented).
-23. Maintain and persist V7 access, modification and inode-change timestamps.
+23. Maintain and persist V7 access, modification and inode-change timestamps (implemented).
 24. Add timezone-aware libc, configurable TZ, date and touch.
 25. Complete required kernel/libc interfaces and floating-point support.
 26. Provide independent COM1 and COM2 terminals.
@@ -171,7 +172,19 @@ The boot RTC is interpreted as UTC; `make run` explicitly uses QEMU
 and `NEXIX_RTC_OK`. Invalid or unavailable RTC data produces an explicit warning
 and leaves the clock at the UNIX epoch plus elapsed ticks. Time continues from
 the PIT after initialization; `stime` changes the system clock without writing
-the RTC. Timezone conversion and automatic file timestamps follow in steps 23–24.
+the RTC. Automatic V7 file timestamps are implemented; timezone conversion follows in step 24.
 
 Run `make TOOLCHAIN_PREFIX= test-rtc` to check RTC decoding and boot with a fixed
 UTC leap-day date. Details are in [validation](docs/validation.md).
+
+New files receive current access, modification and inode-change times. Try:
+
+```sh
+echo test > /tmp/test1.txt
+ls -l /tmp/test1.txt
+```
+
+Use `make TOOLCHAIN_PREFIX= test-storage` to verify RTC-derived timestamps and
+file changes survive three cold boots on disposable disks. Existing files with
+zero timestamps keep those values until the corresponding file operation updates
+them; new data writes set modification/change time, reads set access time.

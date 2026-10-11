@@ -94,7 +94,9 @@ effective IDs. Chmod requires ownership or root; chown requires root. Chmod
 preserves the file type and restricts the sticky bit to root. Utimes are passed
 as two native 64-bit seconds and must fit the disk's unsigned 32-bit fields.
 Metadata updates reject read-only mounts and preserve inode block ownership.
-Automatic access/modification/change timestamp maintenance remains pending.
+Automatic access/modification/change timestamps are maintained by step 23.
+Utime sets the requested atime/mtime and stamps ctime from the system clock;
+chmod and chown update ctime without changing atime/mtime.
 Sync is a successful no-op for the synchronous write-through cache, reporting
 EIO if its mounted filesystem has failed. These services have libc wrappers.
 

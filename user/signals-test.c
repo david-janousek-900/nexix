@@ -153,6 +153,7 @@ static int services(int ro)
         CHECK(utime("/hello", &times) == 0);
         CHECK(stat("/hello", &st) == 0 && (st.st_mode & 0777) == 0640 && st.st_uid == 123 && st.st_gid == 456);
         CHECK(st.st_atime == 100 && st.st_mtime == 200);
+        CHECK(st.st_ctime >= set && st.st_ctime <= time(0));
     }
     sync();
     pid_t pid = fork(); CHECK(pid >= 0);

@@ -4,6 +4,8 @@
 #include <string.h>
 #include "v7/fs.h"
 #include <nexix/errno.h>
+static int64_t now = 1709210096;
+int64_t clock_now(void) { return now; }
 static struct v7fs fs;
 static struct ramdisk ram;
 static uint8_t *image, *original;
@@ -240,7 +242,67 @@ int main(int argc, char **argv)
     assert(v7fs_unlink(&fs, 4, name, &ino) == -NX_EROFS);
     assert(v7fs_truncate(&fs, 5) == -NX_EROFS);
     assert(v7fs_unmount(&fs) == 0);
+    /* Deterministic clock: verify each V7 timestamp independently. */
+    reset(); now = 1709210096;
+    assert(v7fs_mount(&fs, &ram.device, false) == 0);
+    char timed[V7_DIRSIZ] = "timed", alias_time[V7_DIRSIZ] = "time-alias";
+    assert(v7fs_create(&fs, 4, timed, 0644, 12, 34, &ino) == 0);
+    assert(v7fs_inode_get(&fs, ino, &scratch) == 0);
+    assert(scratch.atime == now && scratch.mtime == now && scratch.ctime == now);
+    assert(v7_disk_u32(disk_inode(ino)->mtime) == now);
+    assert(v7fs_inode_get(&fs, 4, &scratch) == 0 && scratch.mtime == now && scratch.ctime == now);
+    uint32_t parent_access = scratch.atime;
+    ++now; v7_ino_t resolved;
+    assert(v7fs_lookup(&fs, 4, "timed", &resolved) == 0 && resolved == ino);
+    assert(v7fs_inode_get(&fs, 4, &scratch) == 0 && scratch.atime == parent_access);
+    assert(v7fs_write(&fs, ino, 0, "abc", 3, &done) == 0 && done == 3);
+    assert(v7fs_inode_get(&fs, ino, &scratch) == 0);
+    assert(scratch.atime == now-1 && scratch.mtime == now && scratch.ctime == now);
+    ++now;
+    assert(v7fs_write(&fs, ino, 0, "z", 1, &done) == 0 && done == 1);
+    assert(v7fs_inode_get(&fs, ino, &scratch) == 0 && scratch.mtime == now && scratch.ctime == now);
+    ++now;
+    assert(v7fs_read(&fs, ino, 0, buf, 1, &done) == 0 && done == 1 && buf[0] == 'z');
+    assert(v7fs_inode_get(&fs, ino, &scratch) == 0);
+    assert(scratch.atime == now && scratch.mtime == now-1 && scratch.ctime == now-1);
+    ++now;
+    assert(v7fs_read(&fs, ino, 100, buf, 1, &done) == 0 && done == 0);
+    assert(v7fs_inode_get(&fs, ino, &scratch) == 0 && scratch.atime == now);
+    ++now;
+    assert(v7fs_read(&fs, ino, 0, NULL, 0, &done) == 0 && done == 0);
+    assert(v7fs_write(&fs, ino, 0, NULL, 0, &done) == 0 && done == 0);
+    assert(v7fs_inode_get(&fs, ino, &scratch) == 0 && scratch.atime == now-1 && scratch.mtime == now-3);
+    uint32_t modified = scratch.mtime, accessed = scratch.atime;
+    assert(v7fs_link(&fs, ino, 4, alias_time) == 0);
+    assert(v7fs_inode_get(&fs, ino, &scratch) == 0 && scratch.ctime == now && scratch.mtime == modified);
+    ++now;
+    assert(v7fs_unlink(&fs, 4, alias_time, &resolved) == 0 && resolved == ino);
+    assert(v7fs_inode_get(&fs, ino, &scratch) == 0 && scratch.ctime == now && scratch.atime == accessed);
+    ++now;
+    scratch.mode = V7_IFREG | 0600; scratch.uid = 99; scratch.gid = 88;
+    scratch.atime = 100; scratch.mtime = 200; scratch.ctime = 300;
+    assert(v7fs_metadata(&fs, &scratch) == 0);
+    assert(v7fs_inode_get(&fs, ino, &scratch) == 0 && scratch.atime == 100 && scratch.mtime == 200 && scratch.ctime == now);
+    assert(scratch.uid == 99 && scratch.gid == 88 && scratch.size == 3);
+    ++now;
+    assert(v7fs_truncate(&fs, ino) == 0);
+    assert(v7fs_inode_get(&fs, ino, &scratch) == 0 && scratch.size == 0 && scratch.atime == 100 && scratch.mtime == now && scratch.ctime == now);
+    assert(v7fs_sync(&fs) == 0 && v7_disk_u32(super()->time) == now);
+    assert(v7fs_unmount(&fs) == 0 && v7fs_mount(&fs, &ram.device, true) == 0);
+    uint8_t *saved = malloc(length); assert(saved); memcpy(saved, image, length);
+    ++now;
+    assert(v7fs_read(&fs, ino, 0, buf, 1, &done) == 0 && done == 0);
+    assert(v7fs_sync(&fs) == 0 && !memcmp(saved, image, length));
+    assert(v7fs_inode_get(&fs, ino, &scratch) == 0 && scratch.atime == 100 && scratch.mtime == now-1 && scratch.ctime == now-1);
+    free(saved);
+    assert(v7fs_unmount(&fs) == 0);
+    /* Timestamp write faults are reported and poison the write-through mount. */
+    reset();
+    fault.bad_read = UINT32_MAX; fault.bad_write = v7_itod(5);
+    assert(v7fs_mount(&fs, &fault.device, false) == 0);
+    assert(v7fs_read(&fs, 5, 0, buf, 1, &done) == -NX_EIO && done == 0 && fs.failed);
+    assert(v7fs_unmount(&fs) == 0);
     free(image); free(original);
-    puts("PASS: block bounds, V7 metadata validation, cache, device faults, sparse gaps, write errors, permissions, namespace and inode/tree reclamation");
+    puts("PASS: block bounds, V7 metadata validation, cache, device faults, sparse gaps, write errors, permissions, namespace, inode/tree reclamation and V7 timestamp semantics/persistence");
     return 0;
 }

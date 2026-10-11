@@ -113,7 +113,8 @@ atomic. Allocation may leave owned empty indirect branches after ENOSPC, which
 can be reused by a subsequent write. Power-loss recovery is not implemented.
 
 Step 13 implements file-descriptor operations, inode/file reference ownership,
-permission checks, namespace creation/removal, truncation and pipes. Step 15 adds metadata timestamps and step 18 adds filesystem-backed exec.
+permission checks, namespace creation/removal, truncation and pipes. Step 15 adds explicit metadata updates, step 18 adds filesystem-backed exec,
+and step 23 maintains automatic V7 timestamps.
 Normal boot runs programs from the production root. The embedded catalog is
 retained for regression fixtures.
 
@@ -137,3 +138,29 @@ references, inode and indirect addresses, chained free lists, range overflow,
 read/write device faults, cache retry/hits, partial-transfer counts and stale
 bytes past EOF, and recovery from ENOSPC during indirect construction. They run against a copy of the image and leave the build image
 unchanged. They also pass with address/undefined-behavior sanitizers enabled.
+
+## V7 timestamp handling (step 23)
+
+The event rules follow the preserved V7 `rdwri.c`, `iget.c`, `sys4.c` and
+`nami.c`: new inodes receive atime/mtime/ctime, nonempty reads update atime
+(including EOF), completed write chunks update mtime/ctime, and truncation
+updates mtime/ctime. Metadata and link-count changes update ctime. Directory
+entry writes update the parent directory's mtime/ctime, while pathname scans
+do not change directory atime. Explicit utime values replace atime/mtime;
+ctime always comes from the system clock. Character-device reads/writes mark
+their persistent inode; pipes have no persistent inode. Zero-count regular-file
+reads/writes do not change times.
+
+V7 inode times remain four bytes each in the existing PDP-11 encoding, with
+second precision and no birth-time field. Automatic updates store the low
+32 bits of epoch seconds, preserving the existing disk width and rollover.
+No new timestamp fields or timezone offsets are stored. Timezone conversion
+belongs in libc (step 24). Read-only mounts skip timestamp writes.
+
+The native filesystem retains its synchronous write-through policy: timestamps
+are stored during the operation rather than deferred through V7 inode flags
+and the buffer daemon. Repeated access in the same second avoids unnecessary
+inode writes. A timestamp write failure follows the existing mount-poisoning
+policy; a completed partial transfer can still return its byte count. `sync`
+also records current V7 superblock time on writable mounts. Crash atomicity
+and power-loss recovery remain outside this milestone.

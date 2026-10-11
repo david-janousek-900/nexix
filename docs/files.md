@@ -76,7 +76,8 @@ Fcntl supports F_GETFD/F_SETFD for FD_CLOEXEC and F_GETFL/F_SETFL for shared
 append flags. F_SETFL preserves the original access mode. Stat/fstat export a
 48-byte native record: eight 16-bit fields (dev, ino, mode, nlink, uid, gid,
 rdev, reserved), followed by signed 64-bit size, atime, mtime and ctime.
-Timestamps are decoded from disk but are not updated yet; root device ID is zero.
+Timestamps are decoded from disk and maintained using the UTC system clock;
+root device ID is zero.
 This record is separate from the historical PDP-11 disk layout.
 
 User buffers are fully checked before I/O can move an offset, consume pipe data

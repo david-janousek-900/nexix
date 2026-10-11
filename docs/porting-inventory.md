@@ -189,7 +189,7 @@ their sources alone does not provide a working native equivalent.
 | `headers` | partial | Original inputs are supplied in the full archive. Adapt declarations and layouts to the native ABI; complete Nexix libc coverage remains partial. |
 | `kernel-abi` | partial | File/process/TTY syscalls exist; mount administration, accounting, tracing, profiling and complete device interfaces need auditing. |
 | `floating-point` | missing | Native user FP state isolation and full floating-point libc support are not implemented. |
-| `wall-clock` | partial | UTC wall clock is initialized from RTC at boot and advances with PIT ticks; ordinary inode timestamp updates remain pending step 23. |
+| `wall-clock` | supplied | RTC initializes the UTC system clock; inode timestamps and sync superblock time use that clock and persist in the existing V7 disk encoding. |
 | `timezone` | missing | UTC-only ctime currently; configurable TZ and local-time/DST conversion are step 24. |
 | `accounts` | partial | `/etc/passwd`, `/etc/group` |
 | `multi-tty` | partial | Current UART and line discipline provide one shared COM1 console; independent COM2 and login terminals are pending. |

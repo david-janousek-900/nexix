@@ -267,5 +267,25 @@ Polling is bounded; failures leave epoch-plus-uptime and print a diagnostic.
 Reads run before timer IRQs are enabled and never alter RTC date registers.
 The RTC must hold UTC. QEMU's [RTC options](https://qemu-project.gitlab.io/qemu/system/invocation.html)
 provide UTC or fixed-date initialization. There is no ongoing resynchronization
-or RTC writeback in this step. Filesystem timestamp updates remain step 23 and
-timezone conversion remains step 24; V7 disk formats are unchanged.
+or RTC writeback in this step. Filesystem timestamp updates are implemented in
+step 23; timezone conversion remains step 24. V7 disk formats are unchanged.
+
+## Step 23: persistent V7 timestamps
+
+`make TOOLCHAIN_PREFIX= test-unit` includes deterministic-clock filesystem
+checks for creation, overwrite without growth, reads/EOF, zero-count I/O,
+path lookup, parent directories, hard links, unlink, truncation, metadata
+changes and explicit utime-style values. Tests verify the encoded disk bytes,
+remount persistence, read-only byte-for-byte preservation, superblock sync
+time and timestamp write-error handling.
+
+`make TOOLCHAIN_PREFIX= test-signals` checks native utime and ctime together
+with existing permission and read-only behavior at 16M/128M.
+`make TOOLCHAIN_PREFIX= test-storage` performs three cold boots at each memory
+size on disposable IDE roots with consecutive fixed UTC RTC dates. An
+independent parser reads atime/mtime/ctime directly from V7 disk bytes after
+creation and after read/write/unlink operations on the next boot. The third
+boot verifies `ls -l` displays the persisted modification date before reading
+the file, then checks block/inode reclamation. Logs are `build/storage-16M.log`
+and `build/storage-128M.log`. Seed image timestamps remain reproducibly zero;
+existing files acquire times as they are accessed or modified.
