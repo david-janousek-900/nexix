@@ -77,3 +77,7 @@ program implementation claims are changed by step 37.
 Step 38 adds the [kernel source responsibility audit](kernel-coverage.md),
 including 113 reference inputs and 64 original syscall slots. Newly discovered
 kernel prerequisites retain stable IDs 362–364 and precede final release gates.
+
+Step 39 records all 57 original installed-header inputs in
+[header-coverage.json](header-coverage.json). Native contracts and consumer-owned
+formats are distinct; adding a declaration does not complete its feature owner.

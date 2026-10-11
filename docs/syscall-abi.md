@@ -195,3 +195,10 @@ NEXIX_SYSCALL_ERRORS_OK, NEXIX_SYSCALL_FORK_OK and NEXIX_SYSCALL_OK, followed by
 NEXIX_BOOT_OK. Transcripts are `build/boot.log` and `build/syscall-16M.log`.
 Step 10 implements ELF64 loading, exec, and argument/environment construction;
 see [exec.md](exec.md). Step 11 implements native libc startup and initial wrappers; see [libc.md](libc.md).
+
+## Header coverage (step 39)
+
+See [native header contracts](header-coverage.md) for the complete reference
+header responsibility map, native type widths and record offsets.
+`make TOOLCHAIN_PREFIX= test-header-abi` checks public headers in isolation
+without host libc and validates the kernel/libc record boundaries.

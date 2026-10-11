@@ -484,3 +484,12 @@ test-kernel-coverage:
 	$(PYTHON) tools/check_kernel_coverage.py
 	$(PYTHON) tests/kernel_coverage.py
 test-inventory: test-kernel-coverage
+
+# Step 39: compile public headers independently of host libc and check ABI records.
+build/header-abi-test: tests/header_abi.c $(wildcard libc/include/*.h libc/include/sys/*.h include/nexix/*.h) kernel/include/v7/types.h | build
+	$(HOST_CC) -std=c11 -Wall -Wextra -Werror -ffreestanding -nostdinc -isystem $(shell $(HOST_CC) -print-file-name=include) -Ilibc/include -Iinclude -Ikernel/include $< -o $@
+.PHONY: test-header-abi
+test-header-abi: build/header-abi-test
+	./build/header-abi-test
+	$(PYTHON) tests/header_coverage.py --cc $(CC)
+test-inventory: test-header-abi

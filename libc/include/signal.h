@@ -18,6 +18,14 @@
 #define SIGPIPE NX_SIGPIPE
 #define SIGALRM NX_SIGALRM
 #define SIGTERM NX_SIGTERM
+/* Historical spellings used by original kernel-facing consumers. */
+#define SIGINS SIGILL
+#define SIGTRC SIGTRAP
+#define SIGFPT SIGFPE
+#define SIGKIL SIGKILL
+#define SIGSEG SIGSEGV
+#define SIGCLK SIGALRM
+#define SIGTRM SIGTERM
 #define NSIG NX_NSIG
 typedef int sig_atomic_t;
 typedef void (*sighandler_t)(int);
