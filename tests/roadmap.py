@@ -50,7 +50,7 @@ class Roadmap(unittest.TestCase):
         self.reject('cmd.ed: roadmap steps must be a nonempty list')
 
     def test_invalid_reference_types_and_bounds(self):
-        for value in [True, '145', None, 0, -1, 362]:
+        for value in [True, '145', None, 0, -1, self.coverage['step_count'] + 1]:
             with self.subTest(value=value):
                 self.coverage['components']['cmd.ed'] = [value]
                 self.reject('cmd.ed: invalid roadmap step reference')
@@ -119,7 +119,7 @@ class Roadmap(unittest.TestCase):
         self.reject('invalid roadmap step count')
 
     def test_declared_step_count_cannot_hide_missing_rows(self):
-        self.coverage['step_count'] = 362
+        self.coverage['step_count'] += 1
         self.reject('IDs must be unique, ordered and contiguous')
 
     def test_declared_paths_are_pinned(self):

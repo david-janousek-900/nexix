@@ -118,8 +118,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 2 partial, 1 prototype and 203 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **361 tracking steps: 37 done, 5 in progress
-and 319 to do** after step 37. These counts are a work breakdown, not an
+The expanded roadmap below has **364 tracking steps: 38 done, 4 in progress
+and 322 to do** after step 38. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Steps 1–24 retain
 their previous scope. Completed portions of the old step 25 are separated
 into steps 25–36; its remaining work is listed individually.
@@ -250,7 +250,7 @@ coverage and installation remain subject to later acceptance steps.
 | Step | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 37 | Publish renumbered roadmap and enforce component-to-step coverage | Done | test-inventory validates 217 components, 35 requirements and 361 steps; commit recorded in Git history |
-| 38 | Complete kernel source adaptation coverage | In progress | Foundation exists; distribution.kernel still marked not_ported |
+| 38 | Complete kernel source adaptation coverage | Done | [Source and syscall audit](docs/kernel-coverage.md); test-kernel-coverage; Git history; kernel port remains incomplete |
 | 39 | Complete exported native V7 header/ABI coverage | In progress | LP64 runtime versus historical disk encodings |
 | 40 | Finish libc scalar/byte helpers and conversion contracts | In progress | Include swab, l3tol/ltol3, gcvt, abort, tell, execle and missing declared interfaces |
 | 41 | Adapt internal FILE callers and historical remote printf convention | To do | Keep native va_list and source adapters; no PDP-11 stack interpretation |
@@ -672,6 +672,14 @@ required before native-port acceptance.
 | 359 | Close all component/source/device blockers | To do | All 217 entries/35 requirements traceable; no hidden omissions |
 | 360 | Reproducible host-bootstrap build and release provenance | To do | Pin SDK inputs, artifact hashes, licensing and validation evidence |
 | 361 | Finalize 0.1.0 release documentation and tag | To do | Only after all required leaves are implemented, tested and committed |
+
+### Additional kernel gaps identified by the source audit
+
+| Step | Description | Status | Evidence / notes / acceptance |
+|---:|---|---|---|
+| 362 | Complete V7 CPU usage and scheduler priority decay | To do | clock.c/slp.c: usage saturation, per-second decay, nice and wakeup priorities; deterministic scheduling tests |
+| 363 | Complete subsecond ftime clock interface | To do | Atomic seconds/milliseconds snapshot and native ABI; V7 timezone fields, rollover and invalid-user-pointer tests |
+| 364 | Implement native V7 kernel callout queue | To do | timeout callbacks, tick deadlines, ordering, bounded capacity and interrupt serialization; device consumers in steps 68–77 |
 
 ### Execution priorities and release acceptance
 

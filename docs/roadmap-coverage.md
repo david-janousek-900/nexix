@@ -11,7 +11,7 @@ The [inventory](v7-userland-manifest.json) points to that map through
 Coverage schema version 1 contains the release version, README/inventory paths,
 step count, policy and two mappings: `components` and `requirements`. Mapping
 keys are inventory IDs; values are nonempty, sorted, unique arrays of step IDs.
-All 217 components, all 35 requirements and all 361 steps must be accounted for.
+All 217 components, all 35 requirements and all 364 steps must be accounted for.
 There is no name-based inference or fallback assigning omitted work to a generic
 release step. New components and requirements require explicit mappings.
 
@@ -20,8 +20,9 @@ For example, init has its initial native port and its later multi-user work;
 diff3's compiled helper and installed script share one integration step. Native
 kernel functionality spans existing foundations and remaining adaptations.
 Mappings establish responsibility, not a claim that each mapped step implements
-every source belonging to that component. File/symbol-level kernel and libc
-closure remains steps 38–40 and 82.
+every source belonging to that component. Step 38 records kernel source
+responsibility; field/symbol contracts remain steps 39–40 and 82, with kernel
+behavior closure assigned to the individual feature steps.
 
 Build/runtime/optional-runtime dependency edges, evidence and certainty remain
 in the inventory. Follow those edges through the coverage map when identifying
@@ -72,3 +73,7 @@ The previous 29-step roadmap is mapped in the README. Detailed documents now
 use expanded IDs where milestones above 24 changed. Old Git commit descriptions
 retain their historical numbering. No reference sources or current native
 program implementation claims are changed by step 37.
+
+Step 38 adds the [kernel source responsibility audit](kernel-coverage.md),
+including 113 reference inputs and 64 original syscall slots. Newly discovered
+kernel prerequisites retain stable IDs 362–364 and precede final release gates.

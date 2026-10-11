@@ -1,0 +1,86 @@
+# V7 kernel source responsibility audit (step 38)
+
+This audit accounts for every one of the 113 supplied files under
+`reference/v7/usr/sys` and all 64 entries in the original `sysent` table.
+The canonical per-file mapping is [kernel-coverage.json](kernel-coverage.json).
+Each source appears exactly once, including headers, recipes, configuration
+inputs and historical binary objects/archives. Groups identify native integration
+points, responsibilities and roadmap owners. The reference tree remains pristine.
+
+Completing this audit does **not** complete the kernel port. The inventory entry
+`distribution.kernel` remains `not_ported`; kernel behavior still needs the
+feature tests and consumer acceptance assigned below. Existing native paths are
+implementations of subsets, not claims that every function or field in their
+original files is adapted. Step 39 must audit header fields and exported ABI
+contracts; step 355 and step 359 close whole-distribution integration.
+
+## Existing foundation and remaining owners
+
+| Original area | Native foundation | Remaining acceptance / steps |
+|---|---|---|
+| m40/mch/l machine assembly, segmentation, memory allocation | Long mode, native interrupt frames, paging, resident memory, eager fork, FXSAVE64 | phys 64; runtime assembly contracts 79; no PDP-11 binary execution or disk-backed swap required |
+| main/slp/clock | Boot, scheduler, sleep/wakeup, PIT ticks, RTC wall clock, alarms, user/system CPU times | CPU usage saturation and priority decay 362; general timeout callouts 364; profiling 59 |
+| alloc/iget/nami/rdwri/fio/bio | V7 disk encodings, inode/sector cache, lookup, permissions, files, timestamp updates | Executable exclusion 51; raw I/O 53; mount/umount 54–55 |
+| sys1–sys4/sysent/trap/ureg | Native dispatcher, user-copy validation, process/files/identity/time calls | Set-ID exec 50; core dumps 52; ptrace 57–58; pending syscall slots below |
+| text | Native ELF executable loading and resident images | Text ownership and ETXTBSY 51 |
+| sig | V7 signals, native saved registers and FP frames | Core dumps 52; tracing stop/wait 57–58 |
+| pipe | Native bounded pipes, sleep/wakeup, SIGPIPE and descriptor lifetime | Existing files tests; consumer acceptance remains distribution-wide |
+| acct | Process exit integration point | Accounting records, privileges, storage errors 56 |
+| prim/mx1/mx2/fakemx | File/TTY integration points only | Multiplexer lifecycle, events, TTY bridging 65–67; historical optional stub does not satisfy functionality |
+| tty/dc/dh/dz/kl/partab | COM1 cooked/raw/cbreak, process groups and supported parity/tab flags | Terminal equivalents and TANDEM/LCASE/delay/parity contracts 74; independent ports 89–93 |
+| pk0–pk3 | Serial/TTY integration points only | V7 serial packet discipline 68 |
+| dn/dhdm/dhfdm/du | Serial integration point only | Modem/dial control 75 |
+| hp/rf/rk/rl/rp | Native IDE/block integration | Historical controller capabilities 70; raw device dispatch 53 |
+| ht/tm, tc | Block integration points only | Sequential tape 71; DECtape 72 |
+| dsort/dkleave | Block integration point only | Queue ordering/interleave 73 |
+| mem/sys | Native memory/block foundations only | Controlled special-device access 69 |
+| cat, vp/vs | Future native endpoints | Typesetter 76; printer/plotter protocols 77 |
+| prf/subr | Serial diagnostics and native memory/user-copy helpers | Helper/consumer contracts 39/79; memory device consumers 69 |
+| h/* | Native runtime types and explicit historical disk encoders | All header/field/consumer contracts 39 plus their feature owners |
+| conf/*, LIB1/LIB2/mklib | Current Makefile/bootstrap | Native configuration/recipes 78; supplied binaries are provenance |
+
+## System-call audit
+
+The JSON records each slot's original routine and one of three classifications:
+`native_path` means dispatch or a native library path exists; `pending` means
+required functionality is absent or incomplete; `historical_stub` means the
+original slot itself used `nosys` or `nullsys`. These classifications describe
+responsibility, not complete semantic equivalence. Native calls also have
+extensions (for example process-group calls); original reserved numbers must
+not be treated as missing required features merely because they were stubs.
+
+| Original slot | Required behavior | Owner |
+|---:|---|---:|
+| 21 | mount | 54 |
+| 22 | umount | 55 |
+| 26 | ptrace | 57, then 58 |
+| 35 | ftime subsecond snapshot | 363 |
+| 44 | profil | 59 |
+| 51 | acct | 56 |
+| 52 | phys | 64 |
+| 53 | lock | 63 |
+| 56 | mpx | 65–67 |
+
+`ftime` currently uses libc's `time` path and returns zero milliseconds. A native
+clock snapshot is required; merely having a library symbol does not finish it.
+V7's clock increments a saturating CPU counter and applies `SCHMAG` decay every
+second before recalculating user priority. Nexix currently selects runnable
+processes by priority but derives user priority from nice alone. The general
+V7 `timeout` callback queue is also absent: alarm deadlines do not replace it.
+These findings add steps 362–364 without renumbering existing tracking IDs.
+They are prerequisites to final acceptance, despite their higher IDs.
+
+## Validation and limits
+
+Run `make TOOLCHAIN_PREFIX= test-kernel-coverage` or `test-inventory`.
+The checker compares the pinned inventory and actual reference directory with
+the source groups, rejects omissions/duplicates, checks native paths and roadmap
+owners, and compares all 64 original routine names directly with `sysent.c`.
+Pending syscall owners cannot be marked Done. Negative tests cover source and
+inventory omissions, unsafe paths, invalid owners, missing slots, routine drift,
+mislabelled historical stubs and false closure.
+
+The checker validates audit integrity; it does not execute historical code,
+prove function-by-function equivalence, or replace runtime acceptance tests.
+No kernel executable behavior changes in step 38, so QEMU regressions are not
+needed for this audit-only change. Existing host unit tests are run as a baseline.

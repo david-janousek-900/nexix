@@ -477,3 +477,10 @@ build/stdio_program.o: user/stdio-test.c | build
 -include build/stdio_program.d
 .PHONY: test-stdio
 test-stdio: test-signals
+
+# Step 38: complete original kernel input/syscall responsibility audit.
+.PHONY: test-kernel-coverage
+test-kernel-coverage:
+	$(PYTHON) tools/check_kernel_coverage.py
+	$(PYTHON) tests/kernel_coverage.py
+test-inventory: test-kernel-coverage
