@@ -2,8 +2,9 @@
 
 `make TOOLCHAIN_PREFIX= run` boots the ISO and attaches `build/nexix.img` as
 QEMU's primary IDE master. `make disk` creates this working disk from
-`build/root.img` only when it does not already exist. Builds and `make clean`
-preserve it, so files and metadata survive QEMU restarts. The ISO still supplies
+`build/root.img` only when it does not already exist. Builds preserve it, so
+files and metadata survive QEMU restarts. `make clean` deletes the entire
+`build/` directory, including the working disk and its saved files. The ISO still supplies
 GRUB and the kernel; the raw disk contains the V7 filesystem without a partition
 table or boot loader.
 

@@ -157,7 +157,7 @@ test-user: check build/test-user-kernel.iso build/test-user-ro.iso build/test-us
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-user-df.iso user-df
 
 clean:
-	$(PYTHON) -c 'from pathlib import Path; import shutil; p=Path("build"); [(shutil.rmtree(q) if q.is_dir() else q.unlink()) for q in p.iterdir() if q.name != "nexix.img"] if p.exists() else None'
+	rm -rf -- build
 
 .PHONY: test-process
 test-process: check build/test-selftest.iso

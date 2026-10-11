@@ -55,6 +55,9 @@ For an initial build on an x86_64 Linux host with GCC/binutils, use
 `make TOOLCHAIN_PREFIX= check` (and the same override for other targets).
 This is a bootstrap convenience; a pinned cross-toolchain remains planned.
 The kernel does not link host libc. Build artifacts go into `build/`.
+
+`make clean` deletes the entire `build/` directory, including the persistent
+`build/nexix.img` disk and all files saved inside Nexix. Stop QEMU before cleaning.
 `make run` displays the shell prompt. Ctrl-D closes the shell and init starts
 a replacement; Ctrl-A, release, then X exits QEMU.
 `make smoke` boots the `test=selftest` regression ISO with one CPU with 128 MiB RAM under QEMU TCG, requires the serial
