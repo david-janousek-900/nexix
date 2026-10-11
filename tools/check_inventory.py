@@ -5,10 +5,13 @@ import json
 from pathlib import Path
 import re
 import sys
+from import_v7_reference import check_reference
 
 ROOT = Path(__file__).resolve().parents[1]
-REFERENCE = 'reference/v7/usr/src'
-KINDS = {'command', 'command_group', 'game', 'library', 'prototype', 'build_script', 'support'}
+REFERENCE = 'reference/v7'
+SOURCE_ROOT = REFERENCE + '/usr/src'
+KINDS = {'command', 'command_group', 'game', 'library', 'prototype', 'build_script', 'support',
+         'installed_script', 'binary_program', 'headers', 'documentation', 'data', 'configuration', 'kernel_reference'}
 STATUSES = {'implemented', 'partial', 'not_ported', 'prototype', 'pending_assessment'}
 REQUIREMENT_STATUSES = {'supplied', 'partial', 'generated', 'missing', 'pending_assessment'}
 ROLES = {'installed', 'optional', 'helper', 'build_helper', 'library', 'runtime_object', 'source_only', 'data'}
@@ -38,8 +41,15 @@ def validate(manifest, root=ROOT):
                     need((root / path).is_file(), f'{owner}: source is not a file {value}')
     if not isinstance(manifest, dict):
         return ['manifest must be an object']
-    need(manifest.get('schema_version') == 1, 'unsupported schema version')
+    need(manifest.get('schema_version') == 2, 'unsupported schema version')
     need(manifest.get('reference_root') == REFERENCE, 'unexpected reference root')
+    need(manifest.get('userland_source_root') == SOURCE_ROOT, 'unexpected userland source root')
+    need(manifest.get('distribution_index') == 'reference/distribution.json', 'unexpected distribution index')
+    try:
+        index = json.loads((root / 'reference/distribution.json').read_text())
+        errors.extend(check_reference(index, root))
+    except (OSError, ValueError, TypeError, KeyError) as error:
+        errors.append(f'invalid distribution provenance: {error}')
     need(manifest.get('version') == '0.1.0', 'unexpected release scope')
     for key in ('scope', 'coverage', 'dependency_policy', 'timestamp_policy'):
         need(isinstance(manifest.get(key), str) and bool(manifest[key]), f'missing {key}')
@@ -92,6 +102,15 @@ def validate(manifest, root=ROOT):
         if isinstance(sources, list) and all(isinstance(x, str) for x in sources):
             need(len(sources) == len(set(sources)), f'{owner}: duplicate source')
             owned.update(sources)
+        availability = entry.get('source_availability')
+        need(availability in {'supplied', 'binary_only', 'not_applicable'}, f'{owner}: missing source availability')
+        source_files = entry.get('source_files', [])
+        paths(source_files, owner, reference=True)
+        need(set(source_files).issubset(sources), f'{owner}: source files not owned by component')
+        if availability == 'supplied':
+            need(bool(source_files), f'{owner}: supplied implementation source is empty')
+        if availability == 'binary_only':
+            need(not source_files and entry.get('status') == 'not_ported', f'{owner}: binary-only component cannot claim source or a completed port')
         for key in ('blockers', 'unresolved', 'acceptance'):
             value = entry.get(key)
             need(isinstance(value, list) and all(isinstance(x, str) and x for x in value), f'{owner}: invalid {key}')
@@ -141,16 +160,33 @@ def validate(manifest, root=ROOT):
         errors.append(f'unclassified reference file: {path}')
     archives = {path for path in actual if path.endswith('.c.a')}
     need(set(manifest.get('historical_source_archives', [])) == archives, 'historical source archive inventory drift')
+    data_archives = {path for path in actual if path.startswith('reference/v7/usr/lib/learn/') and path.endswith('.a')}
+    need(set(manifest.get('data_archives', [])) == data_archives, 'lesson data archive inventory drift')
     # File ownership alone must not hide a newly added top-level component.
     for area, prefix in [('cmd', 'cmd'), ('games', 'game')]:
-        for path in sorted((reference / area).iterdir()):
+        for path in sorted((root / SOURCE_ROOT / area).iterdir()):
             if area == 'cmd' and not path.is_dir() and path.suffix not in {'.c', '.s', '.y'}:
                 continue
             identifier = prefix + '.' + (path.name if path.is_dir() else path.stem)
             need(identifier in entry_map, f'missing component: {identifier}')
-    for path in sorted(reference.iterdir()):
+    for path in sorted((root / SOURCE_ROOT).iterdir()):
         if path.name not in {'cmd', 'games'}:
             need('lib.' + path.name in entry_map, f'missing library component: {path.name}')
+    binary_only = {entry['id'] for entry in entries if entry.get('source_availability') == 'binary_only'}
+    need(set(manifest.get('binary_only_programs', [])) == binary_only, 'binary-only program inventory drift')
+    program_files = set()
+    for program in manifest.get('installed_programs', []):
+        file = program['reference_file']
+        paths([file], program['path'], reference=True)
+        need(file not in program_files, f'duplicate installed program: {file}')
+        program_files.add(file)
+        need(program['path'] == '/' + str(Path(file).relative_to(REFERENCE)), f'installed path mismatch: {file}')
+        need(program.get('artifact') in {'script', 'historical_binary'}, f'invalid installed artifact: {file}')
+        need(bool(program.get('owners')), f'unowned installed program: {file}')
+        for owner in program.get('owners', []):
+            need(owner in entry_map and file in entry_map[owner]['sources'], f'invalid installed program owner: {file}')
+    for file in (reference / 'bin').iterdir():
+        need(str(file.relative_to(root)) in program_files, f'missing installed program: {file.name}')
     # Compare claimed implemented programs with both build and packaging declarations.
     makefile = (root / 'Makefile').read_text()
     match = re.search(r'^V7_COMMANDS\s*=\s*(.+)$', makefile, re.M)

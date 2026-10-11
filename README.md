@@ -105,7 +105,7 @@ starts that demo: type a line and Enter, use Backspace/Ctrl-U to edit, or type
 
 Version **0.1.0** targets multi-user startup, the full native V7 reference
 userland, RTC-based time and correct persistent file timestamps. Steps 1–20
-provide the implemented foundation. Step 21 completes the source inventory;
+provide the implemented foundation. Step 21 completes the full-distribution inventory;
 steps 22–29 remain pending. Regression tests accompany implementation.
 See the [porting inventory](docs/porting-inventory.md) for priorities, dependencies
 and missing inputs.
@@ -130,7 +130,8 @@ and missing inputs.
 18. Mount root and launch PID 1 and shell.
 19. Verify interactive shell operation in QEMU.
 20. Add persistent IDE-backed storage.
-21. Inventory all V7 programs, libraries, supporting data and dependencies.
+21. Preserve and inventory the full V7 distribution, including sources, scripts,
+    libraries, supporting data and binary-only program blockers.
 22. Initialize the UTC system clock from RTC at boot.
 23. Maintain and persist V7 access, modification and inode-change timestamps.
 24. Add timezone-aware libc, configurable TZ, date and touch.
@@ -140,7 +141,7 @@ and missing inputs.
 28. Complete native V7 userland and retarget the C/Fortran toolchain.
 29. Complete packaging, disk upgrades and release acceptance.
 
-`make TOOLCHAIN_PREFIX= test-inventory` validates reference coverage and manifest
+`make TOOLCHAIN_PREFIX= test-inventory` validates full-archive contents, coverage and manifest
 consistency without building or booting the kernel. Inventory completion does
 not mean the remaining programs are ported.
 

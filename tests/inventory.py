@@ -3,11 +3,13 @@ import copy
 import json
 from pathlib import Path
 import sys
+import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tools'))
 from check_inventory import validate
+from import_v7_reference import archive_index, check_reference
 
 
 class Inventory(unittest.TestCase):
@@ -74,6 +76,35 @@ class Inventory(unittest.TestCase):
     def test_missing_distribution_asset_is_visible(self):
         self.manifest['requirements'] = [r for r in self.manifest['requirements'] if r['id'] != 'manual-pages']
         self.reject('unknown related component manual-pages')
+
+    def test_installed_script_cannot_be_omitted(self):
+        self.manifest['entries'].remove(self.entry('script.man'))
+        self.reject('unclassified reference file: reference/v7/bin/man')
+
+    def test_binary_only_program_cannot_claim_a_port(self):
+        self.entry('game.bj')['status'] = 'implemented'
+        self.reject('binary-only component cannot claim source or a completed port')
+
+    def test_installed_program_index_must_cover_bin(self):
+        self.manifest['installed_programs'] = [r for r in self.manifest['installed_programs'] if r['path'] != '/bin/man']
+        self.reject('missing installed program: man')
+
+    def test_reference_hash_mismatch(self):
+        index = json.loads((ROOT / 'reference/distribution.json').read_text())
+        index['files'][0]['sha256'] = '0' * 64
+        self.assertTrue(any('archive content mismatch' in e for e in check_reference(index)))
+
+    def test_reference_ledger_cannot_omit_a_file(self):
+        index = json.loads((ROOT / 'reference/distribution.json').read_text())
+        index['files'].pop()
+        self.assertTrue(any('unrecorded reference file' in e for e in check_reference(index)))
+
+    def test_wrong_archive_is_rejected_before_import(self):
+        with tempfile.TemporaryDirectory(prefix='nexix-archive-test-') as directory:
+            archive = Path(directory) / 'wrong.tar.gz'
+            archive.write_bytes(b'not the pinned archive')
+            with self.assertRaisesRegex(ValueError, 'SHA-256'):
+                archive_index(archive)
 
 
 if __name__ == '__main__':

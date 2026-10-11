@@ -4,18 +4,26 @@ Nexix 0.1.0 targets multi-user boot and the full native V7 userland. The first
 20 steps provide a bootable single-user system with persistent IDE storage.
 This inventory accounts for the remaining work; it does not implement ports.
 
-The authoritative [manifest](v7-userland-manifest.json) owns all **1,121 files**
-under `reference/v7/usr/src`: **174 components** and **35 external/platform
-requirements**. Components include 120 top-level command sources, 34 command
-directories, eight games, eight library directories, three build scripts and
-one top-level support header. Shared sources can have multiple owners.
+The authoritative [manifest](v7-userland-manifest.json) accounts for all
+**2,144 distribution files**, grouped into **217 components**, plus **35 platform
+or supporting-input requirements**. The preserved userland source subset still
+contains 1,121 files and its original 174 component records. The full audit adds
+installed scripts, additional games, the root diagnostic source, kernel/boot
+references, and supporting-data groups. All archive contents are preserved.
 
 Only **init, sh, echo, cat, ls, pwd, cp, ln and rm** are installed native ports.
-Native libc is partial. Other components are unported or explicitly classified
-as prototypes; historical hardware exceptions remain pending assessment.
+Native libc is partial. The archive's **213 installed program paths** are listed
+separately; scripts and old executables in reference/v7 are not installed Nexix
+ports. **13 binary-only program components** are blocked pending source recovery
+or an explicitly approved alternative. No historical hardware exception is
+silently excluded from the release objective.
+
+The [distribution index](../reference/distribution.json) pins each file's bytes
+and original metadata to the recorded archive. See [source provenance](../reference/README.md).
 
 ## Manifest contract
 
+- Schema version 2 covers reference/v7, with usr/src separately identified.
 - Each entry has an identifier, kind, explicit reference files, outputs and
   install locations, priority, status, dependencies, blockers and acceptance checks.
 - Dependencies distinguish build, runtime and optional runtime requirements.
@@ -26,9 +34,15 @@ as prototypes; historical hardware exceptions remain pending assessment.
   Nexix implements every declaration or ABI used by the program.
 - Output roles distinguish installed programs, libraries, optional targets,
   private helpers, build scripts, generated data and source-only material.
-  Install paths describe reference recipes; null means no established location.
-- Historical source archives and prebuilt artifacts are listed separately.
-  Their ownership does not make old objects native or complete archive-member audits.
+  Output install paths describe reference recipes; distribution_outputs and the
+  installed-program index record actual archive locations. Null means unresolved.
+- The `sources` field owns reference inputs, including data and historical binaries.
+  `source_files` identifies implementation source/scripts, and `source_availability`
+  distinguishes supplied source, binary-only programs and non-program assets.
+- Historical source archives, lesson-data archives and prebuilt artifacts are
+  listed separately. Archive-member compatibility audits remain explicit future work.
+- Installed program paths are mapped to owning components, including script
+  wrappers and private helpers. Exact distribution locations supplement recipe paths.
 - Platform/data requirements are supplied, partial, generated, missing or
   pending assessment. Generated means a recipe exists, not that Nexix ships it.
 - Preserve V7 atime/mtime/ctime semantics and disk widths. There is no separate
@@ -122,26 +136,39 @@ script specifies them. Their prebuilt PDP-11 objects need native replacements.
 `libdbm` historically renames an object to libdbm.a; native archive packaging
 needs adaptation. The vt0 backend is source-only in the default libplot recipe.
 
-Games: **arithmetic, backgammon, chess, fish, fortune, hangman, quiz, wump**.
-All are priority 14. Chess has substantial PDP-11 assembly; fortune, hangman
-and quiz also require data absent from this snapshot.
+Games with source: **arithmetic, backgammon, chess, fish, fortune, hangman, quiz, wump**.
+All are priority 14. Chess has substantial PDP-11 assembly. The full archive
+supplies the data for fortune, hangman and quiz; native format compatibility
+still needs validation. Additional scripts and binary-only games are listed below.
 
-## Missing distribution commands and manuals
+## Restored installed scripts and additional programs
 
-**`man` is required for Nexix 0.1.0, priority 11, step 28.** Its implementation
-and the `/usr/man` page tree are absent from this imported reference snapshot.
-They are explicitly tracked as the manifest requirements `man-command` and
-`manual-pages`, not represented as existing source files or implemented ports.
-Restore the original V7 implementation and pages, verify its exact dependencies
-and command syntax, and package the required nroff/troff macros and terminal
-tables. Acceptance includes finding/rendering representative manual sections,
-readable serial output and reference-compatible missing-page behavior.
+`man` is supplied as **reference/v7/bin/man**, an original Bourne-shell script.
+The archive also supplies all 307 manual files across sections 0–8. Its default
+path invokes nroff with the supplied tmac.an macros; optional modes use eqn,
+neqn, troff and tc. The script and its manual differ on cached-page behavior;
+retain and document the supplied implementation rather than inventing a new one.
+Porting remains priority 11, step 28. Test section selection, missing titles,
+`man -w`, readable serial output and available optional output modes.
 
-The original V7 [filesystem hierarchy manual](https://www.tuhs.org/cgi-bin/utree.pl?file=V7%2Fusr%2Fman%2Fman7%2Fhier.7)
-documents the manual tree and formatter macros. Full-distribution comparison is
-still needed to identify further commands/scripts/data missing from this import.
-The 174-component count describes supplied source components, not every program
-in the original installed V7 distribution.
+Restored /bin scripts and drivers:
+
+`1`, `calendar`, `diff3`, `false`, `lint`, `lookbib`, `lorder`, `man`, `nohup`, `pcc`, `plot`, `spell`, `struct`, `true`.
+
+`words` and `ching` are additional game scripts. Script wrappers must be tested
+with their underlying programs: restoring only the compiled helpers does not
+restore complete user-visible commands. The root `bs.c`/`bs` diagnostic is also
+accounted for. Documentation-driving scripts and bibliography index helpers
+remain owned by their supporting-asset groups.
+
+Binary-only components whose implementation source is absent from this archive:
+
+`banner`, `bcd`, `bj`, `checkers`, `cno`, `cubic`, `maze`, `moo`, `phx`, `ppt`, `reversi`, `ttt`, `words1`.
+
+The ching cno/phx executables are private game helpers. Historical binaries are
+preserved for provenance and comparison; source recovery or an explicitly
+approved alternative is required for native release acceptance. Importing every
+archive file resolves distribution coverage, not these source-availability gaps.
 
 ## Dependencies and missing inputs
 
@@ -156,10 +183,10 @@ accounting, tracing/profiling, raw device files and mount administration.
 Programs such as ps/pstat/iostat inspect historical kernel layouts; compiling
 their sources alone does not provide a working native equivalent.
 
-| Requirement | State | Evidence / expected location |
+| Requirement | State | Supplied inputs / remaining work |
 |---|---|---|
 | `native-build-tools` | supplied | Host GCC/binutils bootstrap native Nexix ELF builds; retained native tools remain unported. |
-| `headers` | partial | `/usr/include` |
+| `headers` | partial | Original inputs are supplied in the full archive. Adapt declarations and layouts to the native ABI; complete Nexix libc coverage remains partial. |
 | `kernel-abi` | partial | File/process/TTY syscalls exist; mount administration, accounting, tracing, profiling and complete device interfaces need auditing. |
 | `floating-point` | missing | Native user FP state isolation and full floating-point libc support are not implemented. |
 | `wall-clock` | partial | Clock advances from epoch zero; RTC initialization and ordinary inode timestamp updates are pending steps 22–23. |
@@ -172,34 +199,37 @@ their sources alone does not provide a working native equivalent.
 | `raw-storage` | partial | IDE block operations exist internally; raw device files and mount-management interfaces are pending. |
 | `historical-devices` | pending_assessment | PDP-11 disks/tapes, plotters and printer protocols require native equivalents or individually documented exceptions. |
 | `elf-toolchain` | missing | Retarget retained compiler/assembler/linker and archive/symbol utilities to native x86_64 ELF. |
-| `spool-locks` | missing | Provision mail/job/UUCP spool directories, ownership, locking and daemon configuration. |
-| `yacc-skeleton` | missing | `/usr/lib/yaccpar` |
-| `lex-skeletons` | missing | `/usr/lib/lex/ncform`, `/usr/lib/lex/nrform`, `/usr/lib/lex/ebcform` |
-| `lint-descriptions` | missing | `/usr/lib/llib-lc`, `/usr/lib/llib-port` |
-| `word-dictionary` | missing | `/usr/dict/words` |
+| `spool-locks` | missing | Historical spool and UUCP configuration fixtures are supplied; native services, ownership and locking remain pending. |
+| `yacc-skeleton` | supplied | `/usr/lib/yaccpar` |
+| `lex-skeletons` | partial | C scanner skeleton ncform is supplied. Optional Ratfor nrform and EBCDIC ebcform are referenced by source but absent from the full archive. |
+| `lint-descriptions` | supplied | `/usr/lib/llib-lc`, `/usr/lib/llib-port` |
+| `word-dictionary` | supplied | `/usr/dict/words` |
 | `spell-lists` | supplied | American/British/local word additions and stop list are supplied in the reference spell directory. |
 | `spell-hashes` | generated | `/usr/dict/hlista`, `/usr/dict/hlistb`, `/usr/dict/hstop` |
-| `learn-lessons` | missing | `/usr/lib/learn` |
+| `learn-lessons` | supplied | `/usr/lib/learn` |
 | `learn-workdirs` | generated | `/usr/lib/learn/play`, `/usr/lib/learn/log` |
 | `formatter-tables` | generated | `/usr/lib/font`, `/usr/lib/term` |
-| `formatter-macros` | missing | `/usr/lib/tmac` |
-| `bibliography-data` | missing | `/usr/dict/papers/Ind`, `/usr/lib/eign`, `/usr/dict/lookall/All` |
-| `units-data` | missing | `/usr/lib/units` |
-| `bc-math` | missing | `/usr/lib/lib.b` |
-| `fortune-data` | missing | `/usr/games/lib/fortunes` |
-| `quiz-data` | missing | `/usr/games/quiz.k/index` |
+| `formatter-macros` | supplied | `/usr/lib/tmac` |
+| `bibliography-data` | supplied | `/usr/dict/papers/Ind`, `/usr/lib/eign`, `/usr/dict/lookall/All` |
+| `units-data` | supplied | `/usr/lib/units` |
+| `bc-math` | missing | Optional /usr/lib/lib.b is referenced by bc source but absent from the full pinned archive; recover it separately or document the unresolved feature. |
+| `fortune-data` | supplied | `/usr/games/lib/fortunes` |
+| `quiz-data` | supplied | `/usr/games/quiz.k/index` |
 | `v7-source-archives` | supplied | libplot backends contain source in historical .c.a archives; bootstrap extraction must support the historical archive format. |
 | `v6-compatibility` | pending_assessment | V6 syscall wrappers are supplied for historical compatibility; determine whether native variants are appropriate. |
-| `man-command` | missing | Restore original implementation; verify install path and dependencies |
-| `manual-pages` | missing | `/usr/man`; formatter macros and terminal tables |
 | `pdp11-assembly` | pending_assessment | Rewrite or retarget PDP-11 assembly; do not treat successful host compilation as native compatibility. |
+| `man-command` | supplied | Original inputs are supplied in the full archive. The original bin/man shell script is inventoried as script.man and remains unported. |
+| `manual-pages` | supplied | Original inputs are supplied in the full archive. Install manual sections 0–8 with native-port annotations and formatting support. |
 
-This is a source snapshot, not a complete installed V7 root. It lacks `man`,
-`/usr/man`, and has no
-`usr/include`, yacc/lex installed skeletons, lint library descriptions, base word
-dictionary, lesson archives, formatter macro packages, units database, optional
-bc math library, fortune database or quiz dataset. Font/terminal-table sources
-and spell word additions are supplied; their installed/generated forms need work.
+Items previously called missing from the source subset are supplied by the
+full archive: original headers, yaccpar, the C lex skeleton, lint descriptions,
+formatter macros, six lesson archives, dictionaries/bibliography data, units,
+fortune/quiz datasets and original configuration. “Supplied” means reference
+inputs are available, not that their native port or installation is complete.
+Historical font/terminal tables and spell hashes need native regeneration or
+format validation. Optional nrform/ebcform lex skeletons and bc's lib.b remain
+absent from the complete archive. Kernel/runtime requirements remain pending
+according to their actual Nexix implementation status.
 
 ## Coverage validation
 
@@ -207,16 +237,24 @@ and spell word additions are supplied; their installed/generated forms need work
 make TOOLCHAIN_PREFIX= test-inventory
 ```
 
-The read-only checker validates identifiers, source/evidence paths, dependency
-references, classifications, acceptance checks, all reference-file ownership
-and top-level components. It compares claimed implemented outputs with the
-Makefile and root-image packaging declarations. Negative tests ensure missing
-sources, concealed components, unsupported claims and missing external requirements
-fail validation. New reference files must be explicitly classified.
+The read-only checker verifies all reference bytes against the committed archive
+index, catches missing or additional files, and validates ownership of the entire
+reference/v7 tree. It checks component IDs, source availability, dependency and
+evidence paths, installed-program ownership, source archives and binary-only
+records. Claimed native programs must match the build and root-image declarations.
 
-A passing check means imported-source inventory coverage and consistency. It does not prove
-coverage of the complete installed V7 distribution,
-complete dependency closure, source compatibility or functional port acceptance.
+Negative tests cover omitted sources/scripts, concealed components, missing
+requirements, duplicate IDs, unsupported port claims, missing program-index
+entries, provenance drift and wrong archive hashes. To independently compare
+both index and files with the pinned archive:
+
+```sh
+python3 tools/import_v7_reference.py /path/to/v7.tar.gz --check
+```
+
+A passing check means full archive coverage, byte fidelity and inventory
+consistency. It does not prove transitive API compatibility or native functional
+acceptance. Source-less historical binaries remain visible blockers.
 
 ## Kernel foundation
 
