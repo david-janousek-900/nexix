@@ -6,7 +6,7 @@ OBJCOPY = $(TOOLCHAIN_PREFIX)objcopy
 PYTHON ?= python3
 QEMU ?= qemu-system-x86_64
 CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-stack-protector -fno-pie -m64 -mno-red-zone -mgeneral-regs-only -fno-asynchronous-unwind-tables -Ikernel/include -Iinclude -MMD -MP
-OBJECTS = build/boot.o build/main.o build/serial.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o build/elf.o build/exec.o build/exec_test.o build/exec_image.o build/libc_test.o build/libc_image.o build/block.o build/v7fs.o build/fs_test.o build/root_image.o build/files.o build/files_test.o build/files_image.o build/tty.o build/tty_test.o build/tty_image.o build/signals.o build/signals_test.o build/signals_image.o
+OBJECTS = build/boot.o build/main.o build/serial.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o build/elf.o build/exec.o build/exec_test.o build/exec_image.o build/libc_test.o build/libc_image.o build/block.o build/v7fs.o build/fs_test.o build/root_image.o build/files.o build/files_test.o build/files_image.o build/tty.o build/tty_test.o build/tty_image.o build/signals.o build/signals_test.o build/signals_image.o build/catalog.o build/v7_userland_test.o build/v7_test_image.o
 HOST_CC ?= cc
 .DEFAULT_GOAL := all
 -include $(OBJECTS:.o=.d)
@@ -128,7 +128,7 @@ test-unit: build/memory-test build/v7-types-test build/uaccess-test build/filesy
 	./build/filesystem-test build/root-test.img
 	./build/tty-unit-test
 
-test: test-unit smoke build/test-ud.iso build/test-pf.iso build/test-memory.iso test-paging test-user test-fs test-files test-tty test-signals
+test: test-unit smoke build/test-ud.iso build/test-pf.iso build/test-memory.iso test-paging test-user test-fs test-files test-tty test-signals test-v7
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-ud.iso ud
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-pf.iso pf
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-memory.iso memory 16M
@@ -185,7 +185,7 @@ test-exec: iso
 
 # Native userland: compiler freestanding headers plus Nexix headers only.
 USER_CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-builtin -fno-stack-protector -fno-pie -m64 -mno-red-zone -mgeneral-regs-only -fno-asynchronous-unwind-tables -nostdinc -isystem $(shell $(CC) -print-file-name=include) -Ilibc/include -Iinclude -MMD -MP
-LIBC_OBJECTS = build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o
+LIBC_OBJECTS = build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o
 -include $(LIBC_OBJECTS:.o=.d) build/libc_program.d
 build/crt0.o: libc/arch/x86_64/crt0.S | build
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
@@ -299,3 +299,48 @@ build/libc_setjmp.o: libc/arch/x86_64/setjmp.S | build
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
 build/signals_abi.o: user/signals-test-abi.S include/nexix/syscall.h | build
 	$(CC) -m64 -ffreestanding -fno-pie -Iinclude -c $< -o $@
+
+# Native builds of retained V7 K&R sources; original reference/ stays pristine.
+V7_CFLAGS = $(filter-out -std=c11 -Werror,$(USER_CFLAGS)) -std=gnu89 -funsigned-char -fcommon -fno-strict-aliasing -Wno-implicit-int -Wno-implicit-function-declaration -Wno-return-type -Wno-incompatible-pointer-types -Wno-int-conversion -Wno-pointer-sign -Wno-unused-parameter -Wno-parentheses -Wno-missing-field-initializers
+V7_COMMANDS = init echo cat ls pwd cp ln rm
+V7_SH_SOURCES = $(wildcard user/v7/sh/*.c)
+V7_SH_OBJECTS = $(patsubst user/v7/sh/%.c,build/v7-sh-%.o,$(V7_SH_SOURCES))
+V7_ELFS = build/v7-sh.elf $(addprefix build/v7-,$(addsuffix .elf,$(V7_COMMANDS)))
+-include $(V7_SH_OBJECTS:.o=.d) $(addprefix build/v7-,$(addsuffix .d,$(V7_COMMANDS)))
+build/v7-sh-%.o: user/v7/sh/%.c | build
+	$(CC) $(V7_CFLAGS) -c $< -o $@
+build/v7-%.o: user/v7/cmd/%.c user/v7/compat.h | build
+	$(CC) $(V7_CFLAGS) -include user/v7/compat.h -c $< -o $@
+build/v7-sh.elf: build/crt0.o $(V7_SH_OBJECTS) build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o $(V7_SH_OBJECTS) build/libc.a -o $@
+build/v7-%.elf: build/crt0.o build/v7-%.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/v7-$*.o build/libc.a -o $@
+.PHONY: v7-userland
+v7-userland: $(V7_ELFS)
+userland: v7-userland
+
+V7_IMAGES = $(addprefix build/v7_image_,$(addsuffix .o,sh init echo cat ls pwd cp ln rm))
+# Embedded executable images for the step 16 acceptance fixture.
+OBJECTS += $(V7_IMAGES)
+-include build/catalog.d build/v7_userland_test.d build/v7_test_program.d
+build/catalog.o: kernel/v7/catalog.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+build/v7_userland_test.o: kernel/v7_userland_test.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+build/v7_image_%.o: build/v7-%.elf
+	$(LD) -r -b binary $< -o build/v7_raw_$*.o
+	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/v7_raw_$*.o $@
+build/v7_test_program.o: user/v7-test.c | build
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/v7-test.elf: build/crt0.o build/v7_test_program.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/v7_test_program.o build/libc.a -o $@
+build/v7_test_image.o: build/v7-test.elf
+	$(LD) -r -b binary $< -o build/v7_test_raw.o
+	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/v7_test_raw.o $@
+.PHONY: test-v7
+test-v7: iso
+	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso v7 16M
+	$(PYTHON) tools/smoke.py $(QEMU) build/nexix.iso v7 128M
+build/nexix.elf: $(V7_IMAGES)
+
+.SECONDARY: $(addprefix build/v7-,$(addsuffix .o,$(V7_COMMANDS)))

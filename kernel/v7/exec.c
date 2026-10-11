@@ -4,19 +4,10 @@
 #include "uaccess.h"
 #include "segments.h"
 #include <nexix/errno.h>
-extern const uint8_t _binary_build_exec_test_elf_start[], _binary_build_exec_test_elf_end[];
-extern const uint8_t _binary_build_libc_test_elf_start[], _binary_build_libc_test_elf_end[];
-extern const uint8_t _binary_build_files_test_elf_start[], _binary_build_files_test_elf_end[];
-extern const uint8_t _binary_build_tty_test_elf_start[], _binary_build_tty_test_elf_end[];
-extern const uint8_t _binary_build_signals_test_elf_start[], _binary_build_signals_test_elf_end[];
+#include "userland.h"
 /* Single CPU, IRQs disabled throughout exec; bounded scratch avoids using the
  * guarded 16 KiB kernel stack for the argument strings. */
 static struct exec_args scratch;
-static bool equal(const char *a, const char *b)
-{
-    while (*a && *a == *b) { ++a; ++b; }
-    return *a == *b;
-}
 static int vector(struct address_space *vm, uintptr_t address, size_t *count, size_t *offsets)
 {
     *count = 0;
@@ -44,24 +35,11 @@ int proc_exec(uintptr_t path, uintptr_t argv, uintptr_t envp, struct interrupt_f
     char name[256];
     int error = copyinstr(&p->p_vm, path, name, sizeof(name), NULL);
     if (error) return error;
-    const uint8_t *file, *end;
-    const char *comm;
-    if (equal(name, "/bin/exec-test")) {
-        file = _binary_build_exec_test_elf_start; end = _binary_build_exec_test_elf_end;
-        comm = "exec-test";
-    } else if (equal(name, "/bin/libc-test")) {
-        file = _binary_build_libc_test_elf_start; end = _binary_build_libc_test_elf_end;
-        comm = "libc-test";
-    } else if (equal(name, "/bin/files-test")) {
-        file = _binary_build_files_test_elf_start; end = _binary_build_files_test_elf_end;
-        comm = "files-test";
-    } else if (equal(name, "/bin/tty-test")) {
-        file = _binary_build_tty_test_elf_start; end = _binary_build_tty_test_elf_end;
-        comm = "tty-test";
-    } else if (equal(name, "/bin/signals-test")) {
-        file = _binary_build_signals_test_elf_start; end = _binary_build_signals_test_elf_end;
-        comm = "signals-test";
-    } else return -NX_ENOENT;
+    const struct embedded_program *program = userland_program(name);
+    if (!program) return -NX_ENOENT;
+    const uint8_t *file = program->start, *end = program->end;
+    const char *comm = name;
+    for (const char *c = name; *c; ++c) if (*c == '/') comm = c + 1;
     struct user *u = p->p_user;
     if (p->p_textp || !files_refs_valid(u)) return -NX_EBUSY;
     scratch.used = 0;

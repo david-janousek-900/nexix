@@ -174,3 +174,14 @@ nested and nonlocal handler exits, alarms, interrupted I/O/wait, faults and
 SIGPIPE, heap OOM rollback, credential/metadata rules and exact page/reference
 cleanup. Host TTY tests check interrupt/quit controls and RAW preservation.
 See [signals.md](signals.md) for the ABI, coverage and success markers.
+
+## Step 16 acceptance
+
+`make TOOLCHAIN_PREFIX= test-v7` verifies native V7 userland at 16 MiB and
+128 MiB. Logs are `build/v7-16M.log` and `build/v7-128M.log`.
+Required markers are `NEXIX_V7_INIT_ELF_OK`, `NEXIX_V7_USER_PROGRAM_OK`,
+`NEXIX_V7_SHELL_OK`, `NEXIX_V7_UTILITIES_OK` and
+`NEXIX_V7_USERLAND_CLEANUP_OK`. Init is checked for successful ELF loading;
+the shell and utilities are actually executed at CPL3. The fixture runs twice
+with fresh writable roots and checks process/resource reclamation. See
+[userland.md](userland.md) for coverage and remaining startup work.

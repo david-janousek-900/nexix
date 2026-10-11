@@ -120,4 +120,4 @@ Success markers are NEXIX_SIGNALS_OK, NEXIX_HEAP_OK, NEXIX_INIT_SYSCALLS_OK and
 NEXIX_SIGNALS_CLEANUP_OK, followed by NEXIX_BOOT_OK. Logs are
 `build/signals-16M.log` and `build/signals-128M.log`.
 
-Step 16 rebuilds V7 init, the shell and basic utilities. They do not run yet.
+Step 16 rebuilds V7 init, the shell and basic utilities. The shell and utilities run in acceptance tests; normal init startup follows in step 18.

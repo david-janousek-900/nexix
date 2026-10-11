@@ -122,11 +122,11 @@ ownership, permissions and blocking pipes with 16 MiB RAM (`build/files-16M.log`
 `make TOOLCHAIN_PREFIX= test-tty` exchanges real COM1 input with 16 MiB and
 128 MiB RAM and tests an interactive demo. `make TOOLCHAIN_PREFIX= run-tty`
 starts that demo: type a line and Enter, use Backspace/Ctrl-U to edit, or type
-`quit` to finish. Ctrl-A, release, then X exits QEMU. The V7 shell remains pending.
+`quit` to finish. Ctrl-A, release, then X exits QEMU. The rebuilt V7 shell runs in automated tests; normal interactive startup is pending.
 
 ## Roadmap
 
-Version **0.1.0** covers these 20 steps. Steps 1–15 are implemented; step 16
+Version **0.1.0** covers these 20 steps. Steps 1–16 are implemented; step 17
 is next. Regression tests accompany implementation throughout the roadmap.
 
 1. Import V7 sources and preserve licensing.
@@ -157,3 +157,9 @@ Start with single-core QEMU i440fx, serial console, and IDE storage. SMP,
 physical hardware, UEFI, IPv6, secure remote access, and self-hosting follow
 the first release. See [architecture notes](docs/architecture.md) and
 [source provenance](reference/README.md).
+
+`make TOOLCHAIN_PREFIX= v7-userland` builds V7 init, the Bourne shell and
+seven utilities as native ELF64 executables. `make TOOLCHAIN_PREFIX= test-v7`
+tests the rebuilt shell and utilities in QEMU with 16 MiB and 128 MiB RAM.
+Init is built and checked by the ELF loader; launching it as PID 1 follows in
+step 18. See [V7 userland](docs/userland.md).

@@ -5,7 +5,7 @@ programs. They are native AMD64 implementations using the Nexix syscall ABI.
 Historical PDP-11 assembly is retained under reference/ and is not linked.
 The supported interface is a foundation for rebuilding V7 userland, not a
 complete libc. File I/O, signal wrappers and brk/sbrk now have kernel support.
-Stdio, malloc and additional source compatibility are step 16 work.
+Step 16 adds integer stdio, heap allocation and V7 source compatibility; see [userland.md](userland.md).
 
 ## Build and startup
 
@@ -75,13 +75,13 @@ Also implemented:
 - strlen, strcmp, strncmp, strcpy, strncpy, strchr, strrchr.
 - getenv, reading the current `environ` vector.
 - exit and atexit, with 32 statically stored callbacks executed in reverse
-  registration order. `_exit` bypasses callbacks. There are no stdio streams
-  to flush yet; successful exec replaces the callback state with fresh BSS.
+  registration order. `_exit` bypasses callbacks. Step 16 streams are unbuffered; successful exec replaces the callback state with fresh BSS.
 
 Step 13 adds file and pipe wrappers and headers; see [files.md](files.md).
 Step 14 adds sgtty/ioctl headers and stty/gtty/ioctl/isatty; see [tty.md](tty.md).
 Step 15 adds signals, brk/sbrk, setjmp/longjmp and init/shell service wrappers;
-see [signals.md](signals.md). There is no malloc yet. String
+see [signals.md](signals.md). Step 16 adds malloc and userland support; see
+[userland.md](userland.md). String
 functions follow their usual C buffer contracts; they do not validate pointers
 or allocate storage. getenv returns a pointer into the environment, not a copy.
 The wait-status helpers expose exited and signaled status encodings, including

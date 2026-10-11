@@ -6,6 +6,12 @@ struct stat {
     uint16_t st_dev, st_ino, st_mode, st_nlink, st_uid, st_gid, st_rdev, reserved;
     int64_t st_size, st_atime, st_mtime, st_ctime;
 };
+#define S_IREAD 0400
+#define S_IWRITE 0200
+#define S_IEXEC 0100
+#define S_ISUID 04000
+#define S_ISGID 02000
+#define S_ISVTX 01000
 #define S_IFMT 0170000
 #define S_IFREG 0100000
 #define S_IFDIR 0040000

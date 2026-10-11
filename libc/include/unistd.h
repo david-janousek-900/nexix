@@ -28,6 +28,7 @@ int nice(int);
 pid_t getpgrp(void);
 pid_t setpgrp(void);
 unsigned alarm(unsigned);
+unsigned sleep(unsigned);
 int pause(void);
 int brk(void *);
 void *sbrk(intptr_t);
@@ -46,5 +47,7 @@ uid_t geteuid(void);
 gid_t getgid(void);
 gid_t getegid(void);
 int execve(const char *path, char *const argv[], char *const envp[]);
+int execl(const char *, const char *, ...);
+int execvp(const char *, char *const []);
 int execv(const char *path, char *const argv[]);
 #endif
