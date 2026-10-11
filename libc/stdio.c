@@ -1,4 +1,4 @@
-/* Unbuffered streams and native V7 integer/floating-point formatting. */
+/* Buffered native streams and V7 integer/floating-point formatting. */
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -7,7 +7,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <math.h>
-static FILE streams[20] = {{.fd=0,.used=1,.readable=1}, {.fd=1,.used=1,.writable=1}, {.fd=2,.used=1,.writable=1}};
+#include <sys/stat.h>
+static FILE streams[20] = {{.fd=0,.used=1,.readable=1}, {.fd=1,.used=1,.writable=1}, {.fd=2,.used=1,.writable=1,.buffering=-1}};
 FILE *stdin = &streams[0], *stdout = &streams[1], *stderr = &streams[2];
 static int mode_flags(const char *mode)
 {
@@ -23,7 +24,7 @@ static int mode_flags(const char *mode)
     return flags;
 }
 static void stream_init(FILE *f, int fd, int flags)
-{ *f=(FILE){.fd=fd,.used=1,.readable=(flags&O_ACCMODE)!=O_WRONLY,.writable=(flags&O_ACCMODE)!=O_RDONLY}; }
+{ *f=(FILE){.fd=fd,.used=1,.readable=(flags&O_ACCMODE)!=O_WRONLY,.writable=(flags&O_ACCMODE)!=O_RDONLY,.append=!!(flags&O_APPEND)}; }
 FILE *fopen(const char *path, const char *mode)
 {
     int flags=mode_flags(mode); if(flags<0)return NULL;
@@ -54,37 +55,139 @@ FILE *freopen(const char *path,const char *mode,FILE *f)
     int fd=open(path,flags,0666);if(fd<0)return NULL;
     stream_init(f,fd,flags);return f;
 }
-int fclose(FILE *f) { if(!f||!f->used){errno=EBADF;return EOF;}int result=close(f->fd); f->used=0;return result; }
-int fflush(FILE *f) { (void)f; return 0; }
-void setbuf(FILE *f,char *b) { (void)f;(void)b; }
+/* buffering: 0 lazy default, 1 buffered, -1 unbuffered;
+ * direction: 0 neutral, 1 reading, 2 writing. */
+static int valid(FILE *f)
+{
+    if(f && f->used)return 1;
+    errno=EBADF;if(f)f->error=1;return 0;
+}
+static void buffer_init(FILE *f,int writing)
+{
+    if(f->buffering)return;
+    int saved=errno;
+    if(writing && isatty(f->fd))f->buffering=-1;
+    else {
+        f->buffer=malloc(BUFSIZ);
+        if(f->buffer){f->owned=1;f->buffering=1;}
+        else f->buffering=-1; /* V7 falls back to unbuffered I/O. */
+    }
+    errno=saved;
+}
+static int flush_output(FILE *f)
+{
+    if(f->direction!=2)return 0;
+    size_t done=0;
+    while(done<f->length){
+        ssize_t n=write(f->fd,f->buffer+done,f->length-done);
+        if(n<0 && errno==EINTR)continue;
+        if(n<=0){
+            if(!n)errno=EIO;
+            memmove(f->buffer,f->buffer+done,f->length-done);
+            f->length-=done;f->error=1;return EOF;
+        }
+        done+=(size_t)n;
+    }
+    f->position=f->length=0;return 0;
+}
+int fflush(FILE *f)
+{
+    if(f){if(!valid(f))return EOF;return flush_output(f);}
+    int result=0;
+    for(unsigned i=0;i<20;++i)
+        if(streams[i].used && flush_output(&streams[i])==EOF)result=EOF;
+    return result;
+}
+int fclose(FILE *f)
+{
+    if(!valid(f))return EOF;
+    int result=flush_output(f),saved=errno;
+    if(close(f->fd)<0){result=EOF;saved=errno;}
+    if(f->owned)free(f->buffer);
+    *f=(FILE){0};
+    if(result==EOF)errno=saved;
+    return result;
+}
+void setbuf(FILE *f,char *b)
+{
+    if(!valid(f))return;
+    /* V7 requires this call before I/O. Do not discard pending output if
+     * a caller changes an already active stream and flushing fails. */
+    if(flush_output(f)==EOF)return;
+    if(f->direction==1){
+        size_t unread=f->length-f->position+f->pushed;
+        if(unread && lseek(f->fd,-(long)unread,SEEK_CUR)<0){f->error=1;return;}
+    }
+    if(f->owned)free(f->buffer);
+    f->buffer=(unsigned char *)b;f->owned=0;f->buffering=b?1:-1;
+    f->position=f->length=0;f->direction=f->pushed=0;
+}
 int fileno(FILE *f) { return f->fd; }
+static int direction(FILE *f,int writing)
+{
+    if(!valid(f))return EOF;
+    if(writing?!f->writable:!f->readable){errno=EBADF;f->error=1;return EOF;}
+    int next=writing?2:1;
+    if(f->direction!=next){
+        if(f->direction==2 && flush_output(f)==EOF)return EOF;
+        if(f->direction==1){
+            size_t unread=f->length-f->position+f->pushed;
+            if(unread && lseek(f->fd,-(long)unread,SEEK_CUR)<0){f->error=1;return EOF;}
+        }
+        f->position=f->length=0;f->pushed=0;f->direction=next;
+        if(writing)f->eof=0;
+    }
+    buffer_init(f,writing);return 0;
+}
 size_t fread(void *buf,size_t size,size_t count,FILE *f)
 {
-    if (!size || !count) return 0;
-    if(!f->used||!f->readable){errno=EBADF;f->error=1;return 0;}
+    if(!size || !count)return 0;
+    if(direction(f,0)==EOF)return 0;
     if(count>SIZE_MAX/size){errno=EINVAL;f->error=1;return 0;}
     size_t total=size*count,done=0;
-    if(f->pushed){((unsigned char *)buf)[done++]=f->pushback;f->pushed=0;}
-    while(done<total){ssize_t n=read(f->fd,(char *)buf+done,total-done);
+    unsigned char *out=buf;
+    if(f->pushed){out[done++]=f->pushback;f->pushed=0;}
+    while(done<total){
+        if(f->buffering==1 && f->position<f->length){
+            size_t n=f->length-f->position;if(n>total-done)n=total-done;
+            memcpy(out+done,f->buffer+f->position,n);f->position+=n;done+=n;continue;
+        }
+        if(f->eof)break;
+        ssize_t n=read(f->fd,f->buffering==1?(void *)f->buffer:(void *)(out+done),
+                       f->buffering==1?BUFSIZ:total-done);
         if(n<0){if(errno==EINTR)continue;f->error=1;break;}
-        if(!n){f->eof=1;break;}done+=n;}
+        if(!n){f->eof=1;break;}
+        if(f->buffering==1){f->position=0;f->length=(size_t)n;}
+        else done+=(size_t)n;
+    }
     return done/size;
 }
 size_t fwrite(const void *buf,size_t size,size_t count,FILE *f)
 {
-    if (!size || !count) return 0;
-    if(!f->used||!f->writable){errno=EBADF;f->error=1;return 0;}
+    if(!size || !count)return 0;
+    if(direction(f,1)==EOF)return 0;
     if(count>SIZE_MAX/size){errno=EINVAL;f->error=1;return 0;}
     size_t total=size*count,done=0;
-    while(done<total){ssize_t n=write(f->fd,(const char *)buf+done,total-done);
-        if(n<0&&errno==EINTR)continue;
-        if(n<=0){f->error=1;break;}done+=n;}
+    const unsigned char *in=buf;
+    while(done<total){
+        if(f->buffering==1){
+            if(f->length==BUFSIZ && flush_output(f)==EOF)break;
+            size_t n=BUFSIZ-f->length;if(n>total-done)n=total-done;
+            memcpy(f->buffer+f->length,in+done,n);f->length+=n;done+=n;
+        }else{
+            ssize_t n=write(f->fd,in+done,total-done);
+            if(n<0 && errno==EINTR)continue;
+            if(n<=0){if(!n)errno=EIO;f->error=1;break;}
+            done+=(size_t)n;
+        }
+    }
     return done/size;
 }
 int fgetc(FILE *f){unsigned char c;return fread(&c,1,1,f)==1?c:EOF;}
 int ungetc(int c,FILE *f)
 {
-    if(c==EOF||!f->used||!f->readable||f->pushed)return EOF;
+    if(c==EOF)return EOF;
+    if(direction(f,0)==EOF||f->pushed)return EOF;
     f->pushback=(unsigned char)c;f->pushed=1;f->eof=0;return 0; /* V7 success convention. */
 }
 int getw(FILE *f){unsigned char bytes[sizeof(int)];if(fread(bytes,1,sizeof(bytes),f)!=sizeof(bytes))return EOF;
@@ -100,8 +203,34 @@ int fputs(const char *s,FILE *f){size_t n=strlen(s);return fwrite(s,1,n,f)==n?0:
 int puts(const char *s){return fputs(s,stdout)<0?EOF:fputc('\n',stdout);}
 char *fgets(char *s,int size,FILE *f){int i=0,c;if(size<=0)return NULL;while(i<size-1&&(c=fgetc(f))!=EOF){s[i++]=c;if(c=='\n')break;}s[i]=0;return i?s:NULL;}
 char *gets(char *s){char *p=s;int c;while((c=getchar())!=EOF&&c!='\n')*p++=c;*p=0;return c==EOF&&p==s?NULL:s;}
-int fseek(FILE *f,long offset,int whence){if(whence==SEEK_CUR&&f->pushed){if(offset==INT64_MIN){errno=EINVAL;return -1;}--offset;}if(lseek(f->fd,offset,whence)<0)return -1;f->eof=f->pushed=0;return 0;}
-long ftell(FILE *f){long position=lseek(f->fd,0,SEEK_CUR);return position<0?position:position-f->pushed;}
+int fseek(FILE *f,long offset,int whence)
+{
+    if(!valid(f))return -1;
+    if(flush_output(f)==EOF)return -1;
+    if(whence==SEEK_CUR && f->direction==1){
+        long unread=(long)(f->length-f->position)+f->pushed;
+        if(offset<INT64_MIN+unread){errno=EINVAL;return -1;}
+        offset-=unread;
+    }
+    if(lseek(f->fd,offset,whence)<0)return -1;
+    f->position=f->length=0;f->direction=f->eof=f->pushed=0;return 0;
+}
+long ftell(FILE *f)
+{
+    if(!valid(f))return -1;
+    long position=lseek(f->fd,0,SEEK_CUR);if(position<0)return -1;
+    if(f->direction==1)return position-(long)(f->length-f->position)-f->pushed;
+    if(f->direction==2){
+        if(f->append && f->length){
+            /* Inspect EOF without changing the shared descriptor offset. */
+            struct stat st;if(fstat(f->fd,&st)<0)return -1;
+            position=st.st_size;
+        }
+        if(position>INT64_MAX-(long)f->length){errno=EINVAL;return -1;}
+        position+=(long)f->length;
+    }
+    return position;
+}
 void rewind(FILE *f){(void)fseek(f,0,SEEK_SET);f->error=0;}
 int feof(FILE *f){return f->eof;}
 int ferror(FILE *f){return f->error;}

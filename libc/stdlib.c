@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdio.h>
 #define EXIT_HANDLERS 32
 static void (*handlers[EXIT_HANDLERS])(void);
 static unsigned handler_count;
@@ -13,6 +14,7 @@ int atexit(void (*function)(void))
 _Noreturn void exit(int status)
 {
     while (handler_count) handlers[--handler_count]();
+    (void)fflush(NULL);
     _exit(status);
 }
 char *getenv(const char *name)

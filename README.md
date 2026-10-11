@@ -109,8 +109,8 @@ provide the implemented foundation. Step 21 completes the full-distribution inve
 from RTC at boot. Step 23 maintains persistent V7 file timestamps and step 24 adds timezone
 support plus date/touch. Step 25 is in progress: native FP state management and
 the retained libm C sources, mknod, privileged directory operations and chroot
-are implemented. Libc input/stream, character/string and integer helpers are
-being extended; remaining kernel/libc prerequisites
+are implemented. Libc input/stream, character/string and integer helpers, including
+buffered stdio and setbuf, are implemented for the documented contracts; remaining kernel/libc prerequisites
 and steps 26–29 are pending. Regression tests accompany implementation.
 See the [porting inventory](docs/porting-inventory.md) for priorities, dependencies
 and missing inputs.

@@ -8,7 +8,12 @@
 #define SEEK_SET NX_SEEK_SET
 #define SEEK_CUR NX_SEEK_CUR
 #define SEEK_END NX_SEEK_END
-typedef struct nx_stream { int fd, used, error, eof, readable, writable, pushback, pushed; } FILE;
+typedef struct nx_stream {
+    int fd, used, error, eof, readable, writable, pushback, pushed;
+    int buffering, owned, direction, append;
+    unsigned char *buffer;
+    size_t position, length;
+} FILE;
 extern FILE *stdin, *stdout, *stderr;
 FILE *fopen(const char *, const char *);
 FILE *fdopen(int, const char *);

@@ -2,7 +2,7 @@
 
 `make TOOLCHAIN_PREFIX= test-shell` boots the normal production ISO with
 16 MiB and 128 MiB RAM, drives COM1 through QEMU's serial chardev and runs
-271 command checks per session. It uses no kernel test gates or input injection.
+316 command checks per session. It uses no kernel test gates or input injection.
 Transcripts are `build/interactive-16M.log` and `build/interactive-128M.log`.
 The target is included in the full regression suite.
 
@@ -18,6 +18,7 @@ Coverage includes:
 - Ctrl-C at the prompt and in a running cat; repeated interrupts; Ctrl-\
   terminating a foreground child without terminating init; pipe cancellation.
 - A caught SIGINT trap, trap removal, empty and nonempty Ctrl-D input records.
+- Immediate interactive cat -u output and normal buffered cat flushing on EOF.
 - A 5120-byte variable expansion and 200 consecutive fork/exec/wait commands.
 
 After interrupts and at session end, the shell remains PID 2 and accepts
@@ -42,7 +43,7 @@ echo hello | cat
 V='two words'; echo "$V"
 echo first > /tmp/a; echo second >> /tmp/a; cat /tmp/a
 cd /tmp; echo a*; rm a
-cat
+cat -u
 ```
 
 While cat runs, enter a line, then Ctrl-C or Ctrl-\; the shell prompt returns.
@@ -55,3 +56,8 @@ readline/history or bash extensions. Cooked input lines are limited to 256
 bytes; expanded arguments also obey the native exec limits. Persistent IDE
 storage is implemented in step 20; see [storage.md](storage.md). Networking
 belongs to version 0.2.0.
+
+V7 cat explicitly enables buffering on stdout. Use `cat -u` when typing into
+cat interactively and expecting each line to appear immediately, or when using
+cat in a live interactive pipeline. Normal `cat` may hold short output until
+its buffer fills or it exits; Ctrl-D ends input and normal exit flushes it.

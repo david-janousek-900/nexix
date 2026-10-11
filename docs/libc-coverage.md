@@ -43,8 +43,29 @@ ungetc preserves one byte, clears EOF on success, and returns **zero on
 success**, following V7 rather than the modern byte-return convention. A second
 pending byte or EOF is rejected. fread consumes pending pushback before reading
 the descriptor. ftell and relative fseek account for that pending byte; a
-successful seek discards it. Streams remain unbuffered and setbuf is still a
-no-op. Read/write access checks set the stream error indicator and EBADF.
+successful seek discards it. Streams lazily allocate a BUFSIZ (512-byte) buffer on first I/O. Output to
+terminals and the initial stderr stream remain unbuffered, following V7.
+Allocation failure falls back to unbuffered I/O. setbuf accepts a caller-owned
+BUFSIZ-byte array, or NULL for unbuffered I/O; as in V7 it should be called
+before I/O and the array must remain alive until the stream closes. Only
+library-owned buffers are freed by fclose/freopen.
+
+fflush writes pending output, retries interrupted writes, and retains any
+unwritten bytes after an error. fflush(NULL) flushes every active output
+stream (a native convenience); fflush on input leaves read-ahead and pushback
+untouched, following V7 rather than a POSIX input-flush extension. fclose
+attempts both flush and close and reports either failure. Normal exit flushes
+after atexit handlers; _exit and successful exec do not flush userspace buffers.
+fork copies pending buffers: callers must flush before fork when both parent
+and child will use normal exit, to avoid duplicate output.
+
+Read-ahead and pending output are included in ftell and relative fseek.
+Successful seeks clear EOF/pushback and reset buffering direction; failed
+input seeks retain unread data, including on pipes. Update-stream direction
+changes flush output or seek back over unread input; a direction change which
+requires seeking on a pipe fails with ESPIPE. Pending append output is counted
+from the current file size without changing the descriptor offset. Read/write
+access checks set the stream error indicator and EBADF.
 
 gets retains the V7 caller-owned buffer interface and removes the newline.
 getw/putw serialize a native four-byte int in little-endian order, matching
@@ -82,6 +103,11 @@ input, EOF, long numeric fields, scan sets, range errors, integer endpoints,
 formatting flags, V7 rand values and character/string contracts. File tests
 exercise pushback, logical offsets, partial elements, append mode, descriptor
 ownership, failed reopen, native word I/O and redirected stdin scanf/gets.
+Buffering tests additionally verify caller-buffer use, deferred output and
+explicit/universal/close/exit flushes, unbuffered output, multi-buffer read/write,
+read-ahead offsets, update and append streams, failed seeks on pipes, broken
+pipe/descriptor errors, immediate redirected stderr, callback output, and
+fork/exec/_exit behavior including inherited buffer duplication.
 Existing VM, inode, block and descriptor cleanup assertions remain active.
 
 Remaining libc prerequisites include password/group database and crypt
@@ -91,3 +117,8 @@ lookup, native headers and adapters for users of internal V7 FILE fields.
 Required kernel accounting, tracing/profiling, kernel-information and
 mount/raw-device interfaces are also unfinished. Their wrappers must accompany
 working kernel behavior; ENOSYS stubs do not complete a port.
+
+Step 25.8 (buffered stdio and setbuf) is implemented. This completes that
+substep's stream behavior and regression coverage; the remaining step 25
+interfaces listed above are still pending. Native FILE-layout compatibility
+with callers of historical internal fields belongs to the remaining adapters.

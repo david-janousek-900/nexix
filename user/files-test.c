@@ -157,6 +157,7 @@ int main(int argc, char **argv)
         REQUIRE(chdir("/tmp") == 0 && stat("../hello", &st) == 0);
         return 0;
     }
+    if (argc == 2 && !strcmp(argv[1], "stdio-exec")) return 0;
     if (argc == 2 && !strcmp(argv[1], "exec")) {
         char byte;
         REQUIRE(fcntl(1, F_GETFD) == -1 && errno == EBADF);

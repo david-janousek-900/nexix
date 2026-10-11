@@ -75,7 +75,7 @@ Also implemented:
 - strlen, strcmp, strncmp, strcpy, strncpy, strchr, strrchr.
 - getenv, reading the current `environ` vector.
 - exit and atexit, with 32 statically stored callbacks executed in reverse
-  registration order. `_exit` bypasses callbacks. Step 16 streams are unbuffered; successful exec replaces the callback state with fresh BSS.
+  registration order. `_exit` bypasses callbacks. Step 25 flushes buffered output after callbacks; successful exec replaces the callback and stream state with fresh BSS.
 
 Step 13 adds file and pipe wrappers and headers; see [files.md](files.md).
 Step 14 adds sgtty/ioctl headers and stty/gtty/ioctl/isatty; see [tty.md](tty.md).
@@ -121,3 +121,10 @@ Step 25 also adds scanf/fscanf/sscanf and their va_list variants, stream pushbac
 fdopen/freopen, gets/getw/putw, V7 character classification and string aliases,
 native integer conversions and the V7 rand sequence. See
 [libc-coverage.md](libc-coverage.md) for behavior and remaining compatibility work.
+
+Step 25.8 adds lazy 512-byte stream buffering and working V7 setbuf. Terminal
+output and initial stderr remain unbuffered. fflush/fclose and normal exit
+flush pending output; _exit and successful exec do not. Input fflush is a V7
+no-op. See [libc-coverage.md](libc-coverage.md) for buffer ownership, seek/tell,
+update-stream and fork conventions. All native callers must rebuild because
+FILE now includes buffer state.

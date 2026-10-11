@@ -22219,7 +22219,7 @@
         "Adapt remaining callers of internal V7 FILE layouts and remote printf conventions; validate all consuming programs."
       ],
       "unresolved": [
-        "Native libc is partial; implemented scanf/stream and general helpers are documented in docs/libc-coverage.md."
+        "Native libc is partial; implemented scanf, buffered streams/setbuf and general helpers are documented in docs/libc-coverage.md."
       ],
       "acceptance": [
         "Verify buffered stdio, account lookup, allocation, strings, time, syscall errors and native startup using consuming programs.",

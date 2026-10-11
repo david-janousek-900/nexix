@@ -60,7 +60,8 @@ def command(line, result=b''):
     checks += 1
 
 def cat_ready(name, pipeline=False):
-    line = b'cat | cat' if pipeline else b'cat'
+    # V7 cat explicitly buffers stdout; -u is required for a live round trip.
+    line = b'cat -u | cat -u' if pipeline else b'cat -u'
     send(line + b'\n')
     expect(re.escape(line + b'\r\n'))
     send(name + b'\n')
@@ -126,10 +127,15 @@ try:
     cat_ready(b'PIPE_READY', pipeline=True)
     send(b'\x03'); expect(rb'\r\n# ')
     command(b'echo PIPE_PID_$$', b'PIPE_PID_2\n')
-    send(b'cat\n'); expect(rb'cat\r\n')
+    send(b'cat -u\n'); expect(rb'cat -u\r\n')
     send(b'EOF_LINE\x04'); expect(rb'EOF_LINEEOF_LINE')
     send(b'\x04'); expect(rb'# ')
     command(b'echo EOF_PID_$$', b'EOF_PID_2\n')
+    stage = 'buffered cat EOF flush'
+    send(b'cat\n'); expect(rb'cat\r\n')
+    send(b'BUFFERED_CAT\n'); expect(rb'BUFFERED_CAT\r\n')
+    send(b'\x04'); expect(rb'BUFFERED_CAT\r\n# ')
+    checks += 1
     stage = 'trap delivery'
     command(b"trap 'echo TRAP_OK' 2; echo TRAP_SET", b'TRAP_SET\n')
     cat_ready(b'TRAP_READY')

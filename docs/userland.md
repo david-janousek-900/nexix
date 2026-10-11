@@ -9,11 +9,11 @@ Build with `make TOOLCHAIN_PREFIX= v7-userland`. Outputs are
 An installed x86_64-elf toolchain can use the default prefix instead.
 No host libc or dynamic loader is used.
 
-Libc now provides unbuffered file streams, integer formatted output, heap
+Libc now provides buffered file streams, integer/floating formatted output, heap
 allocation, qsort, atoi, execl/execvp, alarm-based sleep and timezone-aware time conversion (see [time.md](time.md)).
 Formatting supports the integer and string forms used by these sources,
-including historical %D/%O. Floating point formatting and a full standard C
-library are pending. setbuf does not enable buffering. The allocator reuses
+including historical %D/%O. Step 25 supplies floating-point formatting and working V7 setbuf; full libc
+coverage remains pending (see [libc-coverage.md](libc-coverage.md)). The allocator reuses
 freed blocks without splitting or coalescing them. Native utmp records have
 8-byte line/name fields and a 64-bit time field (24 bytes total); they are not
 binary compatible with historical PDP-11 utmp records.

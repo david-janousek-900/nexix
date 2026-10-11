@@ -8,7 +8,7 @@
 extern uint8_t _binary_build_root_img_start[], _binary_build_root_img_end[];
 static struct ramdisk root_ram;
 static struct v7fs root_fs;
-static uint8_t executable[65536];
+static uint8_t executable[131072];
 static struct exec_args root_args;
 void rootfs_selftest(void)
 {
