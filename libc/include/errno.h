@@ -37,4 +37,8 @@ extern int errno;
 #define EDOM NX_EDOM
 #define ERANGE NX_ERANGE
 #define ENOSYS NX_ENOSYS
+/* V7 exported error messages; check bounds before indexing. */
+extern char *sys_errlist[];
+extern int sys_nerr;
+
 #endif

@@ -56,4 +56,8 @@ int sscanf(const char *, const char *, ...);
 int vfscanf(FILE *, const char *, va_list);
 int vscanf(const char *, va_list);
 int vsscanf(const char *, const char *, va_list);
+/* V7 exported error messages; check bounds before indexing. */
+extern char *sys_errlist[];
+extern int sys_nerr;
+
 #endif

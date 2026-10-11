@@ -2,7 +2,7 @@
 
 Step 40 supplies the remaining helper contracts listed in the roadmap, plus
 V7 assertions. The reference source tree remains unchanged. Libc remains
-partial: database, crypt, error text, temporary files, process-pipe, profiling,
+partial: database, crypt, process-pipe, profiling,
 symbol lookup and feature-specific wrappers retain their existing owners.
 
 | Interface | V7 origin | Native contract |
@@ -44,7 +44,7 @@ steps 44–45. Public errno/environment/stream/ctype data exports are checked to
 The check rejects missing exports and stale or completed-owner exceptions.
 
 An export proves link availability only. Existing partial functions such as
-perror, ftime and execvp still require their owning feature/consumer acceptance;
+ftime and execvp still require their owning feature/consumer acceptance;
 no stub becomes a completed feature through this check. Full libc integration
 and installed development interfaces remain step 82.
 

@@ -113,7 +113,7 @@ Existing VM, inode, block and descriptor cleanup assertions remain active.
 
 Remaining libc prerequisites include password/group database and crypt
 interfaces, process-pipe helpers (popen/pclose/system), tty/account lookup,
-complete error text, profiling startup/monitor, ELF symbol
+profiling startup/monitor, ELF symbol
 lookup, native headers and adapters for users of internal V7 FILE fields.
 Required kernel accounting, tracing/profiling, kernel-information and
 mount/raw-device interfaces are also unfinished. Their wrappers must accompany
@@ -132,3 +132,7 @@ from complete feature behavior; libc remains partial.
 Step 42 adds [V7 mktemp](mktemp.md), preserving PID-based naming, a–y
 collision retries and the historical slash failure sentinel. It does not create
 or reserve files. Consuming programs remain assigned to their port steps.
+
+Step 43 completes [V7 error messages and perror](errors.md), including exported
+sys_errlist/sys_nerr and direct descriptor-2 diagnostics. Original errno indexes
+and message strings are preserved; ENOSYS is the documented native extension.

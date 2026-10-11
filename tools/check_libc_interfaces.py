@@ -58,7 +58,7 @@ def main():
                                       str(ROOT / 'build/libc.a'), str(ROOT / 'build/libm.a')], text=True)
     exports = {line.split()[-1] for line in output.splitlines() if len(line.split()) == 3}
     errors = validate(declarations, exports, deferred)
-    for name in ('errno', 'environ', 'stdin', 'stdout', 'stderr', '_ctype_'):
+    for name in ('errno', 'environ', 'stdin', 'stdout', 'stderr', '_ctype_', 'sys_errlist', 'sys_nerr'):
         if name not in exports:
             errors.append('missing exported public data: '+name)
     if errors:

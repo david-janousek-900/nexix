@@ -142,3 +142,7 @@ consumers use public routines and stable caller-owned buffers.
 Step 42 supplies [V7 mktemp naming](mktemp.md). It returns an available
 PID/letter-based filename without creating it; application ports must pass
 writable templates and handle the historical slash failure sentinel.
+
+Step 43 completes [error text, perror and exported V7 error tables](errors.md).
+Diagnostics use descriptor 2 directly and preserve errno; stream buffering is
+independent of these messages.

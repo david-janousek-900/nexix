@@ -349,7 +349,6 @@ int printf(const char *fmt,...){va_list ap;va_start(ap,fmt);int n=vfprintf(stdou
 int vsnprintf(char *b,size_t cap,const char *fmt,va_list ap){struct sink s={.buffer=b,.capacity=cap};return format(&s,fmt,ap);}
 int snprintf(char *b,size_t cap,const char *fmt,...){va_list ap;va_start(ap,fmt);int n=vsnprintf(b,cap,fmt,ap);va_end(ap);return n;}
 int sprintf(char *b,const char *fmt,...){va_list ap;va_start(ap,fmt);int n=vsnprintf(b,SIZE_MAX,fmt,ap);va_end(ap);return n;}
-void perror(const char *s){int error=errno;if(s&&*s)fprintf(stderr,"%s: ",s);fprintf(stderr,"error %d\n",error);errno=error;}
 
 void nx_printf_remote_init(struct nx_printf_remote *remote,const char *fmt,va_list ap)
 { remote->format=fmt;va_copy(remote->arguments,ap); }
