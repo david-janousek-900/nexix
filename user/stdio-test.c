@@ -24,7 +24,7 @@ static int buffering_test(void)
     CHECK(fwrite(data+17,1,sizeof(data)-17,f)==sizeof(data)-17);
     CHECK(ftell(f)==sizeof(data)&&fseek(f,0,SEEK_SET)==0);
     CHECK(fread(out,1,1,f)==1&&out[0]==data[0]&&ftell(f)==1);
-    CHECK(lseek(fileno(f),0,SEEK_CUR)==BUFSIZ); /* Read ahead. */
+    CHECK(tell(fileno(f))==BUFSIZ); /* Read ahead. */
     CHECK(fflush(f)==0&&getc(f)==(unsigned char)data[1]); /* V7 input flush is a no-op. */
     CHECK(fseek(f,10,SEEK_CUR)==0&&ftell(f)==12&&getc(f)==(unsigned char)data[12]);
     CHECK(ungetc('q',f)==0&&ftell(f)==12);

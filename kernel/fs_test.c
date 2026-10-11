@@ -5,7 +5,7 @@
 #define REQUIRE(c) do { if (!(c)) panic("filesystem self-test: " #c); } while (0)
 extern const uint8_t _binary_build_root_test_img_start[], _binary_build_root_test_img_end[];
 static uint8_t backing[1024 * V7_BSIZE];
-static uint8_t buffer[2048], executable[65536];
+static uint8_t buffer[2048], executable[131072];
 static struct ramdisk ram;
 static struct v7fs fs;
 static struct exec_args args;

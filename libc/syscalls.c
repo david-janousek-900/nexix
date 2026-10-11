@@ -47,6 +47,7 @@ ssize_t write(int fd, const void *buffer, size_t count)
 { return call(NX_SYS_WRITE, fd, (long)(uintptr_t)buffer, count); }
 int close(int fd) { return call(NX_SYS_CLOSE, fd, 0, 0); }
 off_t lseek(int fd, off_t offset, int whence) { return call(NX_SYS_LSEEK, fd, offset, whence); }
+off_t tell(int fd) { return lseek(fd, 0, SEEK_CUR); }
 int dup(int fd) { return call(NX_SYS_DUP, fd, 0, 0); }
 int dup2(int fd, int target) { return call(NX_SYS_DUP2, fd, target, 0); }
 int pipe(int pair[2]) { return call(NX_SYS_PIPE, (long)(uintptr_t)pair, 0, 0); }

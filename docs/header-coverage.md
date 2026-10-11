@@ -61,8 +61,8 @@ arbitrary-precision arithmetic and dump/tape formats remain with their
 consumers as listed in JSON. Native ELF contracts are frozen in step 177;
 historical media formats need explicit encoders, not LP64 structure writes.
 `varargs.h` and internal historical FILE layouts need source adapters (41),
-not pointer arithmetic over PDP-11 call stacks. `assert.h` joins remaining libc
-helpers in step 40. A header's presence never implies its pending library or
+not pointer arithmetic over PDP-11 call stacks. `assert.h` is implemented by step 40 with V7 exit(1) semantics; see
+[scalar and byte helper contracts](libc-helpers.md). A header's presence never implies its pending library or
 kernel feature is implemented.
 
 Original kernel-private headers under `usr/include/sys` remain private. Their

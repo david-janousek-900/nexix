@@ -16,8 +16,8 @@
     },
     {
       "source": "reference/v7/usr/include/assert.h",
-      "status": "deferred_consumer",
-      "native": null,
+      "status": "native_contract",
+      "native": "libc/include/assert.h",
       "step": 40
     },
     {

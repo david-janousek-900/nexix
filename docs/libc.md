@@ -129,3 +129,8 @@ flush pending output; _exit and successful exec do not. Input fflush is a V7
 no-op. See [libc-coverage.md](libc-coverage.md) for buffer ownership, seek/tell,
 update-stream and fork conventions. All native callers must rebuild because
 FILE now includes buffer state.
+
+Step 40 adds [V7 scalar/byte/conversion helpers](libc-helpers.md), including
+returning abort, historical disk-address packing, gcvt, tell, execle and
+exit-based assertions. Public declaration/export coverage is checked separately
+from complete feature behavior; libc remains partial.

@@ -118,8 +118,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 2 partial, 1 prototype and 203 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **364 tracking steps: 39 done, 3 in progress
-and 322 to do** after step 39. These counts are a work breakdown, not an
+The expanded roadmap below has **364 tracking steps: 40 done, 2 in progress
+and 322 to do** after step 40. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Steps 1–24 retain
 their previous scope. Completed portions of the old step 25 are separated
 into steps 25–36; its remaining work is listed individually.
@@ -252,7 +252,7 @@ coverage and installation remain subject to later acceptance steps.
 | 37 | Publish renumbered roadmap and enforce component-to-step coverage | Done | test-inventory validates 217 components, 35 requirements and 361 steps; commit recorded in Git history |
 | 38 | Complete kernel source adaptation coverage | Done | [Source and syscall audit](docs/kernel-coverage.md); test-kernel-coverage; Git history; kernel port remains incomplete |
 | 39 | Complete exported native V7 header/ABI coverage | Done | [Header contracts and deferred owners](docs/header-coverage.md); test-header-abi; Git history; feature implementations remain with their steps |
-| 40 | Finish libc scalar/byte helpers and conversion contracts | In progress | Include swab, l3tol/ltol3, gcvt, abort, tell, execle and missing declared interfaces |
+| 40 | Finish libc scalar/byte helpers and conversion contracts | Done | [V7 helper contracts](docs/libc-helpers.md); test-libc-helpers and test-libc-interfaces; Git history; libc remains partial |
 | 41 | Adapt internal FILE callers and historical remote printf convention | To do | Keep native va_list and source adapters; no PDP-11 stack interpretation |
 | 42 | Temporary-file routines | To do | V7 mktemp and required consumers |
 | 43 | Complete error messages and perror interfaces | To do | V7 error numbering and exported tables |

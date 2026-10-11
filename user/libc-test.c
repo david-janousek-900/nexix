@@ -16,6 +16,7 @@ extern int libc_register_test(void);
 extern int libc_alignment_test(void);
 extern int fpu_process_test(void);
 extern int libc_scan_test(void);
+extern int libc_helpers_test(void);
 static int exit_order;
 static int zeroed[1024];
 static void first(void) { CHECK(exit_order == 1); _exit(42); }
@@ -121,6 +122,13 @@ int main(int argc, char **argv, char **envp)
         CHECK(!getenv("NEXIX_TEST"));
         return 0;
     }
+    if (argc == 8) {
+        CHECK(envp == environ && envp[0] && envp[1] && envp[2] == NULL);
+        CHECK(!strcmp(getenv("NEXIX_TEST"), "explicit") && !strcmp(getenv("EXTRA"), "stack"));
+        CHECK(argv[8] == NULL && !strcmp(argv[0], "/bin/libc-test"));
+        for (int i = 1; i < 8; ++i) CHECK(argv[i][0] == '0'+i && argv[i][1] == 0);
+        return 45;
+    }
     if (argc == 64) {
         CHECK(envp == environ && argv[64] == NULL && envp[64] == NULL);
         for (int i = 0; i < 64; ++i) {
@@ -167,6 +175,9 @@ int main(int argc, char **argv, char **envp)
     CHECK(fpu_process_test());
     numbers(); errno = EFAULT;
     int scan_error=libc_scan_test();if(scan_error)_exit(scan_error);errno=EFAULT;
+    int helper_error = libc_helpers_test();
+    if (helper_error) _exit(helper_error);
+    errno = EFAULT;
     CHECK(wait(NULL) == -1 && errno == ECHILD);
     CHECK(execve("/missing", argv, environ) == -1 && errno == ENOENT);
     volatile uintptr_t invalid_vector = 1;
@@ -198,6 +209,30 @@ int main(int argc, char **argv, char **envp)
         _exit(99);
     }
     CHECK(wait(&status) == child && WIFEXITED(status) && WEXITSTATUS(status) == 43);
+    /* execle must find the environment beyond register and stack arguments. */
+    char *explicit_env[] = {"NEXIX_TEST=explicit", "EXTRA=stack", NULL};
+    CHECK(execle("/missing", argv[0], (char *)NULL, explicit_env) == -1 && errno == ENOENT);
+    CHECK(!strcmp(getenv("NEXIX_TEST"), "ok"));
+    child = fork(); CHECK(child >= 0);
+    if (!child) {
+        execle(argv[0], argv[0], "1", "2", "3", "4", "5", "6", "7", (char *)NULL, explicit_env);
+        _exit(99);
+    }
+    CHECK(wait(&status) == child && WIFEXITED(status) && WEXITSTATUS(status) == 45);
+#define ARG8 "/bin/libc-test", "/bin/libc-test", "/bin/libc-test", "/bin/libc-test", "/bin/libc-test", "/bin/libc-test", "/bin/libc-test", "/bin/libc-test"
+#define ARG64 ARG8, ARG8, ARG8, ARG8, ARG8, ARG8, ARG8, ARG8
+    char *many_env[65];
+    for (int i=0; i<64; ++i) many_env[i]="NEXIX_TEST=ok";
+    many_env[64]=NULL;
+    CHECK(execle(argv[0], ARG64, argv[0], (char *)NULL, many_env)==-1 && errno==E2BIG);
+    child=fork(); CHECK(child>=0);
+    if (!child) { execle(argv[0], ARG64, (char *)NULL, many_env); _exit(99); }
+    CHECK(wait(&status)==child && WIFEXITED(status) && WEXITSTATUS(status)==0);
+    child=fork(); CHECK(child>=0);
+    if (!child) { execle(argv[0], (char *)NULL, (char **)NULL); _exit(99); }
+    CHECK(wait(&status)==child && WIFEXITED(status) && WEXITSTATUS(status)==0);
+#undef ARG64
+#undef ARG8
     child = fork();
     CHECK(child >= 0);
     if (!child) {

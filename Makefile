@@ -187,7 +187,7 @@ test-exec: check build/test-selftest.iso
 
 # Native userland: compiler freestanding headers plus Nexix headers only.
 USER_CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-builtin -fno-stack-protector -fno-pie -m64 -mno-red-zone -mno-avx -fno-asynchronous-unwind-tables -nostdinc -isystem $(shell $(CC) -print-file-name=include) -Ilibc/include -Iinclude -MMD -MP
-LIBC_OBJECTS = build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o build/libc_float.o build/libc_convert.o build/libc_scan.o build/libc_ctype.o build/libc_numbers.o
+LIBC_OBJECTS = build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o build/libc_float.o build/libc_convert.o build/libc_scan.o build/libc_ctype.o build/libc_numbers.o build/libc_bytes.o build/libc_gcvt.o build/libc_abort.o
 -include $(LIBC_OBJECTS:.o=.d) build/libc_program.d
 build/crt0.o: libc/arch/x86_64/crt0.S | build
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
@@ -201,8 +201,8 @@ build/libc_program.o: user/libc-test.c | build
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 build/libc_abi.o: user/libc-test-abi.S include/nexix/syscall.h | build
 	$(CC) -m64 -ffreestanding -fno-pie -Iinclude -c $< -o $@
-build/libc-test.elf: build/crt0.o build/libc_program.o build/libc_scan_program.o build/libc_abi.o build/fpu_program.o build/libc.a build/libm.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/libc_program.o build/libc_scan_program.o build/libc_abi.o build/fpu_program.o build/libc.a build/libm.a build/libc.a -o $@
+build/libc-test.elf: build/crt0.o build/libc_program.o build/libc_scan_program.o build/libc_helpers_program.o build/libc_abi.o build/fpu_program.o build/libc.a build/libm.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/libc_program.o build/libc_scan_program.o build/libc_helpers_program.o build/libc_abi.o build/fpu_program.o build/libc.a build/libm.a build/libc.a -o $@
 build/libc_image.o: build/libc-test.elf
 	$(LD) -r -b binary $< -o build/libc_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/libc_raw.o $@
@@ -443,8 +443,8 @@ test: test-rtc
 
 # Step 24: test native time code against fixed calendar/DST expectations.
 TIME_TEST_NAMES = -Derrno=nx_test_errno -Dgetenv=nx_test_getenv -Dtime=nx_test_time -Dgmtime=nx_test_gmtime -Dlocaltime=nx_test_localtime -Dctime=nx_test_ctime -Dasctime=nx_test_asctime -Dtimezone=nx_test_timezone -Dftime=nx_test_ftime
-build/time-test: tests/time.c libc/time.c libc/include/time.h libc/include/sys/timeb.h | build
-	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror $(TIME_TEST_NAMES) -Ilibc/include -Iinclude tests/time.c libc/time.c -o $@
+build/time-test: tests/time.c libc/time.c libc/include/time.h libc/include/sys/timeb.h libc/include/assert.h libc/include/stdlib.h | build
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -fno-builtin $(TIME_TEST_NAMES) -Ilibc/include -Iinclude tests/time.c libc/time.c -o $@
 .PHONY: test-time
 test-time: build/time-test iso
 	./build/time-test
@@ -493,3 +493,16 @@ test-header-abi: build/header-abi-test
 	./build/header-abi-test
 	$(PYTHON) tests/header_coverage.py --cc $(CC)
 test-inventory: test-header-abi
+
+# Step 40: native byte/conversion, abort/assert and execle contracts.
+build/libc_helpers_program.o: user/libc-helpers-test.c | build
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+-include build/libc_helpers_program.d
+.PHONY: test-libc-helpers
+test-libc-helpers: test-libc
+	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso libc 128M
+.PHONY: test-libc-interfaces
+test-libc-interfaces: build/libc.a build/libm.a
+	$(PYTHON) tools/check_libc_interfaces.py --cc $(CC) --nm $(TOOLCHAIN_PREFIX)nm
+test-libc-helpers: test-libc-interfaces
+test: test-libc-interfaces

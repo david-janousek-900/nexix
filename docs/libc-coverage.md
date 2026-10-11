@@ -122,3 +122,8 @@ Step 36 (previously 25.8: buffered stdio and setbuf) is implemented. This comple
 substep's stream behavior and regression coverage; the remaining kernel/libc
 interfaces listed above are still pending (steps 38–82). Native FILE-layout compatibility
 with callers of historical internal fields belongs to the remaining adapters.
+
+Step 40 adds [V7 scalar/byte/conversion helpers](libc-helpers.md), including
+returning abort, historical disk-address packing, gcvt, tell, execle and
+exit-based assertions. Public declaration/export coverage is checked separately
+from complete feature behavior; libc remains partial.

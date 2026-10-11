@@ -3,6 +3,11 @@
 #include <stddef.h>
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 1
+/* V7 abort may return if SIGIOT is caught or ignored. */
+int abort(void);
+void ltol3(char *, const long *, int);
+void l3tol(long *, const char *, int);
+char *gcvt(double, int, char *);
 _Noreturn void exit(int status);
 int atexit(void (*function)(void));
 void *malloc(size_t);
