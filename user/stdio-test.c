@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #define CHECK(c) do { if(!(c))return __LINE__; } while(0)
+extern int stdio_compat_test(void);
 static FILE *exit_stream;
 static void exit_output(void){(void)fputs("handler",exit_stream);}
 static int buffering_test(void)
@@ -155,5 +156,7 @@ int stdio_test(void)
     CHECK(fdopen(-1,"r")==NULL&&errno==EBADF);
     CHECK(fopen(path,"invalid")==NULL&&errno==EINVAL);
     CHECK(unlink(path)==0);
+    int compatibility_error=stdio_compat_test();
+    if(compatibility_error)return compatibility_error;
     return buffering_test();
 }

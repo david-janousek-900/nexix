@@ -78,7 +78,8 @@ flags, integer precision and existing left/zero padding. D/O/U/X use native long
 arguments as in V7; X prints lowercase hexadecimal and is not C99's uppercase
 int conversion. Floating precision remains limited to 63. Unsupported formats
 return EINVAL and terminate a string destination after any completed prefix.
-The historical remote %r convention remains pending.
+The historical remote %r convention is supported through native captured
+va_list packets; see [stdio compatibility](stdio-compat.md).
 
 ## General helpers
 
@@ -120,8 +121,8 @@ working kernel behavior; ENOSYS stubs do not complete a port.
 
 Step 36 (previously 25.8: buffered stdio and setbuf) is implemented. This completes that
 substep's stream behavior and regression coverage; the remaining kernel/libc
-interfaces listed above are still pending (steps 38–82). Native FILE-layout compatibility
-with callers of historical internal fields belongs to the remaining adapters.
+interfaces listed above are still pending (steps 38–82). Step 41 supplies source adapters for the five supplied non-libc private-stdio
+consumers. Full program acceptance remains with their owning port steps.
 
 Step 40 adds [V7 scalar/byte/conversion helpers](libc-helpers.md), including
 returning abort, historical disk-address packing, gcvt, tell, execle and

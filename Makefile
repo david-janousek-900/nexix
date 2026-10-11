@@ -244,8 +244,8 @@ build/files_test.o: kernel/files_test.c | build/.dir
 build/files_program.o: user/files-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 -include build/files_program.d
-build/files-test.elf: build/crt0.o build/files_program.o build/stdio_program.o build/libc.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/files_program.o build/stdio_program.o build/libc.a -o $@
+build/files-test.elf: build/crt0.o build/files_program.o build/stdio_program.o build/stdio_compat_program.o build/v7_stdio_fragments.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/files_program.o build/stdio_program.o build/stdio_compat_program.o build/v7_stdio_fragments.o build/libc.a -o $@
 build/files_image.o: build/files-test.elf
 	$(LD) -r -b binary $< -o build/files_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/files_raw.o $@
@@ -510,3 +510,20 @@ test-libc-interfaces: build/libc.a build/libm.a
 	$(PYTHON) tools/check_libc_interfaces.py --cc $(CC) --nm $(TOOLCHAIN_PREFIX)nm
 test-libc-helpers: test-libc-interfaces
 test: test-libc-interfaces
+
+# Step 41: source adapters and native remote printf packets.
+V7_STDIO_ADAPTER_INPUTS = reference/v7/usr/src/cmd/refer/hunt5.c reference/v7/usr/src/cmd/refer/inv1.c reference/v7/usr/src/cmd/refer/what3.c reference/v7/usr/src/cmd/cpp/cpp.c reference/v7/usr/src/games/quiz.c
+build/v7-stdio/test-fragments.c: tools/adapt_v7_stdio.py $(V7_STDIO_ADAPTER_INPUTS) | build/.dir
+	$(PYTHON) tools/adapt_v7_stdio.py --output build/v7-stdio
+build/v7_stdio_fragments.o: build/v7-stdio/test-fragments.c
+	$(CC) $(V7_CFLAGS) -c $< -o $@
+.PHONY: test-stdio-adapters
+test-stdio-adapters:
+	$(PYTHON) tests/stdio_adapters.py
+test-inventory: test-stdio-adapters
+.PHONY: test-stdio-compat
+test-stdio-compat: test-stdio-adapters test-stdio test-libc-interfaces
+
+build/stdio_compat_program.o: user/stdio-compat-test.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+-include build/stdio_compat_program.d build/v7_stdio_fragments.d

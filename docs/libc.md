@@ -134,3 +134,7 @@ Step 40 adds [V7 scalar/byte/conversion helpers](libc-helpers.md), including
 returning abort, historical disk-address packing, gcvt, tell, execle and
 exit-based assertions. Public declaration/export coverage is checked separately
 from complete feature behavior; libc remains partial.
+
+Step 41 adds [native stdio source adapters and remote formatting](stdio-compat.md).
+The packet uses captured native va_list and tail replacement; private FILE
+consumers use public routines and stable caller-owned buffers.

@@ -1,5 +1,6 @@
 /* Buffered native streams and V7 integer/floating-point formatting. */
 #include <stdio.h>
+#include <nexix/stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -281,27 +282,40 @@ static size_t floating(char *out, double value, char kind, int precision,int alt
 }
 static int format(struct sink *s,const char *fmt,va_list ap)
 {
+    va_list arguments;
+    va_copy(arguments,ap);
+    unsigned remote_switches=0;
     while(*fmt){if(*fmt!='%'){emit(s,*fmt++);continue;}++fmt;
         int left=0,zero=0,width=0,precision=-1,wide=0,plus=0,space=0,alternate=0;
         for(;;){if(*fmt=='-')left=1;else if(*fmt=='0')zero=1;else if(*fmt=='+')plus=1;
             else if(*fmt==' ')space=1;else if(*fmt=='#')alternate=1;else { break; }
             ++fmt;
         }
-        if(*fmt=='*'){width=va_arg(ap,int);++fmt;if(width<0){if(width==INT32_MIN){errno=EINVAL;s->failed=1;break;}left=1;width=-width;}}
+        if(*fmt=='*'){width=va_arg(arguments,int);++fmt;if(width<0){if(width==INT32_MIN){errno=EINVAL;s->failed=1;break;}left=1;width=-width;}}
         while(*fmt>='0'&&*fmt<='9'){if(width<4096)width=width*10+*fmt-'0';++fmt;}
-        if(*fmt=='.'){precision=0;++fmt;if(*fmt=='*'){precision=va_arg(ap,int);++fmt;if(precision<0)precision=-1;}
+        if(*fmt=='.'){precision=0;++fmt;if(*fmt=='*'){precision=va_arg(arguments,int);++fmt;if(precision<0)precision=-1;}
             else while(*fmt>='0'&&*fmt<='9'){if(precision<4096)precision=precision*10+*fmt-'0';++fmt;}}
         if(*fmt=='l'){wide=1;++fmt;}
         char kind=*fmt;if(!kind)break;++fmt;
+        if(kind=='r'){
+            struct nx_printf_remote *remote=va_arg(arguments,struct nx_printf_remote *);
+            if(!remote||!remote->format||remote_switches++==16){errno=EINVAL;s->failed=1;break;}
+            /* V7 remote replaces the remaining format and argument stream.
+             * Copy the native list so packets can be reused without consuming it. */
+            va_end(arguments);
+            va_copy(arguments,remote->arguments);
+            fmt=remote->format;
+            continue;
+        }
         char digits[768],*p=digits+sizeof(digits);const char *text;size_t n,zeros=0;char sign=0,prefix[2];size_t prefixes=0;
-        if(kind=='s'){text=va_arg(ap,const char *);if(!text)text="(null)";n=0;while(text[n]&&(precision<0||n<(size_t)precision))++n;}
-        else if(kind=='c'){digits[0]=va_arg(ap,int);text=digits;n=1;}
+        if(kind=='s'){text=va_arg(arguments,const char *);if(!text)text="(null)";n=0;while(text[n]&&(precision<0||n<(size_t)precision))++n;}
+        else if(kind=='c'){digits[0]=va_arg(arguments,int);text=digits;n=1;}
         else if(kind=='%'){digits[0]='%';text=digits;n=1;}
         else if(kind=='d'||kind=='i'||kind=='D'||kind=='u'||kind=='U'||kind=='o'||kind=='O'||kind=='x'||kind=='X'){
             int signed_value=kind=='d'||kind=='i'||kind=='D';unsigned base=kind=='o'||kind=='O'?8:kind=='x'||kind=='X'?16:10;
             uint64_t value;
-            if(signed_value){int64_t v=wide||kind=='D'?va_arg(ap,long):va_arg(ap,int);if(v<0){sign='-';value=0-(uint64_t)v;}else {value=v;sign=plus?'+':space?' ':0;}}
-            else value=wide||kind=='O'||kind=='U'||kind=='X'?va_arg(ap,unsigned long):va_arg(ap,unsigned int);
+            if(signed_value){int64_t v=wide||kind=='D'?va_arg(arguments,long):va_arg(arguments,int);if(v<0){sign='-';value=0-(uint64_t)v;}else {value=v;sign=plus?'+':space?' ':0;}}
+            else value=wide||kind=='O'||kind=='U'||kind=='X'?va_arg(arguments,unsigned long):va_arg(arguments,unsigned int);
             uint64_t original=value;
             do{unsigned d=value%base;*--p=d<10?'0'+d:'a'+d-10;value/=base;}while(value);
             text=p;n=digits+sizeof(digits)-p;
@@ -311,7 +325,7 @@ static int format(struct sink *s,const char *fmt,va_list ap)
             if(alternate&&base==16&&original){prefix[0]='0';prefix[1]='x';prefixes=2;}
         }else if(kind=='f'||kind=='e'||kind=='E'||kind=='g'||kind=='G'){
             if (precision > 63) { errno=EINVAL;s->failed=1;break; }
-            double value=va_arg(ap,double);
+            double value=va_arg(arguments,double);
             if(signbit(value)){sign='-';value=-value;}else sign=plus?'+':space?' ':0;
             n=floating(digits,value,kind,precision,alternate);text=digits;
         }else{errno=EINVAL;s->failed=1;break;}
@@ -326,6 +340,7 @@ static int format(struct sink *s,const char *fmt,va_list ap)
         if(left)while(pad){emit(s,' ');--pad;}
     }
     if(!s->file&&s->capacity)s->buffer[s->count<s->capacity?s->count:s->capacity-1]=0;
+    va_end(arguments);
     return s->failed||s->count>INT32_MAX?-1:(int)s->count;
 }
 int vfprintf(FILE *f,const char *fmt,va_list ap){struct sink s={.file=f};return format(&s,fmt,ap);}
@@ -335,3 +350,8 @@ int vsnprintf(char *b,size_t cap,const char *fmt,va_list ap){struct sink s={.buf
 int snprintf(char *b,size_t cap,const char *fmt,...){va_list ap;va_start(ap,fmt);int n=vsnprintf(b,cap,fmt,ap);va_end(ap);return n;}
 int sprintf(char *b,const char *fmt,...){va_list ap;va_start(ap,fmt);int n=vsnprintf(b,SIZE_MAX,fmt,ap);va_end(ap);return n;}
 void perror(const char *s){int error=errno;if(s&&*s)fprintf(stderr,"%s: ",s);fprintf(stderr,"error %d\n",error);errno=error;}
+
+void nx_printf_remote_init(struct nx_printf_remote *remote,const char *fmt,va_list ap)
+{ remote->format=fmt;va_copy(remote->arguments,ap); }
+void nx_printf_remote_end(struct nx_printf_remote *remote)
+{ va_end(remote->arguments);remote->format=NULL; }

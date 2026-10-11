@@ -38,8 +38,8 @@ headers (`-aux-info`, with host libc headers excluded), then checks native
 libc/libm archives with nm. Grouped declarations and function-pointer arguments
 are parsed from the compiler output rather than guessed from source text.
 Every function must have an export or an explicit unfinished owner in
-[libc-declared-interfaces.json](libc-declared-interfaces.json). The current total
-is 192 declarations: 181 exports and 11 passwd/group declarations deferred to
+[libc-declared-interfaces.json](libc-declared-interfaces.json). Step 40 recorded
+192 declarations: 181 exports and 11 passwd/group declarations deferred to
 steps 44–45. Public errno/environment/stream/ctype data exports are checked too.
 The check rejects missing exports and stale or completed-owner exceptions.
 
