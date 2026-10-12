@@ -26,6 +26,9 @@ except FileNotFoundError:
 if mode in ("tty", "tty-demo"):
     # Exchange bytes through QEMU's COM1 chardev, without kernel input injection.
     replies = {b"NEXIX_TTY_UART_COOKED_READY\r\n": b"heX\bllo\r",
+               b"NEXIX_GETPASS_1_READY%\r\n": b"\x03secret99EXCESS\r",
+               b"NEXIX_GETPASS_2_READY\r\n": b"two\r",
+               b"NEXIX_GETPASS_EOF_READY\r\n": b"\x04",
                b"NEXIX_TTY_UART_RAW_READY\r\n": b"\x00\x80\xffR",
                b"NEXIX_TTY_UART_CBREAK_READY\r\n": b"c",
                b"NEXIX_TTY_UART_STOP_READY\r\n": b"\x13s",
@@ -72,6 +75,8 @@ log = Path("build") / (f"memory-{ram}.log" if mode == "memory" else
                         f"{mode}-{ram}.log" if mode in ("process", "syscall", "exec", "libc", "fs", "files", "signals", "v7", "rootfs", "tty", "tty-demo") else f"{mode}.log")
 log.write_bytes(output)
 sys.stdout.buffer.write(output)
+if mode == "tty" and (b"secret99" in output or b"EXCESS" in output or b"NEXIX_GETPASS_OK" not in output):
+    sys.exit(f"FAIL: getpass echo suppression or serial acceptance; see {log}")
 if exited_early:
     sys.exit(f"FAIL: QEMU exited unexpectedly ({process.returncode}); see {log}")
 if mode in ("boot", "process", "syscall", "exec", "libc", "fs", "files", "signals", "v7", "rootfs", "tty", "tty-demo", "memory", "paging-oom", "user-bad-stack"):

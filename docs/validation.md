@@ -329,3 +329,10 @@ and verifies their timestamps and contents survive the third.
 `test-boot` checks normal shell startup and the expanded /bin listing. Existing
 IDE disks retain their previous userland. A separate `DISK_IMAGE` selects a new
 root without replacing the working disk; full disk upgrades remain task 357.
+
+
+Task 47 acceptance: `make test-terminal` runs bounded host fixtures, native
+terminal/account records in the 16/128 MiB signal/stdio boots, and real COM1
+password input at 16/128 MiB. It checks password echo suppression, SIGINT and
+terminal-state restoration, utmp field boundaries and descriptor cleanup.
+See [terminal/account contracts](terminal-accounts.md).

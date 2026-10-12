@@ -191,7 +191,7 @@ test-exec: check build/test-selftest.iso
 
 # Native userland: compiler freestanding headers plus Nexix headers only.
 USER_CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-builtin -fno-stack-protector -fno-pie -m64 -mno-red-zone -mno-avx -fno-asynchronous-unwind-tables -nostdinc -isystem $(shell $(CC) -print-file-name=include) -Ilibc/include -Iinclude -MMD -MP
-LIBC_OBJECTS = build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o build/libc_float.o build/libc_convert.o build/libc_scan.o build/libc_ctype.o build/libc_numbers.o build/libc_bytes.o build/libc_gcvt.o build/libc_abort.o build/libc_mktemp.o build/libc_errors.o build/libc_perror.o build/libc_passwd.o build/libc_group.o build/libc_crypt.o
+LIBC_OBJECTS = build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o build/libc_float.o build/libc_convert.o build/libc_scan.o build/libc_ctype.o build/libc_numbers.o build/libc_bytes.o build/libc_gcvt.o build/libc_abort.o build/libc_mktemp.o build/libc_errors.o build/libc_perror.o build/libc_passwd.o build/libc_group.o build/libc_crypt.o build/libc_terminal.o build/libc_getpass.o
 -include $(LIBC_OBJECTS:.o=.d) build/libc_program.d
 build/crt0.o: libc/arch/x86_64/crt0.S | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
@@ -244,8 +244,8 @@ build/files_test.o: kernel/files_test.c | build/.dir
 build/files_program.o: user/files-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 -include build/files_program.d
-build/files-test.elf: build/crt0.o build/files_program.o build/stdio_program.o build/stdio_compat_program.o build/mktemp_program.o build/perror_program.o build/passwd_program.o build/group_program.o build/v7_stdio_fragments.o build/libc.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/files_program.o build/stdio_program.o build/stdio_compat_program.o build/mktemp_program.o build/perror_program.o build/passwd_program.o build/group_program.o build/v7_stdio_fragments.o build/libc.a -o $@
+build/files-test.elf: build/crt0.o build/files_program.o build/stdio_program.o build/stdio_compat_program.o build/mktemp_program.o build/perror_program.o build/passwd_program.o build/group_program.o build/terminal_account_program.o build/v7_stdio_fragments.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/files_program.o build/stdio_program.o build/stdio_compat_program.o build/mktemp_program.o build/perror_program.o build/passwd_program.o build/group_program.o build/terminal_account_program.o build/v7_stdio_fragments.o build/libc.a -o $@
 build/files_image.o: build/files-test.elf
 	$(LD) -r -b binary $< -o build/files_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/files_raw.o $@
@@ -598,3 +598,22 @@ test-crypt-unit: build/crypt-unit-test build/crypt-oracle.so
 	$(PYTHON) tests/crypt_tables.py
 test-crypt: test-crypt-unit test-libc-helpers test-libc-interfaces
 test-unit: test-crypt-unit
+
+# Task 47: terminal/account lookups and password terminal state.
+build/terminal_account_program.o: user/terminal-account-test.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+-include build/terminal_account_program.d
+.PHONY: test-terminal
+test-terminal: test-stdio test-tty test-libc-interfaces
+TERMINAL_TEST_NAMES = -Derrno=nx_test_errno -Dopen=nx_test_open -Dclose=nx_test_close -Dread=nx_test_read -Dlseek=nx_test_lseek -Dstat=nx_test_stat -Dfstat=nx_test_fstat -Disatty=nx_test_isatty -Dttyname=nx_test_ttyname -Dttyslot=nx_test_ttyslot -Dgetlogin=nx_test_getlogin
+build/terminal-unit-test: tests/terminal.c libc/terminal.c libc/include/unistd.h libc/include/utmp.h libc/include/sys/dir.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -fno-builtin $(TERMINAL_TEST_NAMES) -Ilibc/include -Iinclude tests/terminal.c libc/terminal.c -o $@
+GETPASS_TEST_NAMES = -Derrno=nx_test_errno -Dgetpass=nx_test_getpass -Dfopen=nx_test_fopen -Dfclose=nx_test_fclose -Dsetbuf=nx_test_setbuf -Dfileno=nx_test_fileno -Dsignal=nx_test_signal -Dgtty=nx_test_gtty -Dstty=nx_test_stty -Dfputs=nx_test_fputs -Dfflush=nx_test_fflush -Dgetc=nx_test_getc -Dferror=nx_test_ferror -Dstdin=nx_test_stdin -Dstderr=nx_test_stderr
+build/getpass-unit-test: tests/getpass.c libc/getpass.c libc/include/unistd.h libc/include/sgtty.h libc/include/signal.h libc/include/stdio.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -fno-builtin $(GETPASS_TEST_NAMES) -Ilibc/include -Iinclude tests/getpass.c libc/getpass.c -o $@
+.PHONY: test-terminal-unit
+test-terminal-unit: build/terminal-unit-test build/getpass-unit-test
+	./build/terminal-unit-test
+	./build/getpass-unit-test
+test-terminal: test-terminal-unit
+test-unit: test-terminal-unit

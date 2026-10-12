@@ -42,6 +42,10 @@ void sync(void);
 #define STDOUT_FILENO 1
 #define STDERR_FILENO 2
 int isatty(int fd);
+char *getpass(const char *prompt);
+char *ttyname(int fd);
+int ttyslot(void);
+char *getlogin(void);
 extern char **environ;
 _Noreturn void _exit(int status);
 pid_t fork(void);

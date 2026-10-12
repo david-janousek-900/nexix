@@ -22215,11 +22215,11 @@
         }
       ],
       "blockers": [
-        "Complete account/crypt, process-pipe, tty/account lookup, temporary-file, profiling and ELF symbol interfaces and native header coverage.",
-        "Adapt remaining callers of internal V7 FILE layouts and remote printf conventions; validate all consuming programs."
+        "Complete process-pipe, profiling, ELF symbol, multiplexor/packet and V6/runtime interfaces; finish startup objects and native header installation.",
+        "Validate staged internal V7 FILE adapters and remote printf conventions in all full consuming-program ports."
       ],
       "unresolved": [
-        "Native libc is partial; implemented scanf, buffered streams/setbuf and general helpers are documented in docs/libc-coverage.md."
+        "Native libc is partial; implemented helpers, stdio, account/crypt and terminal/login lookup interfaces are documented in docs/libc-coverage.md and docs/terminal-accounts.md."
       ],
       "acceptance": [
         "Verify buffered stdio, account lookup, allocation, strings, time, syscall errors and native startup using consuming programs.",

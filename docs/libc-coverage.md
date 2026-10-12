@@ -145,5 +145,14 @@ declared public functions have exports; this does not complete the remaining
 libc functions, consumer acceptance or development-interface installation.
 
 Task 46 implements [V7 crypt/setkey/encrypt](crypt.md), retaining the supplied
-DES tables and historical password hashing. Authentication programs and getpass
+DES tables and historical password hashing. Authentication programs
 remain with their subsequent roadmap tasks.
+
+
+## Terminal and account lookup
+
+Task 47 exports getpass, ttyname, ttyslot and getlogin. The source-defined
+password limit, device/inode lookup, tty-file slot numbering and utmp names
+have native acceptance tests; checked failure paths restore terminal state and
+release descriptors. See [terminal/account contracts](terminal-accounts.md).
+Account writers and authentication programs remain separate pending tasks.

@@ -53,8 +53,9 @@ state, as the original does. Calling encrypt without an established key returns
 with EINVAL instead of indexing an uninitialized expansion table.
 
 The interfaces are V7-style shared-state, non-reentrant primitives. Password
-files, default accounts, getpass, login/su/newgrp/passwd and makekey are not
-installed or ported by this task. They retain tasks 47, 99, 102–104 and 246.
+files, default accounts, login/su/newgrp/passwd and makekey are not
+installed or ported by this task. They retain tasks 99, 102–104 and 246.
+[getpass](terminal-accounts.md) is implemented separately by task 47.
 This does not add a new password hash format or change account credentials.
 
 ## Verification
