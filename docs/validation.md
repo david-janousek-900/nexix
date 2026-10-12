@@ -363,3 +363,11 @@ reference/cache lifetimes and errors, plus synchronized filesystem exec probes
 at 16/128 MiB for ETXTBSY, aliases, fork/exec/exit and sticky ownership. Existing
 set-ID rollback and complete native resource reclamation remain checked. See
 [text ownership](text-ownership.md).
+
+
+Task 52 acceptance: `make test-core` verifies native ELF register/FPU and
+mapped data/heap/stack snapshots, signal/core status, credential/file protections,
+readonly/ENOSPC handling and resource cleanup at 16/128 MiB. Host error fixtures
+and an independent Python/readelf decoder validate the format. `make test-shell`
+checks the actual V7 core message and file on disposable RAM/IDE roots at both
+memory sizes. See [core format and policy](core-dumps.md).

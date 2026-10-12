@@ -181,6 +181,38 @@ static int parent_path(struct user *u, const char *path, v7_ino_t *parent, char 
     if ((dir.mode & V7_IFMT) != V7_IFDIR) return -NX_ENOTDIR;
     return v7fs_access(&dir, u->u_uid, u->u_gid, 3) ? 0 : -NX_EACCES;
 }
+int files_core_begin(struct inode **result)
+{
+    *result=NULL;
+    if(!root||!proc_current())return -NX_ENODEV;
+    if(root->read_only)return -NX_EROFS;
+    struct user *u=proc_current()->p_user;
+    if(u->u_uid!=u->u_ruid||u->u_gid!=u->u_rgid)return -NX_EPERM;
+    v7_ino_t ino;int error=lookup_path(u,"core",&ino);
+    if(error==-NX_ENOENT){
+        v7_ino_t parent;char name[V7_DIRSIZ];
+        error=parent_path(u,"core",&parent,name);
+        bool free=false;for(unsigned i=0;i<V7_NINODE;++i)free|=!inodes[i].i_count;
+        if(!error&&!free)error=-NX_ENFILE;
+        if(!error)error=v7fs_create(root,parent,name,0666&~u->u_cmask,u->u_uid,u->u_gid,&ino);
+    }
+    struct v7fs_inode disk;
+    if(!error)error=v7fs_inode_get(root,ino,&disk);
+    if(!error&&(disk.mode&V7_IFMT)!=V7_IFREG)error=-NX_EACCES;
+    if(!error)error=text_write_check(ino);
+    if(!error&&!v7fs_access(&disk,u->u_uid,u->u_gid,2))error=-NX_EACCES;
+    if(error)return error;
+    struct inode *inode=inode_get(ino,&disk);if(!inode)return -NX_ENFILE;
+    error=v7fs_truncate(root,ino);
+    if(error){(void)files_inode_put(inode);return error;}
+    *result=inode;return 0;
+}
+int files_core_write(struct inode *inode,uint64_t offset,const void *bytes,size_t size)
+{
+    if(!valid_inode(inode)||offset>INT64_MAX)return -NX_EINVAL;
+    size_t done=0;int error=v7fs_write(root,inode->i_number,(int64_t)offset,bytes,size,&done);
+    return error?error:done!=size?-NX_EIO:0;
+}
 static int open_path(struct user *u, uintptr_t address, uint64_t flags, uint64_t mode)
 {
     uint64_t allowed = NX_O_ACCMODE | NX_O_CREAT | NX_O_TRUNC | NX_O_EXCL | NX_O_APPEND | NX_O_CLOEXEC;

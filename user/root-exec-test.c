@@ -8,6 +8,7 @@
 static char buffer[4096];
 extern int setid_test(void);
 extern int text_test(void);
+extern int core_test(void);
 static int child_exec(const char *path, int unprivileged)
 {
     int pair[2]; CHECK(pipe(pair)==0);
@@ -61,6 +62,7 @@ int main(void)
     CHECK(unlink("bad-image")==0 && chdir("/")==0);
     error=setid_test();if(error)return error;
     error=text_test();if(error)return error;
+    error=core_test();if(error)return error;
     const char marker[]="NEXIX_ROOT_EXEC_USER_OK\n";
     CHECK(write(1,marker,sizeof(marker)-1)==sizeof(marker)-1);
     return 0;

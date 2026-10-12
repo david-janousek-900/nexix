@@ -130,7 +130,10 @@
         "reference/v7/usr/sys/sys/sig.c"
       ],
       "native": [
-        "kernel/v7/signals.c"
+        "kernel/v7/signals.c",
+        "kernel/v7/core.c",
+        "kernel/include/core.h",
+        "include/nexix/core.h"
       ],
       "tasks": [
         15,
@@ -139,7 +142,7 @@
         57,
         58
       ],
-      "note": "Signal delivery and FP frames exist; core dumps and trace-stop interactions remain pending."
+      "note": "Signal delivery, FP frames and native ELF core dumps are implemented; trace-stop interactions remain pending."
     },
     {
       "id": "pipes",

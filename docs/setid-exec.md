@@ -57,7 +57,8 @@ Traced exec posts the source-defined SIGTRAP, but this does not implement
 ptrace/debugger stops. Those remain tasks 57–58. The acceptance fixture uses
 a test-only gate to set STRC, observes suppressed credentials with SIGTRAP
 ignored, and separately verifies default SIGTRAP termination. Set-ID core-dump
-restrictions remain task 52; no core files are produced by this task.
+restrictions are implemented separately by [task 52](core-dumps.md), including
+effective-versus-real GID suppression.
 
 ## Acceptance
 

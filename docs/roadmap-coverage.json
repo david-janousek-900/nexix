@@ -569,6 +569,7 @@
     "distribution.headers": [
       7,
       39,
+      52,
       82
     ],
     "distribution.kernel": [
@@ -777,6 +778,7 @@
       47,
       48,
       49,
+      52,
       60,
       61,
       67,
@@ -952,6 +954,7 @@
     "headers": [
       7,
       39,
+      52,
       82
     ],
     "historical-devices": [

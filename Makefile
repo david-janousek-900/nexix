@@ -382,8 +382,8 @@ build/nexix.elf: build/root_boot.o
 
 build/root_exec_program.o: user/root-exec-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
-build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/libc.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/libc.a -o $@
+build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/libc.a -o $@
 build/root_exec_image.o: build/root-exec-test.elf
 	$(LD) -r -b binary $< -o build/root_exec_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/root_exec_raw.o $@
@@ -694,3 +694,34 @@ build/text_probe_image.o: build/text-probe.elf
 OBJECTS += build/text_probe_image.o
 build/nexix.elf: build/text_probe_image.o
 -include build/text_program.d build/text_probe_program.d
+# Task 52: V7 fatal-signal policy and native ELF64 core images.
+build/core.o: kernel/v7/core.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+OBJECTS += build/core.o
+build/nexix.elf: build/core.o
+-include build/core.d
+.PHONY: test-core
+test-core: test-rootfs test-inventory test-libc-interfaces
+build/core-unit-test: tests/core.c kernel/v7/core.c kernel/include/core.h include/nexix/core.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/core.c kernel/v7/core.c -o $@
+.PHONY: test-core-unit
+test-core-unit: build/core-unit-test
+	./build/core-unit-test
+	$(PYTHON) tests/core_format.py
+test-core: test-core-unit
+test-unit: test-core-unit
+
+build/core_program.o: user/core-test.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/core_fault.o: user/core-fault.S | build/.dir
+	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
+build/core_probe_program.o: user/core-probe.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/core-probe.elf: build/crt0.o build/core_probe_program.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/core_probe_program.o build/libc.a -o $@
+build/core_probe_image.o: build/core-probe.elf
+	$(LD) -r -b binary $< -o build/core_probe_raw.o
+	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/core_probe_raw.o $@
+OBJECTS += build/core_probe_image.o
+build/nexix.elf: build/core_probe_image.o
+-include build/core_program.d build/core_probe_program.d

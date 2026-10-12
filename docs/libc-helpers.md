@@ -28,8 +28,9 @@ inf/nan and signed zero follow native ecvt's spelling/sign extensions.
 The public `abort` returns int to preserve V7's returning path. Nexix code is
 compiled freestanding with compiler builtins disabled, including the host
 calendar fixture; a hosted C compiler's ISO abort declaration is incompatible.
-Core-dump production remains task 52. The SIGIOT default termination test does
-not claim that a core file is generated.
+Core production is implemented separately by [task 52](core-dumps.md). The
+SIGIOT helper fixture retains its signal assertion; it does not imply that every
+filesystem/credential context permits a dump.
 
 ## Declaration and export acceptance
 

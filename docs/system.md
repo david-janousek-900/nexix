@@ -67,4 +67,5 @@ Run `make test-system`.
 Native command tests use the existing embedded-program fixture; host injection
 provides the missing-shell and syscall-error cases. No accounts, shell program
 ports or persistent disk contents are changed by this task. Core file generation
-remains task 52; preserving a wait-status bit does not implement core dumps.
+is implemented separately by [task 52](core-dumps.md); system preserves the
+complete status, including its completed-core bit.

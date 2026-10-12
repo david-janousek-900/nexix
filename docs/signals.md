@@ -130,3 +130,9 @@ NEXIX_SIGNALS_CLEANUP_OK, followed by NEXIX_BOOT_OK. Logs are
 Task 16 rebuilds V7 init, the shell and basic utilities. The shell and utilities
 run in acceptance tests, and task 18 implements normal init/shell startup.
 Multi-user init/getty/login integration remains tasks 98–108.
+
+
+Task 52 adds [native core dumps](core-dumps.md) for V7's default core-producing
+signals and fatal signal-frame failures. Successful output sets wait bit 0200;
+failed/ineligible output leaves it clear. Caught/ignored signals retain their
+existing behavior. Core policy requires equal real/effective UID and GID.

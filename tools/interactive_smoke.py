@@ -121,7 +121,9 @@ try:
         send(b'\x03'); expect(rb'\r\n# ')
         command(b'echo INTERRUPT_PID_$$', b'INTERRUPT_PID_2\n')
     cat_ready(b'QUIT_READY')
-    send(b'\x1c'); expect(rb'Quit\r\n# ')
+    send(b'\x1c'); expect(rb'Quit - core dumped\r\n# ')
+    command(b'ls core', b'core\n')
+    command(b'rm core')
     command(b'echo QUIT_PID_$$', b'QUIT_PID_2\n')
     stage = 'pipeline interrupt and EOF'
     cat_ready(b'PIPE_READY', pipeline=True)

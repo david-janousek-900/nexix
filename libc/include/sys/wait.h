@@ -6,4 +6,5 @@ pid_t wait(int *status);
 #define WEXITSTATUS(s) (((s) >> 8) & 255)
 #define WIFSIGNALED(s) (((s) & 127) != 0 && ((s) & 127) != 127)
 #define WTERMSIG(s) ((s) & 127)
+#define WCOREDUMP(s) (((s) & 0200) != 0)
 #endif

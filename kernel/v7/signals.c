@@ -3,6 +3,7 @@
 #include "fpu.h"
 #include "uaccess.h"
 #include "segments.h"
+#include "core.h"
 #include <nexix/errno.h>
 _Static_assert(sizeof(struct interrupt_frame) == offsetof(struct nx_signal_context, fpu), "signal context prefix");
 _Static_assert(offsetof(struct interrupt_frame, rsp) == offsetof(struct nx_signal_context, rsp), "signal context offsets");
@@ -76,20 +77,20 @@ void signal_deliver(struct interrupt_frame *frame)
     for (n = 1; n < V7_NSIG; ++n) if (p->p_sig & (1U << (n - 1))) break;
     p->p_sig &= ~(1U << (n - 1));
     uintptr_t handler = p->p_user->u_signal[n], restorer = p->p_user->u_restorer[n];
-    if (!handler || n == NX_SIGKILL) proc_exit(n);
+    if (!handler || n == NX_SIGKILL) proc_exit(n|(core_dump(n,frame)?0200:0));
     /* Preserve the SysV red zone and align the handler as a normal call.
      * Saved frames reside in user memory, permitting handler longjmp without
      * retaining stale kernel frames. sigreturn validates every privilege field. */
     size_t size = sizeof(struct nx_signal_context);
     struct nx_fpu_state fp;
     fpu_save(&fp);
-    if (frame->rsp < USER_BASE + 128 + size + 24) proc_exit(NX_SIGSEGV);
+    if (frame->rsp < USER_BASE + 128 + size + 24) proc_exit(NX_SIGSEGV|(core_dump(NX_SIGSEGV,frame)?0200:0));
     uintptr_t stack = ((frame->rsp - 128 - size) & ~15UL) - 8;
     if (!code(p, handler) || !code(p, restorer) ||
         !user_access_ok(&p->p_vm, stack, size + 8, true) ||
         copyout(&p->p_vm, stack, &restorer, 8) ||
         copyout(&p->p_vm, stack + 8, frame, sizeof(*frame)) ||
-        copyout(&p->p_vm, stack + 8 + sizeof(*frame), &fp, sizeof(fp))) proc_exit(NX_SIGSEGV);
+        copyout(&p->p_vm, stack + 8 + sizeof(*frame), &fp, sizeof(fp))) proc_exit(NX_SIGSEGV|(core_dump(NX_SIGSEGV,frame)?0200:0));
     if (n != NX_SIGILL && n != NX_SIGTRAP) p->p_user->u_signal[n] = 0;
     frame->rip = handler; frame->rsp = stack; frame->rdi = n;
     frame->rflags &= ~0x500UL; /* SysV requires DF clear; do not single-step entry. */

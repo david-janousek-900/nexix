@@ -59,13 +59,14 @@ _Noreturn void rootfs_start(void)
 extern const uint8_t _binary_build_root_exec_test_elf_start[], _binary_build_root_exec_test_elf_end[];
 extern const uint8_t _binary_build_setid_probe_elf_start[], _binary_build_setid_probe_elf_end[];
 extern const uint8_t _binary_build_text_probe_elf_start[], _binary_build_text_probe_elf_end[];
+extern const uint8_t _binary_build_core_probe_elf_start[], _binary_build_core_probe_elf_end[];
 static bool exec_testing;
 static uintptr_t held_pages[32768];
 static unsigned held_count;
 static v7_pid_t held_owner;
 bool root_exec_test_gate(struct interrupt_frame *frame)
 {
-    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x905)return false;
+    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x908)return false;
     struct proc *p=proc_current();
     if(frame->rax==0x900){
         if(frame->rdi)p->p_flag|=V7_STRC;else p->p_flag&=~V7_STRC;
@@ -91,9 +92,20 @@ bool root_exec_test_gate(struct interrupt_frame *frame)
            v7fs_create(&root_volume,directory,name,V7_IFREG|0755,0,0,&ino)||
            v7fs_write(&root_volume,ino,0,_binary_build_text_probe_elf_start,size,&done)||done!=size)
             panic("cannot install text fixture");
-    }else{
+    }else if(frame->rax==0x905){
         frame->rax=p->p_textp?p->p_textp->x_count:0;return true;
-    }
+    }else if(frame->rax==0x907){
+        if(p->p_user->u_uid)panic("unprivileged core fixture install");
+        v7_ino_t directory,ino;size_t done;const char name[V7_DIRSIZ]="core-probe";
+        size_t size=(uintptr_t)_binary_build_core_probe_elf_end-(uintptr_t)_binary_build_core_probe_elf_start;
+        if(v7fs_lookup(&root_volume,V7_ROOTINO,"/tmp/core-dir",&directory)||
+           v7fs_create(&root_volume,directory,name,V7_IFREG|0755,0,0,&ino)||
+           v7fs_write(&root_volume,ino,0,_binary_build_core_probe_elf_start,size,&done)||done!=size)
+            panic("cannot install core fixture");
+    }else if(frame->rax==0x908){
+        if(p->p_user->u_uid)panic("unprivileged core mount fixture");
+        root_volume.read_only=!!frame->rdi;
+    }else return false;
     frame->rax=0;return true;
 }
 void root_exec_selftest(void)

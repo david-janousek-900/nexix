@@ -22,8 +22,8 @@
     },
     {
       "source": "reference/v7/usr/include/core.h",
-      "status": "deferred_consumer",
-      "native": null,
+      "status": "native_contract",
+      "native": "libc/include/core.h",
       "task": 52
     },
     {
