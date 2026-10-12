@@ -162,5 +162,13 @@ Account writers and authentication programs remain separate pending tasks.
 
 Task 48 implements [system](system.md), including the fixed /bin/sh invocation,
 raw child status, parent signal restoration and V7 wait-any/interruption behavior.
-Process-pipe interfaces remain task 49; full consuming-program ports remain
+Process-pipe interfaces are implemented by task 49; full consuming-program ports remain
 assigned to their individual tasks.
+
+
+## Process pipes
+
+Task 49 implements [popen/pclose](popen.md), including both pipe directions,
+buffered output closure, matching child collection and native cleanup fixes.
+Concurrent popen statuses are cached without introducing a waitpid syscall;
+unrelated wait-any and interrupted-wait behavior retain the documented V7 limits.

@@ -17,6 +17,8 @@ typedef struct nx_stream {
 extern FILE *stdin, *stdout, *stderr;
 FILE *fopen(const char *, const char *);
 FILE *fdopen(int, const char *);
+FILE *popen(const char *command, const char *mode);
+int pclose(FILE *stream);
 FILE *freopen(const char *, const char *, FILE *);
 int ungetc(int, FILE *);
 int getw(FILE *);

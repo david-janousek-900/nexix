@@ -342,3 +342,9 @@ Task 48 acceptance: `make test-system` checks V7 system through host fork/exec/
 wait failure fixtures and the real native shell at 16/128 MiB, including raw
 statuses, signal inheritance/restoration, environment/cwd and repeated cleanup.
 See [system contracts](system.md).
+
+
+Task 49 acceptance: `make test-popen` combines host setup/wait/flush failure
+fixtures with native 16/128 MiB shell pipes, concurrent-child statuses, EOF,
+closed-stdio descriptor collisions and broken-pipe cleanup. See
+[process-pipe contracts](popen.md).
