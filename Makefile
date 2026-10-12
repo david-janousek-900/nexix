@@ -191,7 +191,7 @@ test-exec: check build/test-selftest.iso
 
 # Native userland: compiler freestanding headers plus Nexix headers only.
 USER_CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-builtin -fno-stack-protector -fno-pie -m64 -mno-red-zone -mno-avx -fno-asynchronous-unwind-tables -nostdinc -isystem $(shell $(CC) -print-file-name=include) -Ilibc/include -Iinclude -MMD -MP
-LIBC_OBJECTS = build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o build/libc_float.o build/libc_convert.o build/libc_scan.o build/libc_ctype.o build/libc_numbers.o build/libc_bytes.o build/libc_gcvt.o build/libc_abort.o build/libc_mktemp.o build/libc_errors.o build/libc_perror.o build/libc_passwd.o
+LIBC_OBJECTS = build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o build/libc_float.o build/libc_convert.o build/libc_scan.o build/libc_ctype.o build/libc_numbers.o build/libc_bytes.o build/libc_gcvt.o build/libc_abort.o build/libc_mktemp.o build/libc_errors.o build/libc_perror.o build/libc_passwd.o build/libc_group.o
 -include $(LIBC_OBJECTS:.o=.d) build/libc_program.d
 build/crt0.o: libc/arch/x86_64/crt0.S | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
@@ -244,8 +244,8 @@ build/files_test.o: kernel/files_test.c | build/.dir
 build/files_program.o: user/files-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 -include build/files_program.d
-build/files-test.elf: build/crt0.o build/files_program.o build/stdio_program.o build/stdio_compat_program.o build/mktemp_program.o build/perror_program.o build/passwd_program.o build/v7_stdio_fragments.o build/libc.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/files_program.o build/stdio_program.o build/stdio_compat_program.o build/mktemp_program.o build/perror_program.o build/passwd_program.o build/v7_stdio_fragments.o build/libc.a -o $@
+build/files-test.elf: build/crt0.o build/files_program.o build/stdio_program.o build/stdio_compat_program.o build/mktemp_program.o build/perror_program.o build/passwd_program.o build/group_program.o build/v7_stdio_fragments.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/files_program.o build/stdio_program.o build/stdio_compat_program.o build/mktemp_program.o build/perror_program.o build/passwd_program.o build/group_program.o build/v7_stdio_fragments.o build/libc.a -o $@
 build/files_image.o: build/files-test.elf
 	$(LD) -r -b binary $< -o build/files_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/files_raw.o $@
@@ -568,3 +568,16 @@ test-passwd-unit: build/passwd-unit-test
 	./build/passwd-unit-test
 test-passwd: test-passwd-unit
 test-unit: test-passwd-unit
+
+# Step 45: V7 group-file iteration, lookups and bounded membership vectors.
+build/group_program.o: user/group-test.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+-include build/group_program.d
+GROUP_TEST_NAMES = -Derrno=nx_test_errno -Dfopen=nx_test_fopen -Dfclose=nx_test_fclose -Drewind=nx_test_rewind -Dferror=nx_test_ferror -Dgetc=nx_test_getc -Dgetgrent=nx_test_getgrent -Dsetgrent=nx_test_setgrent -Dendgrent=nx_test_endgrent -Dgetgrnam=nx_test_getgrnam -Dgetgrgid=nx_test_getgrgid
+build/group-unit-test: tests/group.c libc/group.c libc/include/grp.h libc/include/stdio.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -fno-builtin $(GROUP_TEST_NAMES) -Ilibc/include -Iinclude tests/group.c libc/group.c -o $@
+.PHONY: test-group-unit test-group
+test-group-unit: build/group-unit-test
+	./build/group-unit-test
+test-group: test-group-unit test-stdio test-libc-interfaces
+test-unit: test-group-unit

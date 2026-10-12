@@ -111,7 +111,7 @@ pipe/descriptor errors, immediate redirected stderr, callback output, and
 fork/exec/_exit behavior including inherited buffer duplication.
 Existing VM, inode, block and descriptor cleanup assertions remain active.
 
-Remaining libc prerequisites include group database and crypt
+Remaining libc prerequisites include crypt
 interfaces, process-pipe helpers (popen/pclose/system), tty/account lookup,
 profiling startup/monitor, ELF symbol
 lookup, native headers and adapters for users of internal V7 FILE fields.
@@ -139,4 +139,8 @@ and message strings are preserved; ENOSYS is the documented native extension.
 
 Step 44 implements [V7 password database interfaces](passwd.md): iteration,
 name/UID lookup and legacy raw-line getpw. Full account setup and authentication
-remain in their multi-user steps; group lookup remains step 45.
+remain in their multi-user steps; group lookup is implemented by step 45.
+
+Step 45 implements [V7 group database interfaces](group.md). All currently
+declared public functions have exports; this does not complete the remaining
+libc functions, consumer acceptance or development-interface installation.

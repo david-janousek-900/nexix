@@ -148,4 +148,8 @@ Diagnostics use descriptor 2 directly and preserve errno; stream buffering is
 independent of these messages.
 
 Step 44 adds [V7 password database iteration and lookup](passwd.md), including
-legacy getpw. Native group functions are still pending; libc remains partial.
+legacy getpw. Native group functions are implemented by step 45; libc remains partial.
+
+Step 45 adds [V7 group iteration, lookup and membership](group.md). Account
+configuration, authentication and credential-changing applications retain
+their roadmap steps.
