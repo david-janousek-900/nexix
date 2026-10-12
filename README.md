@@ -124,8 +124,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 2 partial, 1 prototype and 203 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 47 done, 2 in progress
-and 317 to do** after task 47. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 48 done, 2 in progress
+and 316 to do** after task 48. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -266,7 +266,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 45 | Group database interfaces | Done | [V7 group interfaces](docs/group.md); test-group; Git history; account configuration and credential-changing programs remain pending |
 | 46 | V7 crypt/password primitives | Done | [V7 DES/crypt contracts](docs/crypt.md); test-crypt; Git history; known-answer vectors and all 4096 salts verified |
 | 47 | getpass and tty/account lookup | Done | [Terminal/account contracts](docs/terminal-accounts.md); test-terminal; Git history; native lookups and real COM1 echo/signal restoration at 16/128 MiB |
-| 48 | system | To do | V7 shell execution, signals and child status |
+| 48 | system | Done | [V7 system contract](docs/system.md); test-system at 16/128 MiB and host failure fixtures; Git history; raw wait status and historical wait-any/EINTR behavior |
 | 49 | popen/pclose | To do | Pipe directions, descriptor ownership and exact child collection |
 | 50 | Set-UID/set-GID executable semantics | To do | Currently explicitly rejected; atomic credentials and failure rollback |
 | 51 | Executable text ownership and ETXTBSY behavior | To do | Native resident text equivalent; open/write/exec/fork/exit lifetime |

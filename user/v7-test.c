@@ -21,9 +21,13 @@ static int shell(const char *script,const char *expected,int code)
     if(strcmp(output,expected)){fprintf(stderr,"V7 output mismatch:\n%s\n",output);return __LINE__;}
     return 0;
 }
-int main(void)
+extern int system_test(void);
+extern int system_probe(const char *);
+int main(int argc,char **argv)
 {
+    if(argc==2)return system_probe(argv[1]);
     CHECK(open("/dev/console",O_RDWR)==0 && dup(0)==1 && dup(0)==2);
+    int system_error=system_test();if(system_error)return system_error;
     char text[64]; CHECK(snprintf(text,sizeof(text),"%s %04d %ld %.3s","ok",7,1234567890L,"abcdef")==22);
     CHECK(!strcmp(text,"ok 0007 1234567890 abc"));
     CHECK(snprintf(text,4,"hello")==5 && !strcmp(text,"hel"));

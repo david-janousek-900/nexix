@@ -156,3 +156,11 @@ password limit, device/inode lookup, tty-file slot numbering and utmp names
 have native acceptance tests; checked failure paths restore terminal state and
 release descriptors. See [terminal/account contracts](terminal-accounts.md).
 Account writers and authentication programs remain separate pending tasks.
+
+
+## Shell execution
+
+Task 48 implements [system](system.md), including the fixed /bin/sh invocation,
+raw child status, parent signal restoration and V7 wait-any/interruption behavior.
+Process-pipe interfaces remain task 49; full consuming-program ports remain
+assigned to their individual tasks.

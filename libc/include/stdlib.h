@@ -30,4 +30,5 @@ char *ecvt(double, int, int *, int *);
 char *fcvt(double, int, int *, int *);
 char *mktemp(char *);
 char *getenv(const char *name);
+int system(const char *command);
 #endif
