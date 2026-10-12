@@ -382,8 +382,8 @@ build/nexix.elf: build/root_boot.o
 
 build/root_exec_program.o: user/root-exec-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
-build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/libc.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/libc.a -o $@
+build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/setid_program.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/setid_program.o build/libc.a -o $@
 build/root_exec_image.o: build/root-exec-test.elf
 	$(LD) -r -b binary $< -o build/root_exec_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/root_exec_raw.o $@
@@ -649,3 +649,19 @@ test-popen-unit: build/popen-unit-test
 	./build/popen-unit-test dup-fail
 test-popen: test-popen-unit
 test-unit: test-popen-unit
+
+# Task 50: staged V7 set-ID credentials and real filesystem exec acceptance.
+build/setid_program.o: user/setid-test.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/setid_probe_program.o: user/setid-probe.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/setid-probe.elf: build/crt0.o build/setid_probe_program.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/setid_probe_program.o build/libc.a -o $@
+build/setid_probe_image.o: build/setid-probe.elf
+	$(LD) -r -b binary $< -o build/setid_probe_raw.o
+	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/setid_probe_raw.o $@
+OBJECTS += build/setid_probe_image.o
+build/nexix.elf: build/setid_probe_image.o
+-include build/setid_program.d build/setid_probe_program.d
+.PHONY: test-setid
+test-setid: test-rootfs test-inventory test-libc-interfaces

@@ -69,11 +69,12 @@ Arguments are copied from the old VM into bounded kernel scratch space. A new
 VM, all segments, and the complete stack are built before changing the live
 process. Any failure releases staged frames and tables, leaving the old VM,
 register frame and process metadata intact. Successful replacement activates
-the new CR3 before releasing the old VM. PID, parent, credentials, mask and
-accounting remain intact. Successful replacement closes only descriptors marked
+the new CR3 before releasing the old VM. PID, parent, real IDs, mask and
+accounting remain intact; task 50 applies effective IDs from set-ID executables. Successful replacement closes only descriptors marked
 close-on-exec; failed exec preserves all descriptors. Caught signal dispositions reset; ignored ones
 remain. Profiling is disabled and AFORK cleared. Segment sizes, executable
-metadata and command name are updated. No set-ID behavior exists yet.
+metadata and command name are updated. See [set-ID exec](setid-exec.md) for
+V7 root/tracing exceptions and credential rollback.
 
 The current single-CPU implementation keeps interrupts disabled throughout
 argument staging and loading, so its shared scratch buffer cannot be used

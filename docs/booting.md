@@ -60,7 +60,7 @@ targets build `build/test-selftest.iso` automatically. Fault, memory and TTY
 modes retain their dedicated ISOs. Regression-only mounts use the embedded exec
 catalog for historical fixtures; `files_mount_root` enables filesystem exec.
 The complete suite also checks missing/unexecutable/malformed images, relative
-paths, unsupported set-ID exec, copied executables and resource reclamation.
+paths, V7 set-ID exec and credential rollback, copied executables and resource reclamation.
 ELF callback error tests inject failures in header, program-header and segment
 reads, checking rollback after each failure.
 

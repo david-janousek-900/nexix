@@ -4,6 +4,7 @@
 #include "files.h"
 #include "uaccess.h"
 #include "segments.h"
+#include "signals.h"
 #include <nexix/errno.h>
 #include "userland.h"
 /* Single CPU, IRQs disabled throughout exec; bounded scratch avoids using the
@@ -60,6 +61,12 @@ int proc_exec(uintptr_t path, uintptr_t argv, uintptr_t envp, struct interrupt_f
     vm_activate(&p->p_vm);
     exec_image_release(&old);
     files_exec(u);
+    /* V7 sys1.c: real IDs survive; root skips SUID but still applies SGID.
+     * All fallible staging has completed, so failed exec cannot change IDs. */
+    if (!(p->p_flag & V7_STRC)) {
+        if ((image.mode & V7_ISUID) && u->u_uid) p->p_uid=u->u_uid=image.uid;
+        if (image.mode & V7_ISGID) u->u_gid=image.gid;
+    }
     u->u_tsize = image.text;
     u->u_dsize = image.data + image.bss;
     u->u_ssize = EXEC_STACK_PAGES * PAGE_SIZE;
@@ -78,5 +85,6 @@ int proc_exec(uintptr_t path, uintptr_t argv, uintptr_t envp, struct interrupt_f
     fpu_restore(&p->p_fpu);
     *frame = (struct interrupt_frame){.rip = image.entry, .rsp = image.stack,
         .cs = USER_CS, .ss = USER_DS, .rflags = 0x202};
+    if (p->p_flag & V7_STRC) signal_post(p,NX_SIGTRAP);
     return 0;
 }

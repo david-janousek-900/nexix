@@ -9,6 +9,7 @@
 #include "process.h"
 #include "signals.h"
 #include "syscall.h"
+#include "exec.h"
 #include <nexix/errno.h>
 #include <stddef.h>
 struct idt_gate {
@@ -93,7 +94,7 @@ void interrupt_dispatch(struct interrupt_frame *frame)
         return;
     }
     if (frame->vector == 0x81) {
-        if (process_test_gate(frame) || syscall_test_gate(frame) || libc_test_gate(frame) || files_test_gate(frame) || tty_test_gate(frame) || user_mode_test_gate(frame)) { signal_deliver(frame); return; }
+        if (process_test_gate(frame) || syscall_test_gate(frame) || libc_test_gate(frame) || files_test_gate(frame) || tty_test_gate(frame) || root_exec_test_gate(frame) || user_mode_test_gate(frame)) { signal_deliver(frame); return; }
         frame->rax = (uint64_t)-NX_ENOSYS;
         return;
     }

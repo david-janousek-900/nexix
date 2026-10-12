@@ -132,11 +132,12 @@ int files_load_exec(const char *path, const struct exec_args *args, struct exec_
     struct v7fs_inode node;
     error = v7fs_inode_get(root, ino, &node);
     if (error) return error;
-    /* V7 root still requires at least one execute bit. No set-ID exec yet. */
+    /* Check access using the caller's credentials, before any set-ID change. */
     if ((node.mode & V7_IFMT) != V7_IFREG || !(node.mode & 0111) ||
         !v7fs_access(&node, u->u_uid, u->u_gid, 1)) return -NX_EACCES;
-    if (node.mode & (V7_ISUID | V7_ISGID)) return -NX_ENOEXEC;
-    return elf_load_inode(root, ino, args, image);
+    error = elf_load_inode(root, ino, args, image);
+    if (!error) { image->mode=node.mode; image->uid=node.uid; image->gid=node.gid; }
+    return error;
 }
 static int parent_path(struct user *u, const char *path, v7_ino_t *parent, char name[V7_DIRSIZ])
 {

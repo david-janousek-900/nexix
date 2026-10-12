@@ -6,6 +6,7 @@
 #include <sys/wait.h>
 #define CHECK(c) do { if (!(c)) return __LINE__; } while (0)
 static char buffer[4096];
+extern int setid_test(void);
 static int child_exec(const char *path, int unprivileged)
 {
     int pair[2]; CHECK(pipe(pair)==0);
@@ -51,12 +52,13 @@ int main(void)
     CHECK(chmod("disk-echo",0644)==0);
     CHECK(execv("disk-echo",args)==-1 && errno==EACCES);
     CHECK(chmod("disk-echo",04755)==0);
-    CHECK(execv("disk-echo",args)==-1 && errno==ENOEXEC); /* Set-ID exec unsupported. */
+    error=child_exec("disk-echo",1);if(error)return error;
     CHECK(unlink("disk-echo")==0);
     output=open("bad-image",O_WRONLY|O_CREAT|O_TRUNC,0755);CHECK(output>=0);
     CHECK(write(output,"not ELF",7)==7 && close(output)==0);
     CHECK(execv("bad-image",args)==-1 && errno==ENOEXEC);
     CHECK(unlink("bad-image")==0 && chdir("/")==0);
+    error=setid_test();if(error)return error;
     const char marker[]="NEXIX_ROOT_EXEC_USER_OK\n";
     CHECK(write(1,marker,sizeof(marker)-1)==sizeof(marker)-1);
     return 0;

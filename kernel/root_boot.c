@@ -56,12 +56,47 @@ _Noreturn void rootfs_start(void)
 }
 
 extern const uint8_t _binary_build_root_exec_test_elf_start[], _binary_build_root_exec_test_elf_end[];
+extern const uint8_t _binary_build_setid_probe_elf_start[], _binary_build_setid_probe_elf_end[];
+static bool exec_testing;
+static uintptr_t held_pages[32768];
+static unsigned held_count;
+static v7_pid_t held_owner;
+bool root_exec_test_gate(struct interrupt_frame *frame)
+{
+    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x903)return false;
+    struct proc *p=proc_current();
+    if(frame->rax==0x900){
+        if(frame->rdi)p->p_flag|=V7_STRC;else p->p_flag&=~V7_STRC;
+    }else if(frame->rax==0x901){frame->rax=p->p_uid;return true;}
+    else if(frame->rax==0x902){
+        if(held_count||frame->rdi>16)panic("invalid exec fault injection");
+        held_owner=p->p_pid;
+        while(page_free_count()>frame->rdi){
+            if(held_count==sizeof(held_pages)/sizeof(held_pages[0]))panic("exec fault fixture capacity");
+            uintptr_t page=page_alloc();if(!page)panic("exec fault page allocation");
+            held_pages[held_count++]=page;
+        }
+    }else{
+        if(held_owner!=p->p_pid)panic("foreign exec fault cleanup");
+        while(held_count)if(!page_free(held_pages[--held_count]))panic("exec fault page cleanup");
+        held_owner=0;
+    }
+    frame->rax=0;return true;
+}
 void root_exec_selftest(void)
 {
     uint32_t pages=page_free_count();
     mount_root();
     uint32_t blocks=v7_disk_u32(root_volume.super.tfree);
     uint16_t inodes=v7_disk_u16(root_volume.super.tinode);
+    const char names[][V7_DIRSIZ]={"setid"};
+    size_t probe_size=(uintptr_t)_binary_build_setid_probe_elf_end-(uintptr_t)_binary_build_setid_probe_elf_start;
+    for(unsigned i=0;i<sizeof(names)/sizeof(names[0]);++i){
+        v7_ino_t probe;size_t written;
+        if(v7fs_create(&root_volume,6,names[i],V7_IFREG|0755,0,0,&probe)||
+           v7fs_write(&root_volume,probe,0,_binary_build_setid_probe_elf_start,probe_size,&written)||written!=probe_size)
+            panic("cannot install setid fixture");
+    }
     struct exec_image image={0};
     if(elf_load(_binary_build_root_exec_test_elf_start,
         (uintptr_t)_binary_build_root_exec_test_elf_end-(uintptr_t)_binary_build_root_exec_test_elf_start,
@@ -71,9 +106,12 @@ void root_exec_selftest(void)
     p->p_vm=image.vm;p->p_size=image.size;p->p_brk_base=p->p_brk=image.heap;
     exec_image_release(&empty);
     if(!proc_start_user(p,image.entry,image.stack))panic("cannot start root exec test");
-    v7_pid_t pid=p->p_pid;proc_run();int32_t status;
-    if(proc_collect(&status)!=pid || status || proc_collect(NULL)!=-NX_ECHILD)
+    v7_pid_t pid=p->p_pid;exec_testing=true;proc_run();exec_testing=false;int32_t status;
+    if(held_count)panic("exec fault fixture leaked pages");
+    if(proc_collect(&status)!=pid || status || proc_collect(NULL)!=-NX_ECHILD) {
+        serial_puts("Nexix: root exec failure status=");serial_hex(status);serial_puts("\r\n");
         panic("root exec test failed");
+    }
     if(files_live() || tty_open_count() || page_free_count()!=pages ||
         v7_disk_u32(root_volume.super.tfree)!=blocks ||
         v7_disk_u16(root_volume.super.tinode)!=inodes)

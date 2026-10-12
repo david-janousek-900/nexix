@@ -14,6 +14,7 @@ struct exec_image {
     struct address_space vm;
     uintptr_t entry, stack, heap;
     size_t size, text, data, bss;
+    uint16_t mode, uid, gid; /* Staged executable inode metadata. */
 };
 /* IRQs disabled; caller owns staged image until commit. No live VM mutation. */
 /* Reader must fill exactly count bytes or return negative errno. */
@@ -26,4 +27,5 @@ int elf_load(const void *file, size_t length, const struct exec_args *, struct e
 void exec_image_release(struct exec_image *);
 int proc_exec(uintptr_t path, uintptr_t argv, uintptr_t envp, struct interrupt_frame *);
 void exec_selftest(void);
+bool root_exec_test_gate(struct interrupt_frame *);
 #endif

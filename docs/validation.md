@@ -206,7 +206,7 @@ Component tests now use `test=selftest` rather than starting init. They require
 `NEXIX_ROOT_EXEC_USER_OK`, `NEXIX_ROOT_EXEC_OK` and
 `NEXIX_ROOT_EXEC_CLEANUP_OK` in addition to earlier markers. The native driver
 checks relative exec, missing catalog-only names, permission/type rejection,
-unsupported set-ID exec, malformed ELF and post-exec cleanup. Injected loader
+V7 set-ID exec, credential rollback, malformed ELF and post-exec cleanup. Injected loader
 read failures verify rollback before and after allocating staged pages.
 See [booting.md](booting.md) for commands and transcripts.
 
@@ -348,3 +348,11 @@ Task 49 acceptance: `make test-popen` combines host setup/wait/flush failure
 fixtures with native 16/128 MiB shell pipes, concurrent-child statuses, EOF,
 closed-stdio descriptor collisions and broken-pipe cleanup. See
 [process-pipe contracts](popen.md).
+
+
+Task 50 acceptance: `make test-setid` uses filesystem-loaded credential probes
+at 16/128 MiB to verify real/effective IDs, V7 root and tracing exceptions,
+fork/ordinary-exec inheritance, permission checks and failed-exec rollback.
+Test-only physical page reservation forces allocation failure after staging
+starts. Complete page/descriptor/inode/block cleanup is checked; persistent
+storage is preserved. See [set-ID contracts](setid-exec.md).
