@@ -91,7 +91,7 @@
         54,
         55
       ],
-      "note": "V7 disk records, directory lookup, inode/cache and descriptor foundations exist; text exclusion, raw devices and multiple mounts remain pending."
+      "note": "V7 disk records, directory lookup, inode/cache and descriptor foundations exist; text exclusion is implemented; raw devices and multiple mounts remain pending."
     },
     {
       "id": "process",
@@ -198,13 +198,15 @@
       ],
       "native": [
         "kernel/v7/exec.c",
-        "kernel/elf.c"
+        "kernel/elf.c",
+        "kernel/v7/text.c",
+        "kernel/include/text.h"
       ],
       "tasks": [
         10,
         51
       ],
-      "note": "ELF resident images replace a.out text; ETXTBSY ownership remains pending."
+      "note": "ELF resident private images replace a.out/swap text. Native shared ownership, ETXTBSY, inode pins and sticky ownership lifetimes are implemented by task 51; physical code sharing and swap-backed cached bytes are not reproduced."
     },
     {
       "id": "accounting",

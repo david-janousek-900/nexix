@@ -125,7 +125,8 @@ invalid non-NULL pointer returns EFAULT even when no child exists. A failed
 validation leaves the child available for a later wait. The validated private
 mapping remains stable across sleep under the current process ownership rules.
 Fork retains task 8's eager-copy and allocation-rollback behavior; processes
-holding unsupported file/inode/shared-text references receive EBUSY.
+holding unsupported foreign file/inode/text references receive EBUSY. Native executable
+text references are supported by task 51.
 
 An assembly call needs no stack argument block:
 

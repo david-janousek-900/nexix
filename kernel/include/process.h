@@ -28,7 +28,7 @@ unsigned proc_wakeup(void *channel);
 void proc_delay(uint64_t ticks);
 /* Fork a live CPL3 frame; parent gets PID, child's RAX is zero. Negative errno
  * on failure. Managed file/cwd references are acquired after VM clone succeeds;
- * unsupported foreign/shared-text references still return EBUSY. */
+ * unsupported foreign file/inode/text references still return EBUSY. */
 v7_pid_t proc_fork(const struct interrupt_frame *frame);
 _Noreturn void proc_exit(int32_t status); /* V7-encoded wait status */
 v7_pid_t proc_wait(int32_t *status); /* kernel pointer, optional; -ECHILD or -EINTR */

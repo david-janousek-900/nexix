@@ -20,9 +20,9 @@ contracts; task 355 and task 359 close whole-distribution integration.
 |---|---|---|
 | m40/mch/l machine assembly, segmentation, memory allocation | Long mode, native interrupt frames, paging, resident memory, eager fork, FXSAVE64 | phys 64; runtime assembly contracts 79; no PDP-11 binary execution or disk-backed swap required |
 | main/slp/clock | Boot, scheduler, sleep/wakeup, PIT ticks, RTC wall clock, alarms, user/system CPU times | CPU usage saturation and priority decay 362; general timeout callouts 364; profiling 59 |
-| alloc/iget/nami/rdwri/fio/bio | V7 disk encodings, inode/sector cache, lookup, permissions, files, timestamp updates | Executable exclusion 51; raw I/O 53; mount/umount 54–55 |
-| sys1–sys4/sysent/trap/ureg | Native dispatcher, user-copy validation, process/files/identity/time calls | Set-ID exec 50; core dumps 52; ptrace 57–58; pending syscall slots below |
-| text | Native ELF executable loading and resident images | Text ownership and ETXTBSY 51 |
+| alloc/iget/nami/rdwri/fio/bio | V7 disk encodings, inode/sector cache, lookup, permissions, files, timestamp updates | Executable exclusion implemented by 51; raw I/O 53; mount/umount 54–55 |
+| sys1–sys4/sysent/trap/ureg | Native dispatcher, user-copy validation, process/files/identity/time calls | Set-ID exec implemented by 50; core dumps 52; ptrace 57–58; pending syscall slots below |
+| text | Native ELF images, shared inode ownership, ETXTBSY and sticky ownership entries | Task 51 complete; eager private VM pages replace physical text sharing/swap caching; ptrace modifications 58 |
 | sig | V7 signals, native saved registers and FP frames | Core dumps 52; tracing stop/wait 57–58 |
 | pipe | Native bounded pipes, sleep/wakeup, SIGPIPE and descriptor lifetime | Existing files tests; consumer acceptance remains distribution-wide |
 | acct | Process exit integration point | Accounting records, privileges, storage errors 56 |

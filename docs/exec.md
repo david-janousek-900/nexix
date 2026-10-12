@@ -62,8 +62,9 @@ only for regression fixture mounts. See [booting.md](booting.md).
 Path capacity is 256 bytes including NUL. Invalid addresses
 return EFAULT; unterminated paths or oversized argument sets return E2BIG;
 invalid/unsupported ELF files return ENOEXEC; allocation failure returns ENOMEM.
-Managed file and cwd references survive exec. Unsupported references and
-shared-text references return EBUSY; see [files.md](files.md).
+Managed file and cwd references survive exec. Native text references support
+exec/fork; foreign unmanaged references return EBUSY. See
+[text ownership](text-ownership.md) and [files.md](files.md).
 
 Arguments are copied from the old VM into bounded kernel scratch space. A new
 VM, all segments, and the complete stack are built before changing the live

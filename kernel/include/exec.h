@@ -15,6 +15,7 @@ struct exec_image {
     uintptr_t entry, stack, heap;
     size_t size, text, data, bss;
     uint16_t mode, uid, gid; /* Staged executable inode metadata. */
+    struct text *owner; /* Acquired only after ELF construction succeeds. */
 };
 /* IRQs disabled; caller owns staged image until commit. No live VM mutation. */
 /* Reader must fill exactly count bytes or return negative errno. */

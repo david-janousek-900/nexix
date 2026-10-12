@@ -124,8 +124,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 2 partial, 1 prototype and 203 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 50 done, 2 in progress
-and 314 to do** after task 50. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 51 done, 2 in progress
+and 313 to do** after task 51. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -146,7 +146,7 @@ Release scope and agreed native adaptations:
   birth-time field or planned timestamp-format extension.
 - Restore V7 serial communications and UUCP in 0.1.0. TCP/IP belongs to 0.2.0.
 
-Known gaps include executable text ownership, core dumps, multiplexed channels, complete
+Known gaps include core dumps, multiplexed channels, complete
 accounting/tracing/profiling, raw devices and mount administration. Packaging
 currently has a 64-inode image builder and a fixed 512 KiB embedded RAM root;
 tasks 83–86 address these limits before full-distribution installation.
@@ -269,7 +269,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 48 | system | Done | [V7 system contract](docs/system.md); test-system at 16/128 MiB and host failure fixtures; Git history; raw wait status and historical wait-any/EINTR behavior |
 | 49 | popen/pclose | Done | [V7 process-pipe contracts](docs/popen.md); test-popen at 16/128 MiB and host failure fixtures; Git history; matching/cached child statuses, EOF and descriptor cleanup |
 | 50 | Set-UID/set-GID executable semantics | Done | [V7 credential rules](docs/setid-exec.md); test-setid at 16/128 MiB; Git history; root/tracing exceptions, effective-ID commit and failed-exec rollback |
-| 51 | Executable text ownership and ETXTBSY behavior | To do | Native resident text equivalent; open/write/exec/fork/exit lifetime |
+| 51 | Executable text ownership and ETXTBSY behavior | Done | [Native V7 text ownership](docs/text-ownership.md); test-text at 16/128 MiB and host table/error fixtures; Git history; exec/fork/exit, aliases and sticky lifetimes |
 | 52 | Native core dumps | To do | ELF register/memory image; V7 signal status and set-ID restrictions |
 | 53 | Raw block/character storage devices | To do | Major/minor routing, bounded raw I/O and device errors |
 | 54 | Multi-volume namespace and mount | To do | Mount crossings, dotdot, chroot and inode identity |

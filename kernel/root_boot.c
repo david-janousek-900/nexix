@@ -37,9 +37,10 @@ _Noreturn void rootfs_start(void)
     for(size_t i=0;i<sizeof(name);++i)init_args.bytes[i]=name[i];
     init_args.used=sizeof(name);init_args.argc=1;
     struct exec_image image={0};
-    if(elf_load_inode(&root_volume,ino,&init_args,&image))panic("cannot load init");
+    if(elf_load_inode(&root_volume,ino,&init_args,&image)||files_image_text(ino,&image))panic("cannot load init");
     struct proc *p=proc_alloc();
     if(!p || p->p_pid!=1)panic("cannot allocate PID 1");
+    p->p_textp=image.owner;image.owner=NULL;
     p->p_pgrp=0; /* Init has no terminal; its console child forms the group. */
     struct exec_image empty={.vm=p->p_vm};
     p->p_vm=image.vm;p->p_size=image.size;p->p_brk_base=p->p_brk=image.heap;
@@ -57,13 +58,14 @@ _Noreturn void rootfs_start(void)
 
 extern const uint8_t _binary_build_root_exec_test_elf_start[], _binary_build_root_exec_test_elf_end[];
 extern const uint8_t _binary_build_setid_probe_elf_start[], _binary_build_setid_probe_elf_end[];
+extern const uint8_t _binary_build_text_probe_elf_start[], _binary_build_text_probe_elf_end[];
 static bool exec_testing;
 static uintptr_t held_pages[32768];
 static unsigned held_count;
 static v7_pid_t held_owner;
 bool root_exec_test_gate(struct interrupt_frame *frame)
 {
-    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x903)return false;
+    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x905)return false;
     struct proc *p=proc_current();
     if(frame->rax==0x900){
         if(frame->rdi)p->p_flag|=V7_STRC;else p->p_flag&=~V7_STRC;
@@ -76,10 +78,21 @@ bool root_exec_test_gate(struct interrupt_frame *frame)
             uintptr_t page=page_alloc();if(!page)panic("exec fault page allocation");
             held_pages[held_count++]=page;
         }
-    }else{
+    }else if(frame->rax==0x903){
         if(held_owner!=p->p_pid)panic("foreign exec fault cleanup");
         while(held_count)if(!page_free(held_pages[--held_count]))panic("exec fault page cleanup");
         held_owner=0;
+    }else if(frame->rax==0x904){
+        if(p->p_user->u_uid)panic("unprivileged text fixture install");
+        v7_ino_t directory,ino;size_t done;
+        const char name[V7_DIRSIZ]="text";
+        size_t size=(uintptr_t)_binary_build_text_probe_elf_end-(uintptr_t)_binary_build_text_probe_elf_start;
+        if(v7fs_lookup(&root_volume,V7_ROOTINO,"/tmp",&directory)||
+           v7fs_create(&root_volume,directory,name,V7_IFREG|0755,0,0,&ino)||
+           v7fs_write(&root_volume,ino,0,_binary_build_text_probe_elf_start,size,&done)||done!=size)
+            panic("cannot install text fixture");
+    }else{
+        frame->rax=p->p_textp?p->p_textp->x_count:0;return true;
     }
     frame->rax=0;return true;
 }

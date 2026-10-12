@@ -356,3 +356,10 @@ fork/ordinary-exec inheritance, permission checks and failed-exec rollback.
 Test-only physical page reservation forces allocation failure after staging
 starts. Complete page/descriptor/inode/block cleanup is checked; persistent
 storage is preserved. See [set-ID contracts](setid-exec.md).
+
+
+Task 51 acceptance: `make test-text` checks the actual text table's capacity,
+reference/cache lifetimes and errors, plus synchronized filesystem exec probes
+at 16/128 MiB for ETXTBSY, aliases, fork/exec/exit and sticky ownership. Existing
+set-ID rollback and complete native resource reclamation remain checked. See
+[text ownership](text-ownership.md).

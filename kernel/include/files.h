@@ -8,6 +8,7 @@ struct exec_args;
 struct exec_image;
 int files_mount_root(struct v7fs *); /* Production mount enables filesystem exec. */
 bool files_exec_enabled(void);
+int files_image_text(v7_ino_t,struct exec_image *);
 int files_load_exec(const char *, const struct exec_args *, struct exec_image *);
 int files_mount(struct v7fs *); /* NULL detaches, EBUSY if references remain */
 bool files_refs_valid(const struct user *);

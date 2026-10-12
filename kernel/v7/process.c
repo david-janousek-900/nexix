@@ -4,6 +4,7 @@
 #include "fpu.h"
 #include "clock.h"
 #include "files.h"
+#include "text.h"
 #include "signals.h"
 #include "exec.h"
 #include "segments.h"
@@ -381,7 +382,7 @@ v7_pid_t proc_fork(const struct interrupt_frame *frame)
         return result;
     }
     struct user *u = current->p_user;
-    bool referenced = current->p_textp || !files_refs_valid(u);
+    bool referenced = (current->p_textp&&!text_valid(current->p_textp)) || !files_refs_valid(u);
     if (referenced) {
         int result = failure(V7_EBUSY);
         proc_irq_restore(flags);
@@ -398,6 +399,7 @@ v7_pid_t proc_fork(const struct interrupt_frame *frame)
     copy(child->p_user, u, sizeof(*u));
     fpu_save(&child->p_fpu);
     files_fork(child->p_user);
+    child->p_textp=current->p_textp;if(child->p_textp)text_retain(child->p_textp);
     child->p_user->u_procp = child;
     child->p_user->u_ap = child->p_user->u_arg;
     child->p_user->u_error = 0;

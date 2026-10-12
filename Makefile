@@ -382,8 +382,8 @@ build/nexix.elf: build/root_boot.o
 
 build/root_exec_program.o: user/root-exec-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
-build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/setid_program.o build/libc.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/setid_program.o build/libc.a -o $@
+build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/libc.a -o $@
 build/root_exec_image.o: build/root-exec-test.elf
 	$(LD) -r -b binary $< -o build/root_exec_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/root_exec_raw.o $@
@@ -665,3 +665,32 @@ build/nexix.elf: build/setid_probe_image.o
 -include build/setid_program.d build/setid_probe_program.d
 .PHONY: test-setid
 test-setid: test-rootfs test-inventory test-libc-interfaces
+
+# Task 51: resident executable text/inode ownership.
+build/text.o: kernel/v7/text.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+OBJECTS += build/text.o
+build/nexix.elf: build/text.o
+-include build/text.d
+.PHONY: test-text
+test-text: test-rootfs test-inventory test-libc-interfaces
+build/text-unit-test: tests/text.c kernel/v7/text.c kernel/include/text.h kernel/include/v7/core.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/text.c kernel/v7/text.c -o $@
+.PHONY: test-text-unit
+test-text-unit: build/text-unit-test
+	./build/text-unit-test
+test-unit: test-text-unit
+test-text: test-text-unit
+
+build/text_program.o: user/text-test.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/text_probe_program.o: user/text-probe.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/text-probe.elf: build/crt0.o build/text_probe_program.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/text_probe_program.o build/libc.a -o $@
+build/text_probe_image.o: build/text-probe.elf
+	$(LD) -r -b binary $< -o build/text_probe_raw.o
+	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/text_probe_raw.o $@
+OBJECTS += build/text_probe_image.o
+build/nexix.elf: build/text_probe_image.o
+-include build/text_program.d build/text_probe_program.d

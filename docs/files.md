@@ -35,8 +35,9 @@ preserves its flags.
 Fork acquires file and cwd references only after cloning memory succeeds.
 Successful exec closes descriptors marked close-on-exec, preserving other files
 and cwd; failed exec preserves every descriptor. Exit closes all descriptors and
-releases cwd references. Unsupported foreign inode/file or shared-text references
-still return EBUSY at fork/exec.
+releases cwd and executable text references. Unsupported foreign inode/file/text
+references still return EBUSY at fork/exec; native [text ownership](text-ownership.md)
+is supported.
 
 `files_mount()` attaches one already mounted filesystem. Detaching or switching
 returns EBUSY while managed references exist. These are internal kernel APIs,

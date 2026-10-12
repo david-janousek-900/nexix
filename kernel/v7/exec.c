@@ -5,6 +5,7 @@
 #include "uaccess.h"
 #include "segments.h"
 #include "signals.h"
+#include "text.h"
 #include <nexix/errno.h>
 #include "userland.h"
 /* Single CPU, IRQs disabled throughout exec; bounded scratch avoids using the
@@ -45,7 +46,7 @@ int proc_exec(uintptr_t path, uintptr_t argv, uintptr_t envp, struct interrupt_f
     const char *comm = name;
     for (const char *c = name; *c; ++c) if (*c == '/') comm = c + 1;
     struct user *u = p->p_user;
-    if (p->p_textp || !files_refs_valid(u)) return -NX_EBUSY;
+    if ((p->p_textp&&!text_valid(p->p_textp)) || !files_refs_valid(u)) return -NX_EBUSY;
     scratch.used = 0;
     error = vector(&p->p_vm, argv, &scratch.argc, scratch.argv);
     if (!error) error = vector(&p->p_vm, envp, &scratch.envc, scratch.envp);
@@ -60,6 +61,7 @@ int proc_exec(uintptr_t path, uintptr_t argv, uintptr_t envp, struct interrupt_f
     p->p_brk_base = p->p_brk = image.heap;
     vm_activate(&p->p_vm);
     exec_image_release(&old);
+    text_release(p->p_textp);p->p_textp=image.owner;image.owner=NULL;
     files_exec(u);
     /* V7 sys1.c: real IDs survive; root skips SUID but still applies SGID.
      * All fallible staging has completed, so failed exec cannot change IDs. */

@@ -76,7 +76,9 @@ PDP-11 binary compatibility.
 
 Task 13 adds file and directory reference ownership across fork/exec/exit;
 see [files.md](files.md). Fork still rejects unsupported foreign references and
-shared-text references with EBUSY. ELF executable loading is implemented;
+foreign unmanaged text references with EBUSY. Native text ownership is
+retained across fork and released at exit/replacement; see
+[text ownership](text-ownership.md). ELF executable loading is implemented;
 signals are implemented in task 15. Tasks 25–27 preserve native FP state
 across scheduling, fork, exec and signals; see [floating-point.md](floating-point.md).
 User TLS remains outside the current ABI.

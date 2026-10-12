@@ -1,4 +1,5 @@
 #include "exec.h"
+#include "text.h"
 #include "uaccess.h"
 #include "v7/fs.h"
 #include <nexix/errno.h>
@@ -35,6 +36,7 @@ void exec_image_release(struct exec_image *image)
 {
     if (image->vm.root && (!vm_walk_user(&image->vm, free_leaf, NULL) || !vm_destroy(&image->vm)))
         panic("cannot release exec image");
+    text_release(image->owner);
     *image = (struct exec_image){0};
 }
 static int map_zero(struct exec_image *image, uintptr_t va, unsigned flags)

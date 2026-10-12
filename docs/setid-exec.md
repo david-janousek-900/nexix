@@ -50,7 +50,8 @@ or observe an intermediate credential/image combination. Failed lookup,
 permission checks, malformed ELF, invalid user arguments or memory exhaustion
 leave the old real/effective IDs, process UID, VM, descriptors and handlers
 intact. Staged allocations are released by the existing ELF rollback path.
-Executable-text lifetime and ETXTBSY enforcement remain task 51.
+[Executable-text lifetime and ETXTBSY enforcement](text-ownership.md) are
+implemented separately by task 51.
 
 Traced exec posts the source-defined SIGTRAP, but this does not implement
 ptrace/debugger stops. Those remain tasks 57–58. The acceptance fixture uses
