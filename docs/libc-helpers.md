@@ -2,7 +2,7 @@
 
 Step 40 supplies the remaining helper contracts listed in the roadmap, plus
 V7 assertions. The reference source tree remains unchanged. Libc remains
-partial: database, crypt, process-pipe, profiling,
+partial: group database, crypt, process-pipe, profiling,
 symbol lookup and feature-specific wrappers retain their existing owners.
 
 | Interface | V7 origin | Native contract |

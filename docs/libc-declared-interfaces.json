@@ -2,12 +2,6 @@
   "schema_version": 1,
   "policy": "Every public function declaration must have a native libc/libm export or an explicit unfinished owner. Export presence is not complete semantic acceptance.",
   "deferred": {
-    "getpwent": 44,
-    "getpwnam": 44,
-    "getpwuid": 44,
-    "setpwent": 44,
-    "endpwent": 44,
-    "getpw": 44,
     "getgrent": 45,
     "getgrnam": 45,
     "getgrgid": 45,

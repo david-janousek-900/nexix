@@ -22,7 +22,7 @@ that all declarations have implementations. The reference headers are unchanged.
 | `timeb` | 16 bytes: time at 0, milliseconds at 8, timezone at 10, DST flag at 12 | Native padding; milliseconds implementation pending step 363 |
 | `sgttyb`, `tchars` | 8 and 6 bytes; flags at offset 4 | Character fields represented as unsigned bytes; native 32-bit flags |
 | `utmp` | 24 bytes: eight-byte line/name, 64-bit time at 16 | Native session records, not historical binary fixtures |
-| `passwd` | 64 bytes; int UID/GID/quota, native string pointers | Database routines pending step 44 |
+| `passwd` | 64 bytes; int UID/GID/quota, native string pointers | Database routines implemented in step 44 |
 | `group` | 32 bytes; int GID and native member-vector pointer | Database routines pending step 45 |
 | `jmp_buf` | Nine 64-bit words | Native preserved registers and FP controls; no six-word PDP-11 label overlay |
 | Signal context | ABI version 2, 688 bytes | Native interrupt frame plus 512-byte FXSAVE64 image |
@@ -43,7 +43,8 @@ remains valid.
 ## Source compatibility and deferred interfaces
 
 `pwd.h` and `grp.h` expose all original record fields and typed native routine
-declarations. Their functions are not yet linkable; steps 44–45 implement them.
+declarations. Password database functions are implemented by step 44; group functions remain
+with step 45.
 Terminal flag constants do not enable TANDEM, LCASE or delay modes: those remain
 step 74 and the driver continues rejecting unsupported configurations. Mpx mode
 constants likewise do not implement channels (65–67).

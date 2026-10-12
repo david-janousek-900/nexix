@@ -11,6 +11,7 @@
 extern int stdio_compat_test(void);
 extern int mktemp_test(void);
 extern int perror_test(void);
+extern int passwd_test(void);
 static FILE *exit_stream;
 static void exit_output(void){(void)fputs("handler",exit_stream);}
 static int buffering_test(void)
@@ -164,5 +165,7 @@ int stdio_test(void)
     if(temporary_error)return temporary_error;
     int error_message_error=perror_test();
     if(error_message_error)return error_message_error;
+    int password_error=passwd_test();
+    if(password_error)return password_error;
     return buffering_test();
 }

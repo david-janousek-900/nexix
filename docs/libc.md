@@ -146,3 +146,6 @@ writable templates and handle the historical slash failure sentinel.
 Step 43 completes [error text, perror and exported V7 error tables](errors.md).
 Diagnostics use descriptor 2 directly and preserve errno; stream buffering is
 independent of these messages.
+
+Step 44 adds [V7 password database iteration and lookup](passwd.md), including
+legacy getpw. Native group functions are still pending; libc remains partial.
