@@ -22,6 +22,9 @@ class Coverage(unittest.TestCase):
             self.assertTrue(any(diagnostic in e for e in errors), errors)
 
     def test_current(self): self.check()
+    def test_legacy_schema_requires_migration(self):
+        self.audit['schema_version'] = 1
+        self.check('unsupported')
     def test_omitted_source(self):
         self.audit['groups'][0]['sources'].pop()
         self.check('incomplete or unknown')
@@ -40,7 +43,7 @@ class Coverage(unittest.TestCase):
                 self.audit['groups'][0]['native'] = [path]
                 self.check('missing or unsafe')
     def test_owner(self):
-        self.audit['groups'][0]['steps'] = [True]
+        self.audit['groups'][0]['tasks'] = [True]
         self.check('invalid group roadmap')
     def test_missing_slot(self):
         self.audit['syscalls'].pop()
@@ -52,7 +55,7 @@ class Coverage(unittest.TestCase):
         self.audit['syscalls'][21]['status'] = 'historical_stub'
         self.check('stub drift')
     def test_false_closure(self):
-        self.audit['syscalls'][21]['step'] = 38
+        self.audit['syscalls'][21]['task'] = 38
         self.check('completed owner')
     def test_schema(self):
         self.audit['schema_version'] = 99

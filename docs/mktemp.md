@@ -1,4 +1,4 @@
-# V7 temporary-file naming (step 42)
+# V7 temporary-file naming (task 42)
 
 `libc/mktemp.c` adapts the implementation supplied as
 `reference/v7/usr/src/libc/gen/mktemp.c`; its public declaration is in
@@ -26,7 +26,7 @@ ENOENT-only policy.
 There is no file creation, reservation or descriptor return. Repeated calls
 with fresh templates may choose the same name until a caller creates it. The
 subsequent file operation determines whether the name can actually be used.
-This step does not add mkstemp, tmpfile or POSIX failure conventions.
+This task does not add mkstemp, tmpfile or POSIX failure conventions.
 
 The backward suffix scan is bounded. An all-X filename is supported without
 reading before its start. An unused name with no trailing X is returned
@@ -66,7 +66,7 @@ file-creation fixtures when their complete programs are ported.
 The f77 compiler's own function named mktemp creates compiler temporary nodes;
 it is not this libc filename routine and is excluded from this consumer list.
 No consumer program is marked ported merely because its libc dependency is now
-available. Consumer acceptance remains with the listed roadmap steps.
+available. Consumer acceptance remains with the listed roadmap tasks.
 
 ## Verification
 
@@ -84,6 +84,6 @@ complete namespace/descriptor cleanup. Existing stdio/signal/ABI/filesystem
 regressions and kernel cleanup checks run in the same boot.
 
 The public declaration/export checker records 195 function declarations at
-step 42: 184 exports and 11 passwd/group functions deferred to steps 44–45.
+task 42: 184 exports and 11 passwd/group functions deferred to tasks 44–45.
 Libc's remaining features and full consumer/development-interface acceptance
-remain with their existing steps.
+remain with their existing tasks.

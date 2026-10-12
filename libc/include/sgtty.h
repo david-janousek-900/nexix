@@ -5,7 +5,7 @@
 struct sgttyb { uint8_t sg_ispeed, sg_ospeed, sg_erase, sg_kill; uint32_t sg_flags; };
 struct tchars { uint8_t t_intrc, t_quitc, t_startc, t_stopc, t_eofc, t_brkc; };
 /* Values are exported even where the driver rejects unsupported modes.
- * Implementing these modes belongs to step 74. */
+ * Implementing these modes belongs to task 74. */
 _Static_assert(sizeof(struct sgttyb) == sizeof(struct nx_sgttyb), "sgtty ABI size");
 _Static_assert(offsetof(struct sgttyb, sg_flags) == offsetof(struct nx_sgttyb, flags), "sgtty ABI flags");
 _Static_assert(sizeof(struct tchars) == sizeof(struct nx_tchars), "tchars ABI size");

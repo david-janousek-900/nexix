@@ -217,7 +217,7 @@ userland: build/crt0.o build/libc.a build/libc-test.elf
 test-libc: check build/test-selftest.iso
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso libc 16M
 
-# Small V7 filesystem fixture; a bootable init/shell root is step 17.
+# Small V7 filesystem fixture; a bootable init/shell root is task 17.
 build/root-test.img: tools/mk_v7fs.py build/exec-test.elf build/libc-test.elf
 	$(PYTHON) tools/mk_v7fs.py --exec build/exec-test.elf --libc build/libc-test.elf --output $@
 build/root_image.o: build/root-test.img
@@ -236,7 +236,7 @@ test-fs: check build/test-selftest.iso
 build/filesystem-test: tests/filesystem.c kernel/block.c kernel/v7/fs.c kernel/include/clock.h kernel/include/block.h kernel/include/v7/fs.h kernel/include/v7/disk.h kernel/include/v7/types.h kernel/include/v7/constants.h include/nexix/errno.h | build/.dir
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/filesystem.c kernel/block.c kernel/v7/fs.c -o $@
 
-# Step 13: production file syscalls exercised by a native C executable.
+# Task 13: production file syscalls exercised by a native C executable.
 build/files.o: kernel/v7/files.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 build/files_test.o: kernel/files_test.c | build/.dir
@@ -254,7 +254,7 @@ test-files: check build/test-selftest.iso
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso files 16M
 userland: build/files-test.elf
 
-# Step 14: serial terminal and native sgtty/ioctl userland fixture.
+# Task 14: serial terminal and native sgtty/ioctl userland fixture.
 build/tty.o: kernel/v7/tty.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 build/tty_test.o: kernel/tty_test.c | build/.dir
@@ -280,7 +280,7 @@ run-tty: check build/test-tty-demo.iso
 build/tty-unit-test: tests/tty.c kernel/v7/tty.c kernel/include/tty.h kernel/include/serial.h kernel/include/uaccess.h kernel/include/process.h kernel/include/v7/core.h include/nexix/tty.h include/nexix/errno.h | build/.dir
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/tty.c kernel/v7/tty.c -o $@
 
-# Step 15: signals and the remaining init/shell syscall fixture.
+# Task 15: signals and the remaining init/shell syscall fixture.
 build/signals.o: kernel/v7/signals.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 build/signals_test.o: kernel/signals_test.c | build/.dir
@@ -326,7 +326,7 @@ v7-userland: $(V7_ELFS)
 userland: v7-userland
 
 V7_IMAGES = $(addprefix build/v7_image_,$(addsuffix .o,sh init echo cat ls pwd cp ln rm date touch))
-# Embedded executable images for the step 16 acceptance fixture.
+# Embedded executable images for the task 16 acceptance fixture.
 OBJECTS += $(V7_IMAGES)
 -include build/catalog.d build/v7_userland_test.d build/v7_test_program.d
 build/catalog.o: kernel/v7/catalog.c | build/.dir
@@ -421,7 +421,7 @@ build/ide-test: tests/ide.c tests/ide/io.h kernel/ide.c kernel/block.c kernel/in
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Itests/ide -Ikernel/include -Iinclude tests/ide.c kernel/ide.c kernel/block.c -o $@
 test-unit: build/ide-test
 
-# Step 21: read-only source inventory and coverage checks.
+# Task 21: read-only source inventory and coverage checks.
 .PHONY: test-inventory
 test-inventory:
 	$(PYTHON) tools/check_inventory.py
@@ -429,7 +429,7 @@ test-inventory:
 	$(PYTHON) tests/roadmap.py
 test: test-inventory
 
-# Step 22: boot RTC and shared epoch clock.
+# Task 22: boot RTC and shared epoch clock.
 build/rtc.o: kernel/arch/x86_64/rtc.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 build/clock.o: kernel/clock.c | build/.dir
@@ -445,7 +445,7 @@ test-rtc: build/rtc-test iso
 	$(PYTHON) tools/rtc_smoke.py $(QEMU) build/nexix.iso
 test: test-rtc
 
-# Step 24: test native time code against fixed calendar/DST expectations.
+# Task 24: test native time code against fixed calendar/DST expectations.
 TIME_TEST_NAMES = -Derrno=nx_test_errno -Dgetenv=nx_test_getenv -Dtime=nx_test_time -Dgmtime=nx_test_gmtime -Dlocaltime=nx_test_localtime -Dctime=nx_test_ctime -Dasctime=nx_test_asctime -Dtimezone=nx_test_timezone -Dftime=nx_test_ftime
 build/time-test: tests/time.c libc/time.c libc/include/time.h libc/include/sys/timeb.h libc/include/assert.h libc/include/stdlib.h | build/.dir
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -fno-builtin $(TIME_TEST_NAMES) -Ilibc/include -Iinclude tests/time.c libc/time.c -o $@
@@ -456,7 +456,7 @@ test-time: build/time-test iso
 	$(PYTHON) tools/time_smoke.py $(QEMU) build/nexix.iso 128M
 test: test-time
 
-# Step 25: eager native x87/MMX/SSE state management.
+# Task 25: eager native x87/MMX/SSE state management.
 build/fpu.o: kernel/arch/x86_64/fpu.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 OBJECTS += build/fpu.o
@@ -482,14 +482,14 @@ build/stdio_program.o: user/stdio-test.c | build/.dir
 .PHONY: test-stdio
 test-stdio: test-signals
 
-# Step 38: complete original kernel input/syscall responsibility audit.
+# Task 38: complete original kernel input/syscall responsibility audit.
 .PHONY: test-kernel-coverage
 test-kernel-coverage:
 	$(PYTHON) tools/check_kernel_coverage.py
 	$(PYTHON) tests/kernel_coverage.py
 test-inventory: test-kernel-coverage
 
-# Step 39: compile public headers independently of host libc and check ABI records.
+# Task 39: compile public headers independently of host libc and check ABI records.
 build/header-abi-test: tests/header_abi.c $(wildcard libc/include/*.h libc/include/sys/*.h include/nexix/*.h) kernel/include/v7/types.h | build/.dir
 	$(HOST_CC) -std=c11 -Wall -Wextra -Werror -ffreestanding -nostdinc -isystem $(shell $(HOST_CC) -print-file-name=include) -Ilibc/include -Iinclude -Ikernel/include $< -o $@
 .PHONY: test-header-abi
@@ -498,7 +498,7 @@ test-header-abi: build/header-abi-test
 	$(PYTHON) tests/header_coverage.py --cc $(CC)
 test-inventory: test-header-abi
 
-# Step 40: native byte/conversion, abort/assert and execle contracts.
+# Task 40: native byte/conversion, abort/assert and execle contracts.
 build/libc_helpers_program.o: user/libc-helpers-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 -include build/libc_helpers_program.d
@@ -511,7 +511,7 @@ test-libc-interfaces: build/libc.a build/libm.a
 test-libc-helpers: test-libc-interfaces
 test: test-libc-interfaces
 
-# Step 41: source adapters and native remote printf packets.
+# Task 41: source adapters and native remote printf packets.
 V7_STDIO_ADAPTER_INPUTS = reference/v7/usr/src/cmd/refer/hunt5.c reference/v7/usr/src/cmd/refer/inv1.c reference/v7/usr/src/cmd/refer/what3.c reference/v7/usr/src/cmd/cpp/cpp.c reference/v7/usr/src/games/quiz.c
 build/v7-stdio/test-fragments.c: tools/adapt_v7_stdio.py $(V7_STDIO_ADAPTER_INPUTS) | build/.dir
 	$(PYTHON) tools/adapt_v7_stdio.py --output build/v7-stdio
@@ -528,7 +528,7 @@ build/stdio_compat_program.o: user/stdio-compat-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 -include build/stdio_compat_program.d build/v7_stdio_fragments.d
 
-# Step 42: historical temporary-file naming, host edge cases and native files.
+# Task 42: historical temporary-file naming, host edge cases and native files.
 build/mktemp_program.o: user/mktemp-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 -include build/mktemp_program.d
@@ -541,7 +541,7 @@ test-mktemp-unit: build/mktemp-unit-test
 	./build/mktemp-unit-test
 test-unit: test-mktemp-unit
 
-# Step 43: historical messages, direct descriptor diagnostics and native errors.
+# Task 43: historical messages, direct descriptor diagnostics and native errors.
 build/perror_program.o: user/perror-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 -include build/perror_program.d
@@ -554,7 +554,7 @@ test-perror-unit: build/perror-unit-test
 test-perror: test-perror-unit test-stdio test-libc-interfaces
 test-unit: test-perror-unit
 
-# Step 44: V7 password-file iteration, lookup and legacy raw-line interface.
+# Task 44: V7 password-file iteration, lookup and legacy raw-line interface.
 build/passwd_program.o: user/passwd-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 -include build/passwd_program.d
@@ -569,7 +569,7 @@ test-passwd-unit: build/passwd-unit-test
 test-passwd: test-passwd-unit
 test-unit: test-passwd-unit
 
-# Step 45: V7 group-file iteration, lookups and bounded membership vectors.
+# Task 45: V7 group-file iteration, lookups and bounded membership vectors.
 build/group_program.o: user/group-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 -include build/group_program.d
@@ -582,7 +582,7 @@ test-group-unit: build/group-unit-test
 test-group: test-group-unit test-stdio test-libc-interfaces
 test-unit: test-group-unit
 
-# Step 46: source-adapted DES and V7 password hashing.
+# Task 46: source-adapted DES and V7 password hashing.
 build/crypt_program.o: user/crypt-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 -include build/crypt_program.d

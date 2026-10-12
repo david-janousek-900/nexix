@@ -1,4 +1,4 @@
-# V7 core types on x86_64 (step 7)
+# V7 core types on x86_64 (task 7)
 
 The headers in `kernel/include/v7/` adapt the original headers in
 `reference/v7/usr/sys/h/`. The reference source remains unchanged; its provenance
@@ -29,9 +29,9 @@ current process.
 PDP-11 segmentation registers, click addresses, separate instruction/data
 spaces, swap jump buffers and UNIBUS extension fields are replaced by native
 address spaces and resident memory. Per-process FP state uses an aligned
-FXSAVE64 image (steps 25–27). ELF parsing/execution is implemented in step 10.
+FXSAVE64 image (tasks 25–27). ELF parsing/execution is implemented in task 10.
 Interruptible syscalls and signal returns use the native saved-frame ABI.
-Multiplexed channels remain steps 65–67; disk-backed swapping is outside the
+Multiplexed channels remain tasks 65–67; disk-backed swapping is outside the
 agreed 0.1.0 resident-memory model. Preserved historical flag values
 in `constants.h` describe source compatibility, not implemented capabilities.
 The native scheduler and libc CLK_TCK account in 100 Hz PIT ticks rather than
@@ -51,7 +51,7 @@ filesystem code must validate signed sizes/times and native-to-disk ranges.
 patterns, address overflow rejection, inode-block boundaries, all major/minor
 pairs, and the freestanding ELF build. `make TOOLCHAIN_PREFIX= smoke` verifies
 the existing QEMU boot path. Filesystem I/O and record serialization
-are implemented in step 12. Step 8 now implements process ownership and scheduling using
+are implemented in task 12. Task 8 now implements process ownership and scheduling using
 these structures;
 [processes.md](processes.md) describes allocation, teardown, and active-process
 rules.

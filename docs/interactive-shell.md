@@ -1,4 +1,4 @@
-# Interactive shell acceptance (step 19)
+# Interactive shell acceptance (task 19)
 
 `make TOOLCHAIN_PREFIX= test-shell` boots the normal production ISO with
 16 MiB and 128 MiB RAM, drives COM1 through QEMU's serial chardev and runs
@@ -54,7 +54,7 @@ exits QEMU. See [booting.md](booting.md) for startup and storage behavior.
 This remains V7 shell behavior: there are no modern job-control commands,
 readline/history or bash extensions. Cooked input lines are limited to 256
 bytes; expanded arguments also obey the native exec limits. Persistent IDE
-storage is implemented in step 20; see [storage.md](storage.md). Networking
+storage is implemented in task 20; see [storage.md](storage.md). Networking
 belongs to version 0.2.0.
 
 V7 cat explicitly enables buffering on stdout. Use `cat -u` when typing into

@@ -227,7 +227,7 @@ def main():
     print(f'PASS: V7 inventory: {len(manifest["entries"])} components, {count} reference files, '
           f'{len(manifest["requirements"])} external/platform requirements, {len(installed)} installed programs')
     coverage = json.loads((ROOT / 'docs/roadmap-coverage.json').read_text())
-    print(f'PASS: roadmap coverage: {coverage["step_count"]} steps, '
+    print(f'PASS: roadmap coverage: {coverage["task_count"]} tasks, '
           f'{len(coverage["components"])} components, {len(coverage["requirements"])} requirements')
 
 

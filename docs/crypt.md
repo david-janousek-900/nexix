@@ -1,4 +1,4 @@
-# V7 DES and password primitives (step 46)
+# V7 DES and password primitives (task 46)
 
 `libc/crypt.c` is source-adapted from
 `reference/v7/usr/src/libc/gen/crypt.c`. All ten permutation, shift, expansion
@@ -54,7 +54,7 @@ with EINVAL instead of indexing an uninitialized expansion table.
 
 The interfaces are V7-style shared-state, non-reentrant primitives. Password
 files, default accounts, getpass, login/su/newgrp/passwd and makekey are not
-installed or ported by this step. They retain steps 47, 99, 102–104 and 246.
+installed or ported by this task. They retain tasks 47, 99, 102–104 and 246.
 This does not add a new password hash format or change account credentials.
 
 ## Verification

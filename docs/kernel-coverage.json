@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "component": "distribution.kernel",
   "policy": "Source responsibility audit only; native paths are not proof of complete behavior. No PDP-11 binary execution or disk-backed swap required.",
   "groups": [
@@ -20,7 +20,7 @@
         "kernel/arch/x86_64/paging.c",
         "kernel/arch/x86_64/fpu.c"
       ],
-      "steps": [
+      "tasks": [
         2,
         5,
         6,
@@ -59,7 +59,7 @@
         "Makefile",
         "kernel/v7/catalog.c"
       ],
-      "steps": [
+      "tasks": [
         78
       ],
       "note": "Historical objects/archives are provenance, not executable native inputs; native configuration generation and recipes remain pending."
@@ -79,7 +79,7 @@
         "kernel/v7/files.c",
         "kernel/block.c"
       ],
-      "steps": [
+      "tasks": [
         12,
         13,
         20,
@@ -109,7 +109,7 @@
         "kernel/v7/process.c",
         "kernel/v7/exec.c"
       ],
-      "steps": [
+      "tasks": [
         4,
         8,
         10,
@@ -132,7 +132,7 @@
       "native": [
         "kernel/v7/signals.c"
       ],
-      "steps": [
+      "tasks": [
         15,
         27,
         52,
@@ -149,7 +149,7 @@
       "native": [
         "kernel/v7/files.c"
       ],
-      "steps": [
+      "tasks": [
         13
       ],
       "note": "Bounded native pipes preserve blocking, descriptor lifetime and SIGPIPE; acceptance in files tests."
@@ -171,7 +171,7 @@
         "kernel/v7/files.c",
         "kernel/uaccess.c"
       ],
-      "steps": [
+      "tasks": [
         9,
         10,
         50,
@@ -186,7 +186,8 @@
         63,
         64,
         65,
-        363
+        363,
+        366
       ],
       "note": "Native register dispatch and copyin/copyout replace PDP-11 trap arguments. The syscall table below records all 64 original slots; dispatch presence alone is not semantic acceptance."
     },
@@ -199,7 +200,7 @@
         "kernel/v7/exec.c",
         "kernel/elf.c"
       ],
-      "steps": [
+      "tasks": [
         10,
         51
       ],
@@ -213,7 +214,7 @@
       "native": [
         "kernel/v7/process.c"
       ],
-      "steps": [
+      "tasks": [
         56
       ],
       "note": "Exit lifecycle exists; acct records and privileged accounting file remain unimplemented."
@@ -230,7 +231,7 @@
         "kernel/v7/files.c",
         "kernel/v7/tty.c"
       ],
-      "steps": [
+      "tasks": [
         65,
         66,
         67
@@ -248,7 +249,7 @@
         "kernel/uaccess.c",
         "kernel/memory.c"
       ],
-      "steps": [
+      "tasks": [
         3,
         9,
         39,
@@ -271,7 +272,7 @@
         "kernel/v7/tty.c",
         "kernel/serial.c"
       ],
-      "steps": [
+      "tasks": [
         14,
         74
       ],
@@ -289,7 +290,7 @@
         "kernel/v7/tty.c",
         "kernel/serial.c"
       ],
-      "steps": [
+      "tasks": [
         75
       ],
       "note": "Native device equivalent and its protocol/error/lifetime tests remain required; referenced files are integration points, not completed replacements."
@@ -306,7 +307,7 @@
         "kernel/v7/tty.c",
         "kernel/serial.c"
       ],
-      "steps": [
+      "tasks": [
         68
       ],
       "note": "Native device equivalent and its protocol/error/lifetime tests remain required; referenced files are integration points, not completed replacements."
@@ -324,7 +325,7 @@
         "kernel/block.c",
         "kernel/ide.c"
       ],
-      "steps": [
+      "tasks": [
         53,
         70
       ],
@@ -340,7 +341,7 @@
         "kernel/block.c",
         "kernel/ide.c"
       ],
-      "steps": [
+      "tasks": [
         73
       ],
       "note": "Native device equivalent and its protocol/error/lifetime tests remain required; referenced files are integration points, not completed replacements."
@@ -355,7 +356,7 @@
         "kernel/block.c",
         "kernel/ide.c"
       ],
-      "steps": [
+      "tasks": [
         71
       ],
       "note": "Native device equivalent and its protocol/error/lifetime tests remain required; referenced files are integration points, not completed replacements."
@@ -369,7 +370,7 @@
         "kernel/block.c",
         "kernel/ide.c"
       ],
-      "steps": [
+      "tasks": [
         72
       ],
       "note": "Native device equivalent and its protocol/error/lifetime tests remain required; referenced files are integration points, not completed replacements."
@@ -384,7 +385,7 @@
         "kernel/block.c",
         "kernel/ide.c"
       ],
-      "steps": [
+      "tasks": [
         69
       ],
       "note": "Native device equivalent and its protocol/error/lifetime tests remain required; referenced files are integration points, not completed replacements."
@@ -398,7 +399,7 @@
         "kernel/block.c",
         "kernel/ide.c"
       ],
-      "steps": [
+      "tasks": [
         76
       ],
       "note": "Native device equivalent and its protocol/error/lifetime tests remain required; referenced files are integration points, not completed replacements."
@@ -413,7 +414,7 @@
         "kernel/block.c",
         "kernel/ide.c"
       ],
-      "steps": [
+      "tasks": [
         77
       ],
       "note": "Native device equivalent and its protocol/error/lifetime tests remain required; referenced files are integration points, not completed replacements."
@@ -459,7 +460,7 @@
         "kernel/include/v7/types.h",
         "kernel/include/v7/fs.h"
       ],
-      "steps": [
+      "tasks": [
         7,
         39,
         50,
@@ -475,7 +476,7 @@
         74,
         363
       ],
-      "note": "Native LP64 runtime and explicit V7 disk encodings exist. Every exported/internal field and consumer contract requires step 39 audit; absent mpx/packet/mount/accounting structures follow feature owners."
+      "note": "Native LP64 runtime and explicit V7 disk encodings exist. Every exported/internal field and consumer contract requires task 39 audit; absent mpx/packet/mount/accounting structures follow feature owners."
     }
   ],
   "syscalls": [
@@ -484,7 +485,7 @@
       "routine": "nullsys",
       "label": "indir",
       "status": "historical_stub",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -492,7 +493,7 @@
       "routine": "rexit",
       "label": "exit",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -500,7 +501,7 @@
       "routine": "fork",
       "label": "fork",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -508,7 +509,7 @@
       "routine": "read",
       "label": "read",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -516,7 +517,7 @@
       "routine": "write",
       "label": "write",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -524,7 +525,7 @@
       "routine": "open",
       "label": "open",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -532,7 +533,7 @@
       "routine": "close",
       "label": "close",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -540,7 +541,7 @@
       "routine": "wait",
       "label": "wait",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -548,7 +549,7 @@
       "routine": "creat",
       "label": "creat",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -556,7 +557,7 @@
       "routine": "link",
       "label": "link",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -564,7 +565,7 @@
       "routine": "unlink",
       "label": "unlink",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -572,7 +573,7 @@
       "routine": "exec",
       "label": "exec",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -580,7 +581,7 @@
       "routine": "chdir",
       "label": "chdir",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -588,7 +589,7 @@
       "routine": "gtime",
       "label": "time",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -596,7 +597,7 @@
       "routine": "mknod",
       "label": "mknod",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -604,7 +605,7 @@
       "routine": "chmod",
       "label": "chmod",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -612,7 +613,7 @@
       "routine": "chown",
       "label": "chown; now 3 args",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -620,7 +621,7 @@
       "routine": "sbreak",
       "label": "break",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -628,7 +629,7 @@
       "routine": "stat",
       "label": "stat",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -636,7 +637,7 @@
       "routine": "seek",
       "label": "seek; now 3 args",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -644,7 +645,7 @@
       "routine": "getpid",
       "label": "getpid",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -652,7 +653,7 @@
       "routine": "smount",
       "label": "mount",
       "status": "pending",
-      "step": 54,
+      "task": 54,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -660,7 +661,7 @@
       "routine": "sumount",
       "label": "umount",
       "status": "pending",
-      "step": 55,
+      "task": 55,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -668,7 +669,7 @@
       "routine": "setuid",
       "label": "setuid",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -676,7 +677,7 @@
       "routine": "getuid",
       "label": "getuid",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -684,7 +685,7 @@
       "routine": "stime",
       "label": "stime",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -692,7 +693,7 @@
       "routine": "ptrace",
       "label": "ptrace",
       "status": "pending",
-      "step": 57,
+      "task": 57,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -700,7 +701,7 @@
       "routine": "alarm",
       "label": "alarm",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -708,7 +709,7 @@
       "routine": "fstat",
       "label": "fstat",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -716,7 +717,7 @@
       "routine": "pause",
       "label": "pause",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -724,7 +725,7 @@
       "routine": "utime",
       "label": "utime",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -732,7 +733,7 @@
       "routine": "stty",
       "label": "stty",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -740,7 +741,7 @@
       "routine": "gtty",
       "label": "gtty",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -748,7 +749,7 @@
       "routine": "saccess",
       "label": "access",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -756,7 +757,7 @@
       "routine": "nice",
       "label": "nice",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -764,7 +765,7 @@
       "routine": "ftime",
       "label": "ftime; formerly sleep",
       "status": "pending",
-      "step": 363,
+      "task": 363,
       "native": "libc/time.c"
     },
     {
@@ -772,7 +773,7 @@
       "routine": "sync",
       "label": "sync",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -780,7 +781,7 @@
       "routine": "kill",
       "label": "kill",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -788,7 +789,7 @@
       "routine": "nullsys",
       "label": "switch; inoperative",
       "status": "historical_stub",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -796,7 +797,7 @@
       "routine": "nullsys",
       "label": "setpgrp (not in yet)",
       "status": "historical_stub",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -804,7 +805,7 @@
       "routine": "nosys",
       "label": "tell (obsolete)",
       "status": "historical_stub",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -812,7 +813,7 @@
       "routine": "dup",
       "label": "dup",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -820,7 +821,7 @@
       "routine": "pipe",
       "label": "pipe",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -828,7 +829,7 @@
       "routine": "times",
       "label": "times",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -836,7 +837,7 @@
       "routine": "profil",
       "label": "prof",
       "status": "pending",
-      "step": 59,
+      "task": 59,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -844,7 +845,7 @@
       "routine": "nosys",
       "label": "unused",
       "status": "historical_stub",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -852,7 +853,7 @@
       "routine": "setgid",
       "label": "setgid",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -860,7 +861,7 @@
       "routine": "getgid",
       "label": "getgid",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -868,7 +869,7 @@
       "routine": "ssig",
       "label": "sig",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -876,7 +877,7 @@
       "routine": "nosys",
       "label": "reserved for USG",
       "status": "historical_stub",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -884,7 +885,7 @@
       "routine": "nosys",
       "label": "reserved for USG",
       "status": "historical_stub",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -892,7 +893,7 @@
       "routine": "sysacct",
       "label": "turn acct off/on",
       "status": "pending",
-      "step": 56,
+      "task": 56,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -900,7 +901,7 @@
       "routine": "sysphys",
       "label": "set user physical addresses",
       "status": "pending",
-      "step": 64,
+      "task": 64,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -908,7 +909,7 @@
       "routine": "syslock",
       "label": "lock user in core",
       "status": "pending",
-      "step": 63,
+      "task": 63,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -916,7 +917,7 @@
       "routine": "ioctl",
       "label": "ioctl",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -924,7 +925,7 @@
       "routine": "nosys",
       "label": "readwrite (in abeyance)",
       "status": "historical_stub",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -932,7 +933,7 @@
       "routine": "mpxchan",
       "label": "creat mpx comm channel",
       "status": "pending",
-      "step": 65,
+      "task": 65,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -940,7 +941,7 @@
       "routine": "nosys",
       "label": "reserved for USG",
       "status": "historical_stub",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -948,7 +949,7 @@
       "routine": "nosys",
       "label": "reserved for USG",
       "status": "historical_stub",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -956,7 +957,7 @@
       "routine": "exece",
       "label": "exece",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -964,7 +965,7 @@
       "routine": "umask",
       "label": "umask",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -972,7 +973,7 @@
       "routine": "chroot",
       "label": "chroot",
       "status": "native_path",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -980,7 +981,7 @@
       "routine": "nosys",
       "label": "x",
       "status": "historical_stub",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     },
     {
@@ -988,7 +989,7 @@
       "routine": "nosys",
       "label": "used internally",
       "status": "historical_stub",
-      "step": 39,
+      "task": 39,
       "native": "kernel/v7/syscall.c"
     }
   ]

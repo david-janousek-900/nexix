@@ -1,11 +1,11 @@
-# Native libc foundation (step 11)
+# Native libc foundation (task 11)
 
 Nexix builds `build/crt0.o` and `build/libc.a` for statically linked ELF64
 programs. They are native AMD64 implementations using the Nexix syscall ABI.
 Historical PDP-11 assembly is retained under reference/ and is not linked.
 The supported interface is a foundation for rebuilding V7 userland, not a
 complete libc. File I/O, signal wrappers and brk/sbrk now have kernel support.
-Step 16 adds integer stdio, heap allocation and V7 source compatibility; see [userland.md](userland.md).
+Task 16 adds integer stdio, heap allocation and V7 source compatibility; see [userland.md](userland.md).
 
 ## Build and startup
 
@@ -37,7 +37,7 @@ no red zone, no PIE, no stack protector or unwind tables. Only kernel C retains
 `-mgeneral-regs-only`. TLS, shared libraries and constructors remain deferred.
 A generated ELF requires Nexix and cannot run using the host's syscall ABI.
 
-`_start` reads the step 10 stack, initializes `environ`, clears DF, clears the
+`_start` reads the task 10 stack, initializes `environ`, clears DF, clears the
 frame pointer and calls `main(argc, argv, envp)` using the SysV AMD64 calling
 convention and stack alignment. A conventional two-argument main also works;
 the third argument is available to programs which use it. Returning from main
@@ -75,12 +75,12 @@ Also implemented:
 - strlen, strcmp, strncmp, strcpy, strncpy, strchr, strrchr.
 - getenv, reading the current `environ` vector.
 - exit and atexit, with 32 statically stored callbacks executed in reverse
-  registration order. `_exit` bypasses callbacks. Step 36 flushes buffered output after callbacks; successful exec replaces the callback and stream state with fresh BSS.
+  registration order. `_exit` bypasses callbacks. Task 36 flushes buffered output after callbacks; successful exec replaces the callback and stream state with fresh BSS.
 
-Step 13 adds file and pipe wrappers and headers; see [files.md](files.md).
-Step 14 adds sgtty/ioctl headers and stty/gtty/ioctl/isatty; see [tty.md](tty.md).
-Step 15 adds signals, brk/sbrk, setjmp/longjmp and init/shell service wrappers;
-see [signals.md](signals.md). Step 16 adds malloc and userland support; see
+Task 13 adds file and pipe wrappers and headers; see [files.md](files.md).
+Task 14 adds sgtty/ioctl headers and stty/gtty/ioctl/isatty; see [tty.md](tty.md).
+Task 15 adds signals, brk/sbrk, setjmp/longjmp and init/shell service wrappers;
+see [signals.md](signals.md). Task 16 adds malloc and userland support; see
 [userland.md](userland.md). String
 functions follow their usual C buffer contracts; they do not validate pointers
 or allocate storage. getenv returns a pointer into the environment, not a copy.
@@ -108,51 +108,51 @@ that process exits directly.
 Every successful boot requires `NEXIX_LIBC_ABI_OK` and `NEXIX_LIBC_OK` before
 `NEXIX_BOOT_OK`. These libc fixtures alone do not prove a userland port; the rebuilt V7 init,
 shell and utilities have separate acceptance tests (see [userland.md](userland.md)).
-Step 12 implements the block interface, RAM root device and V7 filesystem
-foundation; see [filesystem.md](filesystem.md). Steps 13 and 14 add file
+Task 12 implements the block interface, RAM root device and V7 filesystem
+foundation; see [filesystem.md](filesystem.md). Tasks 13 and 14 add file
 operations, pipes and terminal controls; see [files.md](files.md) and [tty.md](tty.md).
 
-Step 28 adds binary64 `frexp`, `ldexp`, `modf`, `fmod`, decimal `atof`/`strtod`,
+Task 28 adds binary64 `frexp`, `ldexp`, `modf`, `fmod`, decimal `atof`/`strtod`,
 `ecvt`/`fcvt`, and `%f`, `%e`, `%E`, `%g`, `%G` formatting. See
 [floating-point.md](floating-point.md) for numeric contracts and limitations.
 `build/libm.a` contains native adaptations of all 16 retained libm C files;
 link math callers with `build/libm.a build/libc.a` after their objects.
 
-Steps 33–35 add scanf/fscanf/sscanf and their va_list variants, stream pushback,
+Tasks 33–35 add scanf/fscanf/sscanf and their va_list variants, stream pushback,
 fdopen/freopen, gets/getw/putw, V7 character classification and string aliases,
 native integer conversions and the V7 rand sequence. See
 [libc-coverage.md](libc-coverage.md) for behavior and remaining compatibility work.
 
-Step 36 (previously 25.8) adds lazy 512-byte stream buffering and working V7 setbuf. Terminal
+Task 36 (previously 25.8) adds lazy 512-byte stream buffering and working V7 setbuf. Terminal
 output and initial stderr remain unbuffered. fflush/fclose and normal exit
 flush pending output; _exit and successful exec do not. Input fflush is a V7
 no-op. See [libc-coverage.md](libc-coverage.md) for buffer ownership, seek/tell,
 update-stream and fork conventions. All native callers must rebuild because
 FILE now includes buffer state.
 
-Step 40 adds [V7 scalar/byte/conversion helpers](libc-helpers.md), including
+Task 40 adds [V7 scalar/byte/conversion helpers](libc-helpers.md), including
 returning abort, historical disk-address packing, gcvt, tell, execle and
 exit-based assertions. Public declaration/export coverage is checked separately
 from complete feature behavior; libc remains partial.
 
-Step 41 adds [native stdio source adapters and remote formatting](stdio-compat.md).
+Task 41 adds [native stdio source adapters and remote formatting](stdio-compat.md).
 The packet uses captured native va_list and tail replacement; private FILE
 consumers use public routines and stable caller-owned buffers.
 
-Step 42 supplies [V7 mktemp naming](mktemp.md). It returns an available
+Task 42 supplies [V7 mktemp naming](mktemp.md). It returns an available
 PID/letter-based filename without creating it; application ports must pass
 writable templates and handle the historical slash failure sentinel.
 
-Step 43 completes [error text, perror and exported V7 error tables](errors.md).
+Task 43 completes [error text, perror and exported V7 error tables](errors.md).
 Diagnostics use descriptor 2 directly and preserve errno; stream buffering is
 independent of these messages.
 
-Step 44 adds [V7 password database iteration and lookup](passwd.md), including
-legacy getpw. Native group functions are implemented by step 45; libc remains partial.
+Task 44 adds [V7 password database iteration and lookup](passwd.md), including
+legacy getpw. Native group functions are implemented by task 45; libc remains partial.
 
-Step 45 adds [V7 group iteration, lookup and membership](group.md). Account
+Task 45 adds [V7 group iteration, lookup and membership](group.md). Account
 configuration, authentication and credential-changing applications retain
-their roadmap steps.
+their roadmap tasks.
 
-Step 46 adds [V7 DES/password primitives](crypt.md) through crypt.h and unistd.h.
+Task 46 adds [V7 DES/password primitives](crypt.md) through crypt.h and unistd.h.
 These are source-adapted library interfaces; login/authentication remains pending.

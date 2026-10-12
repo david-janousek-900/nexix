@@ -26,7 +26,7 @@ struct stat {
 #define S_ISFIFO(m) (((m) & S_IFMT) == S_IFIFO)
 #define S_ISCHR(m) (((m) & S_IFMT) == S_IFCHR)
 #define S_ISBLK(m) (((m) & S_IFMT) == S_IFBLK)
-/* mpx mode constants are source contracts; implementation is steps 65–67. */
+/* mpx mode constants are source contracts; implementation is tasks 65–67. */
 _Static_assert(sizeof(struct stat) == sizeof(struct nx_stat), "stat ABI size");
 #define NX_STAT_OFFSET(field, native) \
     _Static_assert(offsetof(struct stat, field) == offsetof(struct nx_stat, native), "stat ABI offset")

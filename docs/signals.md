@@ -1,10 +1,10 @@
-# Signals and init/shell services (step 15)
+# Signals and init/shell services (task 15)
 
 Nexix adapts the retained V7 `sig.c` and `sys4.c` behavior for native ELF64
 processes. Signal numbers 1–15 retain their V7 meanings; the pending bitmap
 also supports V7's unused slot 16. Default actions terminate the process with
 the signal number in the low wait-status bits. Core dumps, tracing, signal
-masks, restartable syscalls, and terminal job control remain outside this step.
+masks, restartable syscalls, and terminal job control remain outside this task.
 
 ## Delivery and return
 
@@ -92,13 +92,13 @@ it. CPU-usage priority decay remains pending.
 Time/stime use signed 64-bit seconds. The wall clock starts from the UTC RTC at boot
 and advances with PIT ticks; root can set it through stime. An invalid RTC
 falls back to epoch zero plus uptime with a boot diagnostic. Calendar/timezone
-libc functions and configurable TZ are implemented in step 24; see [time.md](time.md). Alarms use monotonic PIT ticks independently of
+libc functions and configurable TZ are implemented in task 24; see [time.md](time.md). Alarms use monotonic PIT ticks independently of
 stime. Access uses real IDs, including directory search checks; open uses
 effective IDs. Chmod requires ownership or root; chown requires root. Chmod
 preserves the file type and restricts the sticky bit to root. Utimes are passed
 as two native 64-bit seconds and must fit the disk's unsigned 32-bit fields.
 Metadata updates reject read-only mounts and preserve inode block ownership.
-Automatic access/modification/change timestamps are maintained by step 23.
+Automatic access/modification/change timestamps are maintained by task 23.
 Utime sets the requested atime/mtime and stamps ctime from the system clock;
 chmod and chown update ctime without changing atime/mtime.
 Sync is a successful no-op for the synchronous write-through cache, reporting
@@ -127,6 +127,6 @@ Success markers are NEXIX_SIGNALS_OK, NEXIX_HEAP_OK, NEXIX_INIT_SYSCALLS_OK and
 NEXIX_SIGNALS_CLEANUP_OK, followed by NEXIX_BOOT_OK. Logs are
 `build/signals-16M.log` and `build/signals-128M.log`.
 
-Step 16 rebuilds V7 init, the shell and basic utilities. The shell and utilities
-run in acceptance tests, and step 18 implements normal init/shell startup.
-Multi-user init/getty/login integration remains steps 98–108.
+Task 16 rebuilds V7 init, the shell and basic utilities. The shell and utilities
+run in acceptance tests, and task 18 implements normal init/shell startup.
+Multi-user init/getty/login integration remains tasks 98–108.

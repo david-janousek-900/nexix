@@ -1,4 +1,4 @@
-# Time, timezone, date and touch (step 24)
+# Time, timezone, date and touch (task 24)
 
 The kernel clock and RTC use UTC epoch seconds. Filesystem timestamps retain
 V7's existing second precision and 32-bit disk encoding. Timezone conversion
@@ -88,6 +88,6 @@ command copies live in `user/v7/cmd`. `make TOOLCHAIN_PREFIX= test-time` checks
 the conversion rules, real command behavior and accounting in QEMU.
 
 Existing persistent roots do not receive new executables automatically. Run
-`make TOOLCHAIN_PREFIX= DISK_IMAGE=build/nexix-step24.img run` to create a
+`make TOOLCHAIN_PREFIX= DISK_IMAGE=build/nexix-task24.img run` to create a
 separate root containing date/touch and the new default profile. Existing
-files in `build/nexix.img` are preserved; full upgrade handling is step 357.
+files in `build/nexix.img` are preserved; full upgrade handling is task 357.

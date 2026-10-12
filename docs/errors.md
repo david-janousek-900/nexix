@@ -1,4 +1,4 @@
-# V7 error messages and perror (step 43)
+# V7 error messages and perror (task 43)
 
 `libc/errors.c` preserves all 35 messages (indexes 0–34) from
 `reference/v7/usr/src/libc/gen/errlst.c`, including their spelling and order.
@@ -31,10 +31,10 @@ perror message when the stream is later flushed, as with the V7 write-based
 implementation.
 
 The reference source files and `usr/man/man3/perror.3` are unchanged. The native
-public perror returns void; this step does not introduce strerror or change
+public perror returns void; this task does not introduce strerror or change
 kernel errno numbers, syscall ABI versions, or component completion claims.
 Libc remains partial, with password/group, crypt and other interfaces still
-assigned to their roadmap steps.
+assigned to their roadmap tasks.
 
 ## Verification
 
@@ -59,4 +59,4 @@ and cleanup tests run in the same boots.
 The interface export checker now requires sys_errlist/sys_nerr along with the
 existing public data symbols. The original consuming programs using their own
 error-table formatting (for example time, nice and kill) remain with their
-individual port steps; table availability does not mark those programs ported.
+individual port tasks; table availability does not mark those programs ported.

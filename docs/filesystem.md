@@ -1,4 +1,4 @@
-# Block devices and V7 filesystem foundation (step 12)
+# Block devices and V7 filesystem foundation (task 12)
 
 Nexix has a synchronous block-device interface, RAM-backed storage and native
 V7 filesystem APIs. The algorithms follow the retained V7 alloc.c, subr.c bmap,
@@ -17,13 +17,13 @@ The build generates `build/root-test.img`, a 1024-block (512 KiB) V7 filesystem
 fixture, and embeds its immutable bytes in the kernel. The boot test copies it
 into writable RAM, mounts it temporarily, tests it, then unmounts it. This is the
 RAM root-device foundation. Normal boot now mounts the production image and
-launches init; see [booting.md](booting.md). Step 17 now builds the init/shell root image; see [root-image.md](root-image.md).
-Step 18 mounts it for PID 1. The fixture itself is not a bootable V7 userland distribution.
+launches init; see [booting.md](booting.md). Task 17 now builds the init/shell root image; see [root-image.md](root-image.md).
+Task 18 mounts it for PID 1. The fixture itself is not a bootable V7 userland distribution.
 
 The fixture contains root, bin, tmp and dev directories; a greeting file;
 patterned data spanning direct, single and double indirection; a sparse file
 using triple indirection; a scratch file; a 14-byte filename; native ELF test
-programs; and character-device inodes. Step 14 connects console/ttyS0 and
+programs; and character-device inodes. Task 14 connects console/ttyS0 and
 controlling-tty names to COM1 through the file layer; see [tty.md](tty.md).
 `tools/mk_v7fs.py` builds this deterministic image from the generated executables.
 It writes PDP-11 short/long/three-byte address encodings independently of the
@@ -41,7 +41,7 @@ multi-sector generic transfer can have completed an earlier prefix.
 The filesystem uses a 29-entry sector cache. Reads fill it on demand with round
 robin replacement; failed reads never publish cache entries. Writes go to the
 device synchronously and update any cached copy. There is no delayed-write
-queue, DMA, interrupt-driven driver or buffer sleep/wakeup yet. Step 20 adds a polling IDE driver; see [storage.md](storage.md).
+queue, DMA, interrupt-driven driver or buffer sleep/wakeup yet. Task 20 adds a polling IDE driver; see [storage.md](storage.md).
 
 Callers serialize complete filesystem operations; current kernel callers keep
 interrupts disabled. Backing memory, device callbacks and device flags must
@@ -89,7 +89,7 @@ Repeated slashes, dot and dot-dot use directory entries. A trailing slash
 requires a directory. Following V7 nami.c, components longer than 14 bytes are
 truncated for comparison, rather than assigned a modern long-name format.
 There are no symlinks, nested mount points or chroot handling in this kernel-only
-API. The step 13 file layer uses credential-checked lookup and checks access
+API. The task 13 file layer uses credential-checked lookup and checks access
 before exposing storage operations as syscalls; see
 [files.md](files.md).
 
@@ -112,9 +112,9 @@ it does not repair damaged disk metadata. Writes are not journaled or crash
 atomic. Allocation may leave owned empty indirect branches after ENOSPC, which
 can be reused by a subsequent write. Power-loss recovery is not implemented.
 
-Step 13 implements file-descriptor operations, inode/file reference ownership,
-permission checks, namespace creation/removal, truncation and pipes. Step 15 adds explicit metadata updates, step 18 adds filesystem-backed exec,
-and step 23 maintains automatic V7 timestamps.
+Task 13 implements file-descriptor operations, inode/file reference ownership,
+permission checks, namespace creation/removal, truncation and pipes. Task 15 adds explicit metadata updates, task 18 adds filesystem-backed exec,
+and task 23 maintains automatic V7 timestamps.
 Normal boot runs programs from the production root. The embedded catalog is
 retained for regression fixtures.
 
@@ -139,7 +139,7 @@ read/write device faults, cache retry/hits, partial-transfer counts and stale
 bytes past EOF, and recovery from ENOSPC during indirect construction. They run against a copy of the image and leave the build image
 unchanged. They also pass with address/undefined-behavior sanitizers enabled.
 
-## V7 timestamp handling (step 23)
+## V7 timestamp handling (task 23)
 
 The event rules follow the preserved V7 `rdwri.c`, `iget.c`, `sys4.c` and
 `nami.c`: new inodes receive atime/mtime/ctime, nonempty reads update atime
@@ -155,7 +155,7 @@ V7 inode times remain four bytes each in the existing PDP-11 encoding, with
 second precision and no birth-time field. Automatic updates store the low
 32 bits of epoch seconds, preserving the existing disk width and rollover.
 No new timestamp fields or timezone offsets are stored. Timezone conversion
-belongs in libc (step 24). Read-only mounts skip timestamp writes.
+belongs in libc (task 24). Read-only mounts skip timestamp writes.
 
 The native filesystem retains its synchronous write-through policy: timestamps
 are stored during the operation rather than deferred through V7 inode flags

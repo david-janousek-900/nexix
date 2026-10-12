@@ -1,9 +1,9 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "version": "0.1.0",
   "roadmap": "README.md",
   "inventory": "docs/v7-userland-manifest.json",
-  "policy": "Every component and requirement has explicit owning/supporting roadmap steps; mappings establish planned coverage, not implementation or symbol-level compatibility. README step statuses and manifest implementation/input statuses are distinct.",
+  "policy": "Every component and requirement has explicit owning/supporting roadmap tasks; mappings establish planned coverage, not implementation or symbol-level compatibility. README task statuses and manifest implementation/input statuses are distinct.",
   "components": {
     "build.cmake": [
       353
@@ -633,7 +633,8 @@
       91,
       362,
       363,
-      364
+      364,
+      366
     ],
     "distribution.library-data": [
       87,
@@ -782,7 +783,8 @@
       68,
       79,
       82,
-      363
+      363,
+      365
     ],
     "lib.libdbm": [
       111
@@ -1199,5 +1201,5 @@
       170
     ]
   },
-  "step_count": 364
+  "task_count": 366
 }

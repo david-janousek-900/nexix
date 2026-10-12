@@ -1,4 +1,4 @@
-# Serial TTY and terminal handling (step 14)
+# Serial TTY and terminal handling (task 14)
 
 Nexix 0.1.0 now connects COM1 to native character-device file operations and a
 V7-style line discipline. The retained `reference/v7/usr/sys/dev/tty.c` and
@@ -22,7 +22,7 @@ the guest. Ctrl-A followed by A sends a literal Ctrl-A to the guest.
 
 The demo is a native C test program, not the V7 shell. Normal `make run` runs
 self-tests and idles; permanent root mounting and init/shell startup remain
-steps 17–19. Both modes use the same terminal and file syscall implementations.
+tasks 17–19. Both modes use the same terminal and file syscall implementations.
 
 Automated checks:
 
@@ -82,7 +82,7 @@ controls are DEL (also accepting Backspace) for erase, Ctrl-U for kill, Ctrl-D
 for EOF, Ctrl-S for output stop and Ctrl-Q for output start. These editing
 controls suit current serial terminals; historical V7 defaults `#`/`@` can be
 selected through sgtty. Interrupt and quit characters are stored as Ctrl-C and
-Ctrl-backslash. Step 15 posts SIGINT/SIGQUIT to the terminal group, flushes
+Ctrl-backslash. Task 15 posts SIGINT/SIGQUIT to the terminal group, flushes
 input and resumes output; RAW keeps these bytes as ordinary data.
 
 Cooked input accumulates an editable line until newline, a configured break
@@ -143,7 +143,7 @@ ODDP, EVENP and XTABS; delay modes, LCASE and TANDEM are not implemented.
 
 There is no asynchronous output queue, nonblocking I/O, termios, window-size
 handling, modem/carrier detection, hangup policy or terminal job control yet.
-Step 15 implements signal delivery and interruptible terminal I/O; see
+Task 15 implements signal delivery and interruptible terminal I/O; see
 [signals.md](signals.md).
 
 ## Validation

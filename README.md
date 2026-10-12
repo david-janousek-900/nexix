@@ -116,7 +116,7 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 
 ### Current implementation and scope
 
-The reviewed baseline is commit `63e8d0d`. Nexix boots into a working
+The reviewed implementation baseline is commit `fa6076d`. Nexix boots into a working
 single-user V7 shell with persistent IDE storage. Eleven native programs are
 installed: **init, sh, echo, cat, ls, pwd, cp, ln, rm, date and touch**.
 The inventory accounts for **217 components, 2,144 distribution files and
@@ -124,11 +124,11 @@ The inventory accounts for **217 components, 2,144 distribution files and
 2 partial, 1 prototype and 203 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **364 tracking steps: 46 done, 2 in progress
-and 316 to do** after step 46. These counts are a work breakdown, not an
-estimate of the percentage of porting effort completed. Steps 1–24 retain
-their previous scope. Completed portions of the old step 25 are separated
-into steps 25–36; its remaining work is listed individually.
+The expanded roadmap below has **366 tracking tasks: 46 done, 2 in progress
+and 318 to do** after task 46 and the reference review. These counts are a work breakdown, not an
+estimate of the percentage of porting effort completed. Tasks 1–24 retain
+their previous scope. Completed portions of the old task 25 are separated
+into tasks 25–36; its remaining work is listed individually.
 
 Release scope and agreed native adaptations:
 
@@ -149,24 +149,24 @@ Release scope and agreed native adaptations:
 Known gaps include set-ID execution, core dumps, multiplexed channels, complete
 accounting/tracing/profiling, raw devices and mount administration. Packaging
 currently has a 64-inode image builder and a fixed 512 KiB embedded RAM root;
-steps 83–86 address these limits before full-distribution installation.
+tasks 83–86 address these limits before full-distribution installation.
 
 See the [porting inventory](docs/porting-inventory.md) and its
 [component manifest](docs/v7-userland-manifest.json) for original inputs,
 outputs, dependencies, acceptance checks and missing sources. The
 [roadmap coverage map](docs/roadmap-coverage.json) and
 [coverage contract](docs/roadmap-coverage.md) connect every component and
-requirement to these step IDs; test-inventory validates the relationships. Older step
+requirement to these task IDs; test-inventory validates the relationships. Older task
 numbers in detailed documents refer to the previous roadmap and are mapped below.
 
 ### Implementation, testing and commit rules
 
-Each future step follows one implementation, test and commit cycle:
+Each future task follows one implementation, test and commit cycle:
 
 1. Implement the stated capability.
 2. Run focused acceptance tests and affected regressions.
-3. Update the inventory, documentation and step status.
-4. Commit the step and record its hash and test evidence.
+3. Update the inventory, documentation and task status.
+4. Commit the task and record its hash and test evidence.
 
 **Done** means implemented, tested and committed. **In progress** means relevant
 implementation exists but complete stated coverage is unfinished. **To do**
@@ -174,37 +174,37 @@ includes blocked work, with the blocker recorded in notes.
 
 Historical commits sometimes contain several features. The tables record their
 actual shared commits; the expanded numbering does not rewrite Git history.
-Numbers are stable sequential tracking IDs. Execute dependency-ready steps;
+Numbers are stable sequential tracking IDs. Execute dependency-ready tasks;
 source recovery and independent ports may proceed before lower-numbered
 dependencies finish.
 
-Each component must reference its owning steps, prerequisites, native outputs,
+Each component must reference its owning tasks, prerequisites, native outputs,
 acceptance checks and commits. Every source, header, assembly file and build
 input must map to an adaptation, supporting asset or documented native equivalent.
 Compilation alone, preserved binaries or an ENOSYS stub do not complete a port.
 
-Unless a row states otherwise, a program-port step includes native build
+Unless a row states otherwise, a program-port task includes native build
 integration, installation, source-defined behavior, exit/error cases and guest
 acceptance fixtures. Cover all applicable outputs, including scripts, private
 helpers, libraries, generated data and optional targets. Large components are
-split into smaller steps below. Most steps restore V7 functionality; native
+split into smaller tasks below. Most tasks restore V7 functionality; native
 ELF/x86_64 ABI and device equivalents are platform adaptations.
 
 ### Previous roadmap cross-reference
 
-| Previous roadmap | Expanded steps |
+| Previous roadmap | Expanded tasks |
 |---|---|
 | 1–24: implemented foundation | 1–24 |
 | 25: kernel/libc prerequisites and floating point | 25–82 |
 | 26: independent terminals | 89–93 |
 | 27: multi-user startup | 94–108 |
-| 28: full userland/toolchain port | Component steps in 87–88 and 109–355 |
+| 28: full userland/toolchain port | Component tasks in 87–88 and 109–355 |
 | 29: packaging and release | 83–86 and 356–361 |
 | Roadmap and coverage maintenance | 37 |
 
 ### Implemented foundation
 
-| Step | Description | Status | Evidence / notes / acceptance |
+| Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 1 | Preserve V7 reference sources and licensing | Done | `e317f01`; full archive corrected in `a856583` |
 | 2 | GRUB bootstrap and x86_64 long mode | Done | `e317f01` |
@@ -231,21 +231,21 @@ ELF/x86_64 ABI and device equivalents are platform adaptations.
 | 23 | Persistent V7 atime/mtime/ctime | Done | `bb13519`; no birth-time extension |
 | 24 | TZ-aware time conversion and native date/touch | Done | `e8ec6dd` |
 
-### Completed portions of old step 25
+### Completed portions of old task 25
 
-These steps are complete within their documented native contracts; full libc/libm
-coverage and installation remain subject to later acceptance steps.
+These tasks are complete within their documented native contracts; full libc/libm
+coverage and installation remain subject to later acceptance tasks.
 
-| Step | Description | Status | Evidence / notes / acceptance |
+| Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
-| 25 | Initialize and isolate x87/MMX/SSE/SSE2 state | Done | `8119d4f`; defined native contracts, not full step 25 |
-| 26 | FP state across scheduling, fork and exec | Done | `8119d4f`; defined native contracts, not full step 25 |
-| 27 | FP signal contexts and setjmp/longjmp controls | Done | `8119d4f`; defined native contracts, not full step 25 |
-| 28 | Binary64 helpers and decimal conversion/formatting | Done | `8119d4f`; defined native contracts, not full step 25 |
-| 29 | Adapt all 16 supplied V7 libm C sources | Done | `8119d4f`; defined native contracts, not full step 25 |
-| 30 | mknod and special-inode lifecycle | Done | `8119d4f`; defined native contracts, not full step 25 |
-| 31 | Privileged directory link/unlink semantics | Done | `8119d4f`; defined native contracts, not full step 25 |
-| 32 | Per-process chroot | Done | `8119d4f`; defined native contracts, not full step 25 |
+| 25 | Initialize and isolate x87/MMX/SSE/SSE2 state | Done | `8119d4f`; defined native contracts, not full task 25 |
+| 26 | FP state across scheduling, fork and exec | Done | `8119d4f`; defined native contracts, not full task 25 |
+| 27 | FP signal contexts and setjmp/longjmp controls | Done | `8119d4f`; defined native contracts, not full task 25 |
+| 28 | Binary64 helpers and decimal conversion/formatting | Done | `8119d4f`; defined native contracts, not full task 25 |
+| 29 | Adapt all 16 supplied V7 libm C sources | Done | `8119d4f`; defined native contracts, not full task 25 |
+| 30 | mknod and special-inode lifecycle | Done | `8119d4f`; defined native contracts, not full task 25 |
+| 31 | Privileged directory link/unlink semantics | Done | `8119d4f`; defined native contracts, not full task 25 |
+| 32 | Per-process chroot | Done | `8119d4f`; defined native contracts, not full task 25 |
 | 33 | Native scanf family | Done | `5098483`; implemented subset |
 | 34 | Stream helpers and pushback | Done | `5098483`; implemented subset |
 | 35 | Character/string/integer helpers and formatting extensions | Done | `5098483`; implemented subset |
@@ -253,11 +253,11 @@ coverage and installation remain subject to later acceptance steps.
 
 ### Remaining kernel and libc prerequisites
 
-| Step | Description | Status | Evidence / notes / acceptance |
+| Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
-| 37 | Publish renumbered roadmap and enforce component-to-step coverage | Done | test-inventory validates 217 components, 35 requirements and 361 steps; commit recorded in Git history |
+| 37 | Publish renumbered roadmap and enforce component-to-task coverage | Done | test-inventory validates 217 components, 35 requirements and 361 tasks; commit recorded in Git history |
 | 38 | Complete kernel source adaptation coverage | Done | [Source and syscall audit](docs/kernel-coverage.md); test-kernel-coverage; Git history; kernel port remains incomplete |
-| 39 | Complete exported native V7 header/ABI coverage | Done | [Header contracts and deferred owners](docs/header-coverage.md); test-header-abi; Git history; feature implementations remain with their steps |
+| 39 | Complete exported native V7 header/ABI coverage | Done | [Header contracts and deferred owners](docs/header-coverage.md); test-header-abi; Git history; feature implementations remain with their tasks |
 | 40 | Finish libc scalar/byte helpers and conversion contracts | Done | [V7 helper contracts](docs/libc-helpers.md); test-libc-helpers and test-libc-interfaces; Git history; libc remains partial |
 | 41 | Adapt internal FILE callers and historical remote printf convention | Done | [Native stdio adapters](docs/stdio-compat.md); test-stdio-compat; Git history; whole consumer ports remain pending |
 | 42 | Temporary-file routines | Done | [V7 mktemp contract and consumers](docs/mktemp.md); test-mktemp; Git history; consumer ports remain pending |
@@ -304,7 +304,7 @@ coverage and installation remain subject to later acceptance steps.
 
 ### Source inputs and independent terminals
 
-| Step | Description | Status | Evidence / notes / acceptance |
+| Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 83 | Manifest-driven build/install staging | To do | Per-component outputs, modes and provenance; replace hard-coded 11-program declarations |
 | 84 | Scalable V7 image builder | To do | Current builder has 64 inodes; configurable inode table and adequate full-release capacity |
@@ -320,7 +320,7 @@ coverage and installation remain subject to later acceptance steps.
 
 ### Multi-user startup and accounts
 
-| Step | Description | Status | Evidence / notes / acceptance |
+| Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 94 | Install native passwd/group/ttys/rc configuration | To do | Old 27; explicit account fixtures, homes, modes and ownership |
 | 95 | Port stty | To do | Query/change each terminal independently |
@@ -340,7 +340,7 @@ coverage and installation remain subject to later acceptance steps.
 
 ### Additional libraries
 
-| Step | Description | Status | Evidence / notes / acceptance |
+| Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 109 | Port libmp arithmetic and representation | To do | Native widths; independent multi-precision fixtures |
 | 110 | Complete libmp I/O and consuming-program acceptance | To do | Round trips and xsend/dc consumers |
@@ -351,11 +351,11 @@ coverage and installation remain subject to later acceptance steps.
 | 115 | Port libI77 formatted/sequential I/O | To do | Format parsing and read/write/error fixtures |
 | 116 | Port libI77 unformatted I/O | To do | Explicit native records and historical-data adapters |
 | 117 | Port libI77 direct/list/namelist I/O | To do | Positioning, inquiry and type fixtures |
-| 118 | Complete Fortran runtime archive integration | To do | Actual native compiler consumers after backend steps |
+| 118 | Complete Fortran runtime archive integration | To do | Actual native compiler consumers after backend tasks |
 
 ### Essential commands and scripts
 
-| Step | Description | Status | Evidence / notes / acceptance |
+| Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 119 | Port basename | To do | Native command fixtures, failure statuses and installation |
 | 120 | Port cal | To do | Native command fixtures, failure statuses and installation |
@@ -380,7 +380,7 @@ coverage and installation remain subject to later acceptance steps.
 
 ### Text processing and editing
 
-| Step | Description | Status | Evidence / notes / acceptance |
+| Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 139 | Port cmp | To do | Source-defined behavior, byte fixtures and error cases |
 | 140 | Port col | To do | Source-defined behavior, byte fixtures and error cases |
@@ -412,7 +412,7 @@ coverage and installation remain subject to later acceptance steps.
 
 ### Build generators and awk
 
-| Step | Description | Status | Evidence / notes / acceptance |
+| Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 166 | Port cb | To do | C-source formatting fixtures |
 | 167 | Port m4 | To do | Macros, quoting, includes and recursion |
@@ -430,9 +430,9 @@ coverage and installation remain subject to later acceptance steps.
 
 The target is ELF64 AMD64, SysV calling conventions, LP64 and static linking.
 Host tools may bootstrap generated code; both supplied C compiler families
-are accounted for. Final native rebuild acceptance is step 207.
+are accounted for. Final native rebuild acceptance is task 207.
 
-| Step | Description | Status | Evidence / notes / acceptance |
+| Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 177 | Freeze native object/toolchain ABI | To do | ELF64 AMD64, SysV calls, LP64 and static linking; host bootstrap allowed |
 | 178 | Port cpp | To do | Preprocessing, include paths and generated-source fixtures |
@@ -468,7 +468,7 @@ are accounted for. Final native rebuild acceptance is step 207.
 
 ### Mathematics and language tools
 
-| Step | Description | Status | Evidence / notes / acceptance |
+| Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 208 | Port dc | To do | Numeric/language fixtures and native execution |
 | 209 | Port bc | To do | dc integration; optional lib.b unresolved until recovered/disposition |
@@ -484,7 +484,7 @@ are accounted for. Final native rebuild acceptance is step 207.
 
 ### Storage administration and archives
 
-| Step | Description | Status | Evidence / notes / acceptance |
+| Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 219 | Port mknod | To do | Disposable storage fixtures; bounds, permissions and error paths |
 | 220 | Port mount | To do | Disposable storage fixtures; bounds, permissions and error paths |
@@ -508,7 +508,7 @@ are accounted for. Final native rebuild acceptance is step 207.
 
 ### Jobs, mail and accounting
 
-| Step | Description | Status | Evidence / notes / acceptance |
+| Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 238 | Install native spool ownership and locking configuration | To do | Safe native fixtures, not historical user/mail contents |
 | 239 | Port ac | To do | Source-defined service/accounting fixtures |
@@ -526,7 +526,7 @@ are accounted for. Final native rebuild acceptance is step 207.
 
 ### Diagnostics and development
 
-| Step | Description | Status | Evidence / notes / acceptance |
+| Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 251 | Port dmesg | To do | Diagnostics/status fixtures |
 | 252 | Port iostat | To do | Native kernel-information interface; no historical structure offsets |
@@ -543,7 +543,7 @@ are accounted for. Final native rebuild acceptance is step 207.
 
 ### Documents, manuals and learning
 
-| Step | Description | Status | Evidence / notes / acceptance |
+| Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 263 | Port roff | To do | Retained formatter behavior |
 | 264 | Retarget nroff/troff parsing and layout core | To do | Native widths and formatter memory model |
@@ -574,7 +574,7 @@ are accounted for. Final native rebuild acceptance is step 207.
 
 ### Plotting and historical output
 
-| Step | Description | Status | Evidence / notes / acceptance |
+| Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 289 | Extract/adapt generic libplot | To do | Historical .c.a input, native plot records |
 | 290 | Port Tektronix libplot backend | To do | libt4014 protocol fixtures |
@@ -588,7 +588,7 @@ are accounted for. Final native rebuild acceptance is step 207.
 
 ### Serial communications
 
-| Step | Description | Status | Evidence / notes / acceptance |
+| Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 298 | Port cu | To do | Two native serial endpoints and connection lifecycle |
 | 299 | Port UUCP packet/connection and lock primitives | To do | Native serial link and spool ownership |
@@ -600,7 +600,7 @@ are accounted for. Final native rebuild acceptance is step 207.
 
 ### Games with source and scripts
 
-| Step | Description | Status | Evidence / notes / acceptance |
+| Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 305 | Install/test game datasets | To do | Native adapters for fortunes, quiz, hangman and supporting records |
 | 306 | Port arithmetic | To do | Scripted terminal/game fixtures and required data |
@@ -618,11 +618,11 @@ are accounted for. Final native rebuild acceptance is step 207.
 
 ### Binary-only release blockers
 
-Each program has separate source/provenance recovery and implementation steps.
+Each program has separate source/provenance recovery and implementation tasks.
 Historical binaries remain preserved; recovery or an approved alternative is
 required before native-port acceptance.
 
-| Step | Description | Status | Evidence / notes / acceptance |
+| Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 318 | Recover banner source/provenance | To do | Blocked: archive supplies binaries only; alternative needs explicit approval |
 | 319 | Port/test banner | To do | Blocked until corresponding source recovery/approved alternative |
@@ -653,7 +653,7 @@ required before native-port acceptance.
 
 ### Native standalone and bootstrap equivalents
 
-| Step | Description | Status | Evidence / notes / acceptance |
+| Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 344 | Native standalone runtime and libsa | To do | srt0, SYS/config/device I/O and isolated runtime |
 | 345 | Standalone cat | To do | Boot/runtime file-reading fixture |
@@ -666,7 +666,7 @@ required before native-port acceptance.
 
 ### Rebuild, upgrades and release acceptance
 
-| Step | Description | Status | Evidence / notes / acceptance |
+| Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 352 | Adapt/test in historical build script | To do | Use native paths/tools; all supported component recipes |
 | 353 | Adapt/test cmake historical build script | To do | Use native paths/tools; all supported component recipes |
@@ -681,18 +681,28 @@ required before native-port acceptance.
 
 ### Additional kernel gaps identified by the source audit
 
-| Step | Description | Status | Evidence / notes / acceptance |
+| Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 362 | Complete V7 CPU usage and scheduler priority decay | To do | clock.c/slp.c: usage saturation, per-second decay, nice and wakeup priorities; deterministic scheduling tests |
 | 363 | Complete subsecond ftime clock interface | To do | Atomic seconds/milliseconds snapshot and native ABI; V7 timezone fields, rollover and invalid-user-pointer tests |
-| 364 | Implement native V7 kernel callout queue | To do | timeout callbacks, tick deadlines, ordering, bounded capacity and interrupt serialization; device consumers in steps 68–77 |
+| 364 | Implement native V7 kernel callout queue | To do | timeout callbacks, tick deadlines, ordering, bounded capacity and interrupt serialization; device consumers in tasks 68–77 |
+
+### Additional libc and syscall gaps identified by the reference review
+
+| Task | Description | Status | Evidence / notes / acceptance |
+|---:|---|---|---|
+| 365 | Complete V7 sleep alarm and signal compatibility | To do | gen/sleep.c; zero duration, earlier/equal/later existing alarms, handler restoration, unrelated signals and alarm setup races; test native elapsed-time/return-value adaptations explicitly |
+| 366 | Complete invalid/ignored system-call compatibility | To do | sys/trap.c nosys/nullsys and sysent.c reserved slots; original nosys returns EINVAL; define native syscall-number mapping and distinguish invalid calls from temporarily unimplemented calls; test errno and process survival |
+
+The [reference review](docs/reference-review.md) records coverage, new tasks
+and remaining source-input blockers.
 
 ### Execution priorities and release acceptance
 
-Step 37 records coverage relationships and validates the roadmap. Complete
-staging, image and test infrastructure in steps 83–88 before expanding
+Task 37 records coverage relationships and validates the roadmap. Complete
+staging, image and test infrastructure in tasks 83–88 before expanding
 installation substantially. Prioritize account/libc and set-ID prerequisites
-needed for steps 89–108, delivering multi-user boot before the long userland tail.
+needed for tasks 89–108, delivering multi-user boot before the long userland tail.
 Kernel, compiler and library integration gates run after their required
 dependencies, even where those dependencies have higher tracking IDs.
 
@@ -722,7 +732,7 @@ to declare the release complete.
 
 `make TOOLCHAIN_PREFIX= test-inventory` checks full-archive coverage, byte fidelity
 and inventory/roadmap consistency, including numbering, status totals and coverage
-of every component, requirement and step. It does not prove native functional acceptance or
+of every component, requirement and task. It does not prove native functional acceptance or
 completion of the ports.
 
 Version **0.2.0** adds PCI/e1000, lwIP IPv4/TCP/IP integration, sockets and
@@ -768,11 +778,11 @@ file changes survive three cold boots on disposable disks. Existing files with
 zero timestamps keep those values until the corresponding file operation updates
 them; new data writes set modification/change time, reads set access time.
 
-Step 24 adds V7 `date` and `touch`. To test the new packaged commands with a
+Task 24 adds V7 `date` and `touch`. To test the new packaged commands with a
 fresh persistent root while keeping the existing working disk:
 
 ```sh
-make TOOLCHAIN_PREFIX= DISK_IMAGE=build/nexix-step24.img run
+make TOOLCHAIN_PREFIX= DISK_IMAGE=build/nexix-task24.img run
 ```
 
 Inside Nexix:

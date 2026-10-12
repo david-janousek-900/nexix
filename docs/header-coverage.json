@@ -1,348 +1,348 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "policy": "Exported native contracts and deferred consumer-owned formats; never use historical structs as native wire/disk overlays.",
   "headers": [
     {
       "source": "reference/v7/usr/include/a.out.h",
       "status": "deferred_consumer",
       "native": null,
-      "step": 177
+      "task": 177
     },
     {
       "source": "reference/v7/usr/include/ar.h",
       "status": "deferred_consumer",
       "native": null,
-      "step": 179
+      "task": 179
     },
     {
       "source": "reference/v7/usr/include/assert.h",
       "status": "native_contract",
       "native": "libc/include/assert.h",
-      "step": 40
+      "task": 40
     },
     {
       "source": "reference/v7/usr/include/core.h",
       "status": "deferred_consumer",
       "native": null,
-      "step": 52
+      "task": 52
     },
     {
       "source": "reference/v7/usr/include/ctype.h",
       "status": "native_contract",
       "native": "libc/include/ctype.h",
-      "step": 35
+      "task": 35
     },
     {
       "source": "reference/v7/usr/include/dk.h",
       "status": "deferred_consumer",
       "native": null,
-      "step": 62
+      "task": 62
     },
     {
       "source": "reference/v7/usr/include/dumprestor.h",
       "status": "deferred_consumer",
       "native": null,
-      "step": 232
+      "task": 232
     },
     {
       "source": "reference/v7/usr/include/errno.h",
       "status": "native_contract",
       "native": "libc/include/errno.h",
-      "step": 43
+      "task": 43
     },
     {
       "source": "reference/v7/usr/include/execargs.h",
       "status": "deferred_consumer",
       "native": null,
-      "step": 79
+      "task": 79
     },
     {
       "source": "reference/v7/usr/include/grp.h",
       "status": "native_contract",
       "native": "libc/include/grp.h",
-      "step": 45
+      "task": 45
     },
     {
       "source": "reference/v7/usr/include/ident.h",
       "status": "deferred_consumer",
       "native": null,
-      "step": 177
+      "task": 177
     },
     {
       "source": "reference/v7/usr/include/math.h",
       "status": "native_contract",
       "native": "libc/include/math.h",
-      "step": 80
+      "task": 80
     },
     {
       "source": "reference/v7/usr/include/mp.h",
       "status": "deferred_consumer",
       "native": null,
-      "step": 109
+      "task": 109
     },
     {
       "source": "reference/v7/usr/include/olddump.h",
       "status": "deferred_consumer",
       "native": null,
-      "step": 234
+      "task": 234
     },
     {
       "source": "reference/v7/usr/include/pack.h",
       "status": "deferred_consumer",
       "native": null,
-      "step": 68
+      "task": 68
     },
     {
       "source": "reference/v7/usr/include/pwd.h",
       "status": "native_contract",
       "native": "libc/include/pwd.h",
-      "step": 44
+      "task": 44
     },
     {
       "source": "reference/v7/usr/include/saio.h",
       "status": "deferred_consumer",
       "native": null,
-      "step": 344
+      "task": 344
     },
     {
       "source": "reference/v7/usr/include/setjmp.h",
       "status": "native_contract",
       "native": "libc/include/setjmp.h",
-      "step": 27
+      "task": 27
     },
     {
       "source": "reference/v7/usr/include/sgtty.h",
       "status": "native_contract",
       "native": "libc/include/sgtty.h",
-      "step": 74
+      "task": 74
     },
     {
       "source": "reference/v7/usr/include/signal.h",
       "status": "native_contract",
       "native": "libc/include/signal.h",
-      "step": 15
+      "task": 15
     },
     {
       "source": "reference/v7/usr/include/stdio.h",
       "status": "native_contract",
       "native": "libc/include/stdio.h",
-      "step": 41
+      "task": 41
     },
     {
       "source": "reference/v7/usr/include/symbol.h",
       "status": "deferred_consumer",
       "native": null,
-      "step": 61
+      "task": 61
     },
     {
       "source": "reference/v7/usr/include/sys/acct.h",
       "status": "private_kernel",
       "native": null,
-      "step": 56
+      "task": 56
     },
     {
       "source": "reference/v7/usr/include/sys/buf.h",
       "status": "private_kernel",
       "native": null,
-      "step": 53
+      "task": 53
     },
     {
       "source": "reference/v7/usr/include/sys/callo.h",
       "status": "private_kernel",
       "native": null,
-      "step": 364
+      "task": 364
     },
     {
       "source": "reference/v7/usr/include/sys/conf.h",
       "status": "private_kernel",
       "native": null,
-      "step": 78
+      "task": 78
     },
     {
       "source": "reference/v7/usr/include/sys/dir.h",
       "status": "native_contract",
       "native": "libc/include/sys/dir.h",
-      "step": 39
+      "task": 39
     },
     {
       "source": "reference/v7/usr/include/sys/fblk.h",
       "status": "native_disk_contract",
       "native": "kernel/include/v7/disk.h",
-      "step": 39
+      "task": 39
     },
     {
       "source": "reference/v7/usr/include/sys/file.h",
       "status": "private_kernel",
       "native": null,
-      "step": 62
+      "task": 62
     },
     {
       "source": "reference/v7/usr/include/sys/filsys.h",
       "status": "native_disk_contract",
       "native": "kernel/include/v7/disk.h",
-      "step": 39
+      "task": 39
     },
     {
       "source": "reference/v7/usr/include/sys/ino.h",
       "status": "native_disk_contract",
       "native": "kernel/include/v7/disk.h",
-      "step": 39
+      "task": 39
     },
     {
       "source": "reference/v7/usr/include/sys/inode.h",
       "status": "private_kernel",
       "native": null,
-      "step": 62
+      "task": 62
     },
     {
       "source": "reference/v7/usr/include/sys/map.h",
       "status": "private_kernel",
       "native": null,
-      "step": 63
+      "task": 63
     },
     {
       "source": "reference/v7/usr/include/sys/mount.h",
       "status": "private_kernel",
       "native": null,
-      "step": 54
+      "task": 54
     },
     {
       "source": "reference/v7/usr/include/sys/mpx.h",
       "status": "private_kernel",
       "native": null,
-      "step": 65
+      "task": 65
     },
     {
       "source": "reference/v7/usr/include/sys/mx.h",
       "status": "private_kernel",
       "native": null,
-      "step": 65
+      "task": 65
     },
     {
       "source": "reference/v7/usr/include/sys/param.h",
       "status": "native_contract",
       "native": "libc/include/sys/param.h",
-      "step": 39
+      "task": 39
     },
     {
       "source": "reference/v7/usr/include/sys/pk.h",
       "status": "private_kernel",
       "native": null,
-      "step": 68
+      "task": 68
     },
     {
       "source": "reference/v7/usr/include/sys/pk.p",
       "status": "private_kernel",
       "native": null,
-      "step": 68
+      "task": 68
     },
     {
       "source": "reference/v7/usr/include/sys/prim.h",
       "status": "private_kernel",
       "native": null,
-      "step": 65
+      "task": 65
     },
     {
       "source": "reference/v7/usr/include/sys/proc.h",
       "status": "private_kernel",
       "native": null,
-      "step": 62
+      "task": 62
     },
     {
       "source": "reference/v7/usr/include/sys/reg.h",
       "status": "private_kernel",
       "native": null,
-      "step": 57
+      "task": 57
     },
     {
       "source": "reference/v7/usr/include/sys/seg.h",
       "status": "private_kernel",
       "native": null,
-      "step": 64
+      "task": 64
     },
     {
       "source": "reference/v7/usr/include/sys/stat.h",
       "status": "native_contract",
       "native": "libc/include/sys/stat.h",
-      "step": 39
+      "task": 39
     },
     {
       "source": "reference/v7/usr/include/sys/systm.h",
       "status": "private_kernel",
       "native": null,
-      "step": 62
+      "task": 62
     },
     {
       "source": "reference/v7/usr/include/sys/text.h",
       "status": "private_kernel",
       "native": null,
-      "step": 51
+      "task": 51
     },
     {
       "source": "reference/v7/usr/include/sys/timeb.h",
       "status": "native_contract",
       "native": "libc/include/sys/timeb.h",
-      "step": 363
+      "task": 363
     },
     {
       "source": "reference/v7/usr/include/sys/times.h",
       "status": "native_contract",
       "native": "libc/include/sys/times.h",
-      "step": 39
+      "task": 39
     },
     {
       "source": "reference/v7/usr/include/sys/tty.h",
       "status": "private_kernel",
       "native": null,
-      "step": 74
+      "task": 74
     },
     {
       "source": "reference/v7/usr/include/sys/types.h",
       "status": "native_contract",
       "native": "libc/include/sys/types.h",
-      "step": 39
+      "task": 39
     },
     {
       "source": "reference/v7/usr/include/sys/user.h",
       "status": "private_kernel",
       "native": null,
-      "step": 62
+      "task": 62
     },
     {
       "source": "reference/v7/usr/include/sys.s",
       "status": "deferred_consumer",
       "native": null,
-      "step": 79
+      "task": 79
     },
     {
       "source": "reference/v7/usr/include/time.h",
       "status": "native_contract",
       "native": "libc/include/time.h",
-      "step": 24
+      "task": 24
     },
     {
       "source": "reference/v7/usr/include/tp_defs.h",
       "status": "deferred_consumer",
       "native": null,
-      "step": 236
+      "task": 236
     },
     {
       "source": "reference/v7/usr/include/utmp.h",
       "status": "native_contract",
       "native": "libc/include/utmp.h",
-      "step": 100
+      "task": 100
     },
     {
       "source": "reference/v7/usr/include/varargs.h",
       "status": "deferred_consumer",
       "native": null,
-      "step": 41
+      "task": 41
     },
     {
       "source": "reference/v7/usr/include/whoami.h",
       "status": "deferred_consumer",
       "native": null,
-      "step": 78
+      "task": 78
     }
   ]
 }

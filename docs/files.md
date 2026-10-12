@@ -1,4 +1,4 @@
-# File descriptors, file operations and pipes (step 13)
+# File descriptors, file operations and pipes (task 13)
 
 Nexix 0.1.0 now has native file syscalls, libc wrappers and process ownership
 for files, directory references and pipes. The implementation adapts V7's
@@ -19,7 +19,7 @@ make TOOLCHAIN_PREFIX= run
 `NEXIX_FILES_CLEANUP_OK`, and the existing boot markers. The tests execute
 `user/files-test.c` as a native ELF64 program at CPL3, linked with Nexix libc.
 Normal boot starts V7 init and its single-user shell; component self-tests
-use separate boot images. Step 14 supplies serial TTY input and a demo;
+use separate boot images. Task 14 supplies serial TTY input and a demo;
 see [tty.md](tty.md) and [booting.md](booting.md).
 
 ## Descriptors and ownership
@@ -42,7 +42,7 @@ still return EBUSY at fork/exec.
 returns EBUSY while managed references exist. These are internal kernel APIs,
 serialized with IRQs disabled. The boot test attaches a disposable RAM fixture,
 runs file tests, then detaches it. Production boot permanently attaches the
-RAM or IDE root in step 18; see [booting.md](booting.md).
+RAM or IDE root in task 18; see [booting.md](booting.md).
 
 ## File and namespace calls
 
@@ -68,7 +68,7 @@ Its blocks and inode slot are then reclaimed. Empty directory entry slots and
 free inode slots are reused; directories grow when necessary.
 
 Directories can be opened for reading their raw V7 directory records. Directory
-writes and directory links/unlinks are rejected. Step 14 connects supported
+writes and directory links/unlinks are rejected. Task 14 connects supported
 character devices to the serial terminal; see [tty.md](tty.md). Other devices
 return ENODEV.
 There is no mkdir, rmdir, rename, symlink, mount syscall, chroot or supplementary
@@ -89,7 +89,7 @@ can return a partial byte count. Filesystem write failures retain the existing
 mount poisoning policy; metadata changes are synchronous but not crash atomic.
 There is no journal or orphan recovery after reboot.
 
-## Filesystem prerequisites (steps 30–32)
+## Filesystem prerequisites (tasks 30–32)
 
 Native syscall 14 and libc `mknod` create regular files, empty directories and
 character/block special inodes. Effective uid zero is required. Mode permissions
@@ -107,8 +107,8 @@ open unlinked directory alive until close, just as for regular files. Reclaiming
 a device inode clears its encoded device number without freeing it as a block.
 These are historical privileged primitives; emptiness checks belong to the
 V7 rmdir program. Empty path lookup returns cwd, restoring V7 `stat("")` behavior
-used by that program. The mkdir and rmdir command ports remain steps 127 and 131;
-the mknod command is step 219. Raw device and mount support remain steps 53–55.
+used by that program. The mkdir and rmdir command ports remain tasks 127 and 131;
+the mknod command is task 219. Raw device and mount support remain tasks 53–55.
 
 Native syscall 61 and libc `chroot` replace the process root directory reference
 for effective uid zero. Absolute paths use it, and `..` at that root stays there.
@@ -136,7 +136,7 @@ under the single-CPU scheduler.
 Pipe ends survive dup/fork and remain open until the final reference to their
 open-file description closes. Closing a final end wakes blocked peers. Writing
 with no readers returns EPIPE (or a partial count after earlier progress).
-Step 15 adds SIGPIPE and interruptible I/O; see [signals.md](signals.md). There is no
+Task 15 adds SIGPIPE and interruptible I/O; see [signals.md](signals.md). There is no
 nonblocking mode, select or poll. Lseek on a pipe returns ESPIPE; fstat reports
 FIFO mode and the current buffered byte count.
 
@@ -157,4 +157,4 @@ inode slots, grow directories across sectors, remount namespace changes, exercis
 read-only mounts and verify owner/group/other search permissions. These complement
 the existing malformed metadata and injected device-I/O failure tests.
 
-Step 14 implements serial TTY and terminal handling; see [tty.md](tty.md).
+Task 14 implements serial TTY and terminal handling; see [tty.md](tty.md).

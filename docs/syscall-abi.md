@@ -1,4 +1,4 @@
-# Nexix x86_64 syscall ABI (step 9)
+# Nexix x86_64 syscall ABI (task 9)
 
 The native ABI is defined by `include/nexix/syscall.h` and
 `include/nexix/errno.h`. It is version 2 of the experimental Nexix ABI, for
@@ -124,7 +124,7 @@ Wait validates its output range before blocking or consuming a zombie. An
 invalid non-NULL pointer returns EFAULT even when no child exists. A failed
 validation leaves the child available for a later wait. The validated private
 mapping remains stable across sleep under the current process ownership rules.
-Fork retains step 8's eager-copy and allocation-rollback behavior; processes
+Fork retains task 8's eager-copy and allocation-rollback behavior; processes
 holding unsupported file/inode/shared-text references receive EBUSY.
 
 An assembly call needs no stack argument block:
@@ -138,7 +138,7 @@ The native libc's external assembly nx_syscall6 entry converts the SysV C
 calling convention into this register ABI, including argument four in R10 and
 the sixth value from the caller's stack. Its ordinary external call also orders
 memory accesses around the trap. Libc startup and initial wrappers are
-implemented in step 11; see [libc.md](libc.md).
+implemented in task 11; see [libc.md](libc.md).
 
 ## Safe user access
 
@@ -193,10 +193,10 @@ validation environment.
 New success markers are NEXIX_SYSCALL_ABI_OK, NEXIX_UACCESS_OK,
 NEXIX_SYSCALL_ERRORS_OK, NEXIX_SYSCALL_FORK_OK and NEXIX_SYSCALL_OK, followed by
 NEXIX_BOOT_OK. Transcripts are `build/boot.log` and `build/syscall-16M.log`.
-Step 10 implements ELF64 loading, exec, and argument/environment construction;
-see [exec.md](exec.md). Step 11 implements native libc startup and initial wrappers; see [libc.md](libc.md).
+Task 10 implements ELF64 loading, exec, and argument/environment construction;
+see [exec.md](exec.md). Task 11 implements native libc startup and initial wrappers; see [libc.md](libc.md).
 
-## Header coverage (step 39)
+## Header coverage (task 39)
 
 See [native header contracts](header-coverage.md) for the complete reference
 header responsibility map, native type widths and record offsets.

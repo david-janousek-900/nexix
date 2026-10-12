@@ -1,6 +1,6 @@
-# V7 scalar, byte and conversion helpers (step 40)
+# V7 scalar, byte and conversion helpers (task 40)
 
-Step 40 supplies the remaining helper contracts listed in the roadmap, plus
+Task 40 supplies the remaining helper contracts listed in the roadmap, plus
 V7 assertions. The reference source tree remains unchanged. Libc remains
 partial: process-pipe, profiling,
 symbol lookup and feature-specific wrappers retain their existing owners.
@@ -28,7 +28,7 @@ inf/nan and signed zero follow native ecvt's spelling/sign extensions.
 The public `abort` returns int to preserve V7's returning path. Nexix code is
 compiled freestanding with compiler builtins disabled, including the host
 calendar fixture; a hosted C compiler's ISO abort declaration is incompatible.
-Core-dump production remains step 52. The SIGIOT default termination test does
+Core-dump production remains task 52. The SIGIOT default termination test does
 not claim that a core file is generated.
 
 ## Declaration and export acceptance
@@ -38,15 +38,15 @@ headers (`-aux-info`, with host libc headers excluded), then checks native
 libc/libm archives with nm. Grouped declarations and function-pointer arguments
 are parsed from the compiler output rather than guessed from source text.
 Every function must have an export or an explicit unfinished owner in
-[libc-declared-interfaces.json](libc-declared-interfaces.json). Step 40 recorded
+[libc-declared-interfaces.json](libc-declared-interfaces.json). Task 40 recorded
 192 declarations: 181 exports and 11 passwd/group declarations deferred to
-steps 44–45. Public errno/environment/stream/ctype data exports are checked too.
+tasks 44–45. Public errno/environment/stream/ctype data exports are checked too.
 The check rejects missing exports and stale or completed-owner exceptions.
 
 An export proves link availability only. Existing partial functions such as
 ftime and execvp still require their owning feature/consumer acceptance;
 no stub becomes a completed feature through this check. Full libc integration
-and installed development interfaces remain step 82.
+and installed development interfaces remain task 82.
 
 ## Tests
 

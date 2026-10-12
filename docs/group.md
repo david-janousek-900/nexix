@@ -1,4 +1,4 @@
-# V7 group database interfaces (step 45)
+# V7 group database interfaces (task 45)
 
 `libc/group.c` adapts the supplied `usr/src/libc/stdio/getgrent.c`, getgrnam.c
 and getgrgid.c. The native grp.h declarations are now implemented: getgrent,
@@ -41,10 +41,10 @@ field separators are skipped with EINVAL. Read errors discard partial records.
 These are explicit native handling of malformed input; valid V7 record and
 lookup behavior is preserved.
 
-This step reads group files; it does not install new accounts or a default
+This task reads group files; it does not install new accounts or a default
 group file, implement crypt/authentication, or port newgrp/login. Account
-configuration remains step 94, crypt is implemented by step 46, and credential-changing programs
-retain their owning steps.
+configuration remains task 94, crypt is implemented by task 46, and credential-changing programs
+retain their owning tasks.
 
 ## Verification
 

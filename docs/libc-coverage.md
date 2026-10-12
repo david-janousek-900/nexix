@@ -1,8 +1,8 @@
-# Native libc interface progress (steps 28 and 33–49)
+# Native libc interface progress (tasks 28 and 33–49)
 
 Libc remains partial. The implementations below are native interfaces for
 rebuilt V7 sources; their addition does not complete V7 userland or the remaining kernel/libc
-prerequisites (steps 38–82). The original source distribution remains unchanged.
+prerequisites (tasks 38–82). The original source distribution remains unchanged.
 
 ## Input conversion
 
@@ -118,32 +118,32 @@ Required kernel accounting, tracing/profiling, kernel-information and
 mount/raw-device interfaces are also unfinished. Their wrappers must accompany
 working kernel behavior; ENOSYS stubs do not complete a port.
 
-Step 36 (previously 25.8: buffered stdio and setbuf) is implemented. This completes that
-substep's stream behavior and regression coverage; the remaining kernel/libc
-interfaces listed above are still pending (steps 38–82). Step 41 supplies source adapters for the five supplied non-libc private-stdio
-consumers. Full program acceptance remains with their owning port steps.
+Task 36 (previously 25.8: buffered stdio and setbuf) is implemented. This completes that
+task's stream behavior and regression coverage; the remaining kernel/libc
+interfaces listed above are still pending (tasks 38–82). Task 41 supplies source adapters for the five supplied non-libc private-stdio
+consumers. Full program acceptance remains with their owning port tasks.
 
-Step 40 adds [V7 scalar/byte/conversion helpers](libc-helpers.md), including
+Task 40 adds [V7 scalar/byte/conversion helpers](libc-helpers.md), including
 returning abort, historical disk-address packing, gcvt, tell, execle and
 exit-based assertions. Public declaration/export coverage is checked separately
 from complete feature behavior; libc remains partial.
 
-Step 42 adds [V7 mktemp](mktemp.md), preserving PID-based naming, a–y
+Task 42 adds [V7 mktemp](mktemp.md), preserving PID-based naming, a–y
 collision retries and the historical slash failure sentinel. It does not create
-or reserve files. Consuming programs remain assigned to their port steps.
+or reserve files. Consuming programs remain assigned to their port tasks.
 
-Step 43 completes [V7 error messages and perror](errors.md), including exported
+Task 43 completes [V7 error messages and perror](errors.md), including exported
 sys_errlist/sys_nerr and direct descriptor-2 diagnostics. Original errno indexes
 and message strings are preserved; ENOSYS is the documented native extension.
 
-Step 44 implements [V7 password database interfaces](passwd.md): iteration,
+Task 44 implements [V7 password database interfaces](passwd.md): iteration,
 name/UID lookup and legacy raw-line getpw. Full account setup and authentication
-remain in their multi-user steps; group lookup is implemented by step 45.
+remain in their multi-user tasks; group lookup is implemented by task 45.
 
-Step 45 implements [V7 group database interfaces](group.md). All currently
+Task 45 implements [V7 group database interfaces](group.md). All currently
 declared public functions have exports; this does not complete the remaining
 libc functions, consumer acceptance or development-interface installation.
 
-Step 46 implements [V7 crypt/setkey/encrypt](crypt.md), retaining the supplied
+Task 46 implements [V7 crypt/setkey/encrypt](crypt.md), retaining the supplied
 DES tables and historical password hashing. Authentication programs and getpass
-remain with their subsequent roadmap steps.
+remain with their subsequent roadmap tasks.

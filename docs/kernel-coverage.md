@@ -1,4 +1,4 @@
-# V7 kernel source responsibility audit (step 38)
+# V7 kernel source responsibility audit (task 38)
 
 This audit accounts for every one of the 113 supplied files under
 `reference/v7/usr/sys` and all 64 entries in the original `sysent` table.
@@ -11,12 +11,12 @@ Completing this audit does **not** complete the kernel port. The inventory entry
 `distribution.kernel` remains `not_ported`; kernel behavior still needs the
 feature tests and consumer acceptance assigned below. Existing native paths are
 implementations of subsets, not claims that every function or field in their
-original files is adapted. Step 39 must audit header fields and exported ABI
-contracts; step 355 and step 359 close whole-distribution integration.
+original files is adapted. Task 39 must audit header fields and exported ABI
+contracts; task 355 and task 359 close whole-distribution integration.
 
 ## Existing foundation and remaining owners
 
-| Original area | Native foundation | Remaining acceptance / steps |
+| Original area | Native foundation | Remaining acceptance / tasks |
 |---|---|---|
 | m40/mch/l machine assembly, segmentation, memory allocation | Long mode, native interrupt frames, paging, resident memory, eager fork, FXSAVE64 | phys 64; runtime assembly contracts 79; no PDP-11 binary execution or disk-backed swap required |
 | main/slp/clock | Boot, scheduler, sleep/wakeup, PIT ticks, RTC wall clock, alarms, user/system CPU times | CPU usage saturation and priority decay 362; general timeout callouts 364; profiling 59 |
@@ -67,7 +67,7 @@ V7's clock increments a saturating CPU counter and applies `SCHMAG` decay every
 second before recalculating user priority. Nexix currently selects runnable
 processes by priority but derives user priority from nice alone. The general
 V7 `timeout` callback queue is also absent: alarm deadlines do not replace it.
-These findings add steps 362–364 without renumbering existing tracking IDs.
+These findings add tasks 362–364 without renumbering existing tracking IDs.
 They are prerequisites to final acceptance, despite their higher IDs.
 
 ## Validation and limits
@@ -82,5 +82,5 @@ mislabelled historical stubs and false closure.
 
 The checker validates audit integrity; it does not execute historical code,
 prove function-by-function equivalence, or replace runtime acceptance tests.
-No kernel executable behavior changes in step 38, so QEMU regressions are not
+No kernel executable behavior changes in task 38, so QEMU regressions are not
 needed for this audit-only change. Existing host unit tests are run as a baseline.

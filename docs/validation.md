@@ -56,17 +56,17 @@ their transcripts are `build/user-*.log`. Regression boot must also emit all fou
 The host parser/allocator tests also pass AddressSanitizer and UBSan with leak
 detection disabled (LeakSanitizer cannot run under this session's ptrace).
 The suite validates native ELF loading and execution, rebuilt V7 userland
-(step 16), normal init/shell startup (step 18) and interactive operation
-(step 19). Native V7 filesystem APIs are tested in step 12.
+(task 16), normal init/shell startup (task 18) and interactive operation
+(task 19). Native V7 filesystem APIs are tested in task 12.
 
-V7 type adaptation (step 7): `make TOOLCHAIN_PREFIX= test-unit` also runs
+V7 type adaptation (task 7): `make TOOLCHAIN_PREFIX= test-unit` also runs
 `build/v7-types-test`. It checks independent PDP-11 byte fixtures, rejection of
 24-bit address overflow without mutation, inode-block boundaries through inode
 65535, device encoding, and preservation of native addresses and offsets.
 Layout assertions compile in both host tests and the kernel. See
 [v7-types.md](v7-types.md) for runtime/disk widths and deferred machine features.
 
-Process scheduling and lifecycle (step 8): every successful boot checks all eight
+Process scheduling and lifecycle (task 8): every successful boot checks all eight
 `NEXIX_PROCESS_*_OK` markers. `make TOOLCHAIN_PREFIX= test-process` repeats the
 normal image with 16 MiB RAM and retains `build/process-16M.log`. Tests cover:
 
@@ -89,10 +89,10 @@ normal image with 16 MiB RAM and retains `build/process-16M.log`. Tests cover:
   stack/data writes, wait status, and child accounting.
 - Final recovery of every process-owned data/table page and every process slot.
 
-The process test gate uses `int 0x81` commands only; the native ABI uses `int 0x80`. The original integer-context fixtures remain; steps 25–27 add dedicated FP
+The process test gate uses `int 0x81` commands only; the native ABI uses `int 0x80`. The original integer-context fixtures remain; tasks 25–27 add dedicated FP
 state isolation and signal-context tests. User TLS is not implemented. See [processes.md](processes.md).
 
-Native syscalls and safe user access (step 9): successful boot requires
+Native syscalls and safe user access (task 9): successful boot requires
 NEXIX_SYSCALL_ABI_OK, NEXIX_UACCESS_OK, NEXIX_SYSCALL_ERRORS_OK,
 NEXIX_SYSCALL_FORK_OK and NEXIX_SYSCALL_OK. `make TOOLCHAIN_PREFIX= test-syscall`
 boots the ordinary image with 16 MiB and saves `build/syscall-16M.log`; the full
@@ -112,7 +112,7 @@ pointer leaves the child available to reap. Parent and child memory remain
 independent, tick accounting is collected, and all process resources are freed.
 See [syscall-abi.md](syscall-abi.md) for the ABI and exact service scope.
 
-ELF64 execution (step 10): every successful boot requires `NEXIX_ELF_OK`,
+ELF64 execution (task 10): every successful boot requires `NEXIX_ELF_OK`,
 `NEXIX_EXEC_ROLLBACK_OK` and `NEXIX_EXEC_OK`. `make TOOLCHAIN_PREFIX= test-exec`
 runs the complete regression boot with 16 MiB RAM (`build/exec-16M.log`), including
 malformed ELF rejection, partial-allocation rollback, argument/environment
@@ -120,7 +120,7 @@ stacks, and an actual CPL3 fork/exec/wait sequence. See [exec.md](exec.md).
 The full suite now uses test-fs for its low-memory regression boot; test-process,
 test-syscall, test-exec and test-libc remain available separately.
 
-Native libc (step 11): every successful boot requires `NEXIX_LIBC_ABI_OK` and
+Native libc (task 11): every successful boot requires `NEXIX_LIBC_ABI_OK` and
 `NEXIX_LIBC_OK`. `make TOOLCHAIN_PREFIX= test-libc` runs the regression boot with
 16 MiB RAM (`build/libc-16M.log`), including a real C program linked with native
 crt0/libc, argument/environment startup, six-argument register conversion,
@@ -128,7 +128,7 @@ callee-saved registers, errno translation, fork/exec/wait, strings, exit
 callbacks and page/process cleanup. Empty and maximum-size startup vectors
 are also exercised. See [libc.md](libc.md) for the supported interface.
 
-Block devices and V7 filesystem (step 12): successful boots require
+Block devices and V7 filesystem (task 12): successful boots require
 `NEXIX_BLOCK_OK`, `NEXIX_V7FS_READ_OK`, `NEXIX_V7FS_ALLOC_OK`,
 `NEXIX_V7FS_WRITE_OK`, `NEXIX_V7FS_EXEC_OK` and `NEXIX_V7FS_OK`.
 `make TOOLCHAIN_PREFIX= test-fs` runs the complete regression boot with 16 MiB RAM
@@ -139,7 +139,7 @@ execution from a filesystem file, malformed metadata and device fault handling.
 See [filesystem.md](filesystem.md) for API coverage and remaining work.
 
 
-File descriptors and pipes (step 13): successful boots require `NEXIX_FILES_OK`,
+File descriptors and pipes (task 13): successful boots require `NEXIX_FILES_OK`,
 `NEXIX_PIPE_OK` and `NEXIX_FILES_CLEANUP_OK`. `make TOOLCHAIN_PREFIX= test-files`
 runs the native C acceptance fixture with 16 MiB RAM; normal smoke uses 128 MiB.
 Coverage includes descriptor exhaustion, shared offsets across fork/dup, dup2,
@@ -152,7 +152,7 @@ indirect-tree reclamation, inode exhaustion/reuse, directory growth, remount
 and read-only mutation rejection. See [files.md](files.md).
 
 
-Serial TTY (step 14): every successful boot requires `NEXIX_TTY_USER_WRITE_OK`,
+Serial TTY (task 14): every successful boot requires `NEXIX_TTY_USER_WRITE_OK`,
 `NEXIX_TTY_OK` and `NEXIX_TTY_CLEANUP_OK`. Host tests cover cooked editing/echo,
 record boundaries and EOF, queue capacity/wrap/reuse, raw/cbreak, CR/tab expansion,
 baud/parity selection and ioctl validation before mutation. Native userland tests
@@ -168,7 +168,7 @@ requiring `NEXIX_TTY_DEMO_OK`. An additional PTY check verifies the interactive
 stdio multiplexer and Ctrl-A X exit (`build/tty-pty.log`). See [tty.md](tty.md).
 
 
-## Step 15 acceptance
+## Task 15 acceptance
 
 `make TOOLCHAIN_PREFIX= test-signals` boots the complete tests at 16 and 128 MiB.
 The ring-3 fixture verifies signals and handler return, invalid privilege frames,
@@ -177,7 +177,7 @@ SIGPIPE, heap OOM rollback, credential/metadata rules and exact page/reference
 cleanup. Host TTY tests check interrupt/quit controls and RAW preservation.
 See [signals.md](signals.md) for the ABI, coverage and success markers.
 
-## Step 16 acceptance
+## Task 16 acceptance
 
 `make TOOLCHAIN_PREFIX= test-v7` verifies native V7 userland at 16 MiB and
 128 MiB. Logs are `build/v7-16M.log` and `build/v7-128M.log`.
@@ -188,7 +188,7 @@ the shell and utilities are actually executed at CPL3. The fixture runs twice
 with fresh writable roots and checks process/resource reclamation. See
 [userland.md](userland.md) for coverage and remaining startup work.
 
-## Step 17 acceptance
+## Task 17 acceptance
 
 `make TOOLCHAIN_PREFIX= test-rootfs` checks the packaged root image on the host
 and boots QEMU at 16 MiB and 128 MiB. `NEXIX_ROOT_IMAGE_OK` and
@@ -197,7 +197,7 @@ read from the volume. Host tests check file bytes, directory link counts,
 complete block ownership/free-list accounting, spare inodes, reproducibility
 and insufficient-space rejection. See [root-image.md](root-image.md).
 
-## Step 18 acceptance
+## Task 18 acceptance
 
 `make TOOLCHAIN_PREFIX= test-boot` boots the normal production ISO at 16 MiB
 and 128 MiB. It checks PID 1 startup, PID 2 shell commands, writable root I/O,
@@ -210,7 +210,7 @@ unsupported set-ID exec, malformed ELF and post-exec cleanup. Injected loader
 read failures verify rollback before and after allocating staged pages.
 See [booting.md](booting.md) for commands and transcripts.
 
-## Step 19 acceptance
+## Task 19 acceptance
 
 `make TOOLCHAIN_PREFIX= test-shell` runs 271 command checks per production boot
 at 16 MiB and 128 MiB, using real COM1 input. It exercises line editing,
@@ -220,7 +220,7 @@ regression tests additionally check `/dev/null` read/write/stat/seek and invalid
 user-buffer rejection. Host and kernel image checks verify the new device inode.
 See [interactive-shell.md](interactive-shell.md) for coverage and limitations.
 
-## Step 20 acceptance
+## Task 20 acceptance
 
 `make TOOLCHAIN_PREFIX= test-storage` boots disposable IDE roots three times
 at each of 16 MiB and 128 MiB. It verifies persisted contents and hard links,
@@ -232,7 +232,7 @@ checks for timeout, absence, unsupported disks, data transfer, range errors
 and failed reads/cache flushes. See [storage.md](storage.md).
 
 
-## Step 21 acceptance
+## Task 21 acceptance
 
 `make TOOLCHAIN_PREFIX= test-inventory` checks the V7 manifest without kernel
 builds or QEMU. It covers all 2,144 full-distribution reference files, checks content hashes
@@ -247,7 +247,7 @@ negative checks cover omitted installed scripts, binary-only claims, installed
 program-index gaps and provenance corruption. The original archive can be checked
 independently with `python3 tools/import_v7_reference.py /path/to/v7.tar.gz --check`.
 
-## Step 22: RTC system clock
+## Task 22: RTC system clock
 
 `make TOOLCHAIN_PREFIX= test-rtc` checks BCD/binary and 12/24-hour decoding,
 midnight/noon, Gregorian leap dates, century fallback, invalid fields, battery
@@ -269,10 +269,10 @@ Polling is bounded; failures leave epoch-plus-uptime and print a diagnostic.
 Reads run before timer IRQs are enabled and never alter RTC date registers.
 The RTC must hold UTC. QEMU's [RTC options](https://qemu-project.gitlab.io/qemu/system/invocation.html)
 provide UTC or fixed-date initialization. There is no ongoing resynchronization
-or RTC writeback in this step. Filesystem timestamp updates are implemented in
-step 23; timezone conversion is implemented in step 24. V7 disk formats are unchanged.
+or RTC writeback in this task. Filesystem timestamp updates are implemented in
+task 23; timezone conversion is implemented in task 24. V7 disk formats are unchanged.
 
-## Step 23: persistent V7 timestamps
+## Task 23: persistent V7 timestamps
 
 `make TOOLCHAIN_PREFIX= test-unit` includes deterministic-clock filesystem
 checks for creation, overwrite without growth, reads/EOF, zero-count I/O,
@@ -308,7 +308,7 @@ with Ctrl-A then C. Capture `info registers` and `info pic` before rebooting to
 help distinguish guest interrupt/scheduler failures from host terminal input
 problems. Ctrl-A then C returns to the guest terminal.
 
-## Step 24: timezone libc and V7 date/touch
+## Task 24: timezone libc and V7 date/touch
 
 `make TOOLCHAIN_PREFIX= test-time` checks native time conversion against fixed
 calendar values: epoch and negative times, leap days/centuries, fractional-hour
@@ -328,4 +328,4 @@ and verifies their timestamps and contents survive the third.
 `test-root-image` verifies all eleven native executables against their ELF files;
 `test-boot` checks normal shell startup and the expanded /bin listing. Existing
 IDE disks retain their previous userland. A separate `DISK_IMAGE` selects a new
-root without replacing the working disk; full disk upgrades remain step 357.
+root without replacing the working disk; full disk upgrades remain task 357.

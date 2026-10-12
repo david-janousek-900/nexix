@@ -1,4 +1,4 @@
-# Root and PID 1 startup (step 18)
+# Root and PID 1 startup (task 18)
 
 Run `make build` to create boot artifacts without launching QEMU, or `make run`
 to build and boot, on an x86_64 Linux host with GCC/binutils. Host tools are the
@@ -64,5 +64,5 @@ paths, unsupported set-ID exec, copied executables and resource reclamation.
 ELF callback error tests inject failures in header, program-header and segment
 reads, checking rollback after each failure.
 
-Step 19 now verifies interactive editing, interrupts, scripts and longer
+Task 19 now verifies interactive editing, interrupts, scripts and longer
 sessions; see [interactive-shell.md](interactive-shell.md).

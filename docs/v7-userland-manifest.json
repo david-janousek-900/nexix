@@ -4062,7 +4062,7 @@
       ],
       "blockers": [],
       "unresolved": [
-        "Supported TZ grammar and native date year window are documented in docs/time.md; broader timezone database support is outside step 24."
+        "Supported TZ grammar and native date year window are documented in docs/time.md; broader timezone database support is outside task 24."
       ],
       "acceptance": [
         "Display fixed RTC-derived dates in UTC/local time; permit root clock setting only.",

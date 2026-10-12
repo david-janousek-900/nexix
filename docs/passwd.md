@@ -1,4 +1,4 @@
-# V7 password database interfaces (step 44)
+# V7 password database interfaces (task 44)
 
 `libc/passwd.c` adapts the four supplied V7 implementations:
 
@@ -9,10 +9,10 @@
 
 These paths are relative to `reference/v7/`. Their reference sources, pwd.h and
 getpwent(3)/getpw(3)/passwd(5) manuals remain unchanged. The native declarations
-in `libc/include/pwd.h` are now linkable; `lib.libc` remains partial. This step
+in `libc/include/pwd.h` are now linkable; `lib.libc` remains partial. This task
 reads existing account files. It does not change the packaged root account,
 install additional users, implement authentication, or provide multi-user
-login; those retain their existing roadmap steps.
+login; those retain their existing roadmap tasks.
 
 ## Iteration and lookup
 
@@ -90,4 +90,4 @@ I/O errors, open failures, malformed separators and legacy accumulator overflow.
 Both test types exercise the same native implementation. Header/record layout,
 public declaration/export and reference inventory checks remain active.
 The export audit now records 195 functions: 190 native exports and five group
-functions still deferred to step 45. All six step-44 declarations have exports.
+functions still deferred to task 45. All six task-44 declarations have exports.

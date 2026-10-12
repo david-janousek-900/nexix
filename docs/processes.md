@@ -1,4 +1,4 @@
-# Native process scheduling and lifecycle (step 8)
+# Native process scheduling and lifecycle (task 8)
 
 `kernel/v7/process.c` adapts the process behavior in the original V7
 `usr/sys/sys/slp.c` and `sys1.c`. The implementation preserves wait-channel
@@ -74,10 +74,10 @@ errno; the parent mappings remain untouched. Kernel C continuations are not
 forked. This return convention is the native Nexix syscall ABI; it does not provide
 PDP-11 binary compatibility.
 
-Step 13 adds file and directory reference ownership across fork/exec/exit;
+Task 13 adds file and directory reference ownership across fork/exec/exit;
 see [files.md](files.md). Fork still rejects unsupported foreign references and
 shared-text references with EBUSY. ELF executable loading is implemented;
-signals are implemented in step 15. Steps 25–27 preserve native FP state
+signals are implemented in task 15. Tasks 25–27 preserve native FP state
 across scheduling, fork, exec and signals; see [floating-point.md](floating-point.md).
 User TLS remains outside the current ABI.
 Managed user faults deliver signals and default to terminating the process.
@@ -116,8 +116,8 @@ Successful serial output includes `NEXIX_PROCESS_SWITCH_OK`,
 `NEXIX_PROCESS_CLEANUP_OK`, followed by `NEXIX_BOOT_OK`. Detailed assertions and
 failure cases are listed in [validation.md](validation.md).
 
-Step 9 now provides the separate native `int 0x80` interface with safe user access;
-see [syscall-abi.md](syscall-abi.md). Step 10 adds ELF64 loading and exec.
+Task 9 now provides the separate native `int 0x80` interface with safe user access;
+see [syscall-abi.md](syscall-abi.md). Task 10 adds ELF64 loading and exec.
 
-Step 18 starts the first user process as PID 1 during normal boot. Its exit is
+Task 18 starts the first user process as PID 1 during normal boot. Its exit is
 a fatal error; orphan adoption continues to use PID 1. See [booting.md](booting.md).

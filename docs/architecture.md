@@ -111,7 +111,7 @@ the old process runnable. Production exec loads ELF images from the mounted file
 program catalog remains for isolated bootstrap fixtures. See [exec.md](exec.md). Native crt0, a static
 libc archive and a C fixture exercise the same startup stack and syscall ABI;
 see [libc.md](libc.md). Managed user faults deliver signals. Native FP state
-is preserved across process switches, fork, exec and signals (steps 25–27);
+is preserved across process switches, fork, exec and signals (tasks 25–27);
 see [floating-point.md](floating-point.md). User TLS remains outside the current ABI.
 
 Keep the historical source tree pristine. Ported code belongs in `kernel/`,

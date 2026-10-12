@@ -1,8 +1,8 @@
-# Native stdio source adapters (step 41)
+# Native stdio source adapters (task 41)
 
 V7's `_iobuf` layout and PDP-11 argument stack are not native interfaces.
 Nexix retains its existing FILE record, buffering and count-returning printf
-interfaces. Step 41 adds a native remote-format packet and checked source
+interfaces. Task 41 adds a native remote-format packet and checked source
 adapters for every supplied non-libc C/header consumer of private stdio.
 The original reference distribution and component implementation statuses remain
 unchanged; completing these adapters does not finish cpp/refer/quiz.
@@ -103,5 +103,5 @@ floating register classes and stack arguments, long values, star width/precision
 reuse, nested replacement, discarded suffixes, preceding outer arguments,
 truncation and size-only output, format errors, NULL/ended/cyclic packets, and
 file error propagation. Existing stdio, signal, process and cleanup regressions
-run in the same self-test boot. At step 41, `test-libc-interfaces` checked 194 public
+run in the same self-test boot. At task 41, `test-libc-interfaces` checked 194 public
 function declarations: 183 exports and 11 deferred passwd/group functions.

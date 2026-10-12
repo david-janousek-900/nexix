@@ -1,4 +1,4 @@
-# Packaged root filesystem (step 17)
+# Packaged root filesystem (task 17)
 
 `make TOOLCHAIN_PREFIX= rootfs` creates `build/root.img`, a deterministic
 1024-sector (512 KiB) V7 filesystem volume. It uses the retained PDP-11 disk
@@ -45,4 +45,4 @@ markers are `NEXIX_ROOT_IMAGE_OK` and `NEXIX_ROOT_ELF_OK`; logs are
 Normal boot mounts an IDE working copy of the volume, or a RAM copy when
 no primary master is attached, and launches init and
 the single-user shell; see [booting.md](booting.md).
-Interactive acceptance and persistent IDE storage complete steps 19 and 20.
+Interactive acceptance and persistent IDE storage complete tasks 19 and 20.

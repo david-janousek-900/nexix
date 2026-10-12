@@ -1,4 +1,4 @@
-# ELF64 execution (step 10)
+# ELF64 execution (task 10)
 
 Nexix loads native static AMD64 ELF64 executables into private user address
 spaces. `kernel/elf.c` accepts a bounded byte buffer independently of pathname
@@ -42,7 +42,7 @@ auxiliary-vector entries yet. The total NUL-terminated argument/environment
 strings are limited to 8192 bytes, with at most 64 arguments and 64 environment
 entries. NULL argv or envp means an empty vector. Empty argc is accepted.
 The initial register frame has zero GPRs, RIP at e_entry, user selectors, and
-RFLAGS=0x202 (interrupts enabled, direction flag clear). Step 11 libc startup consumes this layout; see [libc.md](libc.md).
+RFLAGS=0x202 (interrupts enabled, direction flag clear). Task 11 libc startup consumes this layout; see [libc.md](libc.md).
 
 ## Syscalls and replacement
 
@@ -100,4 +100,4 @@ preserved mask, both exec variants, argument-count/string-size limits, and exit
 status. The tests recover every allocated page and
 process slot. These are execution tests for a native assembly fixture; rebuilt
 V7 init, shell and utilities remain later milestones. Libc startup and initial
-wrappers are implemented in step 11.
+wrappers are implemented in task 11.

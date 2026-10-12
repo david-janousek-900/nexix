@@ -4,7 +4,7 @@ from pathlib import Path
 import re
 ROOT = Path(__file__).resolve().parents[1]
 # Exact replacements fail when pinned reference inputs drift. Remaining program
-# adaptations/builds belong to each consumer's roadmap step, not this staging.
+# adaptations/builds belong to each consumer's roadmap task, not this staging.
 ADAPTERS = {
     'cmd/refer/hunt5.c': [('fstat (f->_file, &sb);', 'fstat (fileno(f), &sb);')],
     'cmd/refer/inv1.c': [('\t\tfta = fopen("/dev/null", "w");\n\t\tclose(fta->_file);\n\t\tfta->_file = fw;',

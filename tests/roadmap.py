@@ -47,13 +47,13 @@ class Roadmap(unittest.TestCase):
 
     def test_empty_component_mapping(self):
         self.coverage['components']['cmd.ed'] = []
-        self.reject('cmd.ed: roadmap steps must be a nonempty list')
+        self.reject('cmd.ed: roadmap tasks must be a nonempty list')
 
     def test_invalid_reference_types_and_bounds(self):
-        for value in [True, '145', None, 0, -1, self.coverage['step_count'] + 1]:
+        for value in [True, '145', None, 0, -1, self.coverage['task_count'] + 1]:
             with self.subTest(value=value):
                 self.coverage['components']['cmd.ed'] = [value]
-                self.reject('cmd.ed: invalid roadmap step reference')
+                self.reject('cmd.ed: invalid roadmap task reference')
 
     def test_duplicate_reference(self):
         self.coverage['components']['cmd.ed'] = [145, 145]
@@ -63,12 +63,12 @@ class Roadmap(unittest.TestCase):
         self.coverage['components']['cmd.awk'] = [176, 174, 175]
         self.reject('references must be sorted and unique')
 
-    def test_orphan_step(self):
+    def test_orphan_task(self):
         for field in ['components', 'requirements']:
-            for steps in self.coverage[field].values():
-                if 145 in steps:
-                    steps.remove(145)
-        self.reject('unowned roadmap step: 145')
+            for tasks in self.coverage[field].values():
+                if 145 in tasks:
+                    tasks.remove(145)
+        self.reject('unowned roadmap task: 145')
 
     def test_missing_readme_row(self):
         self.readme = '\n'.join(line for line in self.readme.splitlines() if not line.startswith('| 145 |'))
@@ -87,17 +87,17 @@ class Roadmap(unittest.TestCase):
         self.readme = self.readme.replace('| 145 | Port ed | To do |', '| 145 | Port ed | In progress |')
         self.reject('roadmap status summary drift')
 
-    def test_unfinished_component_cannot_hide_behind_done_step(self):
+    def test_unfinished_component_cannot_hide_behind_done_task(self):
         self.coverage['components']['cmd.ed'] = [16]
-        self.reject('cmd.ed: unfinished component cannot map only to completed steps')
+        self.reject('cmd.ed: unfinished component cannot map only to completed tasks')
 
-    def test_implemented_component_needs_completed_step(self):
+    def test_implemented_component_needs_completed_task(self):
         self.coverage['components']['cmd.cat'] = [145]
-        self.reject('cmd.cat: implemented component needs a completed roadmap step')
+        self.reject('cmd.cat: implemented component needs a completed roadmap task')
 
-    def test_done_step_needs_commit_evidence(self):
+    def test_done_task_needs_commit_evidence(self):
         self.readme = self.readme.replace('`09ce60d`', 'no commit recorded')
-        self.reject('roadmap step 5: completed step needs commit evidence')
+        self.reject('roadmap task 5: completed task needs commit evidence')
 
     def test_requirement_supply_is_not_native_completion(self):
         requirement = next(r for r in self.manifest['requirements'] if r['id'] == 'manual-pages')
@@ -114,12 +114,20 @@ class Roadmap(unittest.TestCase):
         self.reject('unsupported roadmap coverage schema')
         self.reject('roadmap version drift')
 
-    def test_missing_step_count(self):
-        del self.coverage['step_count']
-        self.reject('invalid roadmap step count')
+    def test_missing_task_count(self):
+        del self.coverage['task_count']
+        self.reject('invalid roadmap task count')
 
-    def test_declared_step_count_cannot_hide_missing_rows(self):
-        self.coverage['step_count'] += 1
+    def test_legacy_schema_requires_migration(self):
+        self.coverage['schema_version'] = 1
+        self.reject('unsupported roadmap coverage schema')
+
+    def test_legacy_count_field_requires_migration(self):
+        self.coverage['step_count'] = self.coverage.pop('task_count')
+        self.reject('invalid roadmap task count')
+
+    def test_declared_task_count_cannot_hide_missing_rows(self):
+        self.coverage['task_count'] += 1
         self.reject('IDs must be unique, ordered and contiguous')
 
     def test_declared_paths_are_pinned(self):
@@ -129,7 +137,7 @@ class Roadmap(unittest.TestCase):
         self.reject('unexpected roadmap inventory path')
 
     def test_missing_summary(self):
-        self.readme = self.readme.replace('tracking steps:', 'untracked steps:')
+        self.readme = self.readme.replace('tracking tasks:', 'untracked tasks:')
         self.reject('missing roadmap status summary')
 
 

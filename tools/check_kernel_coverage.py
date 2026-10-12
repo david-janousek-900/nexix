@@ -11,7 +11,7 @@ def validate(root, audit, manifest, readme):
     def need(condition, message):
         if not condition:
             errors.append(message)
-    if not isinstance(audit, dict) or audit.get('schema_version') != 1:
+    if not isinstance(audit, dict) or audit.get('schema_version') != 2:
         return ['unsupported kernel audit schema']
     need(audit.get('component') == 'distribution.kernel', 'wrong kernel component')
     need(bool(audit.get('policy')), 'missing audit policy')
@@ -19,7 +19,7 @@ def validate(root, audit, manifest, readme):
     expected = set(entry['sources'])
     actual = {str(p.relative_to(root)) for p in (root / 'reference/v7/usr/sys').rglob('*') if p.is_file()}
     need(expected == actual, 'kernel inventory differs from reference tree')
-    steps = {int(m[0]): m[1] for m in re.findall(r'^\| (\d+) \| .*? \| (Done|In progress|To do) \|', readme, re.M)}
+    tasks = {int(m[0]): m[1] for m in re.findall(r'^\| (\d+) \| .*? \| (Done|In progress|To do) \|', readme, re.M)}
     seen = []
     identifiers = []
     for group in audit.get('groups', []):
@@ -33,8 +33,8 @@ def validate(root, audit, manifest, readme):
         for path in native:
             need(isinstance(path, str) and not Path(path).is_absolute() and '..' not in Path(path).parts
                  and (root / path).is_file(), f'missing or unsafe native path: {path}')
-        owners = group.get('steps', [])
-        need(bool(owners) and all(type(n) is int and n in steps for n in owners), 'invalid group roadmap owners')
+        owners = group.get('tasks', [])
+        need(bool(owners) and all(type(n) is int and n in tasks for n in owners), 'invalid group roadmap owners')
     need(len(identifiers) == len(set(identifiers)), 'duplicate group identifier')
     need(len(seen) == len(set(seen)), 'duplicate kernel source')
     need(set(seen) == expected, 'incomplete or unknown kernel sources')
@@ -48,10 +48,10 @@ def validate(root, audit, manifest, readme):
         status = record.get('status')
         need(status in {'historical_stub', 'pending', 'native_path'}, f'invalid syscall status: {number}')
         need((status == 'historical_stub') == (slots.get(number) in {'nosys', 'nullsys'}), f'historical syscall stub drift: {number}')
-        owner = record.get('step')
-        need(type(owner) is int and owner in steps, f'invalid syscall owner: {number}')
+        owner = record.get('task')
+        need(type(owner) is int and owner in tasks, f'invalid syscall owner: {number}')
         if status == 'pending':
-            need(steps.get(owner) in {'To do', 'In progress'}, f'pending syscall has completed owner: {number}')
+            need(tasks.get(owner) in {'To do', 'In progress'}, f'pending syscall has completed owner: {number}')
         need(bool(record.get('label')), f'missing syscall description: {number}')
         need(record.get('native') in {'kernel/v7/syscall.c', 'libc/time.c'}, f'invalid syscall integration point: {number}')
     return errors

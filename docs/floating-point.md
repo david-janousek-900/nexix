@@ -1,4 +1,4 @@
-# Native floating-point support (steps 25–29)
+# Native floating-point support (tasks 25–29)
 
 Nexix initializes x87, MMX and SSE/SSE2 before enabling the timer. The CPU must
 advertise x87, FXSAVE, SSE and SSE2. CR0.EM/TS are cleared, MP/NE enabled, and
@@ -51,8 +51,8 @@ ecvt/fcvt use a shared buffer with up to 64 requested digits, enough backing
 storage for the binary64 exponent range, and historical half-up rounding.
 printf-family floating formats accept precisions through 63 (default 6), mixed
 integer/FP arguments and existing width/zero/left padding. Higher precision
-returns EINVAL. Steps 35–36 add formatting flags and buffered stdio; historical remote %r
-and internal FILE compatibility remain step 41. Full libc coverage is unfinished.
+returns EINVAL. Tasks 35–36 add formatting flags and buffered stdio; historical remote %r
+and internal FILE compatibility remain task 41. Full libc coverage is unfinished.
 
 ## Validation
 
@@ -74,15 +74,15 @@ vectors 16 and 19 both map to SIGFPE.
 
 ## Remaining kernel/libc work
 
-Steps 25–29 complete the documented native FP foundation, not full libc/libm coverage. Remaining prerequisites include broader
+Tasks 25–29 complete the documented native FP foundation, not full libc/libm coverage. Remaining prerequisites include broader
 libc/stdio and native header coverage, account database and crypt support,
 mount/raw-device administration,
 process accounting, tracing/profiling and a native kernel-information interface
-for ps/pstat/iostat. Native phys/lock/mpx and special-device equivalents are planned in steps 63–77;
+for ps/pstat/iostat. Native phys/lock/mpx and special-device equivalents are planned in tasks 63–77;
 the agreed resident-memory model does not require disk swapping. Returning
 ENOSYS does not complete a required interface. Math interface/source gaps are
-step 80, libfpsim equivalence is step 81, and native toolchains are steps 177–207.
+task 80, libfpsim equivalence is task 81, and native toolchains are tasks 177–207.
 
-Steps 30–32 supply mknod, privileged V7 directory link/unlink operations
+Tasks 30–32 supply mknod, privileged V7 directory link/unlink operations
 and per-process chroot; see [files.md](files.md). Their interfaces are tested
 separately from arithmetic and FP register state.
