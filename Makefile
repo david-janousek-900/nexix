@@ -191,7 +191,7 @@ test-exec: check build/test-selftest.iso
 
 # Native userland: compiler freestanding headers plus Nexix headers only.
 USER_CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-builtin -fno-stack-protector -fno-pie -m64 -mno-red-zone -mno-avx -fno-asynchronous-unwind-tables -nostdinc -isystem $(shell $(CC) -print-file-name=include) -Ilibc/include -Iinclude -MMD -MP
-LIBC_OBJECTS = build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o build/libc_float.o build/libc_convert.o build/libc_scan.o build/libc_ctype.o build/libc_numbers.o build/libc_bytes.o build/libc_gcvt.o build/libc_abort.o build/libc_mktemp.o build/libc_errors.o build/libc_perror.o build/libc_passwd.o build/libc_group.o
+LIBC_OBJECTS = build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o build/libc_float.o build/libc_convert.o build/libc_scan.o build/libc_ctype.o build/libc_numbers.o build/libc_bytes.o build/libc_gcvt.o build/libc_abort.o build/libc_mktemp.o build/libc_errors.o build/libc_perror.o build/libc_passwd.o build/libc_group.o build/libc_crypt.o
 -include $(LIBC_OBJECTS:.o=.d) build/libc_program.d
 build/crt0.o: libc/arch/x86_64/crt0.S | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
@@ -205,8 +205,8 @@ build/libc_program.o: user/libc-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 build/libc_abi.o: user/libc-test-abi.S include/nexix/syscall.h | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -Iinclude -c $< -o $@
-build/libc-test.elf: build/crt0.o build/libc_program.o build/libc_scan_program.o build/libc_helpers_program.o build/libc_abi.o build/fpu_program.o build/libc.a build/libm.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/libc_program.o build/libc_scan_program.o build/libc_helpers_program.o build/libc_abi.o build/fpu_program.o build/libc.a build/libm.a build/libc.a -o $@
+build/libc-test.elf: build/crt0.o build/libc_program.o build/libc_scan_program.o build/libc_helpers_program.o build/crypt_program.o build/libc_abi.o build/fpu_program.o build/libc.a build/libm.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/libc_program.o build/libc_scan_program.o build/libc_helpers_program.o build/crypt_program.o build/libc_abi.o build/fpu_program.o build/libc.a build/libm.a build/libc.a -o $@
 build/libc_image.o: build/libc-test.elf
 	$(LD) -r -b binary $< -o build/libc_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/libc_raw.o $@
@@ -581,3 +581,20 @@ test-group-unit: build/group-unit-test
 	./build/group-unit-test
 test-group: test-group-unit test-stdio test-libc-interfaces
 test-unit: test-group-unit
+
+# Step 46: source-adapted DES and V7 password hashing.
+build/crypt_program.o: user/crypt-test.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+-include build/crypt_program.d
+CRYPT_TEST_NAMES = -Dcrypt=nx_test_crypt -Dsetkey=nx_test_setkey -Dencrypt=nx_test_encrypt -Derrno=nx_test_errno
+build/crypt-unit-test: user/crypt-test.c tests/crypt.c libc/crypt.c libc/include/crypt.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -fno-builtin $(CRYPT_TEST_NAMES) -Ilibc/include -Iinclude user/crypt-test.c tests/crypt.c libc/crypt.c -o $@
+build/crypt-oracle.so: libc/crypt.c tests/crypt_errno.c libc/include/crypt.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -fno-builtin -fPIC -shared $(CRYPT_TEST_NAMES) -Ilibc/include -Iinclude libc/crypt.c tests/crypt_errno.c -o $@
+.PHONY: test-crypt-unit test-crypt
+test-crypt-unit: build/crypt-unit-test build/crypt-oracle.so
+	./build/crypt-unit-test
+	$(PYTHON) tests/crypt_oracle.py
+	$(PYTHON) tests/crypt_tables.py
+test-crypt: test-crypt-unit test-libc-helpers test-libc-interfaces
+test-unit: test-crypt-unit

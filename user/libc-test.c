@@ -17,6 +17,7 @@ extern int libc_alignment_test(void);
 extern int fpu_process_test(void);
 extern int libc_scan_test(void);
 extern int libc_helpers_test(void);
+extern int crypt_test(void);
 static int exit_order;
 static int zeroed[1024];
 static void first(void) { CHECK(exit_order == 1); _exit(42); }
@@ -154,6 +155,8 @@ int main(int argc, char **argv, char **envp)
         return 43; /* ordinary return from main becomes the exit status. */
     }
     CHECK(!strcmp(argv[1], "start") && !strcmp(getenv("NEXIX_TEST"), "ok"));
+    int crypt_error=crypt_test();
+    if(crypt_error)_exit(crypt_error);
     strings();
     char **saved_environment = environ;
     environ = NULL; CHECK(!getenv("NEXIX_TEST")); environ = saved_environment;

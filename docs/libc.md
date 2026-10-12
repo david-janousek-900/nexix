@@ -153,3 +153,6 @@ legacy getpw. Native group functions are implemented by step 45; libc remains pa
 Step 45 adds [V7 group iteration, lookup and membership](group.md). Account
 configuration, authentication and credential-changing applications retain
 their roadmap steps.
+
+Step 46 adds [V7 DES/password primitives](crypt.md) through crypt.h and unistd.h.
+These are source-adapted library interfaces; login/authentication remains pending.

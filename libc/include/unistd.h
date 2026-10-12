@@ -1,6 +1,7 @@
 #ifndef NEXIX_LIBC_UNISTD_H
 #define NEXIX_LIBC_UNISTD_H
 #include <sys/types.h>
+#include <crypt.h>
 int mknod(const char *, mode_t, dev_t);
 int chroot(const char *);
 #include <stddef.h>

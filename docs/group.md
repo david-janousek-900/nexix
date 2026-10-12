@@ -43,7 +43,7 @@ lookup behavior is preserved.
 
 This step reads group files; it does not install new accounts or a default
 group file, implement crypt/authentication, or port newgrp/login. Account
-configuration remains step 94, crypt step 46, and credential-changing programs
+configuration remains step 94, crypt is implemented by step 46, and credential-changing programs
 retain their owning steps.
 
 ## Verification

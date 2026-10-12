@@ -111,8 +111,7 @@ pipe/descriptor errors, immediate redirected stderr, callback output, and
 fork/exec/_exit behavior including inherited buffer duplication.
 Existing VM, inode, block and descriptor cleanup assertions remain active.
 
-Remaining libc prerequisites include crypt
-interfaces, process-pipe helpers (popen/pclose/system), tty/account lookup,
+Remaining libc prerequisites include process-pipe helpers (popen/pclose/system), tty/account lookup,
 profiling startup/monitor, ELF symbol
 lookup, native headers and adapters for users of internal V7 FILE fields.
 Required kernel accounting, tracing/profiling, kernel-information and
@@ -144,3 +143,7 @@ remain in their multi-user steps; group lookup is implemented by step 45.
 Step 45 implements [V7 group database interfaces](group.md). All currently
 declared public functions have exports; this does not complete the remaining
 libc functions, consumer acceptance or development-interface installation.
+
+Step 46 implements [V7 crypt/setkey/encrypt](crypt.md), retaining the supplied
+DES tables and historical password hashing. Authentication programs and getpass
+remain with their subsequent roadmap steps.

@@ -124,8 +124,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 2 partial, 1 prototype and 203 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **364 tracking steps: 45 done, 2 in progress
-and 317 to do** after step 45. These counts are a work breakdown, not an
+The expanded roadmap below has **364 tracking steps: 46 done, 2 in progress
+and 316 to do** after step 46. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Steps 1–24 retain
 their previous scope. Completed portions of the old step 25 are separated
 into steps 25–36; its remaining work is listed individually.
@@ -264,7 +264,7 @@ coverage and installation remain subject to later acceptance steps.
 | 43 | Complete error messages and perror interfaces | Done | [V7 error interfaces](docs/errors.md); test-perror; Git history; original 0–34 messages plus ENOSYS extension |
 | 44 | Password database interfaces | Done | [V7 passwd interfaces](docs/passwd.md); test-passwd; Git history; authentication and multi-user setup remain pending |
 | 45 | Group database interfaces | Done | [V7 group interfaces](docs/group.md); test-group; Git history; account configuration and credential-changing programs remain pending |
-| 46 | V7 crypt/password primitives | To do | Known-answer historical DES fixtures |
+| 46 | V7 crypt/password primitives | Done | [V7 DES/crypt contracts](docs/crypt.md); test-crypt; Git history; known-answer vectors and all 4096 salts verified |
 | 47 | getpass and tty/account lookup | To do | Echo restoration, ttyname/ttyslot/getlogin |
 | 48 | system | To do | V7 shell execution, signals and child status |
 | 49 | popen/pclose | To do | Pipe directions, descriptor ownership and exact child collection |

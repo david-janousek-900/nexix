@@ -11,7 +11,7 @@ These paths are relative to `reference/v7/`. Their reference sources, pwd.h and
 getpwent(3)/getpw(3)/passwd(5) manuals remain unchanged. The native declarations
 in `libc/include/pwd.h` are now linkable; `lib.libc` remains partial. This step
 reads existing account files. It does not change the packaged root account,
-install additional users, implement crypt/authentication, or provide multi-user
+install additional users, implement authentication, or provide multi-user
 login; those retain their existing roadmap steps.
 
 ## Iteration and lookup
