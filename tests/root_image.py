@@ -23,7 +23,7 @@ def inode(number):
 
 def contents(number, owned=None):
     mode, _, size, roots = inode(number)
-    if mode & 0o170000 == 0o20000:
+    if mode & 0o170000 in (0o20000, 0o60000):
         return b''
     blocks = []
     def visit(block, depth):
@@ -76,6 +76,12 @@ class RootImage(unittest.TestCase):
         self.assertEqual(inode(lookup('/dev/tty'))[3][0], 0x200)
         self.assertEqual(inode(lookup('/dev/null'))[0], 0o20666)
         self.assertEqual(inode(lookup('/dev/null'))[3][0], 0x300)
+
+    def test_storage_devices(self):
+        self.assertEqual(inode(lookup('/dev/root'))[0], 0o60600)
+        self.assertEqual(inode(lookup('/dev/root'))[3][0], 0)
+        self.assertEqual(inode(lookup('/dev/rroot'))[0], 0o20600)
+        self.assertEqual(inode(lookup('/dev/rroot'))[3][0], 0x400)
 
     def test_directory_links_and_space(self):
         directories = ('/','/bin','/etc','/dev','/tmp','/usr','/usr/adm')

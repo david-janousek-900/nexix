@@ -124,8 +124,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 2 partial, 1 prototype and 203 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 52 done, 2 in progress
-and 312 to do** after task 52. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 53 done, 2 in progress
+and 311 to do** after task 53. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -271,7 +271,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 50 | Set-UID/set-GID executable semantics | Done | [V7 credential rules](docs/setid-exec.md); test-setid at 16/128 MiB; Git history; root/tracing exceptions, effective-ID commit and failed-exec rollback |
 | 51 | Executable text ownership and ETXTBSY behavior | Done | [Native V7 text ownership](docs/text-ownership.md); test-text at 16/128 MiB and host table/error fixtures; Git history; exec/fork/exit, aliases and sticky lifetimes |
 | 52 | Native core dumps | Done | [ELF core format and V7 policy](docs/core-dumps.md); test-core and test-shell at 16/128 MiB; Git history; user registers/FPU/memory, credential restrictions and completed-dump wait bit |
-| 53 | Raw block/character storage devices | To do | Major/minor routing, bounded raw I/O and device errors |
+| 53 | Raw block/character storage devices | Done | Git history; bounded device table, block/raw transfers, alignment, errors and descriptor lifetime; [mounted-device write guard and native raw-I/O contract](docs/storage-devices.md); `make test-storage` |
 | 54 | Multi-volume namespace and mount | To do | Mount crossings, dotdot, chroot and inode identity |
 | 55 | Unmount and busy-volume handling | To do | Open descriptors, cwd/text references and sync/error behavior |
 | 56 | Kernel process accounting | To do | acct, exit records, privilege and storage failure |

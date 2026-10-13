@@ -5,9 +5,11 @@
 #include "uaccess.h"
 #include "exec.h"
 #include "text.h"
+#include "storage.h"
 #include <nexix/syscall.h>
 #include <nexix/errno.h>
 #define NPIPE 32
+#define FILE_STORAGE 0100 /* Native private-device discriminator. */
 struct pipe_buffer { bool active; unsigned readers, writers, head, size; uint8_t bytes[NX_PIPE_BUF]; };
 static struct pipe_buffer pipes[NPIPE];
 static struct file table[V7_NFILE];
@@ -32,6 +34,8 @@ int files_mount(struct v7fs *fs)
     int error=text_purge_unused();if(error)return error;
     if (files_live()) return -NX_EBUSY;
     if (fs && !fs->mounted) return -NX_ENODEV;
+    error=storage_bind(0,fs?fs->device:NULL,fs!=NULL);
+    if(error)return error;
     root = fs; root_exec = false; return 0;
 }
 bool files_refs_valid(const struct user *u)
@@ -74,7 +78,10 @@ static int file_put(struct file *f)
     if (!valid_file(f)) panic("invalid open file release");
     if (--f->f_count) return 0;
     int error = 0;
-    if (f->f_private && !(f->f_flag & V7_FPIPE)) tty_close(f->f_private);
+    if (f->f_private && !(f->f_flag & V7_FPIPE)) {
+        if(f->f_flag & FILE_STORAGE) storage_close(f->f_private);
+        else tty_close(f->f_private);
+    }
     if (f->f_inode) error = files_inode_put(f->f_inode);
     if (f->f_flag & V7_FPIPE) {
         struct pipe_buffer *p = f->f_private;
@@ -234,7 +241,7 @@ static int open_path(struct user *u, uintptr_t address, uint64_t flags, uint64_t
         if (!error) error = v7fs_create(root, parent, name, mode & ~u->u_cmask & 0777, u->u_uid, u->u_gid, &ino);
         created = !error;
     } else if (!error && (flags & NX_O_CREAT) && (flags & NX_O_EXCL)) error = -NX_EEXIST;
-    struct v7fs_inode disk;
+    struct v7fs_inode disk={0};
     if (!error) error = v7fs_inode_get(root, ino, &disk);
     unsigned access = flags & NX_O_ACCMODE;
     if(!error&&access&&(disk.mode&V7_IFMT)==V7_IFREG){
@@ -243,21 +250,27 @@ static int open_path(struct user *u, uintptr_t address, uint64_t flags, uint64_t
     if (!error && !created && !v7fs_access(&disk, u->u_uid, u->u_gid, access == 0 ? 4 : access == 1 ? 2 : 6)) error = -NX_EACCES;
     if (!error && access && (disk.mode & V7_IFMT) == V7_IFDIR) error = -NX_EISDIR;
     unsigned type = error ? 0 : disk.mode & V7_IFMT;
-    if (!error && type != V7_IFREG && type != V7_IFDIR && type != V7_IFCHR) error = -NX_ENODEV;
+    if (!error && type != V7_IFREG && type != V7_IFDIR && type != V7_IFCHR && type != V7_IFBLK) error = -NX_ENODEV;
     if (!error && access && type == V7_IFREG && root->read_only) error = -NX_EROFS;
     if (!error) {
         f->f_inode = inode_get(ino, &disk);
         if (!f->f_inode) error = -NX_ENFILE;
     }
     if (!error && (flags & NX_O_TRUNC) && type == V7_IFREG) error = v7fs_truncate(root, ino);
-    if (!error && type == V7_IFCHR && disk.addr[0] != NX_NULL_DEV) {
+    bool storage = type == V7_IFBLK || (type == V7_IFCHR && (disk.addr[0] >> 8) == NX_RAW_DISK_MAJOR);
+    if(!error && storage){
+        struct storage_handle *handle;
+        error=storage_open(disk.addr[0],type==V7_IFCHR,access!=0,&handle);
+        if(!error){f->f_private=handle;f->f_flag=FILE_STORAGE;}
+    }
+    if (!error && !storage && type == V7_IFCHR && disk.addr[0] != NX_NULL_DEV) {
         struct tty *tty;
         error = tty_open(disk.addr[0], u, &tty);
         if (!error) f->f_private = tty;
     }
     if (error) { (void)file_put(f); return error; }
-    f->f_flag = access == 0 ? V7_FREAD : access == 1 ? V7_FWRITE : V7_FREAD | V7_FWRITE;
-    f->f_open_flags = flags & (NX_O_ACCMODE | NX_O_APPEND);
+    f->f_flag |= access == 0 ? V7_FREAD : access == 1 ? V7_FWRITE : V7_FREAD | V7_FWRITE;
+    f->f_open_flags |= flags & (NX_O_ACCMODE | NX_O_APPEND);
     u->u_ofile[fd] = f; u->u_pofile[fd] = (flags & NX_O_CLOEXEC) ? V7_EXCLOSE : 0;
     return fd;
 }
@@ -323,6 +336,24 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
     if (!user_access_ok(vm, address, count, !write)) return -NX_EFAULT;
     struct file *f = u->u_ofile[fd];
     if (f->f_flag & V7_FPIPE) return pipe_io(f, address, count, write);
+    if(f->f_private && (f->f_flag & FILE_STORAGE)){
+        bool raw=(f->f_inode->i_mode & V7_IFMT)==V7_IFCHR;
+        if(raw && count && ((address|count)&1))return -NX_EFAULT;
+        if(!count)return 0;
+        int error=v7fs_touch(root,f->f_inode->i_number,write?V7FS_MTIME|V7FS_CTIME:V7FS_ATIME);
+        if(error)return error;
+        uint64_t start=raw?((uint64_t)f->f_offset & ~(uint64_t)(BLOCK_SIZE-1)):(uint64_t)f->f_offset;
+        size_t done=0;uint8_t bytes[BLOCK_SIZE];
+        while(done<count){
+            size_t n=count-done;if(n>sizeof(bytes))n=sizeof(bytes);size_t moved=0;
+            if(write && copyin(vm,address+done,bytes,n))return done?(int64_t)done:-NX_EFAULT;
+            error=storage_transfer(f->f_private,start+done,bytes,n,write,&moved);
+            if(!write && moved && copyout(vm,address+done,bytes,moved))panic("storage output mapping changed");
+            done+=moved;f->f_offset+=moved;
+            if(error||moved<n)break;
+        }
+        return done?(int64_t)done:error;
+    }
     if (f->f_private) {
         /* V7 readi/writei also stamp character-device inodes. Pipes have no
          * persistent inode. Keep the established zero-count TTY behavior. */
@@ -362,7 +393,7 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
 }
 static int64_t seek(struct file *f, int64_t offset, uint64_t whence)
 {
-    if ((f->f_flag & V7_FPIPE) || f->f_private) return -NX_ESPIPE;
+    if ((f->f_flag & V7_FPIPE) || (f->f_private && !(f->f_flag & FILE_STORAGE))) return -NX_ESPIPE;
     int64_t base = 0;
     if (whence == NX_SEEK_CUR) base = f->f_offset;
     else if (whence == NX_SEEK_END) {
@@ -493,7 +524,7 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
             u->u_pofile[fd] = request == NX_FIOCLEX ? V7_EXCLOSE : 0;
             return 0;
         }
-        if (!f->f_private || (f->f_flag & V7_FPIPE)) return -NX_ENOTTY;
+        if (!f->f_private || (f->f_flag & V7_FPIPE) || (f->f_flag & FILE_STORAGE)) return -NX_ENOTTY;
         return tty_ioctl(f->f_private, &p->p_vm, request, argument);
     }
     if (number == NX_SYS_CLOSE) return close_fd(u, fd);

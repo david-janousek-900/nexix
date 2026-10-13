@@ -18,6 +18,10 @@
 #define NX_SEEK_CUR 1
 #define NX_SEEK_END 2
 #define NX_PIPE_BUF 4096
+#define NX_BLOCK_DISK_MAJOR 0
+#define NX_RAW_DISK_MAJOR 4
+#define NX_ROOT_BLOCK_DEV 0x0000
+#define NX_ROOT_RAW_DEV 0x0400
 #define NX_NULL_DEV 0x0300
 #ifndef __ASSEMBLER__
 #include <stdint.h>

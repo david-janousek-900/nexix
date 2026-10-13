@@ -382,8 +382,8 @@ build/nexix.elf: build/root_boot.o
 
 build/root_exec_program.o: user/root-exec-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
-build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/libc.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/libc.a -o $@
+build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/libc.a -o $@
 build/root_exec_image.o: build/root-exec-test.elf
 	$(LD) -r -b binary $< -o build/root_exec_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/root_exec_raw.o $@
@@ -725,3 +725,19 @@ build/core_probe_image.o: build/core-probe.elf
 OBJECTS += build/core_probe_image.o
 build/nexix.elf: build/core_probe_image.o
 -include build/core_program.d build/core_probe_program.d
+
+OBJECTS += build/storage.o
+build/nexix.elf: build/storage.o
+-include build/storage.d build/storage_program.d
+build/storage.o: kernel/v7/storage.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/storage_program.o: user/storage-test.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/storage-unit-test: tests/storage.c kernel/v7/storage.c kernel/block.c | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude $^ -o $@
+.PHONY: test-storage test-storage-unit
+test-storage-unit: build/storage-unit-test
+	./build/storage-unit-test
+test-storage: test-storage-unit test-rootfs test-inventory test-libc-interfaces
+test-unit: test-storage-unit

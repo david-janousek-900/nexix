@@ -1,7 +1,7 @@
 """Package Nexix 0.1.0 native userland into a deterministic V7 root volume."""
 import argparse
 from pathlib import Path
-from mk_v7fs import Image, DIR, REG, CHR
+from mk_v7fs import Image, DIR, REG, CHR, BLK
 
 COMMANDS = ('sh', 'echo', 'cat', 'ls', 'pwd', 'cp', 'ln', 'rm', 'date', 'touch')
 
@@ -39,6 +39,10 @@ def build(blocks, programs, config):
     number += 1
     entries['/dev/null'] = number
     image.inode(number, CHR | 0o666, device=0x300)
+    for path, kind, dev in (('/dev/root', BLK, 0), ('/dev/rroot', CHR, 0x400)):
+        number += 1
+        entries[path] = number
+        image.inode(number, kind | 0o600, device=dev)
     # Children before parents: directory link counts depend on inode types.
     for path in ('/bin', '/etc', '/dev', '/tmp', '/usr/adm', '/usr', '/'):
         parent = path.rsplit('/', 1)[0] or '/'

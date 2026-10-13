@@ -4,7 +4,7 @@ from pathlib import Path
 import struct
 
 BSIZE = 512
-DIR, REG, CHR = 0o40000, 0o100000, 0o20000
+DIR, REG, CHR, BLK = 0o40000, 0o100000, 0o20000, 0o60000
 
 def short(value):
     return struct.pack('<H', value)
@@ -78,7 +78,7 @@ class Image:
             block = self.pointer(roots, logical)
             self.sector(block)[:len(payload)] = payload
             size = logical * BSIZE + len(payload)
-        elif mode & 0o170000 == CHR:
+        elif mode & 0o170000 in (CHR, BLK):
             roots[0] = device
         else:
             for logical, offset in enumerate(range(0, size, BSIZE)):

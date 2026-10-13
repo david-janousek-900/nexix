@@ -57,12 +57,14 @@
       ],
       "native": [
         "Makefile",
-        "kernel/v7/catalog.c"
+        "kernel/v7/catalog.c",
+        "kernel/v7/storage.c"
       ],
       "tasks": [
+        53,
         78
       ],
-      "note": "Historical objects/archives are provenance, not executable native inputs; native configuration generation and recipes remain pending."
+      "note": "Native block/raw device routing exists. Historical objects/archives are provenance, not executable native inputs; native configuration generation and recipes remain pending."
     },
     {
       "id": "filesystem",
@@ -77,7 +79,9 @@
       "native": [
         "kernel/v7/fs.c",
         "kernel/v7/files.c",
-        "kernel/block.c"
+        "kernel/block.c",
+        "kernel/v7/storage.c",
+        "kernel/include/storage.h"
       ],
       "tasks": [
         12,
@@ -91,7 +95,7 @@
         54,
         55
       ],
-      "note": "V7 disk records, directory lookup, inode/cache and descriptor foundations exist; text exclusion is implemented; raw devices and multiple mounts remain pending."
+      "note": "V7 disk records, directory lookup, inode/cache, text exclusion and block/raw device routing are implemented; mounted-device writes are guarded, multiple mounts remain pending."
     },
     {
       "id": "process",

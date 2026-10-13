@@ -14,6 +14,9 @@ The image includes:
 - Empty `/etc/utmp` and `/usr/adm/wtmp` accounting files.
 - `/dev/console` and `/dev/ttyS0`, two names for the same COM1 device inode,
   plus `/dev/tty` for the controlling terminal and `/dev/null` for EOF/discard I/O.
+- `/dev/root` and `/dev/rroot` expose block/raw reads of the current root backing
+  device; see [storage device contracts](storage-devices.md). Mounted root writes
+  through these device nodes return `EBUSY`. Existing disk images are preserved.
 - `/bin`, `/etc`, `/dev`, `/tmp`, `/usr`, and `/usr/adm` directories.
 
 All files belong to root. Directories/programs have mode 0755, configuration

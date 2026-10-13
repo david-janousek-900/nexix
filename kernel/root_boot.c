@@ -3,6 +3,7 @@
 #include "serial.h"
 #include "tty.h"
 #include "ide.h"
+#include "storage.h"
 #include <nexix/errno.h>
 extern const uint8_t _binary_build_root_img_start[], _binary_build_root_img_end[];
 static uint8_t root_bytes[1024 * V7_BSIZE];
@@ -108,8 +109,14 @@ bool root_exec_test_gate(struct interrupt_frame *frame)
     }else return false;
     frame->rax=0;return true;
 }
+static uint8_t storage_bytes[1536];
+static struct ramdisk storage_fixture,storage_readonly;
 void root_exec_selftest(void)
 {
+    if(ramdisk_init(&storage_fixture,storage_bytes,sizeof(storage_bytes),false)||
+       ramdisk_init(&storage_readonly,storage_bytes,sizeof(storage_bytes),true)||
+       storage_bind(1,&storage_fixture.device,false)||storage_bind(2,&storage_readonly.device,false))
+        panic("cannot bind storage fixture");
     uint32_t pages=page_free_count();
     mount_root();
     uint32_t blocks=v7_disk_u32(root_volume.super.tfree);
@@ -141,6 +148,7 @@ void root_exec_selftest(void)
         v7_disk_u32(root_volume.super.tfree)!=blocks ||
         v7_disk_u16(root_volume.super.tinode)!=inodes)
         panic("root exec cleanup failed");
+    if(storage_bind(1,NULL,false)||storage_bind(2,NULL,false))panic("storage handles leaked");
     if(files_mount(NULL) || v7fs_unmount(&root_volume))panic("cannot detach test root");
     serial_puts("NEXIX_ROOT_EXEC_OK\r\nNEXIX_ROOT_EXEC_CLEANUP_OK\r\n");
 }
