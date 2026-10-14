@@ -13,6 +13,10 @@ static struct inode pins[7];
 static int busy_device=-1;
 int64_t clock_now(void){return 1709210096;}
 int files_inode_put(struct inode *ip){assert(ip->i_count==1);--ip->i_count;return 0;}
+_Noreturn void panic(const char *message){fprintf(stderr,"panic: %s\n",message);abort();}
+int text_purge_device(v7_dev_t dev){(void)dev;return 0;}
+int files_mountpoint_put(struct inode *ip)
+{assert(ip->i_count==1&&(ip->i_flag&V7_IMOUNT));ip->i_flag&=~V7_IMOUNT;--ip->i_count;return 0;}
 bool files_volume_busy(v7_dev_t dev){return dev==busy_device;}
 static struct fs_node lookup(struct fs_node cwd,struct fs_node jail,const char *path)
 {

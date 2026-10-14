@@ -14,6 +14,7 @@ int namespace_mount(v7_dev_t,struct fs_node,struct inode *pin,bool read_only);
 bool namespace_mountpoint(struct fs_node);
 unsigned namespace_pins(void);
 bool namespace_quiescent(void);
-int namespace_reset(void); /* Kernel teardown only; user umount is task 55. */
+int namespace_unmount(v7_dev_t);
+int namespace_reset(void); /* Quiescent kernel teardown of all secondary volumes. */
 int namespace_sync(void);
 #endif

@@ -38,6 +38,16 @@ int main(void)
     for(unsigned i=0;i<V7_NTEXT;++i)if(i!=3)text_release(owners[i]);
     CHECK(text_purge_unused()==0);
     for(unsigned i=0;i<V7_NTEXT;++i)CHECK(!nodes[i].i_count&&!(nodes[i].i_flag&V7_ITEXT));
+    struct inode selected[3];struct text *selected_text[3];
+    for(unsigned i=0;i<3;++i){
+        selected[i]=(struct inode){.i_count=1,.i_dev=i==2?1:i,.i_mode=V7_IFREG|01755};
+        CHECK(text_acquire(&selected[i],4096,&selected_text[i])==0&&files_inode_put(&selected[i])==0);
+        if(i!=2)text_release(selected_text[i]);
+    }
+    CHECK(text_purge_device(1)==0&&!selected[1].i_count&&selected[0].i_count==1&&selected[2].i_count==1);
+    CHECK(text_valid(selected_text[2])); /* Active text on the selected device stays busy. */
+    text_release(selected_text[2]);CHECK(text_purge_device(1)==0&&!selected[2].i_count&&selected[0].i_count==1);
+    CHECK(text_purge_device(0)==0&&!selected[0].i_count);
     inode=(struct inode){.i_count=1,.i_mode=V7_IFREG|01755};
     CHECK(text_acquire(&inode,1,&text)==0&&files_inode_put(&inode)==0);text_release(text);
     release_error=-NX_EIO;CHECK(text_purge_unused()==-NX_EIO&&!inode.i_count&&!(inode.i_flag&V7_ITEXT));

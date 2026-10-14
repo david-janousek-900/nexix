@@ -93,6 +93,7 @@ four-byte status, even though its pointer occupies an eight-byte argument slot.
 | 19 | lseek | fd, signed offset, whence | New offset |
 | 20 | getpid | None | Current PID |
 | 21 | mount | Device pathname, mount-point pathname, read-only flag | Zero; root only; flag low bit selects read-only |
+| 22 | umount | Block-device pathname | Zero; root only; EBUSY for active references/child mounts; EIO retains the mount |
 | 24 | getuid | None | Real UID |
 | 31, 32 | stty, gtty | fd, sgtty pointer | Zero |
 | 41 | dup | fd | Lowest free descriptor |

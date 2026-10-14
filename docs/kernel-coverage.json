@@ -97,7 +97,7 @@
         54,
         55
       ],
-      "note": "V7 disk records, inode/cache, text exclusion, block/raw devices and multi-volume mount namespace are implemented; user unmount remains task 55."
+      "note": "V7 disk records, inode/cache, text exclusion, block/raw devices, multi-volume mount namespace and targeted unmount/busy/sync-error handling are implemented."
     },
     {
       "id": "process",
@@ -213,9 +213,10 @@
       ],
       "tasks": [
         10,
-        51
+        51,
+        55
       ],
-      "note": "ELF resident private images replace a.out/swap text. Native shared ownership, ETXTBSY, inode pins and sticky ownership lifetimes are implemented by task 51; physical code sharing and swap-backed cached bytes are not reproduced."
+      "note": "ELF resident private images replace a.out/swap text. Shared ownership, ETXTBSY and sticky lifetimes are implemented by task 51; task 55 purges only unused text on the unmounted device. Physical code sharing and swap-backed cached bytes are not reproduced."
     },
     {
       "id": "accounting",
@@ -672,7 +673,7 @@
       "number": 22,
       "routine": "sumount",
       "label": "umount",
-      "status": "pending",
+      "status": "native_path",
       "task": 55,
       "native": "kernel/v7/syscall.c"
     },

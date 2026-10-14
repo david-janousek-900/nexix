@@ -20,6 +20,7 @@
 #define NX_SYS_CHOWN 16
 #define NX_SYS_BRK 17
 #define NX_SYS_MOUNT 21
+#define NX_SYS_UMOUNT 22
 #define NX_SYS_SETUID 23
 #define NX_SYS_STIME 25
 #define NX_SYS_ALARM 27

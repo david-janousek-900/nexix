@@ -58,10 +58,9 @@ all mounted volumes, reports the first error and still attempts the others.
 
 ## Scope and validation
 
-User umount/busy-volume policy is task 55. Kernel-only quiescent teardown is
-provided for root replacement and test cleanup; it checks references and
-releases volumes in reverse mount order. No public umount wrapper/command is
-claimed here. The reference mount command is task 220; its umount command is task 221.
+User umount/busy-volume policy is implemented by [task 55](unmount.md).
+Kernel-only quiescent teardown checks references and removes leaves of the
+mount graph, so slot reuse cannot release a parent before its child. The reference mount command is task 220; its umount command is task 221.
 The current production driver still registers only the RAM/IDE root. Kernel
 storage_bind enables additional backings; discovery/registration of additional
 physical disks is a subsequent driver task. Native tests register disposable

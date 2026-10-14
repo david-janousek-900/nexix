@@ -25,6 +25,15 @@ int text_purge_unused(void)
     }
     return error;
 }
+int text_purge_device(v7_dev_t dev)
+{
+    int error=0;
+    for(unsigned i=0;i<V7_NTEXT;++i)
+        if(texts[i].x_iptr && texts[i].x_iptr->i_dev==dev && !texts[i].x_count){
+            int result=discard(&texts[i]);if(!error)error=result;
+        }
+    return error;
+}
 int text_evict(struct inode *inode)
 {
     for(unsigned i=0;i<V7_NTEXT;++i)

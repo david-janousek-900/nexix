@@ -36,8 +36,8 @@ Native safety adaptation: writes to any mounted backing device return
 EBUSY, including through aliases/raw nodes, to prevent bypassing the filesystem
 cache and superblock state. Unmounted registered devices allow writes. This
 is stricter than V7 and is explicit; mounted-volume cache coordination remains pending;
-multi-volume mounts are implemented by [task 54](mounts.md); user unmount is
-task 55. Binding replacement or detaching a slot with open handles returns EBUSY. Calls are serialized by
+multi-volume mounts are implemented by [task 54](mounts.md) and user unmount
+by [task 55](unmount.md). Binding replacement or detaching a slot with open handles returns EBUSY. Calls are serialized by
 the single-CPU kernel with IRQs disabled; backing lifetime must cover binding
 and all open handles.
 

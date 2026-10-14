@@ -382,8 +382,8 @@ build/nexix.elf: build/root_boot.o
 
 build/root_exec_program.o: user/root-exec-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
-build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/libc.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/libc.a -o $@
+build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/libc.a -o $@
 build/root_exec_image.o: build/root-exec-test.elf
 	$(LD) -r -b binary $< -o build/root_exec_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/root_exec_raw.o $@
@@ -748,7 +748,7 @@ build/nexix.elf: build/namespace.o
 build/namespace.o: kernel/v7/namespace.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/namespace.img: tools/mk_namespace_fixture.py tools/mk_v7fs.py build/v7-echo.elf | build/.dir
+build/namespace.img: tools/mk_namespace_fixture.py tools/mk_v7fs.py build/v7-echo.elf build/text-probe.elf | build/.dir
 	$(PYTHON) tools/mk_namespace_fixture.py
 build/namespace_image.o: build/namespace.img
 	$(LD) -r -b binary $< -o build/namespace_image_raw.o
@@ -767,3 +767,15 @@ test-namespace-unit: build/namespace-unit-test build/namespace.img
 	./build/namespace-unit-test build/namespace.img
 test-mount: test-namespace-unit test-rootfs test-inventory test-libc-interfaces
 test-unit: test-namespace-unit
+
+build/umount-unit-test: tests/umount.c kernel/v7/namespace.c kernel/v7/storage.c kernel/block.c kernel/v7/fs.c | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude $^ -o $@
+.PHONY: test-umount test-umount-unit
+test-umount-unit: build/umount-unit-test build/namespace.img test-text-unit
+	./build/umount-unit-test build/namespace.img
+test-umount: test-umount-unit test-rootfs test-inventory test-libc-interfaces
+test-unit: test-umount-unit
+
+build/umount_program.o: user/umount-test.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+-include build/umount_program.d

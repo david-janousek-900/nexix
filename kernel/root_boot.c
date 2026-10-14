@@ -4,6 +4,7 @@
 #include "tty.h"
 #include "ide.h"
 #include "storage.h"
+#include "namespace.h"
 #include <nexix/errno.h>
 extern const uint8_t _binary_build_root_img_start[], _binary_build_root_img_end[];
 static uint8_t root_bytes[1024 * V7_BSIZE];
@@ -64,6 +65,16 @@ extern const uint8_t _binary_build_core_probe_elf_start[], _binary_build_core_pr
 extern const uint8_t _binary_build_namespace_img_start[],_binary_build_namespace_img_end[];
 static uint8_t namespace_bytes[7][256*BLOCK_SIZE];
 static struct ramdisk namespace_devices[7];
+static int (*namespace_writes[7])(struct block_device *,uint32_t,const void *);
+static unsigned namespace_write_faults;
+static int namespace_fault_write(struct block_device *d,uint32_t block,const void *bytes)
+{
+    for(unsigned i=0;i<7;++i)if(d==&namespace_devices[i].device){
+        if(block==V7_SUPERB&&(namespace_write_faults&(1U<<i)))return -NX_EIO;
+        return namespace_writes[i](d,block,bytes);
+    }
+    panic("foreign namespace fault device");
+}
 static int namespace_bad_read(struct block_device *d,uint32_t block,void *bytes)
 {(void)d;(void)block;(void)bytes;return -NX_EIO;}
 static void namespace_fixture_device(unsigned i)
@@ -73,6 +84,8 @@ static void namespace_fixture_device(unsigned i)
     for(size_t n=0;n<length;++n)namespace_bytes[i][n]=_binary_build_namespace_img_start[n];
     if(ramdisk_init(&namespace_devices[i],namespace_bytes[i],length,i==2)||
        storage_bind(i+1,&namespace_devices[i].device,false))panic("namespace fixture bind");
+    namespace_writes[i]=namespace_devices[i].device.write;
+    namespace_devices[i].device.write=namespace_fault_write;
 }
 static bool exec_testing;
 static uintptr_t held_pages[32768];
@@ -80,7 +93,7 @@ static unsigned held_count;
 static v7_pid_t held_owner;
 bool root_exec_test_gate(struct interrupt_frame *frame)
 {
-    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x90b)return false;
+    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x90d)return false;
     struct proc *p=proc_current();
     if(frame->rax==0x900){
         if(frame->rdi)p->p_flag|=V7_STRC;else p->p_flag&=~V7_STRC;
@@ -121,6 +134,7 @@ bool root_exec_test_gate(struct interrupt_frame *frame)
         root_volume.read_only=!!frame->rdi;
     }else if(frame->rax==0x909){
         if(p->p_user->u_uid)panic("unprivileged namespace fixture");
+        namespace_write_faults=0;
         for(unsigned i=0;i<7;++i)namespace_fixture_device(i);
         for(unsigned i=0;i<BLOCK_SIZE;++i)namespace_bytes[3][BLOCK_SIZE+i]=0;
         namespace_devices[4].device.read=namespace_bad_read;
@@ -130,6 +144,14 @@ bool root_exec_test_gate(struct interrupt_frame *frame)
     }else if(frame->rax==0x90b){
         if(p->p_user->u_uid)panic("unprivileged namespace teardown fixture");
         frame->rax=files_reset_volumes();return true;
+    }else if(frame->rax==0x90c){
+        if(p->p_user->u_uid||frame->rdi>127)panic("invalid namespace write fault");
+        namespace_write_faults=frame->rdi;
+    }else if(frame->rax==0x90d){
+        if(p->p_user->u_uid||!frame->rdi||frame->rdi>=STORAGE_SLOTS)panic("invalid namespace fault recovery");
+        struct v7fs *fs=namespace_volume(frame->rdi);
+        if(!fs||namespace_write_faults)panic("namespace fault recovery ordering");
+        fs->failed=false; /* Only injected superblock writes failed; fixture data is unchanged. */
     }else return false;
     frame->rax=0;return true;
 }

@@ -160,4 +160,5 @@ These are source-adapted library interfaces; login/authentication remains pendin
 Task 54 adds `mount(device_path, mountpoint_path, read_only)` in `<unistd.h>`,
 using V7 syscall number 21 and the native error-return convention. The flag's
 low bit selects read-only mounting. See [mount contracts](mounts.md); the user
-mount command is a separate roadmap port, and user unmount remains task 55.
+mount command is a separate roadmap port. Task 55 adds `umount(device_path)`
+in `<unistd.h>` using syscall 22; see [unmount contracts](unmount.md).

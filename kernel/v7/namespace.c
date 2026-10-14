@@ -2,6 +2,7 @@
 #include "namespace.h"
 #include "files.h"
 #include "storage.h"
+#include "text.h"
 #include <nexix/errno.h>
 struct volume {
     struct v7fs *fs;
@@ -128,18 +129,49 @@ int namespace_sync(void)
     }
     return error;
 }
+static bool children(v7_dev_t dev)
+{
+    for(unsigned i=1;i<NAMESPACE_MOUNTS;++i)
+        if(mounts[i].fs && mounts[i].point.dev==dev)return true;
+    return false;
+}
+static int release_volume(struct volume *volume)
+{
+    /* All fallible disk work precedes removal of the mount-point pin. */
+    int error=files_mountpoint_put(volume->pin);if(error)return error;
+    if(v7fs_unmount(volume->fs))panic("invalid mounted volume release");
+    storage_mount_close(volume->handle);clear_volume(volume);return 0;
+}
+int namespace_unmount(v7_dev_t dev)
+{
+    struct volume *volume=NULL;
+    for(unsigned i=0;i<NAMESPACE_MOUNTS;++i)
+        if(mounts[i].fs && mounts[i].dev==dev){volume=&mounts[i];break;}
+    if(!volume)return -NX_EINVAL;
+    if(volume==&mounts[0])return -NX_EBUSY;
+    int error=text_purge_device(dev);if(error)return error;
+    /* V7 xumount -> update -> busy-inode scan. Nexix retains the mount on
+     * any synchronous update error, including an error on another volume. */
+    error=namespace_sync();if(error)return error;
+    if(children(dev)||files_volume_busy(dev))return -NX_EBUSY;
+    return release_volume(volume);
+}
 int namespace_reset(void)
 {
     if(!namespace_quiescent())return -NX_EBUSY;
     for(unsigned i=1;i<NAMESPACE_MOUNTS;++i)
         if(mounts[i].fs && files_volume_busy(mounts[i].dev))return -NX_EBUSY;
     int error=namespace_sync();if(error)return error;
-    /* Slots are allocated in mount order; release children before parents. */
-    for(unsigned i=NAMESPACE_MOUNTS;i-->1;)if(mounts[i].fs){
-        int e=v7fs_unmount(mounts[i].fs);if(e)return e;
-        mounts[i].pin->i_flag&=~V7_IMOUNT;
-        e=files_inode_put(mounts[i].pin);if(e)return e;
-        storage_mount_close(mounts[i].handle);clear_volume(&mounts[i]);
+    /* Slot numbers cease to reflect ancestry after individual unmounts and
+     * slot reuse. Remove leaves of the mount graph rather than reverse slots. */
+    while(namespace_pins()){
+        bool released=false;
+        for(unsigned i=1;i<NAMESPACE_MOUNTS;++i)
+            if(mounts[i].fs && !children(mounts[i].dev)){
+                error=release_volume(&mounts[i]);if(error)return error;
+                released=true;break;
+            }
+        if(!released)return -NX_EBUSY;
     }
     return 0;
 }

@@ -186,8 +186,8 @@ xsend/xget/enroll → libmp; beautify → libln; spell hashes → spellin and di
 Host tools bootstrap generator cycles; native compiler retargeting is still required.
 
 Kernel adaptations are required for independent TTYs, authenticated credentials,
-accounting, tracing/profiling, remaining device interfaces and user unmount.
-Block/raw files and the multi-volume mount namespace are implemented.
+accounting, tracing/profiling and remaining device interfaces.
+Block/raw files and the multi-volume mount/unmount namespace are implemented.
 Programs such as ps/pstat/iostat inspect historical kernel layouts; compiling
 their sources alone does not provide a working native equivalent.
 
@@ -195,7 +195,7 @@ their sources alone does not provide a working native equivalent.
 |---|---|---|
 | `native-build-tools` | supplied | Host GCC/binutils bootstrap native Nexix ELF builds; retained native tools remain unported. |
 | `headers` | partial | Original inputs are supplied in the full archive. Adapt declarations and layouts to the native ABI; complete Nexix libc coverage remains partial. |
-| `kernel-abi` | partial | File/process/TTY syscalls, device-qualified inodes, mknod, mount and per-process chroot exist; user unmount, accounting, tracing, profiling and remaining device interfaces are pending. |
+| `kernel-abi` | partial | File/process/TTY syscalls, device-qualified inodes, mknod, mount/umount and per-process chroot exist; accounting, tracing, profiling and remaining device interfaces are pending. |
 | `floating-point` | partial | Native FP process/signal state, binary64 helpers, decimal formatting and retained libm C sources are implemented; complete libc coverage and installed math headers/archive remain pending. |
 | `wall-clock` | supplied | RTC initializes the UTC system clock; inode timestamps and sync superblock time use that clock and persist in the existing V7 disk encoding. |
 | `timezone` | supplied | Native time conversion and configurable TZ support fixed offsets, one-hour DST, explicit M rules and historical V7 US defaults; see time.md for the supported grammar. |
@@ -204,7 +204,7 @@ their sources alone does not provide a working native equivalent.
 | `accounting` | partial | `/etc/utmp`, `/usr/adm/wtmp` |
 | `kernel-information` | missing | Historical kernel-memory/symbol consumers need a native information interface. |
 | `tracing-profiling` | missing | Native ptrace/profiling and executable register/symbol interpretation require implementation. |
-| `raw-storage` | partial | Block/raw device files and multi-volume mount routing exist; mounted-device writes are guarded, user unmount and storage-administration command ports remain pending. |
+| `raw-storage` | partial | Block/raw device files and multi-volume mount/umount routing exist; mounted-device writes are guarded, storage-administration command ports remain pending. |
 | `historical-devices` | pending_assessment | PDP-11 disks/tapes, plotters and printer protocols require native equivalents or individually documented exceptions. |
 | `elf-toolchain` | missing | Retarget retained compiler/assembler/linker and archive/symbol utilities to native x86_64 ELF. |
 | `spool-locks` | missing | Historical spool and UUCP configuration fixtures are supplied; native services, ownership and locking remain pending. |

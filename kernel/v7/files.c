@@ -87,6 +87,18 @@ int files_inode_put(struct inode *inode)
     if (!error && !disk.nlink) error = v7fs_release_inode(node_volume(inode_node(inode)), inode->i_number);
     zero(inode, sizeof(*inode)); return error;
 }
+int files_mountpoint_put(struct inode *inode)
+{
+    if(!valid_inode(inode)||!(inode->i_flag&V7_IMOUNT))return -NX_EINVAL;
+    if(inode->i_count!=1)return -NX_EBUSY;
+    /* A mounted-on inode cannot be unlinked. Preflight its disk record before
+     * dropping the pin so a parent-device error cannot half-detach the mount.
+     * Metadata is write-through; a linked, final reference needs no disk write. */
+    struct v7fs_inode disk;int error=node_inode_get(inode_node(inode),&disk);
+    if(error)return error;
+    if(!disk.nlink)return -NX_EIO;
+    zero(inode,sizeof(*inode));return 0;
+}
 static struct file *file_alloc(void)
 {
     for (unsigned i = 0; i < V7_NFILE; ++i) if (!table[i].f_count) {
@@ -434,20 +446,23 @@ static int stat_inode(struct fs_node ino, struct nx_stat *st)
         .rdev = ((i.mode & V7_IFMT) == V7_IFCHR || (i.mode & V7_IFMT) == V7_IFBLK) ? i.addr[0] : 0,
         .size = i.size, .atime = i.atime, .mtime = i.mtime, .ctime = i.ctime}; return 0;
 }
+static int device_path(struct user *u,uintptr_t address,v7_dev_t *dev)
+{
+    char path[256];int error=path_copy(address,path);if(error)return error;
+    struct fs_node node;error=lookup_path(u,path,&node);if(error)return error;
+    struct v7fs_inode disk;error=node_inode_get(node,&disk);if(error)return error;
+    if((disk.mode&V7_IFMT)!=V7_IFBLK)return -NX_ENOTBLK;
+    *dev=disk.addr[0];
+    return v7_major(*dev)!=NX_BLOCK_DISK_MAJOR || v7_minor(*dev)>=STORAGE_SLOTS?-NX_ENXIO:0;
+}
 static int mount_path(struct user *u,const uintptr_t args[6])
 {
     if(u->u_uid)return -NX_EPERM;
     if(!root)return -NX_ENODEV;
-    char device_path[256],point_path[256];
-    int error=path_copy(args[0],device_path);if(error)return error;
-    struct fs_node device;error=lookup_path(u,device_path,&device);if(error)return error;
-    struct v7fs_inode disk;error=node_inode_get(device,&disk);if(error)return error;
-    if((disk.mode&V7_IFMT)!=V7_IFBLK)return -NX_ENOTBLK;
-    v7_dev_t dev=disk.addr[0];
-    if(v7_major(dev)!=NX_BLOCK_DISK_MAJOR || v7_minor(dev)>=STORAGE_SLOTS)return -NX_ENXIO;
-    error=path_copy(args[1],point_path);if(error)return error;
+    v7_dev_t dev;int error=device_path(u,args[0],&dev);if(error)return error;
+    char point_path[256];error=path_copy(args[1],point_path);if(error)return error;
     struct fs_node point;error=lookup_path(u,point_path,&point);if(error)return error;
-    error=node_inode_get(point,&disk);if(error)return error;
+    struct v7fs_inode disk;error=node_inode_get(point,&disk);if(error)return error;
     /* V7 accepts ordinary files as well as directories as mount points. */
     if((disk.mode&V7_IFMT)!=V7_IFREG && (disk.mode&V7_IFMT)!=V7_IFDIR)return -NX_EBUSY;
     struct inode *pin=inode_get(point,&disk);if(!pin)return -NX_ENFILE;
@@ -461,6 +476,12 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
     struct proc *p = proc_current(); struct user *u = p->p_user;
     uint64_t fd = args[0];
     if(number==NX_SYS_MOUNT)return mount_path(u,args);
+    if(number==NX_SYS_UMOUNT){
+        if(u->u_uid)return -NX_EPERM;
+        if(!root)return -NX_ENODEV;
+        v7_dev_t dev;int error=device_path(u,args[0],&dev);
+        return error?error:namespace_unmount(dev);
+    }
     if (number == NX_SYS_SYNC) return namespace_sync(); /* Write-through cache plus V7 superblock time. */
     if (number == NX_SYS_MKNOD) {
         if (u->u_uid) return -NX_EPERM;

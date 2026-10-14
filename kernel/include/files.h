@@ -19,7 +19,8 @@ unsigned files_live(void);
 int files_core_begin(struct inode **);
 int files_core_write(struct inode *,uint64_t,const void *,size_t);
 bool files_volume_busy(v7_dev_t);
-int files_reset_volumes(void); /* Quiescent kernel teardown; no user umount yet. */
+int files_reset_volumes(void); /* Quiescent kernel teardown. */
+int files_mountpoint_put(struct inode *); /* Preflight then non-I/O pin release. */
 int files_inode_put(struct inode *);
 int64_t files_syscall(uint64_t number, const uintptr_t args[6]);
 void files_selftest(void);

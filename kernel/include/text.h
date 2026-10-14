@@ -9,5 +9,6 @@ void text_retain(struct text *);
 void text_release(struct text *);
 int text_evict(struct inode *); /* Only unused entries; active ones remain. */
 int text_purge_unused(void);
+int text_purge_device(v7_dev_t); /* V7 xumount: unused text on this device only. */
 int files_inode_put(struct inode *); /* Managed inode ownership callback. */
 #endif
