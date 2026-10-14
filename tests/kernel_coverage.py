@@ -55,6 +55,8 @@ class Coverage(unittest.TestCase):
         self.audit['syscalls'][21]['status'] = 'historical_stub'
         self.check('stub drift')
     def test_false_closure(self):
+        # Force a pending disposition even after mount is implemented.
+        self.audit['syscalls'][21]['status'] = 'pending'
         self.audit['syscalls'][21]['task'] = 38
         self.check('completed owner')
     def test_schema(self):

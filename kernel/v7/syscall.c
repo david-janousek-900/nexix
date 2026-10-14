@@ -18,7 +18,7 @@ static int64_t invoke(uint64_t number, struct interrupt_frame *frame)
     switch (number) {
     case NX_SYS_READ: case NX_SYS_WRITE: case NX_SYS_OPEN: case NX_SYS_CLOSE:
     case NX_SYS_CREAT: case NX_SYS_LINK: case NX_SYS_UNLINK: case NX_SYS_CHDIR:
-    case NX_SYS_MKNOD:
+    case NX_SYS_MOUNT: case NX_SYS_MKNOD:
     case NX_SYS_CHROOT:
     case NX_SYS_STAT: case NX_SYS_LSEEK: case NX_SYS_FSTAT: case NX_SYS_DUP:
     case NX_SYS_PIPE: case NX_SYS_DUP2: case NX_SYS_FCNTL:

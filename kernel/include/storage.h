@@ -6,6 +6,8 @@
 struct storage_handle { struct block_device *device; unsigned refs; bool mounted; };
 int storage_bind(unsigned minor, struct block_device *, bool mounted);
 int storage_open(uint16_t dev, bool raw, bool write, struct storage_handle **);
+int storage_mount_open(uint16_t dev, bool read_only, struct storage_handle **);
+void storage_mount_close(struct storage_handle *);
 void storage_close(struct storage_handle *);
 int storage_transfer(struct storage_handle *, uint64_t offset, void *, size_t, bool write, size_t *done);
 #endif

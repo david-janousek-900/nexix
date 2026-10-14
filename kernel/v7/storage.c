@@ -20,6 +20,13 @@ int storage_open(uint16_t dev,bool raw,bool write,struct storage_handle **result
     if(write&&!h->device->write)return -NX_ENODEV;
     ++h->refs;*result=h;return 0;
 }
+int storage_mount_open(uint16_t dev,bool read_only,struct storage_handle **result)
+{
+    int error=storage_open(dev,false,!read_only,result);if(error)return error;
+    if((*result)->mounted){storage_close(*result);return -NX_EBUSY;}
+    (*result)->mounted=true;return 0;
+}
+void storage_mount_close(struct storage_handle *h){h->mounted=false;storage_close(h);}
 void storage_close(struct storage_handle *h){if(h&&h->refs)--h->refs;}
 int storage_transfer(struct storage_handle *h,uint64_t offset,void *buffer,size_t count,bool write,size_t *done)
 {

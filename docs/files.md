@@ -39,8 +39,9 @@ releases cwd and executable text references. Unsupported foreign inode/file/text
 references still return EBUSY at fork/exec; native [text ownership](text-ownership.md)
 is supported.
 
-`files_mount()` attaches one already mounted filesystem. Detaching or switching
-returns EBUSY while managed references exist. These are internal kernel APIs,
+`files_mount()` installs the global root filesystem. Mount syscall 21 adds
+secondary volumes through the [multi-volume namespace](mounts.md). Kernel root
+detaching or switching returns EBUSY while managed references exist. These are internal kernel APIs,
 serialized with IRQs disabled. The boot test attaches a disposable RAM fixture,
 runs file tests, then detaches it. Production boot permanently attaches the
 RAM or IDE root in task 18; see [booting.md](booting.md).
@@ -62,7 +63,7 @@ EOF; sparse writes use the existing filesystem allocation code.
 Lookup checks directory search permissions at each component. File access uses
 effective owner, group or other mode bits; UID 0 bypasses these checks. Namespace
 changes require parent write and search permission. Relative paths use cwd;
-absolute paths start at inode 2. V7's 14-byte component truncation is retained.
+absolute paths start at the process root (device 0, inode 2 by default). V7's 14-byte component truncation is retained.
 Link/unlink operate on regular files. Unlink removes a name immediately, but an
 open inode with zero links stays usable until its last open-file reference closes.
 Its blocks and inode slot are then reclaimed. Empty directory entry slots and

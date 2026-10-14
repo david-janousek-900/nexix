@@ -3,7 +3,7 @@
 #include "process.h"
 #include "v7/fs.h"
 #include <nexix/file.h>
-/* IRQs disabled; one root filesystem, kernel-owned tables. */
+/* IRQs disabled; device-qualified inodes, bounded mounts and owned tables. */
 struct exec_args;
 struct exec_image;
 int files_mount_root(struct v7fs *); /* Production mount enables filesystem exec. */
@@ -18,6 +18,8 @@ void files_exec(struct user *);
 unsigned files_live(void);
 int files_core_begin(struct inode **);
 int files_core_write(struct inode *,uint64_t,const void *,size_t);
+bool files_volume_busy(v7_dev_t);
+int files_reset_volumes(void); /* Quiescent kernel teardown; no user umount yet. */
 int files_inode_put(struct inode *);
 int64_t files_syscall(uint64_t number, const uintptr_t args[6]);
 void files_selftest(void);

@@ -4,6 +4,7 @@
 #include <crypt.h>
 int mknod(const char *, mode_t, dev_t);
 int chroot(const char *);
+int mount(const char *device, const char *mountpoint, int read_only);
 #include <stddef.h>
 #include <nexix/file.h>
 #define SEEK_SET NX_SEEK_SET

@@ -92,6 +92,7 @@ four-byte status, even though its pointer occupies an eight-byte argument slot.
 | 18, 28 | stat, fstat | Path/fd, writable nx_stat pointer | Zero |
 | 19 | lseek | fd, signed offset, whence | New offset |
 | 20 | getpid | None | Current PID |
+| 21 | mount | Device pathname, mount-point pathname, read-only flag | Zero; root only; flag low bit selects read-only |
 | 24 | getuid | None | Real UID |
 | 31, 32 | stty, gtty | fd, sgtty pointer | Zero |
 | 41 | dup | fd | Lowest free descriptor |

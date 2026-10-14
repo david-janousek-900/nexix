@@ -156,3 +156,8 @@ their roadmap tasks.
 
 Task 46 adds [V7 DES/password primitives](crypt.md) through crypt.h and unistd.h.
 These are source-adapted library interfaces; login/authentication remains pending.
+
+Task 54 adds `mount(device_path, mountpoint_path, read_only)` in `<unistd.h>`,
+using V7 syscall number 21 and the native error-return convention. The flag's
+low bit selects read-only mounting. See [mount contracts](mounts.md); the user
+mount command is a separate roadmap port, and user unmount remains task 55.

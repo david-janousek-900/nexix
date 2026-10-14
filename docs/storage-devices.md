@@ -32,12 +32,12 @@ beyond the end return EIO. A transfer that reaches the boundary or encounters
 an error after moving bytes returns its partial byte count and advances its
 shared offset by exactly that count. Read-only backing devices return EROFS.
 
-Native safety adaptation: writes to the mounted root backing device return
+Native safety adaptation: writes to any mounted backing device return
 EBUSY, including through aliases/raw nodes, to prevent bypassing the filesystem
 cache and superblock state. Unmounted registered devices allow writes. This
-is stricter than V7 and is explicit; mounted-volume cache coordination and
-multiple mounts belong to subsequent filesystem tasks. Binding replacement
-or detaching a slot with open handles returns EBUSY. Calls are serialized by
+is stricter than V7 and is explicit; mounted-volume cache coordination remains pending;
+multi-volume mounts are implemented by [task 54](mounts.md); user unmount is
+task 55. Binding replacement or detaching a slot with open handles returns EBUSY. Calls are serialized by
 the single-CPU kernel with IRQs disabled; backing lifetime must cover binding
 and all open handles.
 

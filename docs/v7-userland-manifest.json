@@ -55,10 +55,11 @@
       "id": "kernel-abi",
       "category": "kernel",
       "status": "partial",
-      "description": "File/process/TTY syscalls plus mknod, privileged V7 directory links and per-process chroot exist; mount administration, accounting, tracing, profiling and complete device interfaces remain pending.",
+      "description": "File/process/TTY syscalls, device-qualified inodes, mknod, mount and per-process chroot exist; user unmount, accounting, tracing, profiling and remaining device interfaces are pending.",
       "evidence": [
         "docs/syscall-abi.md",
-        "docs/files.md"
+        "docs/files.md",
+        "docs/mounts.md"
       ],
       "locations": []
     },
@@ -172,10 +173,14 @@
       "id": "raw-storage",
       "category": "kernel",
       "status": "partial",
-      "description": "IDE block operations exist internally; raw device files and mount-management interfaces are pending.",
+      "description": "Block/raw device files and multi-volume mount routing exist; mounted-device writes are guarded, user unmount and storage-administration command ports remain pending.",
       "evidence": [
         "kernel/ide.c",
-        "docs/filesystem.md"
+        "docs/filesystem.md",
+        "kernel/v7/storage.c",
+        "kernel/v7/namespace.c",
+        "docs/storage-devices.md",
+        "docs/mounts.md"
       ],
       "locations": []
     },

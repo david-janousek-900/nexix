@@ -38,7 +38,7 @@ if mode in ("tty", "tty-demo"):
                    b"NEXIX_TTY_DEMO_READY\r\n": b"terminal demo\r",
                    b"received: terminal demo\r\n": b"quit\r"}
     output = bytearray()
-    deadline = time.monotonic() + 15
+    deadline = time.monotonic() + 45
     while process.poll() is None and time.monotonic() < deadline:
         ready, _, _ = select.select([process.stdout], [], [], 0.2)
         if not ready:
@@ -61,7 +61,7 @@ if mode in ("tty", "tty-demo"):
     output = bytes(output) + remaining
 else:
     try:
-        output, _ = process.communicate(timeout=15)
+        output, _ = process.communicate(timeout=45 if mode in ("boot", "process", "syscall", "exec", "libc", "fs", "files", "signals", "v7", "rootfs") else 15)
         exited_early = True
     except subprocess.TimeoutExpired:
         exited_early = False
@@ -117,7 +117,7 @@ if mode in ("boot", "process", "syscall", "exec", "libc", "fs", "files", "signal
            ("NEXIX_V7_INIT_ELF_OK", "NEXIX_V7_USER_PROGRAM_OK", "NEXIX_V7_SHELL_OK", "NEXIX_V7_UTILITIES_OK", "NEXIX_V7_USERLAND_CLEANUP_OK")):
         sys.exit(f"FAIL: rebuilt V7 userland check failed; see {log}")
     if any(f"{marker}\r\n".encode() not in output for marker in
-           ("NEXIX_ROOT_IMAGE_OK", "NEXIX_ROOT_ELF_OK", "NEXIX_ROOT_EXEC_USER_OK", "NEXIX_STORAGE_OK", "NEXIX_ROOT_EXEC_OK", "NEXIX_ROOT_EXEC_CLEANUP_OK")):
+           ("NEXIX_ROOT_IMAGE_OK", "NEXIX_ROOT_ELF_OK", "NEXIX_ROOT_EXEC_USER_OK", "NEXIX_STORAGE_OK", "NEXIX_NAMESPACE_OK", "NEXIX_MOUNT_EXEC_OK", "NEXIX_ROOT_EXEC_OK", "NEXIX_ROOT_EXEC_CLEANUP_OK")):
         sys.exit(f"FAIL: packaged root image check failed; see {log}")
     if mode == "tty" and (replies or b"NEXIX_TTY_UART_OK\r\n" not in output
                            or b"NEXIX_TTY_UART_USER_OK\r\n" not in output

@@ -61,13 +61,26 @@ extern const uint8_t _binary_build_root_exec_test_elf_start[], _binary_build_roo
 extern const uint8_t _binary_build_setid_probe_elf_start[], _binary_build_setid_probe_elf_end[];
 extern const uint8_t _binary_build_text_probe_elf_start[], _binary_build_text_probe_elf_end[];
 extern const uint8_t _binary_build_core_probe_elf_start[], _binary_build_core_probe_elf_end[];
+extern const uint8_t _binary_build_namespace_img_start[],_binary_build_namespace_img_end[];
+static uint8_t namespace_bytes[7][256*BLOCK_SIZE];
+static struct ramdisk namespace_devices[7];
+static int namespace_bad_read(struct block_device *d,uint32_t block,void *bytes)
+{(void)d;(void)block;(void)bytes;return -NX_EIO;}
+static void namespace_fixture_device(unsigned i)
+{
+    size_t length=(uintptr_t)_binary_build_namespace_img_end-(uintptr_t)_binary_build_namespace_img_start;
+    if(length!=sizeof(namespace_bytes[i]))panic("namespace fixture size");
+    for(size_t n=0;n<length;++n)namespace_bytes[i][n]=_binary_build_namespace_img_start[n];
+    if(ramdisk_init(&namespace_devices[i],namespace_bytes[i],length,i==2)||
+       storage_bind(i+1,&namespace_devices[i].device,false))panic("namespace fixture bind");
+}
 static bool exec_testing;
 static uintptr_t held_pages[32768];
 static unsigned held_count;
 static v7_pid_t held_owner;
 bool root_exec_test_gate(struct interrupt_frame *frame)
 {
-    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x908)return false;
+    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x90b)return false;
     struct proc *p=proc_current();
     if(frame->rax==0x900){
         if(frame->rdi)p->p_flag|=V7_STRC;else p->p_flag&=~V7_STRC;
@@ -106,6 +119,17 @@ bool root_exec_test_gate(struct interrupt_frame *frame)
     }else if(frame->rax==0x908){
         if(p->p_user->u_uid)panic("unprivileged core mount fixture");
         root_volume.read_only=!!frame->rdi;
+    }else if(frame->rax==0x909){
+        if(p->p_user->u_uid)panic("unprivileged namespace fixture");
+        for(unsigned i=0;i<7;++i)namespace_fixture_device(i);
+        for(unsigned i=0;i<BLOCK_SIZE;++i)namespace_bytes[3][BLOCK_SIZE+i]=0;
+        namespace_devices[4].device.read=namespace_bad_read;
+    }else if(frame->rax==0x90a){
+        if(p->p_user->u_uid)panic("unprivileged namespace repair fixture");
+        namespace_fixture_device(3);namespace_fixture_device(4);
+    }else if(frame->rax==0x90b){
+        if(p->p_user->u_uid)panic("unprivileged namespace teardown fixture");
+        frame->rax=files_reset_volumes();return true;
     }else return false;
     frame->rax=0;return true;
 }
@@ -148,7 +172,7 @@ void root_exec_selftest(void)
         v7_disk_u32(root_volume.super.tfree)!=blocks ||
         v7_disk_u16(root_volume.super.tinode)!=inodes)
         panic("root exec cleanup failed");
-    if(storage_bind(1,NULL,false)||storage_bind(2,NULL,false))panic("storage handles leaked");
+    for(unsigned i=1;i<STORAGE_SLOTS;++i)if(storage_bind(i,NULL,false))panic("storage handles leaked");
     if(files_mount(NULL) || v7fs_unmount(&root_volume))panic("cannot detach test root");
     serial_puts("NEXIX_ROOT_EXEC_OK\r\nNEXIX_ROOT_EXEC_CLEANUP_OK\r\n");
 }

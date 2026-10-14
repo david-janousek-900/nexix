@@ -6,6 +6,7 @@
 #include "exec.h"
 #include "text.h"
 #include "storage.h"
+#include "namespace.h"
 #include <nexix/syscall.h>
 #include <nexix/errno.h>
 #define NPIPE 32
@@ -29,13 +30,27 @@ unsigned files_live(void)
     for (unsigned i = 0; i < NPIPE; ++i) n += pipes[i].active;
     return n;
 }
+bool files_volume_busy(v7_dev_t dev)
+{
+    for(unsigned i=0;i<V7_NINODE;++i)
+        if(inodes[i].i_count && inodes[i].i_dev==dev &&
+           !((inodes[i].i_flag&V7_IMOUNT)&&inodes[i].i_count==1))return true;
+    return false;
+}
+int files_reset_volumes(void)
+{
+    int error=text_purge_unused();if(error)return error;
+    return namespace_reset();
+}
 int files_mount(struct v7fs *fs)
 {
     int error=text_purge_unused();if(error)return error;
-    if (files_live()) return -NX_EBUSY;
+    if (files_live()!=namespace_pins() || !namespace_quiescent()) return -NX_EBUSY;
     if (fs && !fs->mounted) return -NX_ENODEV;
+    error=namespace_reset();if(error)return error;
     error=storage_bind(0,fs?fs->device:NULL,fs!=NULL);
     if(error)return error;
+    error=namespace_root(fs);if(error)return error;
     root = fs; root_exec = false; return 0;
 }
 bool files_refs_valid(const struct user *u)
@@ -45,15 +60,21 @@ bool files_refs_valid(const struct user *u)
         if (u->u_ofile[i] && !valid_file(u->u_ofile[i])) return false;
     return true;
 }
-static struct inode *inode_get(v7_ino_t ino, const struct v7fs_inode *disk)
+static struct fs_node inode_node(const struct inode *inode)
+{ return (struct fs_node){inode->i_dev,inode->i_number}; }
+static struct v7fs *node_volume(struct fs_node node)
+{ return namespace_volume(node.dev); }
+static int node_inode_get(struct fs_node node,struct v7fs_inode *disk)
+{ return v7fs_inode_get(node_volume(node),node.ino,disk); }
+static struct inode *inode_get(struct fs_node ino, const struct v7fs_inode *disk)
 {
     struct inode *slot = NULL;
     for (unsigned i = 0; i < V7_NINODE; ++i) {
-        if (inodes[i].i_count && inodes[i].i_number == ino) { ++inodes[i].i_count; return &inodes[i]; }
+        if (inodes[i].i_count && node_equal(inode_node(&inodes[i]),ino)) { ++inodes[i].i_count; return &inodes[i]; }
         if (!inodes[i].i_count && !slot) slot = &inodes[i];
     }
     if (!slot) return NULL;
-    *slot = (struct inode){.i_count = 1, .i_number = ino, .i_mode = disk->mode,
+    *slot = (struct inode){.i_count = 1, .i_dev=ino.dev, .i_number = ino.ino, .i_mode = disk->mode,
         .i_nlink = disk->nlink, .i_uid = disk->uid, .i_gid = disk->gid, .i_size = disk->size};
     return slot;
 }
@@ -62,8 +83,8 @@ int files_inode_put(struct inode *inode)
     if (!valid_inode(inode)) panic("invalid inode release");
     if (--inode->i_count) return 0;
     struct v7fs_inode disk;
-    int error = v7fs_inode_get(root, inode->i_number, &disk);
-    if (!error && !disk.nlink) error = v7fs_release_inode(root, inode->i_number);
+    int error = node_inode_get(inode_node(inode), &disk);
+    if (!error && !disk.nlink) error = v7fs_release_inode(node_volume(inode_node(inode)), inode->i_number);
     zero(inode, sizeof(*inode)); return error;
 }
 static struct file *file_alloc(void)
@@ -118,12 +139,12 @@ void files_exec(struct user *u)
 }
 static int fd_slot(struct user *u, unsigned start)
 { for (unsigned i = start; i < V7_NOFILE; ++i) if (!u->u_ofile[i]) return i; return -NX_EMFILE; }
-static v7_ino_t cwd(struct user *u) { return u->u_cdir ? u->u_cdir->i_number : V7_ROOTINO; }
-static v7_ino_t rootdir(struct user *u) { return u->u_rdir ? u->u_rdir->i_number : V7_ROOTINO; }
+static struct fs_node cwd(struct user *u) { return u->u_cdir ? inode_node(u->u_cdir) : (struct fs_node){0,V7_ROOTINO}; }
+static struct fs_node rootdir(struct user *u) { return u->u_rdir ? inode_node(u->u_rdir) : (struct fs_node){0,V7_ROOTINO}; }
 static int path_copy(uintptr_t address, char path[256])
 { return copyinstr(&proc_current()->p_vm, address, path, 256, NULL); }
-static int lookup_path(struct user *u, const char *path, v7_ino_t *ino)
-{ return v7fs_lookup_root_user(root, cwd(u), rootdir(u), path, ino, u->u_uid, u->u_gid); }
+static int lookup_path(struct user *u, const char *path, struct fs_node *ino)
+{ return namespace_lookup(cwd(u), rootdir(u), path, u->u_uid, u->u_gid, ino); }
 bool files_exec_enabled(void) { return root_exec; }
 int files_mount_root(struct v7fs *fs)
 {
@@ -132,45 +153,47 @@ int files_mount_root(struct v7fs *fs)
     if (!error) root_exec = true;
     return error;
 }
-static struct inode *cached_inode(v7_ino_t ino)
+static struct inode *cached_inode(struct fs_node ino)
 {
-    for(unsigned i=0;i<V7_NINODE;++i)if(inodes[i].i_count&&inodes[i].i_number==ino)return &inodes[i];
+    for(unsigned i=0;i<V7_NINODE;++i)if(inodes[i].i_count&&node_equal(inode_node(&inodes[i]),ino))return &inodes[i];
     return NULL;
 }
-static int text_write_check(v7_ino_t ino)
+static int text_write_check(struct fs_node ino)
 {
     struct inode *inode=cached_inode(ino);
     if(!inode||!(inode->i_flag&V7_ITEXT))return 0;
     int error=text_evict(inode);if(error)return error;
     return inode->i_count&&(inode->i_flag&V7_ITEXT)?-NX_ETXTBSY:0;
 }
-int files_image_text(v7_ino_t ino,struct exec_image *image)
+static int image_text(struct fs_node ino,struct exec_image *image)
 {
-    struct v7fs_inode disk;int error=v7fs_inode_get(root,ino,&disk);if(error)return error;
+    struct v7fs_inode disk;int error=node_inode_get(ino,&disk);if(error)return error;
     struct inode *inode=inode_get(ino,&disk);if(!inode)return -NX_ENFILE;
     error=text_acquire(inode,image->text,&image->owner);
     (void)files_inode_put(inode);return error;
 }
+int files_image_text(v7_ino_t ino,struct exec_image *image)
+{ return image_text((struct fs_node){0,ino},image); }
 int files_load_exec(const char *path, const struct exec_args *args, struct exec_image *image)
 {
     if (!root_exec || !proc_current()) return -NX_ENODEV;
     struct user *u = proc_current()->p_user;
-    v7_ino_t ino;
+    struct fs_node ino;
     int error = lookup_path(u, path, &ino);
     if (error) return error;
     struct v7fs_inode node;
-    error = v7fs_inode_get(root, ino, &node);
+    error = node_inode_get(ino, &node);
     if (error) return error;
     /* Check access using the caller's credentials, before any set-ID change. */
     if ((node.mode & V7_IFMT) != V7_IFREG || !(node.mode & 0111) ||
         !v7fs_access(&node, u->u_uid, u->u_gid, 1)) return -NX_EACCES;
-    error = elf_load_inode(root, ino, args, image);
-    if (!error) error=files_image_text(ino,image);
+    error = elf_load_inode(node_volume(ino), ino.ino, args, image);
+    if (!error) error=image_text(ino,image);
     if (error) { exec_image_release(image); return error; }
     image->mode=node.mode; image->uid=node.uid; image->gid=node.gid;
     return error;
 }
-static int parent_path(struct user *u, const char *path, v7_ino_t *parent, char name[V7_DIRSIZ])
+static int parent_path(struct user *u, const char *path, struct fs_node *parent, char name[V7_DIRSIZ])
 {
     char prefix[256]; unsigned length = 0, split = 0;
     while (path[length]) { if (path[length] == '/') split = length + 1; ++length; }
@@ -183,7 +206,7 @@ static int parent_path(struct user *u, const char *path, v7_ino_t *parent, char 
     int error = lookup_path(u, prefix, parent);
     if (error) return error;
     struct v7fs_inode dir;
-    error = v7fs_inode_get(root, *parent, &dir);
+    error = node_inode_get(*parent, &dir);
     if (error) return error;
     if ((dir.mode & V7_IFMT) != V7_IFDIR) return -NX_ENOTDIR;
     return v7fs_access(&dir, u->u_uid, u->u_gid, 3) ? 0 : -NX_EACCES;
@@ -192,32 +215,32 @@ int files_core_begin(struct inode **result)
 {
     *result=NULL;
     if(!root||!proc_current())return -NX_ENODEV;
-    if(root->read_only)return -NX_EROFS;
     struct user *u=proc_current()->p_user;
     if(u->u_uid!=u->u_ruid||u->u_gid!=u->u_rgid)return -NX_EPERM;
-    v7_ino_t ino;int error=lookup_path(u,"core",&ino);
+    struct fs_node ino;int error=lookup_path(u,"core",&ino);
     if(error==-NX_ENOENT){
-        v7_ino_t parent;char name[V7_DIRSIZ];
+        struct fs_node parent;char name[V7_DIRSIZ];
         error=parent_path(u,"core",&parent,name);
         bool free=false;for(unsigned i=0;i<V7_NINODE;++i)free|=!inodes[i].i_count;
         if(!error&&!free)error=-NX_ENFILE;
-        if(!error)error=v7fs_create(root,parent,name,0666&~u->u_cmask,u->u_uid,u->u_gid,&ino);
+        if(!error){ino.dev=parent.dev;error=v7fs_create(node_volume(parent),parent.ino,name,0666&~u->u_cmask,u->u_uid,u->u_gid,&ino.ino);}
     }
     struct v7fs_inode disk;
-    if(!error)error=v7fs_inode_get(root,ino,&disk);
+    if(!error && node_volume(ino)->read_only)error=-NX_EROFS;
+    if(!error)error=node_inode_get(ino,&disk);
     if(!error&&(disk.mode&V7_IFMT)!=V7_IFREG)error=-NX_EACCES;
     if(!error)error=text_write_check(ino);
     if(!error&&!v7fs_access(&disk,u->u_uid,u->u_gid,2))error=-NX_EACCES;
     if(error)return error;
     struct inode *inode=inode_get(ino,&disk);if(!inode)return -NX_ENFILE;
-    error=v7fs_truncate(root,ino);
+    error=v7fs_truncate(node_volume(ino),ino.ino);
     if(error){(void)files_inode_put(inode);return error;}
     *result=inode;return 0;
 }
 int files_core_write(struct inode *inode,uint64_t offset,const void *bytes,size_t size)
 {
     if(!valid_inode(inode)||offset>INT64_MAX)return -NX_EINVAL;
-    size_t done=0;int error=v7fs_write(root,inode->i_number,(int64_t)offset,bytes,size,&done);
+    size_t done=0;int error=v7fs_write(node_volume(inode_node(inode)),inode->i_number,(int64_t)offset,bytes,size,&done);
     return error?error:done!=size?-NX_EIO:0;
 }
 static int open_path(struct user *u, uintptr_t address, uint64_t flags, uint64_t mode)
@@ -229,34 +252,34 @@ static int open_path(struct user *u, uintptr_t address, uint64_t flags, uint64_t
     char path[256]; int error = path_copy(address, path); if (error) return error;
     if (!root) return -NX_ENODEV;
     struct file *f = file_alloc(); if (!f) return -NX_ENFILE;
-    v7_ino_t ino;
+    struct fs_node ino;
     error = lookup_path(u, path, &ino);
     bool created = false;
     if (error == -NX_ENOENT && (flags & NX_O_CREAT)) {
-        v7_ino_t parent; char name[V7_DIRSIZ];
+        struct fs_node parent; char name[V7_DIRSIZ];
         error = parent_path(u, path, &parent, name);
         bool available = false;
         for (unsigned i = 0; i < V7_NINODE; ++i) available |= !inodes[i].i_count;
         if (!error && !available) error = -NX_ENFILE;
-        if (!error) error = v7fs_create(root, parent, name, mode & ~u->u_cmask & 0777, u->u_uid, u->u_gid, &ino);
+        if (!error){ino.dev=parent.dev; error = v7fs_create(node_volume(parent), parent.ino, name, mode & ~u->u_cmask & 0777, u->u_uid, u->u_gid, &ino.ino);}
         created = !error;
     } else if (!error && (flags & NX_O_CREAT) && (flags & NX_O_EXCL)) error = -NX_EEXIST;
     struct v7fs_inode disk={0};
-    if (!error) error = v7fs_inode_get(root, ino, &disk);
+    if (!error) error = node_inode_get(ino, &disk);
     unsigned access = flags & NX_O_ACCMODE;
     if(!error&&access&&(disk.mode&V7_IFMT)==V7_IFREG){
-        error=root->read_only?-NX_EROFS:text_write_check(ino);
+        error=node_volume(ino)->read_only?-NX_EROFS:text_write_check(ino);
     }
     if (!error && !created && !v7fs_access(&disk, u->u_uid, u->u_gid, access == 0 ? 4 : access == 1 ? 2 : 6)) error = -NX_EACCES;
     if (!error && access && (disk.mode & V7_IFMT) == V7_IFDIR) error = -NX_EISDIR;
     unsigned type = error ? 0 : disk.mode & V7_IFMT;
     if (!error && type != V7_IFREG && type != V7_IFDIR && type != V7_IFCHR && type != V7_IFBLK) error = -NX_ENODEV;
-    if (!error && access && type == V7_IFREG && root->read_only) error = -NX_EROFS;
+    if (!error && access && type == V7_IFREG && node_volume(ino)->read_only) error = -NX_EROFS;
     if (!error) {
         f->f_inode = inode_get(ino, &disk);
         if (!f->f_inode) error = -NX_ENFILE;
     }
-    if (!error && (flags & NX_O_TRUNC) && type == V7_IFREG) error = v7fs_truncate(root, ino);
+    if (!error && (flags & NX_O_TRUNC) && type == V7_IFREG) error = v7fs_truncate(node_volume(ino), ino.ino);
     bool storage = type == V7_IFBLK || (type == V7_IFCHR && (disk.addr[0] >> 8) == NX_RAW_DISK_MAJOR);
     if(!error && storage){
         struct storage_handle *handle;
@@ -340,7 +363,7 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
         bool raw=(f->f_inode->i_mode & V7_IFMT)==V7_IFCHR;
         if(raw && count && ((address|count)&1))return -NX_EFAULT;
         if(!count)return 0;
-        int error=v7fs_touch(root,f->f_inode->i_number,write?V7FS_MTIME|V7FS_CTIME:V7FS_ATIME);
+        int error=v7fs_touch(node_volume(inode_node(f->f_inode)),f->f_inode->i_number,write?V7FS_MTIME|V7FS_CTIME:V7FS_ATIME);
         if(error)return error;
         uint64_t start=raw?((uint64_t)f->f_offset & ~(uint64_t)(BLOCK_SIZE-1)):(uint64_t)f->f_offset;
         size_t done=0;uint8_t bytes[BLOCK_SIZE];
@@ -358,18 +381,18 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
         /* V7 readi/writei also stamp character-device inodes. Pipes have no
          * persistent inode. Keep the established zero-count TTY behavior. */
         if (write || count) {
-            int error = v7fs_touch(root, f->f_inode->i_number,
+            int error = v7fs_touch(node_volume(inode_node(f->f_inode)), f->f_inode->i_number,
                 write ? V7FS_MTIME | V7FS_CTIME : V7FS_ATIME);
             if (error) return error;
         }
         return tty_io(f->f_private, vm, address, count, write);
     }
     struct v7fs_inode inode;
-    int error = v7fs_inode_get(root, f->f_inode->i_number, &inode);
+    int error = node_inode_get(inode_node(f->f_inode), &inode);
     if (error) return error;
     if ((inode.mode & V7_IFMT) == V7_IFCHR && inode.addr[0] == NX_NULL_DEV) {
         if (write || count) {
-            error = v7fs_touch(root, inode.number, write ? V7FS_MTIME | V7FS_CTIME : V7FS_ATIME);
+            error = v7fs_touch(node_volume(inode_node(f->f_inode)), inode.number, write ? V7FS_MTIME | V7FS_CTIME : V7FS_ATIME);
             if (error) return error;
         }
         return write ? (int64_t)count : 0;
@@ -381,9 +404,9 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
         size_t moved = 0;
         if (write) {
             if (copyin(vm, address + done, bytes, n)) panic("file input mapping changed");
-            error = v7fs_write(root, inode.number, f->f_offset, bytes, n, &moved);
+            error = v7fs_write(node_volume(inode_node(f->f_inode)), inode.number, f->f_offset, bytes, n, &moved);
         } else {
-            error = v7fs_read(root, inode.number, f->f_offset, bytes, n, &moved);
+            error = v7fs_read(node_volume(inode_node(f->f_inode)), inode.number, f->f_offset, bytes, n, &moved);
             if (moved && copyout(vm, address + done, bytes, moved)) panic("file output mapping changed");
         }
         done += moved; f->f_offset += moved;
@@ -397,35 +420,58 @@ static int64_t seek(struct file *f, int64_t offset, uint64_t whence)
     int64_t base = 0;
     if (whence == NX_SEEK_CUR) base = f->f_offset;
     else if (whence == NX_SEEK_END) {
-        struct v7fs_inode inode; int error = v7fs_inode_get(root, f->f_inode->i_number, &inode);
+        struct v7fs_inode inode; int error = node_inode_get(inode_node(f->f_inode), &inode);
         if (error) return error;
         base = inode.size;
     } else if (whence != NX_SEEK_SET) return -NX_EINVAL;
     if (offset < -base || offset > INT64_MAX - base) return -NX_EINVAL;
     f->f_offset = base + offset; return f->f_offset;
 }
-static int stat_inode(v7_ino_t ino, struct nx_stat *st)
+static int stat_inode(struct fs_node ino, struct nx_stat *st)
 {
-    struct v7fs_inode i; int error = v7fs_inode_get(root, ino, &i); if (error) return error;
-    *st = (struct nx_stat){.ino = ino, .mode = i.mode, .nlink = i.nlink, .uid = i.uid, .gid = i.gid,
+    struct v7fs_inode i; int error = node_inode_get(ino, &i); if (error) return error;
+    *st = (struct nx_stat){.dev=ino.dev, .ino = ino.ino, .mode = i.mode, .nlink = i.nlink, .uid = i.uid, .gid = i.gid,
         .rdev = ((i.mode & V7_IFMT) == V7_IFCHR || (i.mode & V7_IFMT) == V7_IFBLK) ? i.addr[0] : 0,
         .size = i.size, .atime = i.atime, .mtime = i.mtime, .ctime = i.ctime}; return 0;
+}
+static int mount_path(struct user *u,const uintptr_t args[6])
+{
+    if(u->u_uid)return -NX_EPERM;
+    if(!root)return -NX_ENODEV;
+    char device_path[256],point_path[256];
+    int error=path_copy(args[0],device_path);if(error)return error;
+    struct fs_node device;error=lookup_path(u,device_path,&device);if(error)return error;
+    struct v7fs_inode disk;error=node_inode_get(device,&disk);if(error)return error;
+    if((disk.mode&V7_IFMT)!=V7_IFBLK)return -NX_ENOTBLK;
+    v7_dev_t dev=disk.addr[0];
+    if(v7_major(dev)!=NX_BLOCK_DISK_MAJOR || v7_minor(dev)>=STORAGE_SLOTS)return -NX_ENXIO;
+    error=path_copy(args[1],point_path);if(error)return error;
+    struct fs_node point;error=lookup_path(u,point_path,&point);if(error)return error;
+    error=node_inode_get(point,&disk);if(error)return error;
+    /* V7 accepts ordinary files as well as directories as mount points. */
+    if((disk.mode&V7_IFMT)!=V7_IFREG && (disk.mode&V7_IFMT)!=V7_IFDIR)return -NX_EBUSY;
+    struct inode *pin=inode_get(point,&disk);if(!pin)return -NX_ENFILE;
+    if(pin->i_count!=1)error=-NX_EBUSY;
+    else error=namespace_mount(dev,point,pin,!!(args[2]&1));
+    if(error)(void)files_inode_put(pin);
+    return error;
 }
 int64_t files_syscall(uint64_t number, const uintptr_t args[6])
 {
     struct proc *p = proc_current(); struct user *u = p->p_user;
     uint64_t fd = args[0];
-    if (number == NX_SYS_SYNC) return root ? v7fs_sync(root) : 0; /* Write-through cache plus V7 superblock time. */
+    if(number==NX_SYS_MOUNT)return mount_path(u,args);
+    if (number == NX_SYS_SYNC) return namespace_sync(); /* Write-through cache plus V7 superblock time. */
     if (number == NX_SYS_MKNOD) {
         if (u->u_uid) return -NX_EPERM;
         if (args[1] > UINT16_MAX || args[2] > UINT16_MAX) return -NX_EINVAL;
-        char path[256], name[V7_DIRSIZ]; v7_ino_t parent, ino;
+        char path[256], name[V7_DIRSIZ]; struct fs_node parent;v7_ino_t ino;
         int error = path_copy(args[0], path); if (error) return error;
         if (!root) return -NX_ENODEV;
         error = parent_path(u, path, &parent, name);
         uint16_t mode = args[1];
         if (!(mode & V7_IFMT)) mode |= V7_IFREG;
-        return error ? error : v7fs_mknod(root, parent, name, mode & ~(u->u_cmask & 0777), u->u_uid, u->u_gid, args[2], &ino);
+        return error ? error : v7fs_mknod(node_volume(parent), parent.ino, name, mode & ~(u->u_cmask & 0777), u->u_uid, u->u_gid, args[2], &ino);
     }
     if (number == NX_SYS_ACCESS || number == NX_SYS_CHMOD || number == NX_SYS_CHOWN || number == NX_SYS_UTIME) {
         char path[256]; int error = path_copy(args[0], path); if (error) return error;
@@ -433,13 +479,13 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
         bool access = number == NX_SYS_ACCESS;
         if (access && args[1] > 7) return -NX_EINVAL;
         if (number == NX_SYS_CHOWN && (args[1] > UINT16_MAX || args[2] > UINT16_MAX)) return -NX_EINVAL;
-        v7_ino_t ino;
-        error = v7fs_lookup_root_user(root, cwd(u), rootdir(u), path, &ino, access ? u->u_ruid : u->u_uid, access ? u->u_rgid : u->u_gid);
+        struct fs_node ino;
+        error = namespace_lookup(cwd(u), rootdir(u), path, access ? u->u_ruid : u->u_uid, access ? u->u_rgid : u->u_gid, &ino);
         struct v7fs_inode disk;
-        if (!error) error = v7fs_inode_get(root, ino, &disk);
+        if (!error) error = node_inode_get(ino, &disk);
         if (error) return error;
         if (access) {
-            if ((args[1] & 2) && root->read_only) return -NX_EROFS;
+            if ((args[1] & 2) && node_volume(ino)->read_only) return -NX_EROFS;
             if(args[1]&2){error=text_write_check(ino);if(error)return error;}
             return v7fs_access(&disk, u->u_ruid, u->u_rgid, args[1]) ? 0 : -NX_EACCES;
         }
@@ -454,9 +500,9 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
             if (times[0] < 0 || times[0] > UINT32_MAX || times[1] < 0 || times[1] > UINT32_MAX) return -NX_EINVAL;
             disk.atime = times[0]; disk.mtime = times[1];
         }
-        error = v7fs_metadata(root, &disk);
+        error = v7fs_metadata(node_volume(ino), &disk);
         if (!error) for (unsigned i = 0; i < V7_NINODE; ++i)
-            if (inodes[i].i_count && inodes[i].i_number == ino) {
+            if (inodes[i].i_count && node_equal(inode_node(&inodes[i]),ino)) {
                 inodes[i].i_mode = disk.mode; inodes[i].i_uid = disk.uid; inodes[i].i_gid = disk.gid;
             }
         if(!error&&number==NX_SYS_CHMOD&&!(disk.mode&V7_ISVTX)){
@@ -472,41 +518,45 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
         if (number == NX_SYS_CHROOT && u->u_uid) return -NX_EPERM;
         char path[256]; int error = path_copy(args[0], path); if (error) return error;
         if (!root) return -NX_ENODEV;
-        v7_ino_t ino;
+        struct fs_node ino;
         if (number == NX_SYS_UNLINK) {
-            v7_ino_t parent; char name[V7_DIRSIZ];
+            struct fs_node parent; char name[V7_DIRSIZ];
             error = parent_path(u, path, &parent, name);
             if(!error){
                 struct v7fs_inode disk;
-                error=lookup_path(u,path,&ino);
-                if(!error)error=v7fs_inode_get(root,ino,&disk);
+                ino.dev=parent.dev;
+                char component[V7_DIRSIZ+1]={0};for(unsigned i=0;i<V7_DIRSIZ;++i)component[i]=name[i];
+                error=v7fs_lookup_root_user(node_volume(parent),parent.ino,0,component,&ino.ino,u->u_uid,u->u_gid);
+                if(!error && namespace_mountpoint(ino))error=-NX_EBUSY;
+                if(!error)error=node_inode_get(ino,&disk);
                 if(!error){
                     struct inode *inode=cached_inode(ino);
                     if(inode)error=text_evict(inode);
                     if(!error&&disk.nlink==1&&inode&&inode->i_count&&(inode->i_flag&V7_ITEXT))error=-NX_ETXTBSY;
                 }
             }
-            if (!error) error = v7fs_unlink_privileged(root, parent, name, &ino, !u->u_uid);
+            if (!error) error = v7fs_unlink_privileged(node_volume(parent), parent.ino, name, &ino.ino, !u->u_uid);
             if (error) return error;
-            for (unsigned i = 0; i < V7_NINODE; ++i) if (inodes[i].i_count && inodes[i].i_number == ino) return 0;
-            struct v7fs_inode disk; error = v7fs_inode_get(root, ino, &disk);
-            return error ? error : disk.nlink ? 0 : v7fs_release_inode(root, ino);
+            for (unsigned i = 0; i < V7_NINODE; ++i) if (inodes[i].i_count && node_equal(inode_node(&inodes[i]),ino)) return 0;
+            struct v7fs_inode disk; error = node_inode_get(ino, &disk);
+            return error ? error : disk.nlink ? 0 : v7fs_release_inode(node_volume(ino), ino.ino);
         }
         error = lookup_path(u, path, &ino); if (error) return error;
         if (number == NX_SYS_LINK) {
             struct v7fs_inode source;
-            error = v7fs_inode_get(root, ino, &source); if (error) return error;
+            error = node_inode_get(ino, &source); if (error) return error;
             if ((source.mode & V7_IFMT) == V7_IFDIR && u->u_uid) return -NX_EPERM;
-            char target[256], name[V7_DIRSIZ]; v7_ino_t parent;
+            char target[256], name[V7_DIRSIZ]; struct fs_node parent;
             error = path_copy(args[1], target); if (error) return error;
             error = parent_path(u, target, &parent, name);
-            return error ? error : v7fs_link_privileged(root, ino, parent, name, !u->u_uid);
+            if(!error && ino.dev!=parent.dev)error=-NX_EXDEV;
+            return error ? error : v7fs_link_privileged(node_volume(ino), ino.ino, parent.ino, name, !u->u_uid);
         }
         if (number == NX_SYS_STAT) {
             struct nx_stat st; error = stat_inode(ino, &st);
             return error ? error : copyout(&p->p_vm, args[1], &st, sizeof(st));
         }
-        struct v7fs_inode disk; error = v7fs_inode_get(root, ino, &disk);
+        struct v7fs_inode disk; error = node_inode_get(ino, &disk);
         if (error) return error;
         if ((disk.mode & V7_IFMT) != V7_IFDIR) return -NX_ENOTDIR;
         if (!v7fs_access(&disk, u->u_uid, u->u_gid, 1)) return -NX_EACCES;
@@ -557,7 +607,7 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
     if (number == NX_SYS_FSTAT) {
         struct nx_stat st = {0}; int error = 0;
         if (f->f_flag & V7_FPIPE) { st.mode = 0010000 | 0600; st.size = ((struct pipe_buffer *)f->f_private)->size; st.nlink = 1; }
-        else error = stat_inode(f->f_inode->i_number, &st);
+        else error = stat_inode(inode_node(f->f_inode), &st);
         return error ? error : copyout(&p->p_vm, args[1], &st, sizeof(st));
     }
     return -NX_ENOSYS;

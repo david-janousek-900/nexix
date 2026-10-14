@@ -81,7 +81,9 @@
         "kernel/v7/files.c",
         "kernel/block.c",
         "kernel/v7/storage.c",
-        "kernel/include/storage.h"
+        "kernel/include/storage.h",
+        "kernel/v7/namespace.c",
+        "kernel/include/namespace.h"
       ],
       "tasks": [
         12,
@@ -95,7 +97,7 @@
         54,
         55
       ],
-      "note": "V7 disk records, directory lookup, inode/cache, text exclusion and block/raw device routing are implemented; mounted-device writes are guarded, multiple mounts remain pending."
+      "note": "V7 disk records, inode/cache, text exclusion, block/raw devices and multi-volume mount namespace are implemented; user unmount remains task 55."
     },
     {
       "id": "process",
@@ -467,7 +469,8 @@
         "kernel/include/v7/core.h",
         "kernel/include/v7/disk.h",
         "kernel/include/v7/types.h",
-        "kernel/include/v7/fs.h"
+        "kernel/include/v7/fs.h",
+        "kernel/include/namespace.h"
       ],
       "tasks": [
         7,
@@ -485,7 +488,7 @@
         74,
         363
       ],
-      "note": "Native LP64 runtime and explicit V7 disk encodings exist. Every exported/internal field and consumer contract requires task 39 audit; absent mpx/packet/mount/accounting structures follow feature owners."
+      "note": "Native LP64 runtime, explicit V7 disk encodings and private mount identities exist. Missing mpx/packet/accounting structures follow feature owners; public consumer formats follow the header audit."
     }
   ],
   "syscalls": [
@@ -661,7 +664,7 @@
       "number": 21,
       "routine": "smount",
       "label": "mount",
-      "status": "pending",
+      "status": "native_path",
       "task": 54,
       "native": "kernel/v7/syscall.c"
     },
