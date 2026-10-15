@@ -75,8 +75,8 @@ heap shrinking and exit release the memory normally: profiling pins no pages,
 allocates no kernel buffers and holds no filesystem references. Removing a
 buffer mapping disables profiling at the next attempted update.
 
-Task 60 still owns mcount, monitor, profiling startup objects and native profile
-file records. The prof command and symbol interpretation remain later consumer
+[Task 60](monitor.md) implements mcount, monitor, profiling startup objects and
+native profile file records. The prof command and symbol interpretation remain later consumer
 tasks. Syscall 44 provides sampling into memory; it does not emit mon.out or
 profile the kernel itself. The public ABI version and existing records are
 unchanged by this additive syscall implementation.

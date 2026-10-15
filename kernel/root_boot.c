@@ -66,6 +66,8 @@ extern const uint8_t _binary_build_setid_probe_elf_start[], _binary_build_setid_
 extern const uint8_t _binary_build_text_probe_elf_start[], _binary_build_text_probe_elf_end[];
 extern const uint8_t _binary_build_core_probe_elf_start[], _binary_build_core_probe_elf_end[];
 extern const uint8_t _binary_build_trace_image_elf_start[], _binary_build_trace_image_elf_end[];
+extern const uint8_t _binary_build_monitor_fixture_elf_start[], _binary_build_monitor_fixture_elf_end[];
+extern const uint8_t _binary_build_fmonitor_fixture_elf_start[], _binary_build_fmonitor_fixture_elf_end[];
 extern const uint8_t _binary_build_namespace_img_start[],_binary_build_namespace_img_end[];
 static uint8_t namespace_bytes[7][256*BLOCK_SIZE];
 static struct ramdisk namespace_devices[7];
@@ -98,7 +100,7 @@ static v7_pid_t held_owner;
 static v7_pid_t trace_orphan;
 bool root_exec_test_gate(struct interrupt_frame *frame)
 {
-    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x915)return false;
+    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x916)return false;
     struct proc *p=proc_current();
     if(frame->rax==0x900){
         frame->rax=(uint64_t)-NX_ENOSYS;return true; /* Retired tracing test hook. */
@@ -204,6 +206,16 @@ bool root_exec_test_gate(struct interrupt_frame *frame)
         if(p->p_user->u_uid)panic("unprivileged profile sleep fixture");
         v7_time_t start=p->p_user->u_stime;proc_delay(3);
         frame->rax=p->p_user->u_stime-start;return true;
+    }else if(frame->rax==0x916){
+        if(p->p_user->u_uid||frame->rdi>1)panic("invalid monitor fixture install");
+        const uint8_t *start=frame->rdi?_binary_build_fmonitor_fixture_elf_start:_binary_build_monitor_fixture_elf_start;
+        const uint8_t *end=frame->rdi?_binary_build_fmonitor_fixture_elf_end:_binary_build_monitor_fixture_elf_end;
+        v7_ino_t directory,ino;size_t done;const char name[V7_DIRSIZ]="monitor";
+        size_t size=(uintptr_t)end-(uintptr_t)start;
+        if(v7fs_lookup(&root_volume,V7_ROOTINO,"/tmp",&directory)||
+           v7fs_create(&root_volume,directory,name,V7_IFREG|0755,0,0,&ino)||
+           v7fs_write(&root_volume,ino,0,start,size,&done)||done!=size)
+            panic("cannot install monitor fixture");
     }else return false;
     frame->rax=0;return true;
 }

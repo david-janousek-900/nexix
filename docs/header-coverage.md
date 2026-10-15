@@ -100,4 +100,8 @@ RFLAGS write interface. Snapshot size, offsets and ABI version remain unchanged.
 
 Task 59 adds the native `profil` declaration to `<unistd.h>`: 64-bit buffer
 length/PC offset, 16-bit counters and V7 fixed-point scale. No record layout
-or ABI version changes; profile-file/startup interfaces remain task 60.
+or ABI version changes; task 60 supplies native profile-file/startup interfaces.
+
+Task 60 adds `<mon.h>` and version-1 native mon.out header/call records. All
+field offsets are independently checked by test-header-abi. Historical binary
+records are not used as native overlays; prof decoding remains task 257.

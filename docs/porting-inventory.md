@@ -186,7 +186,7 @@ xsend/xget/enroll → libmp; beautify → libln; spell hashes → spellin and di
 Host tools bootstrap generator cycles; native compiler retargeting is still required.
 
 Kernel adaptations are required for independent TTYs, authenticated credentials,
-profiling startup/monitor records and remaining device interfaces.
+remaining device interfaces. Profiling sampling/startup/monitor records exist.
 Kernel exit accounting and parent/child tracing with native register access,
 debugger writes, single-step and profil sampling are implemented.
 Block/raw files and the multi-volume mount/unmount namespace are implemented.
@@ -205,7 +205,7 @@ their sources alone does not provide a working native equivalent.
 | `multi-tty` | partial | Current UART and line discipline provide one shared COM1 console; independent COM2 and login terminals are pending. |
 | `accounting` | partial | Kernel exit accounting, native records and privileged acct control exist; utmp/wtmp are packaged, login integration and accton/sa command ports remain pending. |
 | `kernel-information` | missing | Historical kernel-memory/symbol consumers need a native information interface. |
-| `tracing-profiling` | partial | Native tracing, debugger writes/single-step and profil sampling exist. Profiling startup/monitor records, symbol consumers and the adb/prof command ports remain pending. |
+| `tracing-profiling` | partial | Native tracing, debugger writes/single-step, profil sampling and monitor/mcount with profiling startup/records exist. Symbol consumers and the adb/prof command ports remain pending. |
 | `raw-storage` | partial | Block/raw device files and multi-volume mount/umount routing exist; mounted-device writes are guarded, storage-administration command ports remain pending. |
 | `historical-devices` | pending_assessment | PDP-11 disks/tapes, plotters and printer protocols require native equivalents or individually documented exceptions. |
 | `elf-toolchain` | missing | Retarget retained compiler/assembler/linker and archive/symbol utilities to native x86_64 ELF. |

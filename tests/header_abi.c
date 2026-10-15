@@ -1,5 +1,6 @@
 /* Independently specified LP64 record contracts, shared kernel/libc boundaries. */
 #include <sys/types.h>
+#include <mon.h>
 #include <sys/acct.h>
 #include <sys/stat.h>
 #include <sys/dir.h>
@@ -17,6 +18,14 @@
 #include "v7/types.h"
 #define SIZE(t,n) _Static_assert(sizeof(t)==(n), #t " size")
 #define FIELD(t,f,n) _Static_assert(offsetof(t,f)==(n), #t "." #f " offset")
+SIZE(struct nx_mon_header,64); SIZE(struct nx_mon_call,16);
+FIELD(struct nx_mon_header,version,8); FIELD(struct nx_mon_header,machine,12);
+FIELD(struct nx_mon_header,header_size,14); FIELD(struct nx_mon_header,low_pc,16);
+FIELD(struct nx_mon_header,high_pc,24); FIELD(struct nx_mon_header,tick_hz,32);
+FIELD(struct nx_mon_header,scale,36); FIELD(struct nx_mon_header,call_capacity,40);
+FIELD(struct nx_mon_header,call_used,44); FIELD(struct nx_mon_header,histogram_bytes,48);
+FIELD(struct nx_mon_header,call_record_size,56); FIELD(struct nx_mon_header,counter_size,60);
+FIELD(struct nx_mon_header,reserved,62); FIELD(struct nx_mon_call,count,8);
 SIZE(struct acct,40); SIZE(struct nx_acct,40); SIZE(comp_t,2);
 FIELD(struct acct,ac_comm,0); FIELD(struct acct,ac_utime,10);
 FIELD(struct acct,ac_stime,12); FIELD(struct acct,ac_etime,14);

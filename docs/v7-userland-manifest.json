@@ -170,7 +170,7 @@
       "id": "tracing-profiling",
       "category": "kernel",
       "status": "partial",
-      "description": "Native tracing, debugger writes/single-step and profil sampling exist. Profiling startup/monitor records, symbol consumers and the adb/prof command ports remain pending.",
+      "description": "Native tracing, debugger writes/single-step, profil sampling and monitor/mcount with profiling startup/records exist. Symbol consumers and the adb/prof command ports remain pending.",
       "evidence": [
         "reference/v7/usr/src/cmd/adb/runpcs.c",
         "reference/v7/usr/src/cmd/prof.c",
@@ -180,7 +180,11 @@
         "docs/debugger.md",
         "kernel/v7/profile.c",
         "libc/profil.c",
-        "docs/profiling.md"
+        "docs/profiling.md",
+        "libc/monitor.c",
+        "libc/arch/x86_64/mcount.S",
+        "libc/arch/x86_64/mcrt0.S",
+        "docs/monitor.md"
       ],
       "locations": []
     },

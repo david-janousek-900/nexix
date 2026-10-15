@@ -400,3 +400,13 @@ charges, fork/private counters, failed/successful exec behavior and quiet
 fault disabling, followed by existing cleanup/boot markers. Private fixture
 hooks provide scale inspection, sample injection and kernel-residence/sleep
 intervals only while root-exec tests are active. See [profiling.md](profiling.md).
+
+## Task 60 monitor runtime and profiling startup
+
+`make test-monitor` combines host scale/format/capacity/error fixtures, native
+16/128 MiB QEMU runs and inventory/header/export checks. Required marker
+`NEXIX_MONITOR_OK` covers real -pg instrumentation, mcrt0/fmcrt0, precise call
+counts and histogram samples, integer/FP/variadic register preservation,
+manual monitor, versioned file decoding, stdio/atexit ordering and fork/exec/
+_exit behavior. Existing root resource checks remain active. See
+[monitor.md](monitor.md) for the native call convention and output records.

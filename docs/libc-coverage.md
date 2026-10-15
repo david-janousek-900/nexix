@@ -113,11 +113,12 @@ Existing VM, inode, block and descriptor cleanup assertions remain active.
 
 Process-pipe helpers, tty/account lookup and private-FILE source adapters have
 native implementations under their completed tasks. Remaining prerequisites
-include profiling startup/monitor, ELF symbol lookup and consumer-owned headers.
+include ELF symbol lookup and consumer-owned headers.
 Kernel accounting, mount/unmount, block/raw files and task 57 tracing stops with
 native register/FPU access have working wrappers. Task 58 adds debugger memory
-writes and single-step; task 59 adds profil sampling. Profiling startup/monitor,
-kernel information and remaining device capabilities retain their roadmap owners. ENOSYS stubs do not complete a port.
+writes and single-step; tasks 59–60 add profil sampling, monitor/mcount and
+profiling startup objects. Kernel information and remaining device capabilities
+retain their roadmap owners. ENOSYS stubs do not complete a port.
 
 Task 36 (previously 25.8: buffered stdio and setbuf) is implemented. This completes that
 task's stream behavior and regression coverage; the remaining kernel/libc

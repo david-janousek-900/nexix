@@ -55,7 +55,7 @@ not be treated as missing required features merely because they were stubs.
 | 22 | umount | 55 |
 | 26 | ptrace | 57, then 58 |
 | 35 | ftime subsecond snapshot | 363 |
-| 44 | profil sampling implemented | 59; startup/monitor follows in 60 |
+| 44 | profil sampling implemented | 59; native startup/monitor implemented by 60 |
 | 51 | acct | 56 |
 | 52 | phys | 64 |
 | 53 | lock | 63 |
@@ -87,4 +87,4 @@ needed for this audit-only change. Existing host unit tests are run as a baselin
 
 Task 59 implements [native V7 profil sampling](profiling.md), including user
 PIT samples and per-process system-time charges at trap return. Profiling
-startup/monitor records remain task 60; the kernel itself is not profiled.
+startup/monitor records are implemented by task 60; the kernel itself is not profiled.
