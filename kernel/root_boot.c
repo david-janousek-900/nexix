@@ -7,6 +7,7 @@
 #include "namespace.h"
 #include "clock.h"
 #include <nexix/errno.h>
+#include <nexix/signal.h>
 extern const uint8_t _binary_build_root_img_start[], _binary_build_root_img_end[];
 static uint8_t root_bytes[1024 * V7_BSIZE];
 static struct ramdisk root_device;
@@ -92,12 +93,13 @@ static bool exec_testing;
 static uintptr_t held_pages[32768];
 static unsigned held_count;
 static v7_pid_t held_owner;
+static v7_pid_t trace_orphan;
 bool root_exec_test_gate(struct interrupt_frame *frame)
 {
-    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x90f)return false;
+    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x910)return false;
     struct proc *p=proc_current();
     if(frame->rax==0x900){
-        if(frame->rdi)p->p_flag|=V7_STRC;else p->p_flag&=~V7_STRC;
+        frame->rax=(uint64_t)-NX_ENOSYS;return true; /* Retired tracing test hook. */
     }else if(frame->rax==0x901){frame->rax=p->p_uid;return true;}
     else if(frame->rax==0x902){
         if(held_count||frame->rdi>16)panic("invalid exec fault injection");
@@ -163,6 +165,21 @@ bool root_exec_test_gate(struct interrupt_frame *frame)
     }else if(frame->rax==0x90f){
         if(p->p_user->u_uid||frame->rdi>127)panic("invalid accounting write fault");
         namespace_all_write_faults=frame->rdi;
+    }else if(frame->rax==0x910){
+        /* Register exactly one stopped grandchild for bootstrap reap checks.
+         * No process state is changed: actual debugger exit must release it. */
+        if(p->p_user->u_uid||trace_orphan)panic("invalid trace orphan fixture");
+        const struct proc *child=NULL,*debugger=NULL;
+        for(unsigned i=1;i<V7_NPROC;++i){
+            const struct proc *q=&proc_table()[i];
+            if(q->p_stat==V7_SSTOP&&q->p_pid==(int64_t)frame->rdi)child=q;
+        }
+        if(child)for(unsigned i=1;i<V7_NPROC;++i){
+            const struct proc *q=&proc_table()[i];
+            if(q->p_stat!=V7_UNUSED&&q->p_pid==child->p_ppid&&q->p_ppid==p->p_pid)debugger=q;
+        }
+        if(!debugger)panic("trace fixture is not a stopped grandchild");
+        trace_orphan=child->p_pid;
     }else return false;
     frame->rax=0;return true;
 }
@@ -197,10 +214,14 @@ void root_exec_selftest(void)
     if(!proc_start_user(p,image.entry,image.stack))panic("cannot start root exec test");
     v7_pid_t pid=p->p_pid;exec_testing=true;proc_run();exec_testing=false;int32_t status;
     if(held_count)panic("exec fault fixture leaked pages");
-    if(proc_collect(&status)!=pid || status || proc_collect(NULL)!=-NX_ECHILD) {
+    if(proc_collect(&status)!=pid || status) {
         serial_puts("Nexix: root exec failure status=");serial_hex(status);serial_puts("\r\n");
         panic("root exec test failed");
     }
+    if(!trace_orphan||proc_collect(&status)!=trace_orphan||status!=NX_SIGINT||proc_collect(NULL)!=-NX_ECHILD)
+        panic("trace orphan release/reap failed");
+    trace_orphan=0;
+    serial_puts("NEXIX_PTRACE_ORPHAN_OK\r\n");
     if(files_live() || tty_open_count() || page_free_count()!=pages ||
         v7_disk_u32(root_volume.super.tfree)!=blocks ||
         v7_disk_u16(root_volume.super.tinode)!=inodes)

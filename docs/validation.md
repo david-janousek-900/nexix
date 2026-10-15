@@ -371,3 +371,12 @@ readonly/ENOSPC handling and resource cleanup at 16/128 MiB. Host error fixtures
 and an independent Python/readelf decoder validate the format. `make test-shell`
 checks the actual V7 core message and file on disposable RAM/IDE roots at both
 memory sizes. See [core format and policy](core-dumps.md).
+
+## Task 57 tracing acceptance
+
+`make test-ptrace` runs disposable-root tracing acceptance at 16/128 MiB and
+the inventory, header and libc export audits. See [ptrace.md](ptrace.md) for
+the request/register ABI and exercised cases. Markers `NEXIX_PTRACE_OK` and
+`NEXIX_PTRACE_ORPHAN_OK` require both user debugger operations and bootstrap
+verification of a stopped orphan's release/reap, followed by the existing
+root cleanup and boot markers. `make test-unit` supplies the host baseline.

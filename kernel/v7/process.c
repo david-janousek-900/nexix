@@ -7,6 +7,7 @@
 #include "accounting.h"
 #include "text.h"
 #include "signals.h"
+#include "ptrace.h"
 #include "exec.h"
 #include "segments.h"
 #include "serial.h"
@@ -272,6 +273,23 @@ static void switch_out(void)
     fpu_save(&current->p_fpu);
     arch_context_switch(&current->p_context, &scheduler);
 }
+void proc_trace_stop(void)
+{
+    require_locked();
+    struct proc *p=current,*parent=find_pid(p->p_ppid);
+    /* V7 cannot leave an orphan stopped under init. Bootstrap PID 0 is a
+     * valid test reaper, but cannot act as a user debugger. */
+    if(!parent||p->p_ppid<=1||parent->p_stat==V7_SZOMB)goto orphan;
+    v7_pid_t debugger=p->p_ppid;
+    p->p_stat=V7_SSTOP;p->p_flag&=~V7_SWTED;
+    proc_wakeup(parent);
+    switch_out();
+    if(p->p_trace_exit||p->p_ppid!=debugger)goto orphan;
+    return;
+orphan:
+    for(unsigned n=1;n<V7_NSIG;++n)if(p->p_sig&(1U<<(n-1)))proc_exit(n);
+    proc_exit(0);
+}
 void proc_yield(void)
 {
     uintptr_t flags = proc_irq_save();
@@ -441,7 +459,10 @@ _Noreturn void proc_exit(int32_t status)
     v7_pid_t reaper = init ? 1 : 0;
     for (unsigned i = 1; i < V7_NPROC; ++i) {
         struct proc *q = &processes[i];
-        if (q->p_stat != V7_UNUSED && q->p_ppid == p->p_pid) q->p_ppid = reaper;
+        if (q->p_stat != V7_UNUSED && q->p_ppid == p->p_pid) {
+            q->p_ppid = reaper;
+            if(q->p_stat==V7_SSTOP)q->p_stat=V7_SRUN;
+        }
     }
     if (init) proc_wakeup(init);
     struct proc *parent = find_pid(p->p_ppid);
@@ -457,6 +478,12 @@ static v7_pid_t collect(struct proc *parent, int32_t *status, bool *children)
         struct proc *p = &processes[i];
         if (p->p_stat == V7_UNUSED || p->p_ppid != parent->p_pid) continue;
         *children = true;
+        if(p->p_stat==V7_SSTOP&&!(p->p_flag&V7_SWTED)){
+            p->p_flag|=V7_SWTED;
+            unsigned n=1;while(n<V7_NSIG&&!(p->p_sig&(1U<<(n-1))))++n;
+            if(status)*status=(n<<8)|0177;
+            return p->p_pid;
+        }
         if (p->p_stat != V7_SZOMB) continue;
         if (p->p_vm.root) panic("reap before zombie resources released");
         v7_pid_t pid = p->p_pid;

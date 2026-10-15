@@ -250,8 +250,8 @@
     },
     {
       "source": "reference/v7/usr/include/sys/reg.h",
-      "status": "private_kernel",
-      "native": null,
+      "status": "native_contract",
+      "native": "libc/include/sys/ptrace.h",
       "task": 57
     },
     {

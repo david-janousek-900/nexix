@@ -87,3 +87,10 @@ Run `make TOOLCHAIN_PREFIX= test-unit test-libc test-v7` for existing disk-layou
 native libc and rebuilt V7 consumer regression tests. These validate the current
 subset; complete development-interface installation and consumer acceptance
 remain task 82, and full toolchain/distribution acceptance remains 355/359.
+
+Task 57 adapts `sys/reg.h` to `<sys/ptrace.h>` and the shared
+`struct nx_ptrace_user` contract: 688 bytes, native GPR/PC/flags/stack fields
+and a 512-byte FXSAVE64 image. Debuggers use `NX_PT_OFFSET` rather than
+historical private user-area offsets. `<sys/wait.h>` adds stopped-status
+decoders. The original `sys/user.h` and `sys/proc.h` remain private; kernel
+information consumers still belong to task 62. See [tracing](ptrace.md).

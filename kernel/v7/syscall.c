@@ -2,6 +2,7 @@
 #include "syscall.h"
 #include "clock.h"
 #include "accounting.h"
+#include "ptrace.h"
 #include "files.h"
 #include "exec.h"
 #include "process.h"
@@ -27,6 +28,8 @@ static int64_t invoke(uint64_t number, struct interrupt_frame *frame)
     case NX_SYS_CHMOD: case NX_SYS_CHOWN: case NX_SYS_ACCESS: case NX_SYS_SYNC: case NX_SYS_UTIME:
         return files_syscall(number, u->u_arg);
     case NX_SYS_ACCT: return accounting_control(u->u_arg[0]);
+    case NX_SYS_PTRACE:return trace_request((int64_t)u->u_arg[0],(int64_t)u->u_arg[1],
+        u->u_arg[2],u->u_arg[3],u->u_arg[4]);
     case NX_SYS_EXIT:
         proc_exit((u->u_arg[0] & 255) << 8);
     case NX_SYS_EXEC:

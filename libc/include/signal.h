@@ -1,6 +1,7 @@
 #ifndef NEXIX_LIBC_SIGNAL_H
 #define NEXIX_LIBC_SIGNAL_H
 #include <sys/types.h>
+#include <sys/ptrace.h>
 #include <nexix/signal.h>
 #define SIGHUP NX_SIGHUP
 #define SIGINT NX_SIGINT

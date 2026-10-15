@@ -122,6 +122,7 @@
         22,
         50,
         51,
+        57,
         59,
         63,
         64,
@@ -139,7 +140,10 @@
         "kernel/v7/signals.c",
         "kernel/v7/core.c",
         "kernel/include/core.h",
-        "include/nexix/core.h"
+        "include/nexix/core.h",
+        "kernel/v7/ptrace.c",
+        "kernel/include/ptrace.h",
+        "include/nexix/ptrace.h"
       ],
       "tasks": [
         15,
@@ -148,7 +152,7 @@
         57,
         58
       ],
-      "note": "Signal delivery, FP frames and native ELF core dumps are implemented; trace-stop interactions remain pending."
+      "note": "Signal delivery, native ELF core dumps and task 57 tracing stops/wait/continue with native register/FPU access are implemented. Debugger memory changes and single-step remain task 58."
     },
     {
       "id": "pipes",
@@ -710,7 +714,7 @@
       "number": 26,
       "routine": "ptrace",
       "label": "ptrace",
-      "status": "pending",
+      "status": "native_path",
       "task": 57,
       "native": "kernel/v7/syscall.c"
     },

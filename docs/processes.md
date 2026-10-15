@@ -123,3 +123,6 @@ see [syscall-abi.md](syscall-abi.md). Task 10 adds ELF64 loading and exec.
 
 Task 18 starts the first user process as PID 1 during normal boot. Its exit is
 a fatal error; orphan adoption continues to use PID 1. See [booting.md](booting.md).
+
+Task 57 adds [V7 tracing stops and wait integration](ptrace.md), including
+parent-only native register/FPU access and continued execution.

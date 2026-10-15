@@ -53,10 +53,10 @@ intact. Staged allocations are released by the existing ELF rollback path.
 [Executable-text lifetime and ETXTBSY enforcement](text-ownership.md) are
 implemented separately by task 51.
 
-Traced exec posts the source-defined SIGTRAP, but this does not implement
-ptrace/debugger stops. Those remain tasks 57–58. The acceptance fixture uses
-a test-only gate to set STRC, observes suppressed credentials with SIGTRAP
-ignored, and separately verifies default SIGTRAP termination. Set-ID core-dump
+Traced exec stops with SIGTRAP before executing the new image. The acceptance
+fixture now uses the real task 57 `ptrace` interface and stopped-child wait
+status to suppress or reinject that trap. The former STRC toggle test gate is
+retired. Debugger memory changes and single-step remain task 58. Set-ID core-dump
 restrictions are implemented separately by [task 52](core-dumps.md), including
 effective-versus-real GID suppression.
 

@@ -111,12 +111,13 @@ pipe/descriptor errors, immediate redirected stderr, callback output, and
 fork/exec/_exit behavior including inherited buffer duplication.
 Existing VM, inode, block and descriptor cleanup assertions remain active.
 
-Remaining libc prerequisites include process-pipe helpers (popen/pclose/system), tty/account lookup,
-profiling startup/monitor, ELF symbol
-lookup, native headers and adapters for users of internal V7 FILE fields.
-Required kernel accounting, tracing/profiling, kernel-information and
-mount/raw-device interfaces are also unfinished. Their wrappers must accompany
-working kernel behavior; ENOSYS stubs do not complete a port.
+Process-pipe helpers, tty/account lookup and private-FILE source adapters have
+native implementations under their completed tasks. Remaining prerequisites
+include profiling startup/monitor, ELF symbol lookup and consumer-owned headers.
+Kernel accounting, mount/unmount, block/raw files and task 57 tracing stops with
+native register/FPU access have working wrappers. Debugger memory writes and
+single-step remain task 58; profiling, kernel information and remaining device
+capabilities retain their roadmap owners. ENOSYS stubs do not complete a port.
 
 Task 36 (previously 25.8: buffered stdio and setbuf) is implemented. This completes that
 task's stream behavior and regression coverage; the remaining kernel/libc

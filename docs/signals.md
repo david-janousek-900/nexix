@@ -136,3 +136,7 @@ Task 52 adds [native core dumps](core-dumps.md) for V7's default core-producing
 signals and fatal signal-frame failures. Successful output sets wait bit 0200;
 failed/ineligible output leaves it clear. Caught/ignored signals retain their
 existing behavior. Core policy requires equal real/effective UID and GID.
+
+Task 57 adds [traced-signal stopping and debugger-selected delivery](ptrace.md).
+Ignored signals are observable while traced; continue can suppress or replace
+the pending signal before delivery.

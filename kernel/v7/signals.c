@@ -4,6 +4,7 @@
 #include "uaccess.h"
 #include "segments.h"
 #include "core.h"
+#include "ptrace.h"
 #include <nexix/errno.h>
 _Static_assert(sizeof(struct interrupt_frame) == offsetof(struct nx_signal_context, fpu), "signal context prefix");
 _Static_assert(offsetof(struct interrupt_frame, rsp) == offsetof(struct nx_signal_context, rsp), "signal context offsets");
@@ -18,7 +19,7 @@ bool signal_pending(struct proc *p)
     for (unsigned n = 1; n < V7_NSIG; ++n) {
         unsigned bit = 1U << (n - 1);
         if (!(p->p_sig & bit)) continue;
-        if (n != NX_SIGKILL && p->p_user->u_signal[n] == 1) p->p_sig &= ~bit;
+        if (!(p->p_flag&V7_STRC) && n != NX_SIGKILL && p->p_user->u_signal[n] == 1) p->p_sig &= ~bit;
         else return true;
     }
     return false;
@@ -27,7 +28,7 @@ void signal_post(struct proc *p, unsigned n)
 {
     if (!n || n >= V7_NSIG || p->p_stat == V7_UNUSED ||
         p->p_stat == V7_SIDL || p->p_stat == V7_SZOMB || (p->p_flag & V7_SSYS)) return;
-    if (n != NX_SIGKILL && p->p_user->u_signal[n] == 1) return;
+    if (!(p->p_flag&V7_STRC) && n != NX_SIGKILL && p->p_user->u_signal[n] == 1) return;
     p->p_sig |= 1U << (n - 1);
     if (p->p_stat == V7_SSLEEP && p->p_interruptible) {
         p->p_wchan = NULL; p->p_timed_sleep = false; p->p_stat = V7_SRUN;
@@ -73,10 +74,17 @@ void signal_deliver(struct interrupt_frame *frame)
 {
     struct proc *p = proc_current();
     if (!p || (frame->cs & 3) != 3 || !signal_pending(p)) return;
+    if(p->p_flag&V7_STRC){
+        proc_trace_stop();
+        /* Continue replaces the pending set, including suppression with 0.
+         * Deliver the selected replacement once without stopping again. */
+        if(!p->p_sig)return;
+    }
     unsigned n;
     for (n = 1; n < V7_NSIG; ++n) if (p->p_sig & (1U << (n - 1))) break;
     p->p_sig &= ~(1U << (n - 1));
     uintptr_t handler = p->p_user->u_signal[n], restorer = p->p_user->u_restorer[n];
+    if(handler==1&&n!=NX_SIGKILL)return;
     if (!handler || n == NX_SIGKILL) proc_exit(n|(core_dump(n,frame)?0200:0));
     /* Preserve the SysV red zone and align the handler as a normal call.
      * Saved frames reside in user memory, permitting handler longjmp without

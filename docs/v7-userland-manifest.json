@@ -55,13 +55,14 @@
       "id": "kernel-abi",
       "category": "kernel",
       "status": "partial",
-      "description": "File/process/TTY syscalls, device-qualified inodes, mount/umount, chroot and process accounting exist; tracing, profiling and remaining device interfaces are pending.",
+      "description": "File/process/TTY syscalls, device-qualified inodes, mount/umount, chroot, process accounting and parent/child tracing exist; debugger memory changes, single-step, profiling and remaining device interfaces are pending.",
       "evidence": [
         "docs/syscall-abi.md",
         "docs/files.md",
         "docs/mounts.md",
         "docs/unmount.md",
-        "docs/accounting.md"
+        "docs/accounting.md",
+        "docs/ptrace.md"
       ],
       "locations": []
     },
@@ -166,11 +167,14 @@
     {
       "id": "tracing-profiling",
       "category": "kernel",
-      "status": "missing",
-      "description": "Native ptrace/profiling and executable register/symbol interpretation require implementation.",
+      "status": "partial",
+      "description": "Native tracing stops, parent-only process access and register/FPU editing exist. Debugger memory writes, single-step, profiling and symbol consumers remain pending.",
       "evidence": [
         "reference/v7/usr/src/cmd/adb/runpcs.c",
-        "reference/v7/usr/src/cmd/prof.c"
+        "reference/v7/usr/src/cmd/prof.c",
+        "kernel/v7/ptrace.c",
+        "libc/ptrace.c",
+        "docs/ptrace.md"
       ],
       "locations": []
     },

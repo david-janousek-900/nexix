@@ -69,7 +69,7 @@ four-byte status, even though its pointer occupies an eight-byte argument slot.
 | 3, 4 | read, write | fd, buffer, count | Bytes transferred |
 | 5 | open | Path, flags, optional creation mode | Lowest free descriptor |
 | 6 | close | fd | Zero |
-| 7 | wait | Writable int32 status pointer, or NULL | Reaped child PID; ECHILD if none |
+| 7 | wait | Writable int32 status pointer, or NULL | Exited or traced-stopped child PID; ECHILD if none |
 | 8 | creat | Path, mode | Writable descriptor; creates/truncates |
 | 9, 10 | link, unlink | Old/new paths, or path | Zero |
 | 11 | exec | Pathname, argv | Replace image with empty environment |
@@ -206,3 +206,10 @@ See [native header contracts](header-coverage.md) for the complete reference
 header responsibility map, native type widths and record offsets.
 `make TOOLCHAIN_PREFIX= test-header-abi` checks public headers in isolation
 without host libc and validates the kernel/libc record boundaries.
+
+Task 57 implements syscall 26 (`ptrace`): request, PID, address, data, result
+pointer. Reads publish a uint64 word through the fifth argument and return
+zero, preserving negative words independently of negative syscall errors.
+The four-argument libc wrapper clears errno and returns the word. See
+[tracing](ptrace.md) for requests, the native register layout and stopped-child
+wait semantics. Task 58 owns memory writes and single-step.

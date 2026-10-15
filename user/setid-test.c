@@ -5,7 +5,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
-#define CHECK(c) do {if(!(c))return __LINE__;}while(0)
+#define CHECK(c) do {if(!(c)){fprintf(stderr,"setid line %d errno %d\n",__LINE__,errno);return __LINE__;}}while(0)
 static long gate(long n,uintptr_t argument)
 {__asm__ volatile("int $0x81":"+a"(n):"D"(argument):"memory","cc");return n;}
 static int collect(pid_t pid)
@@ -19,8 +19,12 @@ static int run(mode_t mode,uid_t owner,gid_t group,uid_t real,uid_t effective,gi
     pid_t child=fork();CHECK(child>=0);
     if(!child){
         if(setgid(456)||setuid(real))_exit(97);
-        if(traced){if(signal(SIGTRAP,SIG_IGN)==SIG_ERR||gate(0x900,1))_exit(98);}
+        if(traced){if(signal(SIGTRAP,SIG_IGN)==SIG_ERR||ptrace(0,0,0,0))_exit(98);}
         execv("/tmp/setid",args);_exit(99);
+    }
+    if(traced){
+        int stopped;CHECK(wait(&stopped)==child&&WIFSTOPPED(stopped)&&WSTOPSIG(stopped)==SIGTRAP);
+        CHECK(ptrace(NX_PT_CONTINUE,child,(void *)1,0)==0);
     }
     if(!collect(child)){fprintf(stderr,"setid case mode %o owner %u/%u caller %u expected %u/%u\n",mode,owner,group,real,effective,egid);return __LINE__;}
     CHECK(getuid()==0&&geteuid()==0&&getgid()==0&&getegid()==0&&gate(0x901,0)==0);
@@ -85,13 +89,15 @@ int setid_test(void)
         execv("/tmp/rootid",args);_exit(99);
     }
     CHECK(collect(child));
-    /* Traced exec also posts V7 SIGTRAP; debugger stopping remains task 57. */
+    /* Reinject the exec trap through the real stopped-child interface. */
     child=fork();CHECK(child>=0);
     if(!child){
-        if(setgid(456)||setuid(123)||gate(0x900,1))_exit(97);
+        if(setgid(456)||setuid(123)||ptrace(0,0,0,0))_exit(97);
         execv("/tmp/setid",(char *const[]){"setid",NULL});_exit(99);
     }
-    int status;CHECK(wait(&status)==child&&WIFSIGNALED(status)&&WTERMSIG(status)==SIGTRAP);
+    int status;CHECK(wait(&status)==child&&WIFSTOPPED(status)&&WSTOPSIG(status)==SIGTRAP);
+    CHECK(ptrace(NX_PT_CONTINUE,child,(void *)1,SIGTRAP)==0);
+    CHECK(wait(&status)==child&&WIFSIGNALED(status)&&WTERMSIG(status)==SIGTRAP);
     fd=creat("/tmp/badid",0755);CHECK(fd>=0&&write(fd,"not ELF",7)==7&&close(fd)==0);
     CHECK(chown("/tmp/badid",789,321)==0&&chmod("/tmp/badid",06755)==0);
     fd=creat("/tmp/denied",0755);CHECK(fd>=0&&close(fd)==0);

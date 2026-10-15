@@ -103,7 +103,7 @@ void interrupt_dispatch(struct interrupt_frame *frame)
         unsigned n = frame->vector == 0 || frame->vector == 16 || frame->vector == 19 ? NX_SIGFPE :
             frame->vector == 6 ? NX_SIGILL : frame->vector == 1 || frame->vector == 3 ? NX_SIGTRAP : NX_SIGSEGV;
         /* An ignored synchronous fault cannot resume the same instruction. */
-        if (proc_current()->p_user->u_signal[n] == 1) proc_exit(n);
+        if (!(proc_current()->p_flag&V7_STRC) && proc_current()->p_user->u_signal[n] == 1) proc_exit(n);
         signal_post(proc_current(), n); signal_deliver(frame); return;
     }
     if (frame->vector < 32) {

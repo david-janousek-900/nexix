@@ -23,7 +23,7 @@ contracts; task 355 and task 359 close whole-distribution integration.
 | alloc/iget/nami/rdwri/fio/bio | V7 disk encodings, inode/sector cache, lookup, permissions, files, timestamp updates | Executable exclusion implemented by 51; raw I/O 53; mount/umount 54–55 |
 | sys1–sys4/sysent/trap/ureg | Native dispatcher, user-copy validation, process/files/identity/time calls | Set-ID exec implemented by 50; core dumps implemented by 52; ptrace 57–58; pending syscall slots below |
 | text | Native ELF images, shared inode ownership, ETXTBSY and sticky ownership entries | Task 51 complete; eager private VM pages replace physical text sharing/swap caching; ptrace modifications 58 |
-| sig | V7 signals, saved registers/FP frames and native ELF core dumps | Core policy/format implemented by 52; tracing stop/wait 57–58 |
+| sig | V7 signals, saved registers/FP frames and native ELF core dumps | Core policy/format implemented by 52; stop/wait/register access implemented by 57; memory changes/step 58 |
 | pipe | Native bounded pipes, sleep/wakeup, SIGPIPE and descriptor lifetime | Existing files tests; consumer acceptance remains distribution-wide |
 | acct | Process exit integration point | Accounting records, privileges, storage errors 56 |
 | prim/mx1/mx2/fakemx | File/TTY integration points only | Multiplexer lifecycle, events, TTY bridging 65–67; historical optional stub does not satisfy functionality |
