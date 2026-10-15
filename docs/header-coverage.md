@@ -97,3 +97,7 @@ information consumers still belong to task 62. See [tracing](ptrace.md).
 
 Task 58 adds ptrace request constants 4/5/9 and permits user TF in the protected
 RFLAGS write interface. Snapshot size, offsets and ABI version remain unchanged.
+
+Task 59 adds the native `profil` declaration to `<unistd.h>`: 64-bit buffer
+length/PC offset, 16-bit counters and V7 fixed-point scale. No record layout
+or ABI version changes; profile-file/startup interfaces remain task 60.

@@ -19,7 +19,7 @@ contracts; task 355 and task 359 close whole-distribution integration.
 | Original area | Native foundation | Remaining acceptance / tasks |
 |---|---|---|
 | m40/mch/l machine assembly, segmentation, memory allocation | Long mode, native interrupt frames, paging, resident memory, eager fork, FXSAVE64 | phys 64; runtime assembly contracts 79; no PDP-11 binary execution or disk-backed swap required |
-| main/slp/clock | Boot, scheduler, sleep/wakeup, PIT ticks, RTC wall clock, alarms, user/system CPU times | CPU usage saturation and priority decay 362; general timeout callouts 364; profiling 59 |
+| main/slp/clock | Boot, scheduler, sleep/wakeup, PIT ticks, RTC wall clock, alarms, user/system CPU times | CPU usage saturation and priority decay 362; general timeout callouts 364; profil sampling implemented by 59 |
 | alloc/iget/nami/rdwri/fio/bio | V7 disk encodings, inode/sector cache, lookup, permissions, files, timestamp updates | Executable exclusion implemented by 51; raw I/O 53; mount/umount 54–55 |
 | sys1–sys4/sysent/trap/ureg | Native dispatcher, user-copy validation, process/files/identity/time calls | Set-ID exec implemented by 50; core dumps implemented by 52; ptrace implemented by 57–58; pending syscall slots below |
 | text | Native ELF images, shared inode ownership, ETXTBSY and sticky ownership entries | Task 51 complete; eager private VM pages replace physical text sharing/swap caching; private debugger modifications implemented by 58 |
@@ -55,7 +55,7 @@ not be treated as missing required features merely because they were stubs.
 | 22 | umount | 55 |
 | 26 | ptrace | 57, then 58 |
 | 35 | ftime subsecond snapshot | 363 |
-| 44 | profil | 59 |
+| 44 | profil sampling implemented | 59; startup/monitor follows in 60 |
 | 51 | acct | 56 |
 | 52 | phys | 64 |
 | 53 | lock | 63 |
@@ -84,3 +84,7 @@ The checker validates audit integrity; it does not execute historical code,
 prove function-by-function equivalence, or replace runtime acceptance tests.
 No kernel executable behavior changes in task 38, so QEMU regressions are not
 needed for this audit-only change. Existing host unit tests are run as a baseline.
+
+Task 59 implements [native V7 profil sampling](profiling.md), including user
+PIT samples and per-process system-time charges at trap return. Profiling
+startup/monitor records remain task 60; the kernel itself is not profiled.

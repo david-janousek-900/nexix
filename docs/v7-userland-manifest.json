@@ -55,7 +55,7 @@
       "id": "kernel-abi",
       "category": "kernel",
       "status": "partial",
-      "description": "File/process/TTY syscalls, device-qualified inodes, mount/umount, chroot, process accounting and parent/child tracing with debugger writes/single-step exist; profiling and remaining device interfaces are pending.",
+      "description": "File/process/TTY syscalls, device-qualified inodes, mount/umount, chroot, process accounting and parent/child tracing with debugger writes/single-step exist. Native profil sampling is implemented; remaining device interfaces are pending.",
       "evidence": [
         "docs/syscall-abi.md",
         "docs/files.md",
@@ -63,7 +63,8 @@
         "docs/unmount.md",
         "docs/accounting.md",
         "docs/ptrace.md",
-        "docs/debugger.md"
+        "docs/debugger.md",
+        "docs/profiling.md"
       ],
       "locations": []
     },
@@ -169,14 +170,17 @@
       "id": "tracing-profiling",
       "category": "kernel",
       "status": "partial",
-      "description": "Native tracing stops, parent-only process access, register/FPU editing, instruction/data writes and single-step exist. Profiling, symbol consumers and the adb command port remain pending.",
+      "description": "Native tracing, debugger writes/single-step and profil sampling exist. Profiling startup/monitor records, symbol consumers and the adb/prof command ports remain pending.",
       "evidence": [
         "reference/v7/usr/src/cmd/adb/runpcs.c",
         "reference/v7/usr/src/cmd/prof.c",
         "kernel/v7/ptrace.c",
         "libc/ptrace.c",
         "docs/ptrace.md",
-        "docs/debugger.md"
+        "docs/debugger.md",
+        "kernel/v7/profile.c",
+        "libc/profil.c",
+        "docs/profiling.md"
       ],
       "locations": []
     },

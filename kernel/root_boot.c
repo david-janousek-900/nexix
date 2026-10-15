@@ -6,6 +6,7 @@
 #include "storage.h"
 #include "namespace.h"
 #include "clock.h"
+#include "profile.h"
 #include <nexix/errno.h>
 #include <nexix/signal.h>
 extern const uint8_t _binary_build_root_img_start[], _binary_build_root_img_end[];
@@ -97,7 +98,7 @@ static v7_pid_t held_owner;
 static v7_pid_t trace_orphan;
 bool root_exec_test_gate(struct interrupt_frame *frame)
 {
-    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x911)return false;
+    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x915)return false;
     struct proc *p=proc_current();
     if(frame->rax==0x900){
         frame->rax=(uint64_t)-NX_ENOSYS;return true; /* Retired tracing test hook. */
@@ -189,6 +190,20 @@ bool root_exec_test_gate(struct interrupt_frame *frame)
            v7fs_create(&root_volume,directory,name,V7_IFREG|0755,0,0,&ino)||
            v7fs_write(&root_volume,ino,0,_binary_build_trace_image_elf_start,size,&done)||done!=size)
             panic("cannot install trace image");
+    }else if(frame->rax==0x912){
+        frame->rax=p->p_user->u_prof.pr_scale;return true;
+    }else if(frame->rax==0x913){
+        if(p->p_user->u_uid)panic("unprivileged profile sample fixture");
+        profile_sample(p,frame->rdi,frame->rsi);
+    }else if(frame->rax==0x914){
+        if(p->p_user->u_uid)panic("unprivileged profile system fixture");
+        v7_time_t start=p->p_user->u_stime;
+        while(p->p_user->u_stime-start<3)__asm__ volatile("sti; hlt; cli":::"memory");
+        frame->rax=p->p_user->u_stime-start;return true;
+    }else if(frame->rax==0x915){
+        if(p->p_user->u_uid)panic("unprivileged profile sleep fixture");
+        v7_time_t start=p->p_user->u_stime;proc_delay(3);
+        frame->rax=p->p_user->u_stime-start;return true;
     }else return false;
     frame->rax=0;return true;
 }

@@ -214,3 +214,10 @@ The four-argument libc wrapper clears errno and returns the word. See
 [tracing](ptrace.md) for requests, the native register layout and stopped-child
 wait semantics. [Task 58](debugger.md) implements requests 4/5/9 for native
 instruction/data memory writes and single-step.
+
+Task 59 implements syscall 44 (`profil`): buffer address, byte length, native
+PC offset and unsigned 16-bit fixed-point scale. Counters remain uint16 words;
+the libc declaration uses native pointer/size/offset types. Larger scales return
+EINVAL; buffer faults disable sampling quietly when an update is attempted.
+See [profiling.md](profiling.md) for V7 bucket arithmetic, native bounds and
+100 Hz user/system tick charging. No profile-file format is added.

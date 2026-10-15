@@ -7,6 +7,7 @@
 #include "segments.h"
 #include "user_test.h"
 #include "process.h"
+#include "profile.h"
 #include "signals.h"
 #include "syscall.h"
 #include "exec.h"
@@ -78,7 +79,7 @@ void timer_init(void)
     outb(0x21, inb(0x21) & ~1U);
 }
 uint64_t timer_ticks(void) { return ticks; }
-void interrupt_dispatch(struct interrupt_frame *frame)
+static void dispatch(struct interrupt_frame *frame)
 {
     if (frame->vector == 8 || frame->vector == 2) {
         if (!interrupt_stack_valid(frame))
@@ -155,4 +156,15 @@ void interrupt_dispatch(struct interrupt_frame *frame)
         return;
     }
     panic("unexpected interrupt vector");
+}
+void interrupt_dispatch(struct interrupt_frame *frame)
+{
+    struct proc *owner=(frame->cs&3)==3?proc_current():NULL;
+    bool trap=frame->vector<32||frame->vector==0x80||frame->vector==0x81;
+    v7_time_t system=owner?owner->p_user->u_stime:0;
+    dispatch(frame);
+    /* V7 trap.c charges only this process's system ticks, never elapsed sleep,
+     * another process's CPU time, or a kernel PC. Signals/exec may change RIP. */
+    if(owner&&trap&&proc_current()==owner&&(frame->cs&3)==3&&owner->p_user->u_stime>system)
+        profile_sample(owner,frame->rip,(uint64_t)owner->p_user->u_stime-(uint64_t)system);
 }

@@ -18,7 +18,8 @@
         "kernel/arch/x86_64/context.S",
         "kernel/arch/x86_64/interrupts.S",
         "kernel/arch/x86_64/paging.c",
-        "kernel/arch/x86_64/fpu.c"
+        "kernel/arch/x86_64/fpu.c",
+        "kernel/v7/profile.c"
       ],
       "tasks": [
         2,
@@ -27,10 +28,11 @@
         25,
         26,
         27,
+        59,
         64,
         79
       ],
-      "note": "Native long mode, page tables and hardware FP replace PDP-11 machine code; phys and runtime compatibility remain open."
+      "note": "Native long mode, page tables and hardware FP replace PDP-11 machine code; phys and runtime compatibility remain open. Native profil sampling replaces PDP-11 addupc in task 59."
     },
     {
       "id": "configuration",
@@ -113,7 +115,9 @@
         "kernel/memory.c",
         "kernel/clock.c",
         "kernel/v7/process.c",
-        "kernel/v7/exec.c"
+        "kernel/v7/exec.c",
+        "kernel/v7/profile.c",
+        "kernel/include/profile.h"
       ],
       "tasks": [
         4,
@@ -130,7 +134,7 @@
         362,
         364
       ],
-      "note": "Resident memory and eager fork replace segmentation/swap. CPU usage priority decay remains pending; no disk swap is required. General timeout callback queue also remains pending; alarms alone do not cover device callouts."
+      "note": "Resident memory and eager fork replace segmentation/swap. CPU usage priority decay remains pending; no disk swap is required. General timeout callback queue also remains pending; alarms alone do not cover device callouts. Task 59 implements native user-PC profiling samples and own-system-time charging with safe user counters."
     },
     {
       "id": "signals",
@@ -203,7 +207,7 @@
         363,
         366
       ],
-      "note": "Native register dispatch and copyin/copyout replace PDP-11 trap arguments. The syscall table below records all 64 original slots; dispatch presence alone is not semantic acceptance."
+      "note": "Native register dispatch and copyin/copyout replace PDP-11 trap arguments. The syscall table below records all 64 original slots; dispatch presence alone is not semantic acceptance. Task 59 implements profil(44) and post-trap system-tick charging."
     },
     {
       "id": "text",
@@ -859,7 +863,7 @@
       "number": 44,
       "routine": "profil",
       "label": "prof",
-      "status": "pending",
+      "status": "native_path",
       "task": 59,
       "native": "kernel/v7/syscall.c"
     },

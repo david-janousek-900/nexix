@@ -9,6 +9,7 @@ int main(int argc,char **argv)
 {
     if(argc!=4)return 90;
     int mode=atoi(argv[1]),ready=atoi(argv[2]),go=atoi(argv[3]);
+    if(mode==5){long n=0x912;__asm__ volatile("int $0x81":"+a"(n)::"memory","cc");return n?89:0;}
     if(mode==3)return trace_patch_target()==41&&datum==33?0:91;
     int hold[2];pid_t helper=-1;
     if(mode==1){

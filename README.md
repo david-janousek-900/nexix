@@ -124,8 +124,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 2 partial, 1 prototype and 203 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 58 done, 2 in progress
-and 306 to do** after task 58. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 59 done, 2 in progress
+and 305 to do** after task 59. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -277,7 +277,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 56 | Kernel process accounting | Done | Git history; [V7 accounting/native record contract](docs/accounting.md); acct(51), fork/exec/exit flags, compressed times, real IDs/TTY, held-inode lifetime and complete-record EOF publication; `make test-accounting` |
 | 57 | ptrace stop/continue and process access | Done | Git history; [V7 tracing/native register contract](docs/ptrace.md); parent-only access, stop/wait/continue, native register/FPU reads and edits, signal selection and traced exec; `make test-ptrace` |
 | 58 | ptrace single-step and debugger memory changes | Done | Git history; [V7 debugger writes and stepping](docs/debugger.md); private instruction/data patches, text exclusion, RX/NX protection, INT3, TF and syscall/fork/signal/exec stepping; `make test-debugger` |
-| 59 | profil sampling | To do | Native PC-to-user-buffer sampling and bounds |
+| 59 | profil sampling | Done | Git history; [V7 profil/native sampling](docs/profiling.md); syscall 44, V7 buckets, 16-bit counter wrap, user/system tick charging, safe buffer faults and fork/exec lifetime; `make test-profile` |
 | 60 | mcount, monitor and profiling startup objects | To do | mcrt0/fmcrt0 and native profiling records |
 | 61 | ELF nlist and executable symbol interfaces | To do | Shared native symbol representation for diagnostics |
 | 62 | Kernel-information snapshots | To do | Versioned process/file/inode/mount/memory/I/O data; avoid historical offsets |

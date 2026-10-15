@@ -116,8 +116,8 @@ native implementations under their completed tasks. Remaining prerequisites
 include profiling startup/monitor, ELF symbol lookup and consumer-owned headers.
 Kernel accounting, mount/unmount, block/raw files and task 57 tracing stops with
 native register/FPU access have working wrappers. Task 58 adds debugger memory
-writes and single-step; profiling, kernel information and remaining device
-capabilities retain their roadmap owners. ENOSYS stubs do not complete a port.
+writes and single-step; task 59 adds profil sampling. Profiling startup/monitor,
+kernel information and remaining device capabilities retain their roadmap owners. ENOSYS stubs do not complete a port.
 
 Task 36 (previously 25.8: buffered stdio and setbuf) is implemented. This completes that
 task's stream behavior and regression coverage; the remaining kernel/libc

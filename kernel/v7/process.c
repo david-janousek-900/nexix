@@ -8,6 +8,7 @@
 #include "text.h"
 #include "signals.h"
 #include "ptrace.h"
+#include "profile.h"
 #include "exec.h"
 #include "segments.h"
 #include "serial.h"
@@ -550,7 +551,10 @@ void proc_timer(struct interrupt_frame *frame)
     }
     if (!current) return;
     if (!interrupt_stack_valid(frame)) panic("timer on wrong process stack");
-    if ((frame->cs & 3) == 3) ++current->p_user->u_utime;
+    if ((frame->cs & 3) == 3) {
+        ++current->p_user->u_utime;
+        profile_sample(current,frame->rip,1);
+    }
     else ++current->p_user->u_stime;
     if (++current->p_slice >= PROCESS_QUANTUM) {
         ++current->p_preemptions;

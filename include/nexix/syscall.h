@@ -45,6 +45,7 @@
 #define NX_SYS_DUP 41
 #define NX_SYS_PIPE 42
 #define NX_SYS_TIMES 43
+#define NX_SYS_PROFIL 44
 #define NX_SYS_GETGID 47
 #define NX_SYS_IOCTL 54
 #define NX_SYS_EXECVE 59

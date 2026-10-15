@@ -390,3 +390,13 @@ rejection, private patches/fork inheritance, unchanged executable files, RX/NX
 protection, software breakpoints and stepping across normal instructions,
 syscalls, fork, signals, faults and exec. Existing root cleanup checks remain
 active. See [debugger.md](debugger.md) for native adaptations.
+
+## Task 59 profil sampling
+
+`make test-profile` combines host golden bucket/bounds/fault tests, disposable
+16/128 MiB QEMU runs and inventory/header/export checks. `NEXIX_PROFILE_OK`
+requires deterministic real-VM samples, user PIT and trap-return system
+charges, fork/private counters, failed/successful exec behavior and quiet
+fault disabling, followed by existing cleanup/boot markers. Private fixture
+hooks provide scale inspection, sample injection and kernel-residence/sleep
+intervals only while root-exec tests are active. See [profiling.md](profiling.md).
