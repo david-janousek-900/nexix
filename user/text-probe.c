@@ -8,6 +8,7 @@ static long refs(void)
 {long n=0x905;__asm__ volatile("int $0x81":"+a"(n)::"memory","cc");return n;}
 int main(int argc,char **argv)
 {
+    if(argc==4&&!strcmp(argv[1],"account"))CHECK(getuid()==123&&geteuid()==0&&getgid()==456);
     CHECK(argc==4);int ready=atoi(argv[2]),go=atoi(argv[3]);char byte;
     CHECK(refs()==(!strcmp(argv[1],"shared")?2:1));
     if(!strcmp(argv[1],"fork")){

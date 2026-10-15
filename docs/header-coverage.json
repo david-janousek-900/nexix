@@ -136,8 +136,8 @@
     },
     {
       "source": "reference/v7/usr/include/sys/acct.h",
-      "status": "private_kernel",
-      "native": null,
+      "status": "native_contract",
+      "native": "libc/include/sys/acct.h",
       "task": 56
     },
     {

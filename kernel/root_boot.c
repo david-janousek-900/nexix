@@ -5,6 +5,7 @@
 #include "ide.h"
 #include "storage.h"
 #include "namespace.h"
+#include "clock.h"
 #include <nexix/errno.h>
 extern const uint8_t _binary_build_root_img_start[], _binary_build_root_img_end[];
 static uint8_t root_bytes[1024 * V7_BSIZE];
@@ -66,11 +67,11 @@ extern const uint8_t _binary_build_namespace_img_start[],_binary_build_namespace
 static uint8_t namespace_bytes[7][256*BLOCK_SIZE];
 static struct ramdisk namespace_devices[7];
 static int (*namespace_writes[7])(struct block_device *,uint32_t,const void *);
-static unsigned namespace_write_faults;
+static unsigned namespace_write_faults,namespace_all_write_faults;
 static int namespace_fault_write(struct block_device *d,uint32_t block,const void *bytes)
 {
     for(unsigned i=0;i<7;++i)if(d==&namespace_devices[i].device){
-        if(block==V7_SUPERB&&(namespace_write_faults&(1U<<i)))return -NX_EIO;
+        if((namespace_all_write_faults&(1U<<i))||(block==V7_SUPERB&&(namespace_write_faults&(1U<<i))))return -NX_EIO;
         return namespace_writes[i](d,block,bytes);
     }
     panic("foreign namespace fault device");
@@ -93,7 +94,7 @@ static unsigned held_count;
 static v7_pid_t held_owner;
 bool root_exec_test_gate(struct interrupt_frame *frame)
 {
-    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x90d)return false;
+    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x90f)return false;
     struct proc *p=proc_current();
     if(frame->rax==0x900){
         if(frame->rdi)p->p_flag|=V7_STRC;else p->p_flag&=~V7_STRC;
@@ -134,7 +135,7 @@ bool root_exec_test_gate(struct interrupt_frame *frame)
         root_volume.read_only=!!frame->rdi;
     }else if(frame->rax==0x909){
         if(p->p_user->u_uid)panic("unprivileged namespace fixture");
-        namespace_write_faults=0;
+        namespace_write_faults=namespace_all_write_faults=0;
         for(unsigned i=0;i<7;++i)namespace_fixture_device(i);
         for(unsigned i=0;i<BLOCK_SIZE;++i)namespace_bytes[3][BLOCK_SIZE+i]=0;
         namespace_devices[4].device.read=namespace_bad_read;
@@ -150,8 +151,18 @@ bool root_exec_test_gate(struct interrupt_frame *frame)
     }else if(frame->rax==0x90d){
         if(p->p_user->u_uid||!frame->rdi||frame->rdi>=STORAGE_SLOTS)panic("invalid namespace fault recovery");
         struct v7fs *fs=namespace_volume(frame->rdi);
-        if(!fs||namespace_write_faults)panic("namespace fault recovery ordering");
-        fs->failed=false; /* Only injected superblock writes failed; fixture data is unchanged. */
+        if(!fs||namespace_write_faults||namespace_all_write_faults)panic("namespace fault recovery ordering");
+        fs->failed=false; /* Injected callbacks reject writes before transfer; fixture-only recovery. */
+    }else if(frame->rax==0x90e){
+        if(p->p_user->u_uid)panic("unprivileged accounting seed");
+        struct user *u=p->p_user;
+        const char name[V7_DIRSIZ]="abcdefghijklmn";
+        for(unsigned i=0;i<V7_DIRSIZ;++i)u->u_comm[i]=name[i];
+        u->u_utime=8196;u->u_stime=65535;u->u_cutime=12345;u->u_cstime=54321;
+        u->u_start=clock_now()-17;
+    }else if(frame->rax==0x90f){
+        if(p->p_user->u_uid||frame->rdi>127)panic("invalid accounting write fault");
+        namespace_all_write_faults=frame->rdi;
     }else return false;
     frame->rax=0;return true;
 }

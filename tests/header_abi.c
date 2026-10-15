@@ -1,5 +1,6 @@
 /* Independently specified LP64 record contracts, shared kernel/libc boundaries. */
 #include <sys/types.h>
+#include <sys/acct.h>
 #include <sys/stat.h>
 #include <sys/dir.h>
 #include <sys/param.h>
@@ -16,6 +17,13 @@
 #include "v7/types.h"
 #define SIZE(t,n) _Static_assert(sizeof(t)==(n), #t " size")
 #define FIELD(t,f,n) _Static_assert(offsetof(t,f)==(n), #t "." #f " offset")
+SIZE(struct acct,40); SIZE(struct nx_acct,40); SIZE(comp_t,2);
+FIELD(struct acct,ac_comm,0); FIELD(struct acct,ac_utime,10);
+FIELD(struct acct,ac_stime,12); FIELD(struct acct,ac_etime,14);
+FIELD(struct acct,ac_btime,16); FIELD(struct acct,ac_uid,24);
+FIELD(struct acct,ac_gid,26); FIELD(struct acct,ac_mem,28);
+FIELD(struct acct,ac_io,30); FIELD(struct acct,ac_tty,32);
+FIELD(struct acct,ac_flag,34); FIELD(struct acct,ac_reserved,35);
 SIZE(dev_t,2); SIZE(ino_t,2); SIZE(daddr_t,4); SIZE(off_t,8);
 SIZE(time_t,8); SIZE(pid_t,4); SIZE(uid_t,2); SIZE(gid_t,2);
 SIZE(caddr_t,8); SIZE(struct stat,48); SIZE(struct nx_stat,48);

@@ -89,6 +89,7 @@ four-byte status, even though its pointer occupies an eight-byte argument slot.
 | 37 | kill | Signed PID/group selector, signal | Zero |
 | 39 | setpgrp | None | New process group equal to PID |
 | 48 | signal | Number, handler, executable restorer | Previous handler |
+| 51 | acct | Existing regular-file pathname, or NULL to disable | Zero; root only; EBUSY when already enabled |
 | 18, 28 | stat, fstat | Path/fd, writable nx_stat pointer | Zero |
 | 19 | lseek | fd, signed offset, whence | New offset |
 | 20 | getpid | None | Current PID |

@@ -319,7 +319,7 @@ int v7fs_read(struct v7fs *fs, v7_ino_t ino, int64_t off, void *buf, size_t n, s
     }
     return read_file(fs, ino, off, buf, n, done);
 }
-static int write_file(struct v7fs *fs, v7_ino_t number, int64_t offset, const void *buffer, size_t count, size_t *done, bool directory)
+static int write_file(struct v7fs *fs, v7_ino_t number, int64_t offset, const void *buffer, size_t count, size_t *done, bool directory,bool record)
 {
     if (!done) return -NX_EINVAL;
     *done = 0;
@@ -357,10 +357,16 @@ static int write_file(struct v7fs *fs, v7_ino_t number, int64_t offset, const vo
         error = write_block(fs, block, bytes);
         if (error) return error;
         offset += n; *done += n;
-        if ((uint64_t)offset > inode.size) inode.size = offset;
-        inode.mtime = inode.ctime = disk_time();
-        error = inode_put(fs, &inode);
-        if (error) return error;
+        if(!record){
+            if ((uint64_t)offset > inode.size) inode.size = offset;
+            inode.mtime = inode.ctime = disk_time();
+            error = inode_put(fs, &inode);
+            if (error) return error;
+        }
+    }
+    if(record&&count){
+        inode.size=offset;inode.mtime=inode.ctime=disk_time();
+        return inode_put(fs,&inode);
     }
     return 0;
 }
@@ -407,7 +413,14 @@ static int lookup(struct v7fs *fs, v7_ino_t cwd, const char *path, v7_ino_t *res
 }
 
 int v7fs_write(struct v7fs *fs, v7_ino_t ino, int64_t off, const void *buf, size_t n, size_t *done)
-{ return write_file(fs, ino, off, buf, n, done, false); }
+{ return write_file(fs, ino, off, buf, n, done, false,false); }
+int v7fs_append_record(struct v7fs *fs,v7_ino_t ino,const void *data,size_t size)
+{
+    if(!size||size>V7_BSIZE||!data)return -NX_EINVAL;
+    struct v7fs_inode disk;int error=v7fs_inode_get(fs,ino,&disk);if(error)return error;
+    size_t done=0;
+    return write_file(fs,ino,disk.size,data,size,&done,false,true);
+}
 bool v7fs_access(const struct v7fs_inode *inode, uint16_t uid, uint16_t gid, unsigned bits)
 {
     if (!uid) return true;
@@ -507,7 +520,7 @@ static int insert(struct v7fs *fs, v7_ino_t parent, uint32_t pos, const char nam
 {
     struct v7_disk_direct entry = {0}; size_t done;
     v7_disk_put16(entry.ino, ino); copy(entry.name, name, V7_DIRSIZ);
-    int error = write_file(fs, parent, pos, &entry, sizeof(entry), &done, true);
+    int error = write_file(fs, parent, pos, &entry, sizeof(entry), &done, true,false);
     return error ? error : done == sizeof(entry) ? 0 : -NX_EIO;
 }
 static bool reserved_name(const char name[V7_DIRSIZ])

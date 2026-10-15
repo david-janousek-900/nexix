@@ -1,6 +1,7 @@
 /* Native trap dispatch based on V7 sys/trap.c and sys/sysent.c numbering. */
 #include "syscall.h"
 #include "clock.h"
+#include "accounting.h"
 #include "files.h"
 #include "exec.h"
 #include "process.h"
@@ -25,6 +26,7 @@ static int64_t invoke(uint64_t number, struct interrupt_frame *frame)
     case NX_SYS_STTY: case NX_SYS_GTTY: case NX_SYS_IOCTL:
     case NX_SYS_CHMOD: case NX_SYS_CHOWN: case NX_SYS_ACCESS: case NX_SYS_SYNC: case NX_SYS_UTIME:
         return files_syscall(number, u->u_arg);
+    case NX_SYS_ACCT: return accounting_control(u->u_arg[0]);
     case NX_SYS_EXIT:
         proc_exit((u->u_arg[0] & 255) << 8);
     case NX_SYS_EXEC:
@@ -69,7 +71,7 @@ static int64_t invoke(uint64_t number, struct interrupt_frame *frame)
     }
     case NX_SYS_STIME: {
         int64_t now;
-        if (u->u_uid) return -NX_EPERM;
+        if (!proc_superuser(u)) return -NX_EPERM;
         int error = copyin(&p->p_vm, u->u_arg[0], &now, sizeof(now));
         if (error) return error;
         return clock_set(now) ? 0 : -NX_EINVAL;
@@ -77,7 +79,7 @@ static int64_t invoke(uint64_t number, struct interrupt_frame *frame)
     case NX_SYS_SETUID: case NX_SYS_SETGID: {
         uintptr_t id = u->u_arg[0];
         if (id > UINT16_MAX) return -NX_EINVAL;
-        if (u->u_uid && id != (number == NX_SYS_SETUID ? u->u_ruid : u->u_rgid)) return -NX_EPERM;
+        if (id != (number == NX_SYS_SETUID ? u->u_ruid : u->u_rgid) && !proc_superuser(u)) return -NX_EPERM;
         if (number == NX_SYS_SETUID) p->p_uid = u->u_uid = u->u_ruid = id;
         else u->u_gid = u->u_rgid = id;
         return 0;
@@ -85,7 +87,7 @@ static int64_t invoke(uint64_t number, struct interrupt_frame *frame)
     case NX_SYS_NICE: {
         int64_t increment = (int64_t)u->u_arg[0];
         if (increment < -40 || increment > 40) return -NX_EINVAL;
-        if (increment < 0 && u->u_uid) return -NX_EPERM;
+        if (increment < 0 && !proc_superuser(u)) return -NX_EPERM;
         int64_t n = p->p_nice + increment;
         p->p_nice = n < 0 ? 0 : n > 39 ? 39 : n;
         p->p_pri = 50 + ((int)p->p_nice - 20) / 2;

@@ -53,6 +53,8 @@ int dup2(int fd, int target) { return call(NX_SYS_DUP2, fd, target, 0); }
 int pipe(int pair[2]) { return call(NX_SYS_PIPE, (long)(uintptr_t)pair, 0, 0); }
 int chdir(const char *path) { return call(NX_SYS_CHDIR, (long)(uintptr_t)path, 0, 0); }
 int chroot(const char *path) { return call(NX_SYS_CHROOT, (long)(uintptr_t)path, 0, 0); }
+int acct(const char *file)
+{ return call(NX_SYS_ACCT,(long)(uintptr_t)file,0,0); }
 int umount(const char *device)
 { return call(NX_SYS_UMOUNT,(long)(uintptr_t)device,0,0); }
 int mount(const char *device,const char *point,int read_only)

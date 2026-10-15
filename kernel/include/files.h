@@ -16,6 +16,8 @@ void files_fork(struct user *);
 void files_exit(struct user *);
 void files_exec(struct user *);
 unsigned files_live(void);
+int files_account_open(uintptr_t,struct inode **);
+int files_account_append(struct inode *,const void *,size_t);
 int files_core_begin(struct inode **);
 int files_core_write(struct inode *,uint64_t,const void *,size_t);
 bool files_volume_busy(v7_dev_t);

@@ -55,12 +55,13 @@
       "id": "kernel-abi",
       "category": "kernel",
       "status": "partial",
-      "description": "File/process/TTY syscalls, device-qualified inodes, mknod, mount/umount and per-process chroot exist; accounting, tracing, profiling and remaining device interfaces are pending.",
+      "description": "File/process/TTY syscalls, device-qualified inodes, mount/umount, chroot and process accounting exist; tracing, profiling and remaining device interfaces are pending.",
       "evidence": [
         "docs/syscall-abi.md",
         "docs/files.md",
         "docs/mounts.md",
-        "docs/unmount.md"
+        "docs/unmount.md",
+        "docs/accounting.md"
       ],
       "locations": []
     },
@@ -138,9 +139,12 @@
       "id": "accounting",
       "category": "kernel",
       "status": "partial",
-      "description": "Empty utmp/wtmp files are packaged; complete login/process accounting is pending.",
+      "description": "Kernel exit accounting, native records and privileged acct control exist; utmp/wtmp are packaged, login integration and accton/sa command ports remain pending.",
       "evidence": [
-        "tools/mk_rootfs.py"
+        "tools/mk_rootfs.py",
+        "kernel/v7/accounting.c",
+        "libc/include/sys/acct.h",
+        "docs/accounting.md"
       ],
       "locations": [
         "/etc/utmp",

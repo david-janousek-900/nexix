@@ -224,12 +224,16 @@
         "reference/v7/usr/sys/sys/acct.c"
       ],
       "native": [
-        "kernel/v7/process.c"
+        "kernel/v7/process.c",
+        "kernel/v7/accounting.c",
+        "kernel/include/accounting.h",
+        "include/nexix/acct.h"
       ],
       "tasks": [
-        56
+        56,
+        63
       ],
-      "note": "Exit lifecycle exists; acct records and privileged accounting file remain unimplemented."
+      "note": "Task 56 implements sysacct/acct/compress, native records and suser flags with process lifecycle/filesystem ownership. syslock in the same reference file remains task 63; no disk swapping is required."
     },
     {
       "id": "multiplexer",
@@ -471,7 +475,8 @@
         "kernel/include/v7/disk.h",
         "kernel/include/v7/types.h",
         "kernel/include/v7/fs.h",
-        "kernel/include/namespace.h"
+        "kernel/include/namespace.h",
+        "include/nexix/acct.h"
       ],
       "tasks": [
         7,
@@ -489,7 +494,7 @@
         74,
         363
       ],
-      "note": "Native LP64 runtime, explicit V7 disk encodings and private mount identities exist. Missing mpx/packet/accounting structures follow feature owners; public consumer formats follow the header audit."
+      "note": "Native LP64 runtime, V7 disk encodings, private mount identities and native accounting records exist. Missing mpx/packet structures follow feature owners; public consumer formats follow the header audit."
     }
   ],
   "syscalls": [
@@ -905,7 +910,7 @@
       "number": 51,
       "routine": "sysacct",
       "label": "turn acct off/on",
-      "status": "pending",
+      "status": "native_path",
       "task": 56,
       "native": "kernel/v7/syscall.c"
     },

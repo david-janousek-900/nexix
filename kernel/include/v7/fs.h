@@ -31,6 +31,8 @@ int v7fs_unmount(struct v7fs *);
 int v7fs_inode_get(struct v7fs *, v7_ino_t, struct v7fs_inode *);
 int v7fs_lookup(struct v7fs *, v7_ino_t cwd, const char *path, v7_ino_t *result);
 int v7fs_read(struct v7fs *, v7_ino_t, int64_t offset, void *, size_t count, size_t *done);
+/* Bounded record append publishes EOF only after all bytes succeed. */
+int v7fs_append_record(struct v7fs *,v7_ino_t,const void *,size_t);
 int v7fs_write(struct v7fs *, v7_ino_t, int64_t offset, const void *, size_t count, size_t *done);
 /* Low-level allocation APIs: blocks must be exclusively owned by the caller.
  * No duplicate-free detection or full filesystem consistency scan. */

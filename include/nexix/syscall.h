@@ -32,6 +32,7 @@
 #define NX_SYS_KILL 37
 #define NX_SYS_SETPGRP 39
 #define NX_SYS_SETGID 46
+#define NX_SYS_ACCT 51
 #define NX_SYS_SIGNAL 48
 #define NX_SYS_STAT 18
 #define NX_SYS_LSEEK 19

@@ -124,8 +124,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 2 partial, 1 prototype and 203 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 55 done, 2 in progress
-and 309 to do** after task 55. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 56 done, 2 in progress
+and 308 to do** after task 56. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -274,7 +274,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 53 | Raw block/character storage devices | Done | Git history; bounded device table, block/raw transfers, alignment, errors and descriptor lifetime; [mounted-device write guard and native raw-I/O contract](docs/storage-devices.md); `make test-storage` |
 | 54 | Multi-volume namespace and mount | Done | Git history; [V7 mount/namespace contract](docs/mounts.md); device-qualified inode ownership, nested/overlaid mount crossings, dotdot/chroot, read-only volumes and EXDEV; `make test-mount` |
 | 55 | Unmount and busy-volume handling | Done | Git history; [V7 unmount contract](docs/unmount.md); descriptor/cwd/root/text and child-mount busy checks, targeted sticky purge, sync-error retention, remount/cache and graph teardown; `make test-umount` |
-| 56 | Kernel process accounting | To do | acct, exit records, privilege and storage failure |
+| 56 | Kernel process accounting | Done | Git history; [V7 accounting/native record contract](docs/accounting.md); acct(51), fork/exec/exit flags, compressed times, real IDs/TTY, held-inode lifetime and complete-record EOF publication; `make test-accounting` |
 | 57 | ptrace stop/continue and process access | To do | Permissions, wait integration and native register access |
 | 58 | ptrace single-step and debugger memory changes | To do | Instruction stepping and executable-page changes under tracing |
 | 59 | profil sampling | To do | Native PC-to-user-buffer sampling and bounds |

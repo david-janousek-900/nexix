@@ -162,3 +162,8 @@ using V7 syscall number 21 and the native error-return convention. The flag's
 low bit selects read-only mounting. See [mount contracts](mounts.md); the user
 mount command is a separate roadmap port. Task 55 adds `umount(device_path)`
 in `<unistd.h>` using syscall 22; see [unmount contracts](unmount.md).
+
+Task 56 adds `acct(path)` (syscall 51) in `<unistd.h>` and `<sys/acct.h>`.
+The latter exports the native 40-byte `struct acct`, `comp_t`, AFORK and ASU;
+see [accounting record and lifecycle contracts](accounting.md). accton and sa
+remain separate command ports (tasks 240–241).

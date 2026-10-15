@@ -7,6 +7,7 @@
 #include "text.h"
 #include "storage.h"
 #include "namespace.h"
+#include "accounting.h"
 #include <nexix/syscall.h>
 #include <nexix/errno.h>
 #define NPIPE 32
@@ -222,6 +223,25 @@ static int parent_path(struct user *u, const char *path, struct fs_node *parent,
     if (error) return error;
     if ((dir.mode & V7_IFMT) != V7_IFDIR) return -NX_ENOTDIR;
     return v7fs_access(&dir, u->u_uid, u->u_gid, 3) ? 0 : -NX_EACCES;
+}
+int files_account_open(uintptr_t address,struct inode **out)
+{
+    *out=NULL;if(!root)return -NX_ENODEV;
+    struct user *u=proc_current()->p_user;
+    char path[256];int error=path_copy(address,path);if(error)return error;
+    struct fs_node node;error=lookup_path(u,path,&node);if(error)return error;
+    struct v7fs_inode disk;error=node_inode_get(node,&disk);if(error)return error;
+    if((disk.mode&V7_IFMT)!=V7_IFREG)return -NX_EACCES;
+    /* Like V7 sysacct, enabling does not test mode bits, read-only or ITEXT.
+     * Writes enforce those storage constraints without impersonating the exiter. */
+    *out=inode_get(node,&disk);return *out?0:-NX_ENFILE;
+}
+int files_account_append(struct inode *inode,const void *bytes,size_t size)
+{
+    if(!valid_inode(inode))return -NX_EINVAL;
+    struct fs_node node=inode_node(inode);
+    int error=text_write_check(node);if(error)return error; /* Evict unused sticky text; protect active text. */
+    return v7fs_append_record(node_volume(node),node.ino,bytes,size);
 }
 int files_core_begin(struct inode **result)
 {
@@ -457,7 +477,7 @@ static int device_path(struct user *u,uintptr_t address,v7_dev_t *dev)
 }
 static int mount_path(struct user *u,const uintptr_t args[6])
 {
-    if(u->u_uid)return -NX_EPERM;
+    if(!proc_superuser(u))return -NX_EPERM;
     if(!root)return -NX_ENODEV;
     v7_dev_t dev;int error=device_path(u,args[0],&dev);if(error)return error;
     char point_path[256];error=path_copy(args[1],point_path);if(error)return error;
@@ -477,14 +497,14 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
     uint64_t fd = args[0];
     if(number==NX_SYS_MOUNT)return mount_path(u,args);
     if(number==NX_SYS_UMOUNT){
-        if(u->u_uid)return -NX_EPERM;
+        if(!proc_superuser(u))return -NX_EPERM;
         if(!root)return -NX_ENODEV;
         v7_dev_t dev;int error=device_path(u,args[0],&dev);
         return error?error:namespace_unmount(dev);
     }
     if (number == NX_SYS_SYNC) return namespace_sync(); /* Write-through cache plus V7 superblock time. */
     if (number == NX_SYS_MKNOD) {
-        if (u->u_uid) return -NX_EPERM;
+        if (!proc_superuser(u)) return -NX_EPERM;
         if (args[1] > UINT16_MAX || args[2] > UINT16_MAX) return -NX_EINVAL;
         char path[256], name[V7_DIRSIZ]; struct fs_node parent;v7_ino_t ino;
         int error = path_copy(args[0], path); if (error) return error;
@@ -510,7 +530,7 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
             if(args[1]&2){error=text_write_check(ino);if(error)return error;}
             return v7fs_access(&disk, u->u_ruid, u->u_rgid, args[1]) ? 0 : -NX_EACCES;
         }
-        if (u->u_uid && (number == NX_SYS_CHOWN || u->u_uid != disk.uid)) return -NX_EPERM;
+        if ((number==NX_SYS_CHOWN || u->u_uid!=disk.uid) && !proc_superuser(u))return -NX_EPERM;
         if (number == NX_SYS_CHMOD) {
             disk.mode = (disk.mode & ~07777) | (args[1] & (u->u_uid ? 06777 : 07777));
         } else if (number == NX_SYS_CHOWN) { disk.uid = args[1]; disk.gid = args[2]; }
@@ -536,7 +556,7 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
     if (number == NX_SYS_READ || number == NX_SYS_WRITE) return io(u, fd, args[1], args[2], number == NX_SYS_WRITE);
     if (number == NX_SYS_PIPE) return make_pipe(u, args[0]);
     if (number == NX_SYS_CHDIR || number == NX_SYS_CHROOT || number == NX_SYS_UNLINK || number == NX_SYS_LINK || number == NX_SYS_STAT) {
-        if (number == NX_SYS_CHROOT && u->u_uid) return -NX_EPERM;
+        if (number == NX_SYS_CHROOT && !proc_superuser(u)) return -NX_EPERM;
         char path[256]; int error = path_copy(args[0], path); if (error) return error;
         if (!root) return -NX_ENODEV;
         struct fs_node ino;
@@ -550,6 +570,7 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
                 error=v7fs_lookup_root_user(node_volume(parent),parent.ino,0,component,&ino.ino,u->u_uid,u->u_gid);
                 if(!error && namespace_mountpoint(ino))error=-NX_EBUSY;
                 if(!error)error=node_inode_get(ino,&disk);
+                if(!error && (disk.mode&V7_IFMT)==V7_IFDIR && !proc_superuser(u))error=-NX_EPERM;
                 if(!error){
                     struct inode *inode=cached_inode(ino);
                     if(inode)error=text_evict(inode);
@@ -566,7 +587,7 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
         if (number == NX_SYS_LINK) {
             struct v7fs_inode source;
             error = node_inode_get(ino, &source); if (error) return error;
-            if ((source.mode & V7_IFMT) == V7_IFDIR && u->u_uid) return -NX_EPERM;
+            if ((source.mode & V7_IFMT) == V7_IFDIR && !proc_superuser(u)) return -NX_EPERM;
             char target[256], name[V7_DIRSIZ]; struct fs_node parent;
             error = path_copy(args[1], target); if (error) return error;
             error = parent_path(u, target, &parent, name);

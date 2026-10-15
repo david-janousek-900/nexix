@@ -382,8 +382,8 @@ build/nexix.elf: build/root_boot.o
 
 build/root_exec_program.o: user/root-exec-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
-build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/libc.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/libc.a -o $@
+build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/libc.a -o $@
 build/root_exec_image.o: build/root-exec-test.elf
 	$(LD) -r -b binary $< -o build/root_exec_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/root_exec_raw.o $@
@@ -779,3 +779,24 @@ test-unit: test-umount-unit
 build/umount_program.o: user/umount-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 -include build/umount_program.d
+
+OBJECTS += build/accounting.o
+build/nexix.elf: build/accounting.o
+-include build/accounting.d
+build/accounting.o: kernel/v7/accounting.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/accounting-unit-test: tests/accounting.c kernel/v7/accounting.c | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude $^ -o $@
+build/accounting-fs-test: tests/accounting_fs.c kernel/v7/fs.c kernel/block.c | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude $^ -o $@
+.PHONY: test-accounting test-accounting-unit
+test-accounting-unit: build/accounting-unit-test build/accounting-fs-test build/namespace.img
+	./build/accounting-unit-test
+	./build/accounting-fs-test build/namespace.img
+test-accounting: test-accounting-unit test-rootfs test-inventory test-libc-interfaces
+test-unit: test-accounting-unit
+
+build/accounting_program.o: user/accounting-test.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+-include build/accounting_program.d

@@ -4,6 +4,7 @@
 #include "fpu.h"
 #include "clock.h"
 #include "files.h"
+#include "accounting.h"
 #include "text.h"
 #include "signals.h"
 #include "exec.h"
@@ -406,6 +407,7 @@ v7_pid_t proc_fork(const struct interrupt_frame *frame)
     child->p_user->u_utime = child->p_user->u_stime = 0;
     child->p_user->u_cutime = child->p_user->u_cstime = 0;
     child->p_user->u_start = clock_now();
+    child->p_user->u_acflag = NX_AFORK;
     struct interrupt_frame child_frame = *frame;
     child_frame.rax = 0;
     prepare_context(child, &child_frame);
@@ -424,7 +426,10 @@ _Noreturn void proc_exit(int32_t status)
     if (!current) panic("exit without process");
     if (current == init_process) panic("init exited");
     struct proc *p = current;
+    /* files_exit drops TTY references; preserve its number for V7 acct. */
+    v7_dev_t tty=p->p_user->u_ttyd;
     files_exit(p->p_user);
+    p->p_user->u_ttyd=tty;accounting_exit(p->p_user);p->p_user->u_ttyd=V7_NODEV;
     p->p_xstat = status;
     p->p_utime = p->p_user->u_utime + p->p_user->u_cutime;
     p->p_stime = p->p_user->u_stime + p->p_user->u_cstime;

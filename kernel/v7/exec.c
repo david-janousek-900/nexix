@@ -2,6 +2,7 @@
 #include "exec.h"
 #include "fpu.h"
 #include "files.h"
+#include "accounting.h"
 #include "uaccess.h"
 #include "segments.h"
 #include "signals.h"
@@ -82,7 +83,7 @@ int proc_exec(uintptr_t path, uintptr_t argv, uintptr_t envp, struct interrupt_f
     for (unsigned i = 0; i < V7_NSIG; ++i)
         if (u->u_signal[i] != 1) { u->u_signal[i] = 0; u->u_restorer[i] = 0; } /* Preserve ignored dispositions. */
     u->u_prof.pr_scale = 0;
-    u->u_acflag &= ~1U; /* V7 AFORK cleared on successful exec. */
+    u->u_acflag &= ~NX_AFORK; /* V7 AFORK cleared on successful exec. */
     fpu_default(&p->p_fpu);
     fpu_restore(&p->p_fpu);
     *frame = (struct interrupt_frame){.rip = image.entry, .rsp = image.stack,
