@@ -212,4 +212,5 @@ pointer. Reads publish a uint64 word through the fifth argument and return
 zero, preserving negative words independently of negative syscall errors.
 The four-argument libc wrapper clears errno and returns the word. See
 [tracing](ptrace.md) for requests, the native register layout and stopped-child
-wait semantics. Task 58 owns memory writes and single-step.
+wait semantics. [Task 58](debugger.md) implements requests 4/5/9 for native
+instruction/data memory writes and single-step.

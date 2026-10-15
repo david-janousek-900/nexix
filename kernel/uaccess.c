@@ -28,12 +28,24 @@ bool user_access_ok(const struct address_space *space, uintptr_t address, size_t
     return result;
 }
 static int transfer(const struct address_space *space, uintptr_t address,
-                    void *buffer, size_t length, bool write)
+                    void *buffer, size_t length, bool write, bool instruction)
 {
     uintptr_t flags = proc_irq_save();
-    if (!accessible(space, address, length, write)) {
+    if (!accessible(space, address, length, write && !instruction)) {
         proc_irq_restore(flags);
         return -NX_EFAULT;
+    }
+    if(instruction){
+        uintptr_t cursor=address;size_t remaining=length;
+        while(remaining){
+            unsigned permissions;
+            if(!vm_translate(space,cursor,NULL,&permissions)||!(permissions&(VM_WRITE|VM_EXEC))){
+                proc_irq_restore(flags);return -NX_EFAULT;
+            }
+            size_t chunk=PAGE_SIZE-(cursor&(PAGE_SIZE-1));
+            if(chunk>remaining)chunk=remaining;
+            cursor+=chunk;remaining-=chunk;
+        }
     }
     uint8_t *kernel = buffer;
     while (length) {
@@ -55,9 +67,12 @@ static int transfer(const struct address_space *space, uintptr_t address,
     return 0;
 }
 int copyin(const struct address_space *space, uintptr_t source, void *destination, size_t length)
-{ return transfer(space, source, destination, length, false); }
+{ return transfer(space, source, destination, length, false, false); }
 int copyout(const struct address_space *space, uintptr_t destination, const void *source, size_t length)
-{ return transfer(space, destination, (void *)source, length, true); }
+{ return transfer(space, destination, (void *)source, length, true, false); }
+int copyout_instruction(const struct address_space *space, uintptr_t destination,
+                        const void *source,size_t length)
+{ return transfer(space,destination,(void *)source,length,true,true); }
 int copyinstr(const struct address_space *space, uintptr_t source, char *destination,
               size_t capacity, size_t *copied)
 {

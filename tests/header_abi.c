@@ -48,6 +48,7 @@ SIZE(struct passwd,64); FIELD(struct passwd,pw_uid,16);
 FIELD(struct passwd,pw_comment,32); FIELD(struct passwd,pw_shell,56);
 SIZE(struct group,32); FIELD(struct group,gr_gid,16); FIELD(struct group,gr_mem,24);
 SIZE(jmp_buf,72);
+_Static_assert(NX_PT_WRITE_I==4 && NX_PT_WRITE_D==5 && NX_PT_STEP==9,"V7 debugger requests");
 SIZE(struct nx_ptrace_user,688); FIELD(struct nx_ptrace_user,r12,24);
 FIELD(struct nx_ptrace_user,rax,112); FIELD(struct nx_ptrace_user,rip,136);
 FIELD(struct nx_ptrace_user,rflags,152); FIELD(struct nx_ptrace_user,rsp,160);

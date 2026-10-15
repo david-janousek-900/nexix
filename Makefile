@@ -382,8 +382,8 @@ build/nexix.elf: build/root_boot.o
 
 build/root_exec_program.o: user/root-exec-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
-build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/libc.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/libc.a -o $@
+build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/libc.a -o $@
 build/root_exec_image.o: build/root-exec-test.elf
 	$(LD) -r -b binary $< -o build/root_exec_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/root_exec_raw.o $@
@@ -816,3 +816,25 @@ test-ptrace: test-rootfs test-inventory test-libc-interfaces
 
 build/libc_ptrace.o: libc/ptrace.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
+
+# Task 58 native debugger instruction/data patch fixture.
+build/trace_image_program.o: user/trace-image.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/trace_image_code.o: user/trace-image.S | build/.dir
+	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
+build/trace-image.elf: build/crt0.o build/trace_image_program.o build/trace_image_code.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/trace_image_program.o build/trace_image_code.o build/libc.a -o $@
+build/trace_image.o: build/trace-image.elf
+	$(LD) -r -b binary $< -o build/trace_image_raw.o
+	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/trace_image_raw.o $@
+OBJECTS += build/trace_image.o
+build/nexix.elf: build/trace_image.o
+-include build/trace_image_program.d
+
+build/debugger_program.o: user/debugger-test.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+-include build/debugger_program.d
+
+.PHONY: test-debugger
+test-debugger: build/uaccess-test test-rootfs test-inventory test-libc-interfaces
+	./build/uaccess-test

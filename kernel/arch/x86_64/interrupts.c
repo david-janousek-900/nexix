@@ -53,6 +53,7 @@ void interrupts_init(void)
     }
     idt[0x80].attributes = 0xee; /* Native syscall ABI. */
     idt[0x81].attributes = 0xee; /* Bootstrap test gate; hooks check active state. */
+    idt[3].attributes = 0xee; /* User INT3 software breakpoints. */
     struct idt_pointer pointer = { sizeof(idt) - 1, (uintptr_t)idt };
     __asm__ volatile ("lidt %0" : : "m"(pointer) : "memory");
     /* Remap legacy PICs to vectors 32..47 and mask all IRQs. */
@@ -89,7 +90,14 @@ void interrupt_dispatch(struct interrupt_frame *frame)
         else user_mode_interrupt(frame);
     }
     if (frame->vector == 0x80) {
+        bool stepping=(frame->rflags&0x100)!=0;
         syscall_dispatch(frame);
+        /* INT clears hardware TF on entry. Report the completed user syscall
+         * before another user instruction, never single-step kernel code.
+         * Exec supplies its own trap; sigreturn may independently restore TF. */
+        if(stepping&&(frame->rflags&0x100)){
+            frame->rflags&=~0x100UL;signal_post(proc_current(),NX_SIGTRAP);
+        }
         signal_deliver(frame);
         return;
     }
@@ -102,8 +110,10 @@ void interrupt_dispatch(struct interrupt_frame *frame)
         (frame->cs & 3) == 3 && proc_current()) {
         unsigned n = frame->vector == 0 || frame->vector == 16 || frame->vector == 19 ? NX_SIGFPE :
             frame->vector == 6 ? NX_SIGILL : frame->vector == 1 || frame->vector == 3 ? NX_SIGTRAP : NX_SIGSEGV;
-        /* An ignored synchronous fault cannot resume the same instruction. */
-        if (!(proc_current()->p_flag&V7_STRC) && proc_current()->p_user->u_signal[n] == 1) proc_exit(n);
+        if(n==NX_SIGTRAP)frame->rflags&=~0x100UL; /* V7 clears TBIT on trace/bpt. */
+        /* Faults would repeat forever if ignored. Debug/breakpoint traps have
+         * completed their instruction and may safely resume at the next PC. */
+        if (n!=NX_SIGTRAP && !(proc_current()->p_flag&V7_STRC) && proc_current()->p_user->u_signal[n] == 1) proc_exit(n);
         signal_post(proc_current(), n); signal_deliver(frame); return;
     }
     if (frame->vector < 32) {

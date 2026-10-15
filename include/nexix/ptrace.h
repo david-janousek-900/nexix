@@ -7,9 +7,12 @@
 #define NX_PT_READ_I 1
 #define NX_PT_READ_D 2
 #define NX_PT_READ_U 3
+#define NX_PT_WRITE_I 4
+#define NX_PT_WRITE_D 5
 #define NX_PT_WRITE_U 6
 #define NX_PT_CONTINUE 7
 #define NX_PT_KILL 8
+#define NX_PT_STEP 9
 /* Request 3/6 addresses are byte offsets in this public snapshot, never
  * offsets in the private kernel user structure. Words are aligned uint64_t. */
 struct nx_ptrace_user {

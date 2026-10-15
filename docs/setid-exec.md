@@ -56,7 +56,7 @@ implemented separately by task 51.
 Traced exec stops with SIGTRAP before executing the new image. The acceptance
 fixture now uses the real task 57 `ptrace` interface and stopped-child wait
 status to suppress or reinject that trap. The former STRC toggle test gate is
-retired. Debugger memory changes and single-step remain task 58. Set-ID core-dump
+retired. [Task 58](debugger.md) implements debugger memory changes and single-step. Set-ID core-dump
 restrictions are implemented separately by [task 52](core-dumps.md), including
 effective-versus-real GID suppression.
 

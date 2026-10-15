@@ -115,8 +115,8 @@ Process-pipe helpers, tty/account lookup and private-FILE source adapters have
 native implementations under their completed tasks. Remaining prerequisites
 include profiling startup/monitor, ELF symbol lookup and consumer-owned headers.
 Kernel accounting, mount/unmount, block/raw files and task 57 tracing stops with
-native register/FPU access have working wrappers. Debugger memory writes and
-single-step remain task 58; profiling, kernel information and remaining device
+native register/FPU access have working wrappers. Task 58 adds debugger memory
+writes and single-step; profiling, kernel information and remaining device
 capabilities retain their roadmap owners. ENOSYS stubs do not complete a port.
 
 Task 36 (previously 25.8: buffered stdio and setbuf) is implemented. This completes that

@@ -428,6 +428,9 @@ v7_pid_t proc_fork(const struct interrupt_frame *frame)
     child->p_user->u_acflag = NX_AFORK;
     struct interrupt_frame child_frame = *frame;
     child_frame.rax = 0;
+    /* Tracing, including a debugger's in-flight step, is per process. The
+     * untraced child must not inherit a step over the parent's fork syscall. */
+    if(current->p_flag&V7_STRC)child_frame.rflags&=~0x100UL;
     prepare_context(child, &child_frame);
     child->p_brk_base = current->p_brk_base;
     child->p_brk = current->p_brk;

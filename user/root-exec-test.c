@@ -15,6 +15,7 @@ extern int namespace_test(void);
 extern int umount_test(void);
 extern int accounting_test(void);
 extern int ptrace_test(void);
+extern int debugger_test(void);
 static int child_exec(const char *path, int unprivileged)
 {
     int pair[2]; CHECK(pipe(pair)==0);
@@ -74,6 +75,7 @@ int main(void)
     error=umount_test();if(error)return error;
     error=accounting_test();if(error)return error;
     error=ptrace_test();if(error)return error;
+    error=debugger_test();if(error)return error;
     const char marker[]="NEXIX_ROOT_EXEC_USER_OK\n";
     CHECK(write(1,marker,sizeof(marker)-1)==sizeof(marker)-1);
     return 0;

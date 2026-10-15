@@ -94,3 +94,6 @@ and a 512-byte FXSAVE64 image. Debuggers use `NX_PT_OFFSET` rather than
 historical private user-area offsets. `<sys/wait.h>` adds stopped-status
 decoders. The original `sys/user.h` and `sys/proc.h` remain private; kernel
 information consumers still belong to task 62. See [tracing](ptrace.md).
+
+Task 58 adds ptrace request constants 4/5/9 and permits user TF in the protected
+RFLAGS write interface. Snapshot size, offsets and ABI version remain unchanged.

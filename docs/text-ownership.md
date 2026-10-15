@@ -62,9 +62,11 @@ precede a competing ownership error, unlike V7's incremental getxfile loader.
 
 Unused sticky entries can be reclaimed under table pressure. Detaching/switching
 the internal mounted-filesystem object purges unused entries and refuses live
-inode references; the public mount/umount syscalls remain tasks 54–55. Clearing
-the final text hold uses the existing inode reclamation path. Ptrace instruction
-modification, exclusivity rules and debugger stops remain tasks 57–58.
+inode references; public mount/umount are implemented by tasks 54–55. Clearing
+the final text hold uses the existing inode reclamation path. Tasks 57–58 add
+[tracing stops](ptrace.md) and [debugger writes/stepping](debugger.md), including
+exclusive, non-sticky instruction modifications. Native private patches retain
+ITEXT inode protection and are never written back to the executable file.
 
 ## Acceptance
 

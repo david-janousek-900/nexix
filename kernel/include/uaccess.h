@@ -10,6 +10,11 @@
 bool user_access_ok(const struct address_space *, uintptr_t address, size_t length, bool write);
 int copyin(const struct address_space *, uintptr_t source, void *destination, size_t length);
 int copyout(const struct address_space *, uintptr_t destination, const void *source, size_t length);
+/* Debugger instruction-space store: permits user writable OR executable leaves,
+ * preflights the entire range, and writes through kernel physical aliases.
+ * Never changes page permissions. Caller enforces tracing/text ownership. */
+int copyout_instruction(const struct address_space *, uintptr_t destination,
+                        const void *source, size_t length);
 int copyinstr(const struct address_space *, uintptr_t source, char *destination,
               size_t capacity, size_t *copied);
 #endif

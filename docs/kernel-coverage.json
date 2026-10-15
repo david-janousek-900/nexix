@@ -123,6 +123,7 @@
         50,
         51,
         57,
+        58,
         59,
         63,
         64,
@@ -152,7 +153,7 @@
         57,
         58
       ],
-      "note": "Signal delivery, native ELF core dumps and task 57 tracing stops/wait/continue with native register/FPU access are implemented. Debugger memory changes and single-step remain task 58."
+      "note": "Signal delivery, native ELF core dumps and tracing stops/wait/continue with native register/FPU access are implemented. Task 58 adds debugger instruction/data writes, INT3 and single-step with syscall/signal/exec integration."
     },
     {
       "id": "pipes",
@@ -220,7 +221,7 @@
         51,
         55
       ],
-      "note": "ELF resident private images replace a.out/swap text. Shared ownership, ETXTBSY and sticky lifetimes are implemented by task 51; task 55 purges only unused text on the unmounted device. Physical code sharing and swap-backed cached bytes are not reproduced."
+      "note": "ELF resident private images replace a.out/swap text. Shared ownership, ETXTBSY and sticky lifetimes are implemented by task 51; task 55 purges only unused text on the unmounted device. Physical code sharing and swap-backed cached bytes are not reproduced. Task 58 implements exclusive/non-sticky debugger instruction-write checks and private modified-text lifetime; native ITEXT protection is retained."
     },
     {
       "id": "accounting",

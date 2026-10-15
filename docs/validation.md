@@ -380,3 +380,13 @@ the request/register ABI and exercised cases. Markers `NEXIX_PTRACE_OK` and
 `NEXIX_PTRACE_ORPHAN_OK` require both user debugger operations and bootstrap
 verification of a stopped orphan's release/reap, followed by the existing
 root cleanup and boot markers. `make test-unit` supplies the host baseline.
+
+## Task 58 debugger writes and stepping
+
+`make test-debugger` runs executable-alias user-copy tests, disposable-root
+QEMU acceptance at 16/128 MiB and inventory/header/export checks. The required
+`NEXIX_DEBUGGER_OK` marker covers instruction/data writes, shared/sticky text
+rejection, private patches/fork inheritance, unchanged executable files, RX/NX
+protection, software breakpoints and stepping across normal instructions,
+syscalls, fork, signals, faults and exec. Existing root cleanup checks remain
+active. See [debugger.md](debugger.md) for native adaptations.

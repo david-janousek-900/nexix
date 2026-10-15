@@ -81,7 +81,7 @@ int ptrace_test(void)
     CHECK(poke(child,NX_PT_OFFSET(rsp),0)==-1&&errno==EIO);
     CHECK(poke(child,NX_PT_OFFSET(rflags),-1)==0);
     long flags=peek(child,NX_PT_OFFSET(rflags));
-    CHECK((flags&0x3202)==0x202&&(flags&0x100)==0);
+    CHECK((flags&0x3202)==0x202&&(flags&0x100)!=0);
     CHECK(poke(child,NX_PT_OFFSET(rflags),0x202)==0);
     CHECK(resume(child,NSIG)==-1&&errno==EIO);
     CHECK(ptrace(NX_PT_CONTINUE,child,0,0)==-1&&errno==EIO);

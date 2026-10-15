@@ -4,6 +4,7 @@
 #include "ptrace.h"
 #include "uaccess.h"
 #include "fpu.h"
+#include "text.h"
 #include <nexix/ptrace.h>
 #include <nexix/errno.h>
 _Static_assert(sizeof(struct interrupt_frame)==NX_PT_OFFSET(fpu),"trace frame prefix");
@@ -27,9 +28,9 @@ static int user_word(struct proc *p,uintptr_t address,uint64_t *word,bool write)
            address!=NX_PT_OFFSET(rsp)&&address!=NX_PT_OFFSET(rflags))return -NX_EIO;
         if(address==NX_PT_OFFSET(rip)&&!executable(p,*word))return -NX_EIO;
         if(address==NX_PT_OFFSET(rsp)&&(!*word||!user_access_ok(&p->p_vm,*word-1,1,true)))return -NX_EIO;
-        /* Arithmetic/DF/RF/AC/ID only, IF and bit 1 forced, no TF until task 58.
+        /* Arithmetic/DF/TF/RF/AC/ID only, IF and bit 1 forced.
          * Never allow IOPL, NT, VM, reserved bits or kernel selectors. */
-        if(address==NX_PT_OFFSET(rflags))*word=(*word&0x250cd5UL)|0x202;
+        if(address==NX_PT_OFFSET(rflags))*word=(*word&0x250dd5UL)|0x202;
         *slot=*word;return 0;
     }
     struct nx_fpu_state fp=p->p_fpu;
@@ -63,14 +64,27 @@ int trace_request(int64_t request,int64_t pid,uintptr_t address,uint64_t data,ui
         if(error)return error;
         return copyout(&caller->p_vm,result,&word,8);
     case NX_PT_WRITE_U:return user_word(child,address,&word,true);
-    case NX_PT_CONTINUE:
+    case NX_PT_WRITE_I:case NX_PT_WRITE_D:
+        if(address%8)return -NX_EIO;
+        if(request==NX_PT_WRITE_I){
+            struct text *owner=child->p_textp;
+            if(owner&&(!text_valid(owner)||owner->x_count!=1||
+                       (owner->x_iptr->i_mode&V7_ISVTX)))return -NX_EIO;
+            if(copyout_instruction(&child->p_vm,address,&word,8))return -NX_EIO;
+            /* Private native patches are never persisted to the inode. Keep
+             * ITEXT: ordinary file writes must still respect active exec. */
+            if(owner)owner->x_flag|=V7_XWRIT;
+        }else if(copyout(&child->p_vm,address,&word,8))return -NX_EIO;
+        return 0;
+    case NX_PT_CONTINUE:case NX_PT_STEP:
         if(data>=V7_NSIG)return -NX_EIO;
         if(address!=1&&!executable(child,address))return -NX_EIO;
         if(address!=1)child->p_user->u_ar0->rip=address;
+        if(request==NX_PT_STEP)child->p_user->u_ar0->rflags|=0x100;
         child->p_sig=data?1U<<(data-1):0;
         child->p_stat=V7_SRUN;return 0;
     case NX_PT_KILL:
         child->p_trace_exit=true;child->p_stat=V7_SRUN;return 0;
-    default:return -NX_EIO; /* Memory writes and step: task 58. */
+    default:return -NX_EIO;
     }
 }

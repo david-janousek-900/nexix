@@ -23,6 +23,7 @@ bool vm_translate(const struct address_space *s, uintptr_t address,
     else if (base == USER_BASE + PAGE_SIZE) index = 0;
     else if (base == USER_BASE + 2 * PAGE_SIZE) { index = 3; flags = VM_USER; }
     else if (base == USER_BASE + 3 * PAGE_SIZE) { index = 1; flags = VM_WRITE; }
+    else if (base == USER_BASE + 5 * PAGE_SIZE) { index = 2; flags = VM_USER|VM_EXEC; }
     else if (base == USER_LIMIT - PAGE_SIZE) index = 1;
     else return false;
     if (physical) *physical = (uintptr_t)backing[index] + (address & (PAGE_SIZE - 1));
@@ -59,6 +60,20 @@ int main(void)
     assert(copyin(&space, UINTPTR_MAX, NULL, 0) == 0);
     assert(copyout(&space, 0, NULL, 0) == 0);
     assert(!user_access_ok(NULL, USER_BASE, 1, false));
+    uintptr_t rx=USER_BASE+5*PAGE_SIZE;
+    assert(copyout(&space,rx,source,8)==-NX_EFAULT);
+    assert(copyout_instruction(&space,rx,source,8)==0&&!memcmp(backing[2],source,8));
+    unsigned permissions;assert(vm_translate(&space,rx,NULL,&permissions)&&permissions==(VM_USER|VM_EXEC));
+    assert(copyout_instruction(&space,cross,source,32)==0); /* RW pages also work. */
+    memset(backing[0]+PAGE_SIZE-16,0x5a,16);
+    assert(copyout_instruction(&space,USER_BASE+2*PAGE_SIZE-16,source,32)==-NX_EFAULT);
+    for(unsigned i=0;i<16;++i)assert(backing[0][PAGE_SIZE-16+i]==0x5a);
+    assert(copyout_instruction(&space,USER_BASE+2*PAGE_SIZE,source,8)==-NX_EFAULT); /* RO, NX */
+    for(unsigned i=0;i<sizeof(invalid)/sizeof(invalid[0]);++i)
+        assert(copyout_instruction(&space,invalid[i],source,32)==-NX_EFAULT);
+    assert(copyout_instruction(&space,USER_BASE+3*PAGE_SIZE,source,8)==-NX_EFAULT); /* supervisor */
+    assert(copyout_instruction(&space,rx+PAGE_SIZE-8,source,16)==-NX_EFAULT);
+    assert(copyout_instruction(&space,0,NULL,0)==0);
 
     cross += 3; /* String terminator lies on the second noncontiguous page. */
     const char string[] = "abcde";

@@ -21,16 +21,18 @@ Other requests ignore it.
 | <=0 | Mark caller traced; other arguments ignored. Fork does not inherit tracing. |
 | 1 / 2 | Read an aligned word from the stopped child's user mappings; native instruction/data spaces coincide. |
 | 3 | Read an aligned word at a byte offset in `struct nx_ptrace_user`. |
+| 4 / 5 | Write an instruction/data word; [task 58](debugger.md) defines text checks and page protection. |
 | 6 | Write a permitted register/FPU word at the same snapshot offset. |
 | 7 | Continue, replacing the pending signal set with data (0 suppresses it); address 1 keeps PC, otherwise selects a mapped executable user address. |
 | 8 | Terminate the stopped child with its first pending signal as wait status, without a core dump. |
+| 9 | Continue as request 7, with native single-step enabled; stop with SIGTRAP after the instruction. |
 
 Positive requests require a direct child in SSTOP. No arbitrary attach or root
 exception exists. Running/sleeping children, siblings, unrelated processes and
 reaped PIDs return ESRCH. Invalid requests, unaligned/unmapped child addresses,
 invalid register offsets and invalid continue signals return EIO. An invalid
-caller output slot returns EFAULT. Requests 4, 5 and 9 remain EIO until task 58.
-Remote memory writes, single-step and a rebuilt debugger remain separate tasks.
+caller output slot returns EFAULT. Task 58 implements requests 4, 5 and 9;
+the rebuilt adb command remains a later task.
 
 Any pending signal, including one whose disposition is ignored, stops a traced
 process before delivery. A successful traced exec suppresses set-ID transitions
@@ -56,7 +58,7 @@ The public snapshot has a 176-byte register prefix and 512-byte FXSAVE64 state
 RIP, RSP, RFLAGS and FPU words are writable; selectors and trap vector/error are
 read-only. RIP must name executable user memory and RSP must point above writable
 user memory. RFLAGS forces user interrupt enable and strips privileged/reserved
-bits and TF (stepping is task 58). MXCSR validation rejects unsupported bits
+bits; TF is writable under task 58. MXCSR validation rejects unsupported bits
 before changing the saved FPU state. Failed validation leaves registers intact.
 
 Run `make test-ptrace`. Disposable-root QEMU acceptance at 16/128 MiB checks
@@ -72,3 +74,6 @@ is also checked. The root-exec harness checks process/file/TTY/page and filesyst
 reclamation.
 Header layout/export and inventory audits run through the same target. No
 persistent working disk is used by these tests.
+
+[Task 58](debugger.md) adds instruction/data writes, software breakpoints and
+native single-step behavior and extends the acceptance tests.
