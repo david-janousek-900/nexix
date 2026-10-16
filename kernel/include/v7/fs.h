@@ -19,6 +19,8 @@ struct v7fs {
     bool mounted, read_only, failed;
     unsigned cursor;
     struct v7fs_cache cache[V7FS_CACHE];
+    /* Optional resident-inode observer, invoked only after a successful metadata write. */
+    void (*inode_changed)(struct v7fs *, const struct v7fs_inode *);
 };
 /* Kernel buffers/pathnames and decoded inode copies. Reference ownership
  * belongs to the files layer, not this storage API.

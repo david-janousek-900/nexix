@@ -1,6 +1,10 @@
 /* Native adaptation of V7 dev/tty.c's line discipline for the COM1 UART. */
 #include "tty.h"
 #include "serial.h"
+#include <nexix/kinfo.h>
+static uint64_t tty_in,tty_out;
+void tty_statistics(struct nx_kinfo_io *r){r->tty_in=tty_in;r->tty_out=tty_out;}
+static void counted_putc(char c){serial_putc(c);++tty_out;}
 #include "uaccess.h"
 #include "signals.h"
 #include <nexix/errno.h>
@@ -66,14 +70,14 @@ static void output(struct tty *t, uint8_t c)
 {
     if (!(t->settings.flags & NX_RAW)) {
         c &= 0177;
-        if (c == '\n' && (t->settings.flags & NX_CRMOD)) serial_putc('\r');
+        if (c == '\n' && (t->settings.flags & NX_CRMOD)) counted_putc('\r');
         if (c == '\t' && (t->settings.flags & NX_XTABS) == NX_XTABS) {
             unsigned spaces = 8 - t->column % 8;
-            while (spaces--) { serial_putc(' '); ++t->column; }
+            while (spaces--) { counted_putc(' '); ++t->column; }
             return;
         }
     }
-    serial_putc(c);
+    counted_putc(c);
     if (c == '\r' || c == '\n') t->column = 0;
     else if (c == '\b') { if (t->column) --t->column; }
     else if (c == '\t') t->column += 8 - t->column % 8;
@@ -100,6 +104,7 @@ static void commit(struct tty *t)
 }
 void tty_receive(uint8_t c)
 {
+    ++tty_in;
     struct tty *t = &console;
     if (!t->opens) return;
     if (!(t->settings.flags & NX_RAW)) {

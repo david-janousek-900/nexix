@@ -4,7 +4,7 @@
 #define WORD_BITS 64
 static uint64_t eligible[PAGE_COUNT / WORD_BITS];
 static uint64_t allocated[PAGE_COUNT / WORD_BITS];
-static uint32_t free_pages, next_page;
+static uint32_t free_pages, next_page, total_pages;
 
 static uint64_t bit(uint32_t page) { return 1ULL << (page % WORD_BITS); }
 static bool is_free(uint32_t page)
@@ -65,7 +65,10 @@ void page_allocator_init(const struct boot_info *info, uintptr_t reserved_end)
     for (uint32_t page = 0; page < PAGE_COUNT; ++page)
         if (is_free(page))
             ++free_pages;
+    total_pages=free_pages;
 }
+
+uint32_t page_total_count(void) { return total_pages; }
 
 uintptr_t page_alloc(void)
 {

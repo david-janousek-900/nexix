@@ -1,6 +1,10 @@
 /* Native adaptation of V7 alloc.c, subr.c bmap, iget.c, rdwri.c and nami.c.
  * Original source and license are retained under reference/. */
 #include "v7/fs.h"
+#include <nexix/kinfo.h>
+static uint64_t cache_lookups,cache_hits;
+void cache_statistics(struct nx_kinfo_io *r)
+{r->cache_lookups=cache_lookups;r->cache_hits=cache_hits;}
 #include "clock.h"
 #include <nexix/errno.h>
 static void copy(void *to, const void *from, size_t n)
@@ -22,8 +26,10 @@ static bool data_block(struct v7fs *fs, uint32_t block)
 static int read_block(struct v7fs *fs, uint32_t block, void *buffer)
 {
     if (block >= fs->fsize) return -NX_EIO;
+    ++cache_lookups;
     for (unsigned i = 0; i < V7FS_CACHE; ++i)
         if (fs->cache[i].valid && fs->cache[i].block == block) {
+            ++cache_hits;
             copy(buffer, fs->cache[i].bytes, V7_BSIZE); return 0;
         }
     struct v7fs_cache *entry = &fs->cache[fs->cursor++ % V7FS_CACHE];
@@ -85,7 +91,9 @@ static int inode_put(struct v7fs *fs, const struct v7fs_inode *inode)
     v7_disk_put32(disk->ctime, inode->ctime);
     for (unsigned i = 0; i < V7_NADDR; ++i)
         if (!v7_disk_putaddr(disk->addr + i * 3, inode->addr[i])) return -NX_EIO;
-    return write_block(fs, v7_itod(inode->number), bytes);
+    error=write_block(fs, v7_itod(inode->number), bytes);
+    if(!error && fs->inode_changed)fs->inode_changed(fs,inode);
+    return error;
 }
 /* Preserve the existing 32-bit V7 disk encoding (low 32 epoch bits). */
 static uint32_t disk_time(void) { return (uint32_t)clock_now(); }

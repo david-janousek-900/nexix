@@ -16,6 +16,7 @@ void files_fork(struct user *);
 void files_exit(struct user *);
 void files_exec(struct user *);
 unsigned files_live(void);
+void files_inode_changed(struct v7fs *,const struct v7fs_inode *);
 int files_account_open(uintptr_t,struct inode **);
 int files_account_append(struct inode *,const void *,size_t);
 int files_core_begin(struct inode **);

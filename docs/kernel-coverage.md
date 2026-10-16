@@ -88,3 +88,8 @@ needed for this audit-only change. Existing host unit tests are run as a baselin
 Task 59 implements [native V7 profil sampling](profiling.md), including user
 PIT samples and per-process system-time charges at trap return. Profiling
 startup/monitor records are implemented by task 60; the kernel itself is not profiled.
+
+Task 62 supplies [versioned kernel-information snapshots](kernel-information.md)
+for process/file/inode/text/mount tables, managed memory and cumulative I/O.
+Diagnostics use these explicit records in place of historical kernel offsets;
+ps, pstat and iostat still need their separate command-port acceptance.

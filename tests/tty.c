@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "tty.h"
+#include "kinfo.h"
 #include "uaccess.h"
 #include <nexix/errno.h>
 static uint8_t output[32768], buffer[2048];
@@ -46,7 +47,9 @@ int main(void)
     struct nx_sgttyb sg;
     assert(control(t, NX_TIOCGETP, &sg) == 0 && sg.flags == (NX_ECHO | NX_CRMOD));
     output_size = 0;
+    struct nx_kinfo_io before={0},after={0};tty_statistics(&before);
     feed("ab\bC\r", 5); expect(t, "aC\n", 3);
+    tty_statistics(&after);assert(after.tty_in==before.tty_in+5 && after.tty_out==before.tty_out+8);
     assert(output_size == 8 && !memcmp(output, "ab\b \bC\r\n", 8));
     output_size = 0; feed("x\025z\n", 4); expect(t, "z\n", 2);
     assert(output_size == 6 && !memcmp(output, "x\r\nz\r\n", 6));

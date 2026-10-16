@@ -1,3 +1,4 @@
+#include <sys/kinfo.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -60,6 +61,16 @@ int namespace_test(void)
     CHECK(same("/tmp/mnt/inner/..","/tmp/mnt"));
     CHECK(same("/tmp/mnt/inner/../..","/tmp"));
     CHECK(mount(devices[2],"/tmp/ro",1)==0);
+    {
+        struct {struct nx_kinfo_header h;struct nx_kinfo_mount m[8];} snap;
+        CHECK(nx_kinfo(1,NX_KINFO_MOUNT,&snap,sizeof(snap))==48+4*48 && snap.h.count==4);
+        int nested=0,readonly=0;
+        for(unsigned i=0;i<snap.h.count;++i){
+            if(snap.m[i].dev==2){CHECK(snap.m[i].point_dev==1);nested=1;}
+            if(snap.m[i].dev==3){CHECK(snap.m[i].flags&NX_KINFO_MOUNT_RDONLY);readonly=1;}
+        }
+        CHECK(nested && readonly);
+    }
     CHECK(open(devices[0],O_WRONLY)==-1&&errno==EBUSY);
     CHECK(open("/tmp/ro/data",O_WRONLY)==-1&&errno==EROFS);
     CHECK(creat("/tmp/ro/new",0644)==-1&&errno==EROFS);

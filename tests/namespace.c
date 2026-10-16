@@ -11,6 +11,7 @@ static struct ramdisk devices[8];
 static unsigned char bytes[8][256*BLOCK_SIZE];
 static struct inode pins[7];
 static int busy_device=-1;
+void files_inode_changed(struct v7fs *fs,const struct v7fs_inode *ip){(void)fs;(void)ip;}
 int64_t clock_now(void){return 1709210096;}
 int files_inode_put(struct inode *ip){assert(ip->i_count==1);--ip->i_count;return 0;}
 _Noreturn void panic(const char *message){fprintf(stderr,"panic: %s\n",message);abort();}

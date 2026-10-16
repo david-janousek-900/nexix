@@ -204,7 +204,7 @@ their sources alone does not provide a working native equivalent.
 | `accounts` | partial | `/etc/passwd`, `/etc/group` |
 | `multi-tty` | partial | Current UART and line discipline provide one shared COM1 console; independent COM2 and login terminals are pending. |
 | `accounting` | partial | Kernel exit accounting, native records and privileged acct control exist; utmp/wtmp are packaged, login integration and accton/sa command ports remain pending. |
-| `kernel-information` | missing | Historical kernel-memory/symbol consumers need a native information interface. |
+| `kernel-information` | supplied | Versioned privileged native process/file/inode/text/mount/memory/I/O snapshots replace historical kernel-memory layouts. Diagnostic command ports remain pending. |
 | `tracing-profiling` | partial | Native tracing, debugger writes/single-step, profil sampling and monitor/mcount with profiling startup/records exist. ELF64 nlist and shared symbol contracts exist. Symbol consumers and the adb/prof command ports remain pending. |
 | `raw-storage` | partial | Block/raw device files and multi-volume mount/umount routing exist; mounted-device writes are guarded, storage-administration command ports remain pending. |
 | `historical-devices` | pending_assessment | PDP-11 disks/tapes, plotters and printer protocols require native equivalents or individually documented exceptions. |

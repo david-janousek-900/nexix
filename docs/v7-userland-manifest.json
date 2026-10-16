@@ -157,12 +157,16 @@
     {
       "id": "kernel-information",
       "category": "kernel",
-      "status": "missing",
-      "description": "Historical kernel-memory/symbol consumers need a native information interface.",
+      "status": "supplied",
+      "description": "Versioned privileged native process/file/inode/text/mount/memory/I/O snapshots replace historical kernel-memory layouts. Diagnostic command ports remain pending.",
       "evidence": [
         "reference/v7/usr/src/cmd/ps.c",
         "reference/v7/usr/src/cmd/iostat.c",
-        "reference/v7/usr/src/cmd/pstat.c"
+        "reference/v7/usr/src/cmd/pstat.c",
+        "include/nexix/kinfo.h",
+        "kernel/v7/kinfo.c",
+        "libc/kinfo.c",
+        "docs/kernel-information.md"
       ],
       "locations": []
     },

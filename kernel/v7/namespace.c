@@ -1,5 +1,6 @@
 /* Native V7 mount table, iget mount crossing and namei dotdot traversal. */
 #include "namespace.h"
+#include "kinfo.h"
 #include "files.h"
 #include "storage.h"
 #include "text.h"
@@ -24,7 +25,10 @@ struct v7fs *namespace_volume(v7_dev_t dev)
 int namespace_root(struct v7fs *fs)
 {
     for(unsigned i=1;i<NAMESPACE_MOUNTS;++i)if(mounts[i].fs)return -NX_EBUSY;
-    clear_volume(&mounts[0]);mounts[0].fs=fs;return 0;
+    if(mounts[0].fs)mounts[0].fs->inode_changed=NULL;
+    clear_volume(&mounts[0]);mounts[0].fs=fs;
+    if(fs)fs->inode_changed=files_inode_changed;
+    return 0;
 }
 bool namespace_mountpoint(struct fs_node node)
 {
@@ -111,7 +115,8 @@ int namespace_mount(v7_dev_t dev,struct fs_node point,struct inode *pin,bool rea
         if(slot->owned.mounted)(void)v7fs_unmount(&slot->owned);
         storage_mount_close(handle);clear_volume(slot);return error;
     }
-    slot->fs=&slot->owned;pin->i_flag|=V7_IMOUNT;return 0;
+    slot->fs=&slot->owned;slot->fs->inode_changed=files_inode_changed;
+    pin->i_flag|=V7_IMOUNT;return 0;
 }
 unsigned namespace_pins(void)
 {unsigned n=0;for(unsigned i=1;i<NAMESPACE_MOUNTS;++i)n+=mounts[i].fs!=NULL;return n;}
@@ -174,4 +179,18 @@ int namespace_reset(void)
         if(!released)return -NX_EBUSY;
     }
     return 0;
+}
+
+bool mounts_info(unsigned i,struct nx_kinfo_mount *r)
+{
+    if(i>=NAMESPACE_MOUNTS || !mounts[i].fs)return false;
+    const struct volume *v=&mounts[i];const struct v7fs *fs=v->fs;
+    *r=(struct nx_kinfo_mount){.slot=i+1,.dev=v->dev,
+        .flags=(!i?NX_KINFO_MOUNT_ROOT:0) | (fs->read_only?NX_KINFO_MOUNT_RDONLY:0) |
+               (fs->failed?NX_KINFO_MOUNT_FAILED:0),
+        .point_dev=v->point.dev,.point_ino=i?v->point.ino:V7_ROOTINO,
+        .fs_blocks=fs->fsize,.device_blocks=fs->device?fs->device->blocks:0,
+        .inodes=fs->inodes,.cache_capacity=V7FS_CACHE};
+    for(unsigned j=0;j<V7FS_CACHE;++j)r->cache_used+=fs->cache[j].valid;
+    return true;
 }

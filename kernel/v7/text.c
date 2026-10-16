@@ -1,5 +1,6 @@
 /* Resident ownership counterpart of V7 text.c; no swap/shared physical pages. */
 #include "text.h"
+#include "kinfo.h"
 #include "serial.h"
 #include "interrupts.h"
 #include <nexix/errno.h>
@@ -73,4 +74,18 @@ void text_release(struct text *text)
     if(!text_valid(text))panic("invalid text release");
     --text->x_count;--text->x_ccount;
     if(!text->x_count&&!(text->x_iptr->i_mode&V7_ISVTX))(void)discard(text);
+}
+
+unsigned text_info_id(const struct text *text)
+{
+    for(unsigned i=0;i<V7_NTEXT;++i)if(text==&texts[i]&&text->x_iptr)return i+1;
+    return 0;
+}
+bool text_info(unsigned i,struct nx_kinfo_text *r)
+{
+    if(i>=V7_NTEXT || !texts[i].x_iptr)return false;
+    const struct text *t=&texts[i];
+    *r=(struct nx_kinfo_text){.slot=i+1,.refs=t->x_count,.resident_refs=t->x_ccount,
+        .flags=t->x_flag,.size=t->x_size,.dev=t->x_iptr->i_dev,.ino=t->x_iptr->i_number};
+    return true;
 }

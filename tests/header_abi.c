@@ -2,6 +2,7 @@
 #include <sys/types.h>
 #include <mon.h>
 #include <a.out.h>
+#include <sys/kinfo.h>
 #include <sys/acct.h>
 #include <sys/stat.h>
 #include <sys/dir.h>
@@ -19,6 +20,14 @@
 #include "v7/types.h"
 #define SIZE(t,n) _Static_assert(sizeof(t)==(n), #t " size")
 #define FIELD(t,f,n) _Static_assert(offsetof(t,f)==(n), #t "." #f " offset")
+SIZE(struct nx_kinfo_header,48); FIELD(struct nx_kinfo_header,total_bytes,24); FIELD(struct nx_kinfo_header,ticks,32);
+SIZE(struct nx_kinfo_process,144); FIELD(struct nx_kinfo_process,size_bytes,40); FIELD(struct nx_kinfo_process,user_ticks,72); FIELD(struct nx_kinfo_process,command,128);
+SIZE(struct nx_kinfo_file,40); FIELD(struct nx_kinfo_file,offset,24);
+SIZE(struct nx_kinfo_inode,40); FIELD(struct nx_kinfo_inode,size,24);
+SIZE(struct nx_kinfo_text,32); FIELD(struct nx_kinfo_text,size,16);
+SIZE(struct nx_kinfo_mount,48); FIELD(struct nx_kinfo_mount,fs_blocks,16);
+SIZE(struct nx_kinfo_memory,32); FIELD(struct nx_kinfo_memory,page_size,24);
+SIZE(struct nx_kinfo_io,96); FIELD(struct nx_kinfo_io,cache_lookups,64);
 SIZE(struct nlist,24); FIELD(struct nlist,n_name,0); FIELD(struct nlist,n_type,8); FIELD(struct nlist,n_value,16);
 SIZE(Elf64_Ehdr,64); FIELD(Elf64_Ehdr,e_shoff,40); FIELD(Elf64_Ehdr,e_shnum,60);
 SIZE(Elf64_Shdr,64); FIELD(Elf64_Shdr,sh_link,40); FIELD(Elf64_Shdr,sh_entsize,56);

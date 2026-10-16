@@ -8,6 +8,10 @@
 #include "user_test.h"
 #include "process.h"
 #include "profile.h"
+#include <nexix/kinfo.h>
+static uint64_t cpu_user,cpu_nice,cpu_system,cpu_idle;
+void cpu_statistics(struct nx_kinfo_io *r)
+{r->user_ticks=cpu_user;r->nice_ticks=cpu_nice;r->system_ticks=cpu_system;r->idle_ticks=cpu_idle;}
 #include "signals.h"
 #include "syscall.h"
 #include "exec.h"
@@ -145,8 +149,14 @@ static void dispatch(struct interrupt_frame *frame)
                 return;
             }
         }
-        if (frame->vector == 32)
+        if (frame->vector == 32) {
             ++ticks;
+            struct proc *owner=proc_current();
+            if(!owner)++cpu_idle;
+            else if((frame->cs&3)!=3)++cpu_system;
+            else if(owner->p_nice>20)++cpu_nice;
+            else ++cpu_user;
+        }
         if (frame->vector == 36) serial_interrupt();
         if (frame->vector >= 40)
             outb(0xa0, 0x20);

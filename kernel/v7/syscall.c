@@ -4,6 +4,7 @@
 #include "accounting.h"
 #include "ptrace.h"
 #include "profile.h"
+#include "kinfo.h"
 #include "files.h"
 #include "exec.h"
 #include "process.h"
@@ -28,6 +29,7 @@ static int64_t invoke(uint64_t number, struct interrupt_frame *frame)
     case NX_SYS_STTY: case NX_SYS_GTTY: case NX_SYS_IOCTL:
     case NX_SYS_CHMOD: case NX_SYS_CHOWN: case NX_SYS_ACCESS: case NX_SYS_SYNC: case NX_SYS_UTIME:
         return files_syscall(number, u->u_arg);
+    case NX_SYS_KINFO:return kinfo_request(u->u_arg[0],u->u_arg[1],u->u_arg[2],u->u_arg[3]);
     case NX_SYS_ACCT: return accounting_control(u->u_arg[0]);
     case NX_SYS_PROFIL:return profile_configure(u->u_arg[0],u->u_arg[1],u->u_arg[2],u->u_arg[3]);
     case NX_SYS_PTRACE:return trace_request((int64_t)u->u_arg[0],(int64_t)u->u_arg[1],

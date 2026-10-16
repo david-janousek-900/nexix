@@ -15,6 +15,7 @@ static int busy=-1,release_error,purge_error;
 static unsigned faults;
 static int (*backing_write[8])(struct block_device *,uint32_t,const void *);
 static int64_t now=1709210096;
+void files_inode_changed(struct v7fs *fs,const struct v7fs_inode *ip){(void)fs;(void)ip;}
 int64_t clock_now(void){return now;}
 _Noreturn void panic(const char *message){fprintf(stderr,"panic: %s\n",message);abort();}
 int files_inode_put(struct inode *ip){assert(ip->i_count);--ip->i_count;return 0;}

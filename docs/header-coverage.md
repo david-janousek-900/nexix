@@ -94,7 +94,8 @@ Task 57 adapts `sys/reg.h` to `<sys/ptrace.h>` and the shared
 and a 512-byte FXSAVE64 image. Debuggers use `NX_PT_OFFSET` rather than
 historical private user-area offsets. `<sys/wait.h>` adds stopped-status
 decoders. The original `sys/user.h` and `sys/proc.h` remain private; kernel
-information consumers still belong to task 62. See [tracing](ptrace.md).
+information is exposed by task 62's [native snapshots](kernel-information.md);
+full diagnostic consumers remain tasks 252–254. See [tracing](ptrace.md).
 
 Task 58 adds ptrace request constants 4/5/9 and permits user TF in the protected
 RFLAGS write interface. Snapshot size, offsets and ABI version remain unchanged.
@@ -109,3 +110,7 @@ records are not used as native overlays; prof decoding remains task 257.
 
 Task 61 adds `<nlist.h>`, `<elf.h>` and the `<a.out.h>` adapter with native
 64-bit symbol values and full string names. See [symbol lookup](nlist.md).
+
+Task 62 adds `<sys/kinfo.h>` with version-1 fixed-width snapshot records.
+Private V7 proc/file/inode/mount layouts remain kernel-only; see
+[kernel information](kernel-information.md).

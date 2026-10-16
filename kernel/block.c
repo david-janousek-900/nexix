@@ -1,4 +1,8 @@
 #include "block.h"
+#include <nexix/kinfo.h>
+static uint64_t read_sectors,write_sectors,read_errors,write_errors;
+void block_statistics(struct nx_kinfo_io *r)
+{r->read_sectors=read_sectors;r->write_sectors=write_sectors;r->read_errors=read_errors;r->write_errors=write_errors;}
 #include <nexix/errno.h>
 static int ram_read(struct block_device *dev, uint32_t block, void *buffer)
 {
@@ -39,7 +43,8 @@ int block_read(struct block_device *dev, uint32_t first, uint32_t count, void *b
     uint8_t *dst = buffer;
     for (uint32_t i = 0; i < count; ++i) {
         error = dev->read(dev, first + i, dst + (size_t)i * BLOCK_SIZE);
-        if (error) return error;
+        if (error) { ++read_errors; return error; }
+        ++read_sectors;
     }
     return 0;
 }
@@ -52,7 +57,8 @@ int block_write(struct block_device *dev, uint32_t first, uint32_t count, const 
     const uint8_t *src = buffer;
     for (uint32_t i = 0; i < count; ++i) {
         error = dev->write(dev, first + i, src + (size_t)i * BLOCK_SIZE);
-        if (error) return error;
+        if (error) { ++write_errors; return error; }
+        ++write_sectors;
     }
     return 0;
 }

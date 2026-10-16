@@ -182,3 +182,10 @@ Task 61 implements [native ELF nlist](nlist.md), retaining V7 missing-symbol and
 type/value lookup behavior with full names and 64-bit values. Native ELF record
 contracts are shared with later consumers; diagnostic and toolchain program ports
 remain separate tasks.
+
+
+## Native diagnostic interface
+
+Task 62 adds `nx_kinfo` in `<sys/kinfo.h>` for versioned privileged kernel-table
+snapshots. See [snapshot contracts](kernel-information.md); the native diagnostic
+command ports remain separate pending tasks.

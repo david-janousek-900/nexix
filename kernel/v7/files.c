@@ -1,5 +1,6 @@
 /* Native V7 fio/sys2/sys3/pipe ownership and descriptor semantics. */
 #include "files.h"
+#include "kinfo.h"
 #include "tty.h"
 #include "signals.h"
 #include "uaccess.h"
@@ -77,6 +78,7 @@ static struct inode *inode_get(struct fs_node ino, const struct v7fs_inode *disk
     if (!slot) return NULL;
     *slot = (struct inode){.i_count = 1, .i_dev=ino.dev, .i_number = ino.ino, .i_mode = disk->mode,
         .i_nlink = disk->nlink, .i_uid = disk->uid, .i_gid = disk->gid, .i_size = disk->size};
+    if((disk->mode&V7_IFMT)==V7_IFCHR || (disk->mode&V7_IFMT)==V7_IFBLK)slot->i_un.i_rdev=disk->addr[0];
     return slot;
 }
 int files_inode_put(struct inode *inode)
@@ -653,4 +655,47 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
         return error ? error : copyout(&p->p_vm, args[1], &st, sizeof(st));
     }
     return -NX_ENOSYS;
+}
+
+/* Public IDs are table slots plus one, never private addresses. */
+unsigned files_info_inode_id(const struct inode *ip)
+{
+    for(unsigned i=0;i<V7_NINODE;++i)if(ip==&inodes[i]&&ip->i_count)return i+1;
+    return 0;
+}
+bool files_info(unsigned i,struct nx_kinfo_file *r)
+{
+    if(i>=V7_NFILE || !table[i].f_count)return false;
+    const struct file *f=&table[i];
+    zero(r,sizeof(*r));r->slot=i+1;r->refs=f->f_count;
+    r->flags=f->f_flag & ~FILE_STORAGE;r->open_flags=f->f_open_flags;
+    r->offset=f->f_offset;r->inode_id=files_info_inode_id(f->f_inode);
+    if(r->inode_id){r->dev=f->f_inode->i_dev;r->ino=f->f_inode->i_number;}
+    r->kind=(f->f_flag&V7_FPIPE)?NX_KINFO_FILE_PIPE:
+        (f->f_flag&FILE_STORAGE)?NX_KINFO_FILE_STORAGE:
+        f->f_private?NX_KINFO_FILE_TTY:NX_KINFO_FILE_REGULAR;
+    return true;
+}
+bool inodes_info(unsigned i,struct nx_kinfo_inode *r)
+{
+    if(i>=V7_NINODE || !inodes[i].i_count)return false;
+    const struct inode *ip=&inodes[i];zero(r,sizeof(*r));
+    r->slot=i+1;r->refs=ip->i_count;r->dev=ip->i_dev;r->ino=ip->i_number;
+    r->mode=ip->i_mode;r->uid=ip->i_uid;r->gid=ip->i_gid;r->flags=ip->i_flag;
+    r->nlink=ip->i_nlink;r->size=ip->i_size;
+    unsigned type=ip->i_mode&V7_IFMT;
+    if(type==V7_IFCHR || type==V7_IFBLK)r->rdev=ip->i_un.i_rdev;
+    return true;
+}
+
+void files_inode_changed(struct v7fs *fs,const struct v7fs_inode *disk)
+{
+    for(unsigned i=0;i<V7_NINODE;++i){
+        struct inode *ip=&inodes[i];
+        if(!ip->i_count || ip->i_number!=disk->number || node_volume(inode_node(ip))!=fs)continue;
+        ip->i_mode=disk->mode;ip->i_nlink=disk->nlink;ip->i_uid=disk->uid;
+        ip->i_gid=disk->gid;ip->i_size=disk->size;
+        unsigned type=disk->mode&V7_IFMT;
+        if(type==V7_IFCHR || type==V7_IFBLK)ip->i_un.i_rdev=disk->addr[0];
+    }
 }
