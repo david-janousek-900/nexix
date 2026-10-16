@@ -7,6 +7,7 @@ int chroot(const char *);
 int mount(const char *device, const char *mountpoint, int read_only);
 int umount(const char *device);
 int acct(const char *file);
+int lock(int flag);
 int profil(unsigned short *buffer,size_t size,uintptr_t offset,unsigned int scale);
 #include <stddef.h>
 #include <nexix/file.h>

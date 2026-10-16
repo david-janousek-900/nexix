@@ -24,6 +24,7 @@ void proc_yield(void);
 void proc_sleep(void *channel, unsigned priority);
 int proc_sleep_interruptible(void *channel, unsigned priority);
 int64_t proc_brk(uintptr_t address);
+int proc_lock(uintptr_t flag); /* V7 superuser user-lock toggle; memory stays resident. */
 unsigned proc_wakeup(void *channel);
 void proc_delay(uint64_t ticks);
 /* Fork a live CPL3 frame; parent gets PID, child's RAX is zero. Negative errno

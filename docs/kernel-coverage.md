@@ -58,7 +58,7 @@ not be treated as missing required features merely because they were stubs.
 | 44 | profil sampling implemented | 59; native startup/monitor implemented by 60 |
 | 51 | acct | 56 |
 | 52 | phys | 64 |
-| 53 | lock | 63 |
+| 53 | lock implemented | 63; resident memory, V7 privilege and lifecycle rules |
 | 56 | mpx | 65–67 |
 
 `ftime` currently uses libc's `time` path and returns zero milliseconds. A native
@@ -93,3 +93,6 @@ Task 62 supplies [versioned kernel-information snapshots](kernel-information.md)
 for process/file/inode/text/mount tables, managed memory and cumulative I/O.
 Diagnostics use these explicit records in place of historical kernel offsets;
 ps, pstat and iostat still need their separate command-port acceptance.
+
+Task 63 implements [V7 lock(53)](resident-lock.md): effective-root permission,
+SULOCK state and fork/exec/exit rules. Native memory remains resident throughout.

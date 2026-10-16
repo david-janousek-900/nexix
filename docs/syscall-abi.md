@@ -101,6 +101,7 @@ four-byte status, even though its pointer occupies an eight-byte argument slot.
 | 42 | pipe | Writable int32[2] pointer | Zero; descriptors in output |
 | 43 | times | Writable nx_tms pointer | Elapsed uptime ticks |
 | 47 | getgid | None | Real GID |
+| 53 | lock | Zero/nonzero flag | Zero; effective-root only; toggle SULOCK on resident memory |
 | 54 | ioctl | fd, request, argument pointer | Zero or negative errno |
 | 59 | execve | Pathname, argv, envp | Replace image |
 | 60 | umask | Mask | Previous mask; new value restricted to 0777 |
@@ -114,8 +115,9 @@ four-byte status, even though its pointer occupies an eight-byte argument slot.
 
 | 70 | sigreturn | Readable nx_signal_context pointer | Restores interrupted frame |
 | 71 | getpgrp | None | Current process group |
+| 72 | nx_kinfo | Version, kind, output buffer, capacity | Required/written bytes; effective-root only; [snapshot contract](kernel-information.md) |
 
-Calls 64–71 are native extensions beyond V7's 64-entry table. The separate
+Calls 64–72 are native extensions beyond V7's 64-entry table. The separate
 identity calls and wait status pointer replace V7's secondary-register returns.
 Only RAX changes on normal syscall return. Successful exec installs a new entry
 frame. File/pipe semantics, flag values and the 48-byte stat record are
@@ -221,3 +223,6 @@ the libc declaration uses native pointer/size/offset types. Larger scales return
 EINVAL; buffer faults disable sampling quietly when an update is attempted.
 See [profiling.md](profiling.md) for V7 bucket arithmetic, native bounds and
 100 Hz user/system tick charging. No profile-file format is added.
+
+Task 63 supplies [lock(53)](resident-lock.md) with V7 effective-root checks and
+user lock-state lifetime; the native port continues using resident memory.

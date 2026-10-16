@@ -189,3 +189,10 @@ remain separate tasks.
 Task 62 adds `nx_kinfo` in `<sys/kinfo.h>` for versioned privileged kernel-table
 snapshots. See [snapshot contracts](kernel-information.md); the native diagnostic
 command ports remain separate pending tasks.
+
+
+## Resident-memory lock
+
+Task 63 exports `lock(int)` through `<unistd.h>`, retaining V7 permission, flag
+and process-lifecycle behavior on resident native memory. See
+[resident-memory lock](resident-lock.md).

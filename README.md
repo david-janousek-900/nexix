@@ -124,8 +124,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 2 partial, 1 prototype and 203 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 62 done, 2 in progress
-and 302 to do** after task 62. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 63 done, 2 in progress
+and 301 to do** after task 63. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -281,7 +281,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 60 | mcount, monitor and profiling startup objects | Done | Git history; [Native monitor/mcount and startup](docs/monitor.md); bounded call records, ABI-transparent instrumentation, mcrt0/fmcrt0, exit flushing and versioned mon.out; `make test-monitor` |
 | 61 | ELF nlist and executable symbol interfaces | Done | ELF64 nlist, shared symbol/header contracts, validated table/name bounds; host and native QEMU acceptance; [contract](docs/nlist.md); Git history |
 | 62 | Kernel-information snapshots | Done | Git history; [versioned native snapshots](docs/kernel-information.md); process/file/inode/text/mount/memory/I/O, root access, coherent pointer-free records and live metadata; `make test-kinfo` |
-| 63 | Resident-memory lock interface | To do | No disk swap; V7 permissions and resident-page behavior |
+| 63 | Resident-memory lock interface | Done | Git history; [V7 lock and native residency](docs/resident-lock.md); syscall 53, effective-root checks, SULOCK and fork/exec/exit lifetime; `make test-lock` |
 | 64 | Privileged phys interface | To do | Native mapping equivalent; range/ownership and rollback tests |
 | 65 | Multiplexed group/channel creation and ownership | To do | mx1/mx2 identifiers, descriptors and lifecycle |
 | 66 | Multiplexed data/control events and flow control | To do | Read/write formats, bounded queues and wakeups |

@@ -55,7 +55,7 @@
       "id": "kernel-abi",
       "category": "kernel",
       "status": "partial",
-      "description": "File/process/TTY syscalls, device-qualified inodes, mount/umount, chroot, process accounting and parent/child tracing with debugger writes/single-step exist. Native profil sampling is implemented; remaining device interfaces are pending.",
+      "description": "File/process/TTY syscalls, device-qualified inodes, mount/umount, chroot, process accounting and parent/child tracing with debugger writes/single-step exist. Native profil sampling and the V7 resident-memory lock interface are implemented; remaining device interfaces are pending.",
       "evidence": [
         "docs/syscall-abi.md",
         "docs/files.md",
@@ -64,7 +64,10 @@
         "docs/accounting.md",
         "docs/ptrace.md",
         "docs/debugger.md",
-        "docs/profiling.md"
+        "docs/profiling.md",
+        "kernel/v7/lock.c",
+        "libc/lock.c",
+        "docs/resident-lock.md"
       ],
       "locations": []
     },

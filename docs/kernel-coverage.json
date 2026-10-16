@@ -142,7 +142,7 @@
         362,
         364
       ],
-      "note": "Resident memory and eager fork replace segmentation/swap. CPU usage priority decay remains pending; no disk swap is required. General timeout callback queue also remains pending; alarms alone do not cover device callouts. Task 59 implements native user-PC profiling samples and own-system-time charging with safe user counters. Task 62 exports versioned pointer-free kernel-information snapshots with serialized capture."
+      "note": "Resident memory and eager fork replace segmentation/swap. CPU usage priority decay remains pending; no disk swap is required. General timeout callback queue also remains pending; alarms alone do not cover device callouts. Task 59 implements native user-PC profiling samples and own-system-time charging with safe user counters. Task 62 exports versioned pointer-free kernel-information snapshots with serialized capture. Task 63 implements the user-settable SULOCK interface while retaining resident pages and existing fork/exec/exit rules."
     },
     {
       "id": "signals",
@@ -244,13 +244,15 @@
         "kernel/v7/process.c",
         "kernel/v7/accounting.c",
         "kernel/include/accounting.h",
-        "include/nexix/acct.h"
+        "include/nexix/acct.h",
+        "kernel/v7/lock.c",
+        "libc/lock.c"
       ],
       "tasks": [
         56,
         63
       ],
-      "note": "Task 56 implements sysacct/acct/compress, native records and suser flags with process lifecycle/filesystem ownership. syslock in the same reference file remains task 63; no disk swapping is required."
+      "note": "Task 56 implements sysacct/acct/compress, native records and suser flags with process lifecycle/filesystem ownership. Task 63 implements syslock with effective-root checks, SULOCK state and V7 fork/exec/exit lifetime; native memory remains resident without disk swapping."
     },
     {
       "id": "multiplexer",
@@ -943,7 +945,7 @@
       "number": 53,
       "routine": "syslock",
       "label": "lock user in core",
-      "status": "pending",
+      "status": "native_path",
       "task": 63,
       "native": "kernel/v7/syscall.c"
     },
