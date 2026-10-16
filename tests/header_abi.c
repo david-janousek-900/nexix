@@ -1,6 +1,7 @@
 /* Independently specified LP64 record contracts, shared kernel/libc boundaries. */
 #include <sys/types.h>
 #include <mon.h>
+#include <a.out.h>
 #include <sys/acct.h>
 #include <sys/stat.h>
 #include <sys/dir.h>
@@ -18,6 +19,10 @@
 #include "v7/types.h"
 #define SIZE(t,n) _Static_assert(sizeof(t)==(n), #t " size")
 #define FIELD(t,f,n) _Static_assert(offsetof(t,f)==(n), #t "." #f " offset")
+SIZE(struct nlist,24); FIELD(struct nlist,n_name,0); FIELD(struct nlist,n_type,8); FIELD(struct nlist,n_value,16);
+SIZE(Elf64_Ehdr,64); FIELD(Elf64_Ehdr,e_shoff,40); FIELD(Elf64_Ehdr,e_shnum,60);
+SIZE(Elf64_Shdr,64); FIELD(Elf64_Shdr,sh_link,40); FIELD(Elf64_Shdr,sh_entsize,56);
+SIZE(Elf64_Sym,24); FIELD(Elf64_Sym,st_shndx,6); FIELD(Elf64_Sym,st_value,8);
 SIZE(struct nx_mon_header,64); SIZE(struct nx_mon_call,16);
 FIELD(struct nx_mon_header,version,8); FIELD(struct nx_mon_header,machine,12);
 FIELD(struct nx_mon_header,header_size,14); FIELD(struct nx_mon_header,low_pc,16);

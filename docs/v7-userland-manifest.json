@@ -170,7 +170,7 @@
       "id": "tracing-profiling",
       "category": "kernel",
       "status": "partial",
-      "description": "Native tracing, debugger writes/single-step, profil sampling and monitor/mcount with profiling startup/records exist. Symbol consumers and the adb/prof command ports remain pending.",
+      "description": "Native tracing, debugger writes/single-step, profil sampling and monitor/mcount with profiling startup/records exist. ELF64 nlist and shared symbol contracts exist. Symbol consumers and the adb/prof command ports remain pending.",
       "evidence": [
         "reference/v7/usr/src/cmd/adb/runpcs.c",
         "reference/v7/usr/src/cmd/prof.c",
@@ -184,7 +184,11 @@
         "libc/monitor.c",
         "libc/arch/x86_64/mcount.S",
         "libc/arch/x86_64/mcrt0.S",
-        "docs/monitor.md"
+        "docs/monitor.md",
+        "libc/nlist.c",
+        "libc/include/elf.h",
+        "libc/include/nlist.h",
+        "docs/nlist.md"
       ],
       "locations": []
     },
@@ -22240,7 +22244,7 @@
         }
       ],
       "blockers": [
-        "Complete profiling, ELF symbol, multiplexor/packet and V6/runtime interfaces; finish startup objects and native header installation.",
+        "Complete multiplexor/packet and V6/runtime interfaces and remaining startup/header installation; validate profiling and ELF symbol interfaces in their full consumers.",
         "Validate staged internal V7 FILE adapters and remote printf conventions in all full consuming-program ports."
       ],
       "unresolved": [

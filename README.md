@@ -124,8 +124,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 2 partial, 1 prototype and 203 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 60 done, 2 in progress
-and 304 to do** after task 60. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 61 done, 2 in progress
+and 303 to do** after task 61. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -279,7 +279,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 58 | ptrace single-step and debugger memory changes | Done | Git history; [V7 debugger writes and stepping](docs/debugger.md); private instruction/data patches, text exclusion, RX/NX protection, INT3, TF and syscall/fork/signal/exec stepping; `make test-debugger` |
 | 59 | profil sampling | Done | Git history; [V7 profil/native sampling](docs/profiling.md); syscall 44, V7 buckets, 16-bit counter wrap, user/system tick charging, safe buffer faults and fork/exec lifetime; `make test-profile` |
 | 60 | mcount, monitor and profiling startup objects | Done | Git history; [Native monitor/mcount and startup](docs/monitor.md); bounded call records, ABI-transparent instrumentation, mcrt0/fmcrt0, exit flushing and versioned mon.out; `make test-monitor` |
-| 61 | ELF nlist and executable symbol interfaces | To do | Shared native symbol representation for diagnostics |
+| 61 | ELF nlist and executable symbol interfaces | Done | ELF64 nlist, shared symbol/header contracts, validated table/name bounds; host and native QEMU acceptance; [contract](docs/nlist.md); Git history |
 | 62 | Kernel-information snapshots | To do | Versioned process/file/inode/mount/memory/I/O data; avoid historical offsets |
 | 63 | Resident-memory lock interface | To do | No disk swap; V7 permissions and resident-page behavior |
 | 64 | Privileged phys interface | To do | Native mapping equivalent; range/ownership and rollback tests |

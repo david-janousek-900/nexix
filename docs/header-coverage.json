@@ -4,9 +4,9 @@
   "headers": [
     {
       "source": "reference/v7/usr/include/a.out.h",
-      "status": "deferred_consumer",
-      "native": null,
-      "task": 177
+      "status": "native_contract",
+      "native": "libc/include/a.out.h",
+      "task": 61
     },
     {
       "source": "reference/v7/usr/include/ar.h",

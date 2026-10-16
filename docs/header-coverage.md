@@ -56,9 +56,10 @@ bit masks. These are private architecture implementation details and are not
 copied into the public native header. Native memory/device diagnostics use
 explicit interfaces from tasks 62–64 instead of historical kernel offsets.
 
-Headers for a.out/core/symbols/archives, standalone I/O, packet discipline,
+Headers for archives, standalone I/O, packet discipline,
 arbitrary-precision arithmetic and dump/tape formats remain with their
-consumers as listed in JSON. Native ELF contracts are frozen in task 177;
+consumers as listed in JSON. Task 61 supplies native ELF64 symbol/header contracts
+and the a.out.h source-include adapter; toolchain finalization remains task 177;
 historical media formats need explicit encoders, not LP64 structure writes.
 `varargs.h` and internal historical FILE layouts need source adapters (41),
 not pointer arithmetic over PDP-11 call stacks. `assert.h` is implemented by task 40 with V7 exit(1) semantics; see
@@ -105,3 +106,6 @@ or ABI version changes; task 60 supplies native profile-file/startup interfaces.
 Task 60 adds `<mon.h>` and version-1 native mon.out header/call records. All
 field offsets are independently checked by test-header-abi. Historical binary
 records are not used as native overlays; prof decoding remains task 257.
+
+Task 61 adds `<nlist.h>`, `<elf.h>` and the `<a.out.h>` adapter with native
+64-bit symbol values and full string names. See [symbol lookup](nlist.md).

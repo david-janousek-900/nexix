@@ -174,3 +174,11 @@ Task 49 implements [popen/pclose](popen.md), including both pipe directions,
 buffered output closure, matching child collection and native cleanup fixes.
 Concurrent popen statuses are cached without introducing a waitpid syscall;
 unrelated wait-any and interrupted-wait behavior retain the documented V7 limits.
+
+
+## Executable symbols
+
+Task 61 implements [native ELF nlist](nlist.md), retaining V7 missing-symbol and
+type/value lookup behavior with full names and 64-bit values. Native ELF record
+contracts are shared with later consumers; diagnostic and toolchain program ports
+remain separate tasks.
