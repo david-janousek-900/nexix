@@ -11,8 +11,14 @@ mode = sys.argv[3] if len(sys.argv) > 3 else "boot"
 user_faults = {"user-kernel": (14, 5), "user-ro": (14, 7), "user-nx": (14, 21),
                "user-priv": (13, 0), "user-io": (13, 0), "user-int": (13, 258),
                "user-df": (8, 0)}
-if mode not in ("boot", "process", "syscall", "exec", "libc", "fs", "files", "signals", "v7", "rootfs", "tty", "tty-demo", "ud", "pf", "memory", "wp", "nx", "unmap", "null",
-                "paging-oom", "protect", "user-bad-stack") and mode not in user_faults:
+# These modes continue through the entire kernel/userland acceptance sequence.
+# Keep their timeout and required-marker classification together: memory, paging
+# OOM and bad-stack recovery take just as long as an ordinary self-test boot.
+full_boot_modes = ("boot", "process", "syscall", "exec", "libc", "fs", "files",
+                   "signals", "v7", "rootfs", "tty", "tty-demo", "memory",
+                   "paging-oom", "user-bad-stack")
+fault_modes = ("ud", "pf", "wp", "nx", "unmap", "null", "protect")
+if mode not in full_boot_modes and mode not in fault_modes and mode not in user_faults:
     sys.exit("FAIL: unknown smoke mode")
 ram = sys.argv[4] if len(sys.argv) > 4 else "128M"
 command = [sys.argv[1], "-machine", "pc", "-accel", "tcg", "-cpu", "qemu64",
@@ -61,7 +67,7 @@ if mode in ("tty", "tty-demo"):
     output = bytes(output) + remaining
 else:
     try:
-        output, _ = process.communicate(timeout=45 if mode in ("boot", "process", "syscall", "exec", "libc", "fs", "files", "signals", "v7", "rootfs") else 15)
+        output, _ = process.communicate(timeout=45 if mode in full_boot_modes else 15)
         exited_early = True
     except subprocess.TimeoutExpired:
         exited_early = False
@@ -79,7 +85,7 @@ if mode == "tty" and (b"secret99" in output or b"EXCESS" in output or b"NEXIX_GE
     sys.exit(f"FAIL: getpass echo suppression or serial acceptance; see {log}")
 if exited_early:
     sys.exit(f"FAIL: QEMU exited unexpectedly ({process.returncode}); see {log}")
-if mode in ("boot", "process", "syscall", "exec", "libc", "fs", "files", "signals", "v7", "rootfs", "tty", "tty-demo", "memory", "paging-oom", "user-bad-stack"):
+if mode in full_boot_modes:
     if (b"NEXIX_BOOT_OK\r\n" not in output or b"NEXIX_TIMER_OK\r\n" not in output
             or b"NEXIX_MEMORY_OK\r\n" not in output
             or b"NEXIX_PAGING_OK\r\n" not in output or b"PANIC" in output

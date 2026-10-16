@@ -46,6 +46,10 @@ Run `make TOOLCHAIN_PREFIX= test` in this environment. The suite checks:
 The serial transcripts are retained in `build/boot.log`, `build/ud.log`, and
 `build/pf.log`, plus `build/memory-16M.log` and `build/memory-128M.log`.
 Test images are separate from the ordinary boot image.
+The smoke runner gives every full self-test boot 45 seconds, including memory
+exhaustion, paging-OOM recovery and bad-stack recovery. Deliberate fatal-fault
+runs retain their 15-second budget. Full boots must still emit all required
+completion markers; increasing the budget does not accept partial boot output.
 Additional paging logs are `build/wp.log`, `build/nx.log`, `build/unmap.log`,
 `build/null.log`, `build/protect.log`, and `build/paging-oom.log`. `make TOOLCHAIN_PREFIX= test-paging`
 runs the protection and allocation-failure cases separately.
