@@ -2,6 +2,7 @@
 #define NEXIX_LIBC_UNISTD_H
 #include <sys/types.h>
 #include <crypt.h>
+#include <sys/phys.h>
 int mknod(const char *, mode_t, dev_t);
 int chroot(const char *);
 int mount(const char *device, const char *mountpoint, int read_only);

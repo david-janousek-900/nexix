@@ -19,7 +19,10 @@
         "kernel/arch/x86_64/interrupts.S",
         "kernel/arch/x86_64/paging.c",
         "kernel/arch/x86_64/fpu.c",
-        "kernel/v7/profile.c"
+        "kernel/v7/profile.c",
+        "kernel/v7/phys.c",
+        "kernel/include/phys.h",
+        "include/nexix/phys.h"
       ],
       "tasks": [
         2,
@@ -32,7 +35,7 @@
         64,
         79
       ],
-      "note": "Native long mode, page tables and hardware FP replace PDP-11 machine code; phys and runtime compatibility remain open. Native profil sampling replaces PDP-11 addupc in task 59."
+      "note": "Native long mode, page tables and hardware FP replace PDP-11 machine code; runtime compatibility remains open. Native profil sampling replaces PDP-11 addupc in task 59. Task 64 implements privileged native physical windows, owned RAM/VGA, transactional replacement and shared fork/exec lifetime."
     },
     {
       "id": "configuration",
@@ -124,7 +127,10 @@
         "kernel/include/profile.h",
         "kernel/v7/kinfo.c",
         "kernel/include/kinfo.h",
-        "include/nexix/kinfo.h"
+        "include/nexix/kinfo.h",
+        "kernel/v7/phys.c",
+        "kernel/include/phys.h",
+        "include/nexix/phys.h"
       ],
       "tasks": [
         4,
@@ -142,7 +148,7 @@
         362,
         364
       ],
-      "note": "Resident memory and eager fork replace segmentation/swap. CPU usage priority decay remains pending; no disk swap is required. General timeout callback queue also remains pending; alarms alone do not cover device callouts. Task 59 implements native user-PC profiling samples and own-system-time charging with safe user counters. Task 62 exports versioned pointer-free kernel-information snapshots with serialized capture. Task 63 implements the user-settable SULOCK interface while retaining resident pages and existing fork/exec/exit rules."
+      "note": "Resident memory and eager fork replace segmentation/swap. CPU usage priority decay remains pending; no disk swap is required. General timeout callback queue also remains pending; alarms alone do not cover device callouts. Task 59 implements native user-PC profiling samples and own-system-time charging with safe user counters. Task 62 exports versioned pointer-free kernel-information snapshots with serialized capture. Task 63 implements the user-settable SULOCK interface while retaining resident pages and existing fork/exec/exit rules. Task 64 implements privileged native physical windows, owned RAM/VGA, transactional replacement and shared fork/exec lifetime."
     },
     {
       "id": "signals",
@@ -937,7 +943,7 @@
       "number": 52,
       "routine": "sysphys",
       "label": "set user physical addresses",
-      "status": "pending",
+      "status": "native_path",
       "task": 64,
       "native": "kernel/v7/syscall.c"
     },

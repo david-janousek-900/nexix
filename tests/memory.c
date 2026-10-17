@@ -133,7 +133,11 @@ static void allocation_tests(void)
     assert(!page_is_allocated(pages[0] + 1));
     assert(page_free(pages[3])); assert(!page_free(pages[3]));
     assert(!page_is_allocated(pages[3]));
-    assert(page_free_count() == 1 && page_alloc() == pages[3]);
+    assert(page_free_count()==1 && page_is_eligible(pages[3]));
+    assert(page_claim(pages[3]) && !page_claim(pages[3]) && !page_free_count());
+    assert(page_free(pages[3]) && page_alloc()==pages[3]);
+    assert(!page_is_eligible(0) && !page_claim(0) && !page_claim(2*PAGE_SIZE));
+    assert(!page_claim(pages[3]+1) && !page_claim(PHYSICAL_LIMIT));
     for (unsigned i = 0; i < 8; ++i) assert(page_free(pages[i]));
     assert(page_free_count() == 8);
     puts("PASS: alignment, reservations, overlap priority, exhaustion, and reuse");

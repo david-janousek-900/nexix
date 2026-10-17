@@ -53,7 +53,8 @@ Files are little-endian x86_64 ELF64 ET_CORE. One PT_NOTE is followed by up to
 holes remain holes rather than being read through. Load offsets and addresses
 are page-aligned, file/memory sizes match, physical addresses are zero, and
 permissions describe the original user pages. ELF executable pages are omitted,
-matching V7 pure-text exclusion; data, heap and stack mappings are captured.
+matching V7 pure-text exclusion; owned data, heap and stack mappings are captured.
+Task 64 physical/device leaves are omitted.
 No kernel mappings or raw kernel `struct user`/process/file pointers are dumped.
 
 All notes use owner `NEXIX\0`, four-byte name/descriptor padding, and these
@@ -99,3 +100,7 @@ Run `make test-core`; run `make test-shell` for the interactive behavior.
 
 Acceptance probes and mount toggles are limited to self-tests. They do not
 install test executables into the normal root or modify the working IDE disk.
+
+Task 64 adds [owned physical mappings](physical-mappings.md). Physical leaves
+retain shared frame references across fork/exec and are released separately from
+private pages; core dumps omit those physical/device regions.

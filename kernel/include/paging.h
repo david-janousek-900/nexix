@@ -7,6 +7,7 @@
 #define VM_WRITE 1U
 #define VM_EXEC 2U
 #define VM_USER 4U
+#define VM_PHYS 8U /* Borrowed physical mapping; never free as a private leaf. */
 struct address_space { uintptr_t root; };
 
 /* Kernel-only callers; all operations currently require interrupts disabled.
@@ -23,6 +24,10 @@ void vm_activate(const struct address_space *space);
  * Existing mappings cannot be overwritten. Failed maps release new tables. */
 bool vm_map(struct address_space *space, uintptr_t virtual_address,
             uintptr_t physical_address, unsigned permissions);
+/* Trusted physical-mapping manager only: approved RAM or VGA frames, RW/NX.
+ * rebind requires an existing physical leaf and never allocates tables. */
+bool vm_map_physical(struct address_space *,uintptr_t va,uintptr_t pa);
+bool vm_rebind_physical(struct address_space *,uintptr_t va,uintptr_t pa);
 bool vm_unmap(struct address_space *space, uintptr_t virtual_address);
 bool vm_protect(struct address_space *space, uintptr_t virtual_address, unsigned permissions);
 /* Lookup also supports the shared kernel region; returns effective permissions. */

@@ -1,10 +1,13 @@
 #include "paging.h"
 #include "interrupts.h"
+#include <nexix/phys.h>
 
 #define PRESENT 1ULL
 #define WRITE 2ULL
 #define USER 4ULL
 #define LARGE (1ULL << 7)
+#define PHYS (1ULL << 9)
+#define UNCACHED ((1ULL << 4) | (1ULL << 3))
 #define NX (1ULL << 63)
 #define ADDRESS 0x000ffffffffff000ULL
 #define ENTRIES 512
@@ -137,6 +140,7 @@ void paging_init(void)
             else if ((address >= (uintptr_t)kernel_start && address < (uintptr_t)kernel_text_start) ||
                      (address >= (uintptr_t)kernel_rodata_start && address < (uintptr_t)kernel_rodata_end))
                 flags = PRESENT | NX;
+            if(address>=NX_PHYS_VGA_BASE && address<NX_PHYS_VGA_END)flags|=UNCACHED;
             table(pt)[i] = address | flags;
         }
     }
@@ -186,7 +190,8 @@ bool vm_protect(struct address_space *space, uintptr_t address, unsigned permiss
     uint64_t *entry = walk(space, address, false);
     if (!entry || !(*entry & PRESENT))
         return false;
-    *entry = (*entry & ADDRESS) | leaf_flags(permissions);
+    if((*entry&PHYS) && permissions!=VM_WRITE)return false;
+    *entry = (*entry & (ADDRESS|PHYS|UNCACHED)) | leaf_flags(permissions);
     invalidate(space, address);
     return true;
 }
@@ -261,6 +266,7 @@ bool vm_translate(const struct address_space *space, uintptr_t address,
         if (entry & NX) flags &= ~VM_EXEC;
         if (level == 1) {
             if (physical) *physical = (entry & ADDRESS) | (address & (PAGE_SIZE - 1));
+            if(entry&PHYS)flags|=VM_PHYS;
             if (permissions) *permissions = flags;
             return true;
         }
@@ -304,6 +310,7 @@ static bool visit_table(uintptr_t address, unsigned level, uintptr_t base,
             if (!visit_table(entry & ADDRESS, level - 1, virtual_address, flags, visit, argument))
                 return false;
         } else if (virtual_address >= USER_BASE && (flags & VM_USER)) {
+            if(entry&PHYS)flags|=VM_PHYS;
             if (!visit(virtual_address, entry & ADDRESS, flags, argument)) return false;
         }
     }
@@ -317,3 +324,19 @@ bool vm_walk_user(const struct address_space *space,
         return false;
     return visit_table(space->root, 4, 0, VM_WRITE | VM_EXEC | VM_USER, visit, argument);
 }
+
+static bool physical_leaf(struct address_space *space,uintptr_t va,uintptr_t pa,bool rebind)
+{
+    if(!space || !space->root || space->root==kernel_space.root || !valid_user(va) ||
+       !pa || pa>=PHYSICAL_LIMIT || (pa&(PAGE_SIZE-1)))return false;
+    bool device=pa>=NX_PHYS_VGA_BASE && pa<NX_PHYS_VGA_END;
+    if(!device && !page_is_allocated(pa))return false;
+    uint64_t *entry=walk(space,va,!rebind);
+    if(!entry || (rebind?((*entry&(PRESENT|PHYS))!=(PRESENT|PHYS)):(*entry&PRESENT)))return false;
+    *entry=pa|leaf_flags(VM_WRITE)|PHYS|(device?UNCACHED:0);
+    invalidate(space,va);return true;
+}
+bool vm_map_physical(struct address_space *space,uintptr_t va,uintptr_t pa)
+{return physical_leaf(space,va,pa,false);}
+bool vm_rebind_physical(struct address_space *space,uintptr_t va,uintptr_t pa)
+{return physical_leaf(space,va,pa,true);}

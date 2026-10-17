@@ -114,3 +114,7 @@ Task 61 adds `<nlist.h>`, `<elf.h>` and the `<a.out.h>` adapter with native
 Task 62 adds `<sys/kinfo.h>` with version-1 fixed-width snapshot records.
 Private V7 proc/file/inode/mount layouts remain kernel-only; see
 [kernel information](kernel-information.md).
+
+Task 64 adds `<sys/phys.h>` and native physical-window constants. Historical
+segmentation descriptors remain private; callers adapt click units to pages/bytes.
+See [physical mappings](physical-mappings.md).

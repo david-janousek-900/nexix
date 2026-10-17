@@ -25,10 +25,10 @@ per-slot pool. TSS.RSP0 changes with the active process. Existing double-fault
 and NMI IST stacks remain independent of these stacks.
 
 Each private user mapping owns a distinct allocator frame. The process builder
-allocates, clears or copies, and maps these frames; it permits no aliases or
-shared leaves. The process VM owns its page tables. The shared supervisor kernel
+allocates, clears or copies, and maps these ordinary frames without aliases.
+Task 64 physical leaves instead hold shared manager references. The process VM owns its page tables. The shared supervisor kernel
 mapping belongs to the platform, not to a process. The page-table walker skips
-that mapping and enumerates private lower-canonical user leaves.
+that mapping and enumerates private and physical lower-canonical user leaves.
 
 ## Switching and scheduling
 
@@ -126,3 +126,7 @@ a fatal error; orphan adoption continues to use PID 1. See [booting.md](booting.
 
 Task 57 adds [V7 tracing stops and wait integration](ptrace.md), including
 parent-only native register/FPU access and continued execution.
+
+Task 64 adds [owned physical mappings](physical-mappings.md). Physical leaves
+retain shared frame references across fork/exec and are released separately from
+private pages; core dumps omit those physical/device regions.

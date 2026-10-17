@@ -110,3 +110,17 @@ bool page_is_allocated(uintptr_t address)
     return (eligible[page / WORD_BITS] & bit(page)) &&
         (allocated[page / WORD_BITS] & bit(page));
 }
+
+bool page_is_eligible(uintptr_t address)
+{
+    if(!address || address>=PHYSICAL_LIMIT || (address&(PAGE_SIZE-1)))return false;
+    uint32_t page=address/PAGE_SIZE;
+    return (eligible[page/WORD_BITS]&bit(page))!=0;
+}
+bool page_claim(uintptr_t address)
+{
+    if(!page_is_eligible(address))return false;
+    uint32_t page=address/PAGE_SIZE;
+    if(!is_free(page))return false;
+    allocated[page/WORD_BITS]|=bit(page);--free_pages;return true;
+}

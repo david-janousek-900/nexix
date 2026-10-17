@@ -34,6 +34,7 @@
 #define NX_SYS_SETGID 46
 #define NX_SYS_ACCT 51
 #define NX_SYS_LOCK 53
+#define NX_SYS_PHYS 52
 #define NX_SYS_PTRACE 26
 #define NX_SYS_SIGNAL 48
 #define NX_SYS_STAT 18

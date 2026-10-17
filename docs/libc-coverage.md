@@ -196,3 +196,10 @@ command ports remain separate pending tasks.
 Task 63 exports `lock(int)` through `<unistd.h>`, retaining V7 permission, flag
 and process-lifecycle behavior on resident native memory. See
 [resident-memory lock](resident-lock.md).
+
+
+## Physical mappings
+
+Task 64 exports `phys` in `<sys/phys.h>` and `<unistd.h>` for privileged native
+page windows. The [physical mapping contract](physical-mappings.md) documents
+source-unit adaptations, supported ranges, ownership and process lifetime.

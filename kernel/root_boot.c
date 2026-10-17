@@ -100,7 +100,7 @@ static v7_pid_t held_owner;
 static v7_pid_t trace_orphan;
 bool root_exec_test_gate(struct interrupt_frame *frame)
 {
-    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x916)return false;
+    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x918)return false;
     struct proc *p=proc_current();
     if(frame->rax==0x900){
         frame->rax=(uint64_t)-NX_ENOSYS;return true; /* Retired tracing test hook. */
@@ -216,6 +216,18 @@ bool root_exec_test_gate(struct interrupt_frame *frame)
            v7fs_create(&root_volume,directory,name,V7_IFREG|0755,0,0,&ino)||
            v7fs_write(&root_volume,ino,0,start,size,&done)||done!=size)
             panic("cannot install monitor fixture");
+    }else if(frame->rax==0x917){
+        if(p->p_user->u_uid)panic("unprivileged free physical fixture");
+        for(uintptr_t a=PAGE_SIZE;a<PHYSICAL_LIMIT-PAGE_SIZE;a+=PAGE_SIZE)
+            if(page_is_eligible(a)&&page_is_eligible(a+PAGE_SIZE)&&
+               !page_is_allocated(a)&&!page_is_allocated(a+PAGE_SIZE)){
+                frame->rax=a;return true;
+            }
+        panic("no free physical fixture pair");
+    }else if(frame->rax==0x918){
+        uintptr_t pa;unsigned flags;
+        if(p->p_user->u_uid||!vm_translate(&p->p_vm,frame->rdi,&pa,&flags))panic("invalid physical lookup fixture");
+        frame->rax=pa;frame->rdx=flags;return true;
     }else return false;
     frame->rax=0;return true;
 }

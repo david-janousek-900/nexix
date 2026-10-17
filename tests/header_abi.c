@@ -3,6 +3,7 @@
 #include <mon.h>
 #include <a.out.h>
 #include <sys/kinfo.h>
+#include <sys/phys.h>
 #include <sys/acct.h>
 #include <sys/stat.h>
 #include <sys/dir.h>
@@ -20,6 +21,8 @@
 #include "v7/types.h"
 #define SIZE(t,n) _Static_assert(sizeof(t)==(n), #t " size")
 #define FIELD(t,f,n) _Static_assert(offsetof(t,f)==(n), #t "." #f " offset")
+_Static_assert(NX_PHYS_WINDOWS==8 && NX_PHYS_PAGES==2 && NX_PHYS_PAGE_SIZE==4096, "phys window units");
+_Static_assert(NX_PHYS_BASE==0x600000000000UL && NX_PHYS_ADDRESS(7)==0x60000000e000UL, "phys window addresses");
 SIZE(struct nx_kinfo_header,48); FIELD(struct nx_kinfo_header,total_bytes,24); FIELD(struct nx_kinfo_header,ticks,32);
 SIZE(struct nx_kinfo_process,144); FIELD(struct nx_kinfo_process,size_bytes,40); FIELD(struct nx_kinfo_process,user_ticks,72); FIELD(struct nx_kinfo_process,command,128);
 SIZE(struct nx_kinfo_file,40); FIELD(struct nx_kinfo_file,offset,24);

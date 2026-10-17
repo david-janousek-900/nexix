@@ -18,7 +18,7 @@ contracts; task 355 and task 359 close whole-distribution integration.
 
 | Original area | Native foundation | Remaining acceptance / tasks |
 |---|---|---|
-| m40/mch/l machine assembly, segmentation, memory allocation | Long mode, native interrupt frames, paging, resident memory, eager fork, FXSAVE64 | phys 64; runtime assembly contracts 79; no PDP-11 binary execution or disk-backed swap required |
+| m40/mch/l machine assembly, segmentation, memory allocation | Long mode, native interrupt frames, paging, resident memory, eager fork, FXSAVE64 | phys implemented by 64; runtime assembly contracts 79; no PDP-11 binary execution or disk-backed swap required |
 | main/slp/clock | Boot, scheduler, sleep/wakeup, PIT ticks, RTC wall clock, alarms, user/system CPU times | CPU usage saturation and priority decay 362; general timeout callouts 364; profil sampling implemented by 59 |
 | alloc/iget/nami/rdwri/fio/bio | V7 disk encodings, inode/sector cache, lookup, permissions, files, timestamp updates | Executable exclusion implemented by 51; raw I/O 53; mount/umount 54–55 |
 | sys1–sys4/sysent/trap/ureg | Native dispatcher, user-copy validation, process/files/identity/time calls | Set-ID exec implemented by 50; core dumps implemented by 52; ptrace implemented by 57–58; pending syscall slots below |
@@ -57,7 +57,7 @@ not be treated as missing required features merely because they were stubs.
 | 35 | ftime subsecond snapshot | 363 |
 | 44 | profil sampling implemented | 59; native startup/monitor implemented by 60 |
 | 51 | acct | 56 |
-| 52 | phys | 64 |
+| 52 | phys implemented | 64; native page windows, ownership and rollback |
 | 53 | lock implemented | 63; resident memory, V7 privilege and lifecycle rules |
 | 56 | mpx | 65–67 |
 
@@ -96,3 +96,6 @@ ps, pstat and iostat still need their separate command-port acceptance.
 
 Task 63 implements [V7 lock(53)](resident-lock.md): effective-root permission,
 SULOCK state and fork/exec/exit rules. Native memory remains resident throughout.
+
+Task 64 implements [native phys mappings](physical-mappings.md), with explicit
+owned RAM/device references and shared fork/exec lifetime.

@@ -1,6 +1,7 @@
 /* Native adaptation of process behavior from V7 sys/{slp,sys1}.c.
  * Original sources and Caldera license are retained under reference/. */
 #include "process.h"
+#include "phys.h"
 #include "fpu.h"
 #include "clock.h"
 #include "files.h"
@@ -162,14 +163,15 @@ struct proc *proc_alloc(void)
 
 static bool free_mapping(uintptr_t va, uintptr_t pa, unsigned permissions, void *argument)
 {
-    (void)va; (void)permissions; (void)argument;
+    (void)va; (void)argument;
+    if(permissions&VM_PHYS){phys_release(pa);return true;}
     if (!page_free(pa)) panic("invalid process-owned page");
     return true;
 }
 static void release_vm(struct proc *p)
 {
     if (!p->p_vm.root) return;
-    /* All private leaves are exclusively owned, never aliased or shared. */
+    /* Private leaves own frames; physical leaves own manager references. */
     if (!vm_walk_user(&p->p_vm, free_mapping, NULL) || !vm_destroy(&p->p_vm))
         panic("cannot release process address space");
     p->p_size = 0;
@@ -390,7 +392,12 @@ void proc_run(void)
 
 static bool clone_mapping(uintptr_t va, uintptr_t pa, unsigned permissions, void *argument)
 {
-    return proc_map_page(argument, va, permissions & (VM_WRITE | VM_EXEC), (const void *)pa);
+    struct proc *p=argument;
+    if(permissions&VM_PHYS){
+        if(!phys_clone_leaf(&p->p_vm,va,pa))return false;
+        p->p_size+=PAGE_SIZE;return true;
+    }
+    return proc_map_page(p, va, permissions & (VM_WRITE | VM_EXEC), (const void *)pa);
 }
 v7_pid_t proc_fork(const struct interrupt_frame *frame)
 {

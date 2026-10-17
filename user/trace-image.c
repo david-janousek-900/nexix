@@ -9,6 +9,12 @@ int main(int argc,char **argv)
 {
     if(argc!=4)return 90;
     int mode=atoi(argv[1]),ready=atoi(argv[2]),go=atoi(argv[3]);
+    if(mode==7){
+        volatile uint64_t *a=(void *)NX_PHYS_ADDRESS(0),*b=(void *)NX_PHYS_ADDRESS(1);
+        if(a[0]!=0x5566 || a[512]!=0x7788 || b[0]!=0x7788)return 87;
+        a[0]=0x9999;b[0]=0xaaaa;char c;
+        return write(ready,"P",1)==1 && read(go,&c,1)==1?0:86;
+    }
     if(mode==6){char c;
         return write(ready,"L",1)==1 && read(go,&c,1)==1?0:88;
     }

@@ -103,3 +103,7 @@ status. The tests recover every allocated page and
 process slot. These are execution tests for a native assembly fixture; rebuilt
 V7 init, shell and utilities remain later milestones. Libc startup and initial
 wrappers are implemented in task 11.
+
+Task 64 adds [owned physical mappings](physical-mappings.md). Physical leaves
+retain shared frame references across fork/exec and are released separately from
+private pages; core dumps omit those physical/device regions.

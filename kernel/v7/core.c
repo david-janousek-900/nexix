@@ -19,7 +19,7 @@ bool core_signal(unsigned n)
 static bool mapping(uintptr_t va,uintptr_t pa,unsigned flags,void *context)
 {
     (void)pa;(void)context;
-    if(!(flags&VM_USER)||(flags&VM_EXEC))return true; /* V7 excludes pure text. */
+    if(!(flags&VM_USER)||(flags&(VM_EXEC|VM_PHYS)))return true; /* V7 excludes pure text. */
     unsigned permissions=4|((flags&VM_WRITE)?2:0);
     if(loads&&programs[loads].vaddr+programs[loads].memsz==va&&programs[loads].flags==permissions){
         programs[loads].filesz+=PAGE_SIZE;programs[loads].memsz+=PAGE_SIZE;return true;

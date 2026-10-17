@@ -101,6 +101,7 @@ four-byte status, even though its pointer occupies an eight-byte argument slot.
 | 42 | pipe | Writable int32[2] pointer | Zero; descriptors in output |
 | 43 | times | Writable nx_tms pointer | Elapsed uptime ticks |
 | 47 | getgid | None | Real GID |
+| 52 | phys | Slot, page count, physical byte address | Zero; root-only native physical windows; [contract](physical-mappings.md) |
 | 53 | lock | Zero/nonzero flag | Zero; effective-root only; toggle SULOCK on resident memory |
 | 54 | ioctl | fd, request, argument pointer | Zero or negative errno |
 | 59 | execve | Pathname, argv, envp | Replace image |

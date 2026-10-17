@@ -1,4 +1,5 @@
 #include "exec.h"
+#include "phys.h"
 #include "text.h"
 #include "uaccess.h"
 #include "v7/fs.h"
@@ -29,6 +30,7 @@ static void bytes_copy(void *dst, const void *src, size_t length)
 static bool free_leaf(uintptr_t va, uintptr_t pa, unsigned flags, void *arg)
 {
     (void)va; (void)flags; (void)arg;
+    if(flags&VM_PHYS){phys_release(pa);return true;}
     if (!page_free(pa)) panic("invalid exec image frame");
     return true;
 }

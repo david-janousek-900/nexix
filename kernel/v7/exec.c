@@ -1,5 +1,6 @@
 /* V7 sys1.c exec replacement semantics with a native ELF64 image. */
 #include "exec.h"
+#include "phys.h"
 #include "fpu.h"
 #include "files.h"
 #include "accounting.h"
@@ -56,6 +57,10 @@ int proc_exec(uintptr_t path, uintptr_t argv, uintptr_t envp, struct interrupt_f
     error = files_exec_enabled() ? files_load_exec(name, &scratch, &image) :
         elf_load(program->start, (uintptr_t)program->end - (uintptr_t)program->start, &scratch, &image);
     if (error) return error;
+    size_t physical_bytes=0;
+    error=phys_exec(&p->p_vm,&image.vm,&physical_bytes);
+    if(error){exec_image_release(&image);return error;}
+    image.size+=physical_bytes;
     struct exec_image old = {.vm = p->p_vm};
     p->p_vm = image.vm;
     p->p_size = image.size;
