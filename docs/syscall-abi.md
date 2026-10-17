@@ -104,7 +104,7 @@ four-byte status, even though its pointer occupies an eight-byte argument slot.
 | 52 | phys | Slot, page count, physical byte address | Zero; root-only native physical windows; [contract](physical-mappings.md) |
 | 53 | lock | Zero/nonzero flag | Zero; effective-root only; toggle SULOCK on resident memory |
 | 54 | ioctl | fd, request, argument pointer | Zero or negative errno |
-| 56 | mpx | Command, pointer to native nx_mx_args | Group/channel ownership implemented; [contract](multiplexor.md); data/control and TTY/libc remain tasks 66–67 |
+| 56 | mpx | Command, pointer to native nx_mx_args | Group/channel ownership and record I/O implemented; [contract](multiplexor.md); TTY/libc remain task 67 |
 | 59 | execve | Pathname, argv, envp | Replace image |
 | 60 | umask | Mask | Previous mask; new value restricted to 0777 |
 | 61 | chroot | Directory pathname | Zero; root only, retains cwd |

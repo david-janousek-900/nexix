@@ -325,8 +325,9 @@ static int open_path(struct user *u, uintptr_t address, uint64_t flags, uint64_t
         error=storage_open(disk.addr[0],type==V7_IFCHR,access!=0,&handle);
         if(!error){f->f_private=handle;f->f_flag=FILE_STORAGE;}
     }
-    if(!error && type==V7_IFCHR && (disk.addr[0]>>8)==NX_MX_MAJOR)error=-NX_ENXIO; /* Open handshake: task 66. */
-    if (!error && !storage && type == V7_IFCHR && disk.addr[0] != NX_NULL_DEV) {
+    bool multiplexor=type==V7_IFCHR && (disk.addr[0]>>8)==NX_MX_MAJOR;
+    if(!error && multiplexor)error=mpx_open(f,path,u);
+    if (!error && !storage && !multiplexor && type == V7_IFCHR && disk.addr[0] != NX_NULL_DEV) {
         struct tty *tty;
         error = tty_open(disk.addr[0], u, &tty);
         if (!error) f->f_private = tty;
@@ -398,7 +399,14 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
     struct address_space *vm = &proc_current()->p_vm;
     if (!user_access_ok(vm, address, count, !write)) return -NX_EFAULT;
     struct file *f = u->u_ofile[fd];
-    if (f->f_flag & V7_FMP) return count ? -NX_ENXIO : 0; /* Data/control: task 66. */
+    if (f->f_flag & V7_FMP) {
+        if(write || count){
+            int error=v7fs_touch(node_volume(inode_node(f->f_inode)),f->f_inode->i_number,
+                write?V7FS_MTIME|V7FS_CTIME:V7FS_ATIME);
+            if(error)return error;
+        }
+        return mpx_io(f,address,count,write);
+    }
     if (f->f_flag & V7_FPIPE) return pipe_io(f, address, count, write);
     if(f->f_private && (f->f_flag & FILE_STORAGE)){
         bool raw=(f->f_inode->i_mode & V7_IFMT)==V7_IFCHR;
@@ -626,6 +634,7 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
             u->u_pofile[fd] = request == NX_FIOCLEX ? V7_EXCLOSE : 0;
             return 0;
         }
+        if(f->f_flag&V7_FMP)return mpx_ioctl(f,request);
         if (!f->f_private || (f->f_flag & (V7_FPIPE|V7_FMP)) || (f->f_flag & FILE_STORAGE)) return -NX_ENOTTY;
         return tty_ioctl(f->f_private, &p->p_vm, request, argument);
     }

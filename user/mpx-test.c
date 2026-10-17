@@ -34,7 +34,7 @@ static int ownership(void)
     int e=mx(NX_MX_EXTR,id,g,1);CHECK(e>=0);
     int d=mx(NX_MX_EXTR,id,g,0);CHECK(d>=0 && d!=e);
     CHECK(lseek(e,0,SEEK_SET)==-1 && errno==ESPIPE);
-    CHECK(read(e,0,0)==0 && write(e,"x",1)==-1 && errno==ENXIO);
+    CHECK(read(e,0,0)==0 && write(e,"x",1)==1);
     CHECK(mx(NX_MX_DETACH,id,g,0)==0);
     CHECK(mx(NX_MX_EXTR,id,g,0)==-1 && errno==ENXIO);
     int next=mx(NX_MX_CHAN,0,g,0);CHECK(next==0xfff1);
@@ -139,10 +139,10 @@ int mpx_test(void)
     struct stat st;CHECK(stat("/tmp/mpx",&st)==0 && (st.st_mode&0170000)==0030000 && (st.st_mode&0777)==0640);
     CHECK(fstat(g,&st)==0 && st.st_nlink==1 && st.st_mtime>0 && st.st_ctime>0);
     CHECK(named("/tmp/mpx",0600)==-1 && errno==EEXIST);
-    CHECK(open("/tmp/mpx",O_RDWR)==-1 && errno==ENXIO);
     CHECK(unlink("/tmp/mpx")==0 && fstat(g,&st)==0 && st.st_nlink==0 && close(g)==0);
     g=named("/tmp/mpx",0666);CHECK(g>=0 && close(g)==0);
-    CHECK(stat("/tmp/mpx",&st)==0 && (st.st_mode&0170000)==0020000 && unlink("/tmp/mpx")==0);
+    CHECK(stat("/tmp/mpx",&st)==0 && (st.st_mode&0170000)==0020000);
+    CHECK(open("/tmp/mpx",O_RDWR)==-1 && errno==ENXIO && unlink("/tmp/mpx")==0);
     g=group();CHECK(g>=0 && fstat(g,&st)==0 && st.st_nlink==0);
     CHECK(mx(NX_MX_EXTR,0xffff,g,0)==-1 && errno==ENXIO);
     CHECK(mx(NX_MX_EXTR,0x10000,g,0)==-1 && errno==ENXIO && close(g)==0);

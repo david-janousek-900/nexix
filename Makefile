@@ -382,8 +382,8 @@ build/nexix.elf: build/root_boot.o
 
 build/root_exec_program.o: user/root-exec-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
-build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/libc.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/libc.a -o $@
+build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/libc.a -o $@
 build/root_exec_image.o: build/root-exec-test.elf
 	$(LD) -r -b binary $< -o build/root_exec_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/root_exec_raw.o $@
@@ -976,3 +976,18 @@ build/mpx_program.o: user/mpx-test.c | build/.dir
 -include build/mpx_program.d
 .PHONY: test-mpx
 test-mpx: test-rootfs test-inventory test-libc-interfaces
+
+# Task 66: multiplexor data/control records, queues and wakeups.
+build/mpx_data_program.o: user/mpx-data-test.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+-include build/mpx_data_program.d
+.PHONY: test-mpx-data
+test-mpx-data: test-rootfs test-inventory test-libc-interfaces
+
+build/mpx-unit-test: tests/mpx.c kernel/v7/files.c kernel/v7/mpx.inc kernel/v7/mpx_io.inc include/nexix/mpx.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -ffunction-sections -fdata-sections -Wl,--gc-sections -Ikernel/include -Iinclude tests/mpx.c -o $@
+.PHONY: test-mpx-unit
+test-mpx-unit: build/mpx-unit-test
+	./build/mpx-unit-test
+test-unit: test-mpx-unit
+test-mpx-data: test-mpx-unit

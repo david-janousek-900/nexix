@@ -284,6 +284,7 @@ See [architecture](architecture.md), [userland](userland.md) and
 Task 65 implements the multiplexor's group/channel creation, tree identifiers,
 join/extract/detach and descriptor/inode lifecycle from `usr/sys/dev/mx1.c`,
 `mx2.c`, `usr/sys/h/mx.h` and `usr/man/man2/mpx.2`.
-See the [native contract and tests](multiplexor.md). Data/control events and
-named-open handshakes remain task 66; TTY integration and libc wrappers remain
-67. This does not complete the kernel or libc inventory components.
+See the [native contract and tests](multiplexor.md). Task 66 implements
+data/control records, bounded queues, flow control,
+wakeups and named-open/listener/attach handshakes. TTY integration and libc
+wrappers remain 67. This does not complete the kernel or libc inventory components.

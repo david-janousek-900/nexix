@@ -20,6 +20,29 @@
 #define NX_MX_INDEX 15
 #define NX_MX_LEVELS 4
 #define NX_MX_MAJOR 5
+#define NX_MX_HIQ 100
+#define NX_MX_LOQ 20
+#define NX_MX_QSIZE 200
+#define NX_MX_EVENTS 16
+#define NX_MX_NAME 50
+#define NX_M_WATCH 1
+#define NX_M_CLOSE 2
+#define NX_M_EOT 3
+#define NX_M_OPEN 4
+#define NX_M_BLK 5
+#define NX_M_UBLK 6
+#define NX_M_IOCTL 12
+#define NX_MXLSTN 0x7801
+#define NX_MXNBLK 0x7802
+/* Read records have a six-byte header, inline payload, and two-byte alignment.
+ * Write records contain a native pointer; reserved must be zero. Headers are
+ * writable: ccount=-1, count/data report a truncated record for retry. */
+struct nx_mx_read { uint16_t index, count, ccount; };
+struct nx_mx_write { uint16_t index, count; int16_t ccount; uint16_t reserved; const void *data; };
+struct nx_mx_control { uint16_t code, value; };
+_Static_assert(sizeof(struct nx_mx_read)==6,"mpx read ABI");
+_Static_assert(sizeof(struct nx_mx_write)==16,"mpx write ABI");
+_Static_assert(sizeof(struct nx_mx_control)==4,"mpx control ABI");
 struct nx_mx_args { const char *name; int32_t command; int32_t arg[3]; };
 _Static_assert(sizeof(struct nx_mx_args)==24,"mpx argument ABI");
 /* Syscall 56(command, &args). Indices are zero-extended 16-bit values:

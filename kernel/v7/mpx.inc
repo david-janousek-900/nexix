@@ -6,17 +6,28 @@ struct mx_entry { struct mx_group *group; struct mx_channel *channel; };
 struct mx_group {
     struct file *file;
     struct mx_group *parent;
-    unsigned index;
+    unsigned index, rotation;
+    bool nonblocking;
     struct mx_entry entry[NX_MX_INDEX];
 };
+struct mx_queue {
+    unsigned head, size;
+    bool eot, blocked_notice;
+    uint8_t bytes[NX_MX_QSIZE];
+};
+struct mx_event { unsigned size; uint8_t bytes[4+NX_MX_NAME]; };
 struct mx_channel {
-    bool active, closing;
+    bool active, closing, pending, close_event, unblock_event, block_event;
+    unsigned users, event_head, event_count;
+    struct mx_queue x, y;
+    struct mx_event events[NX_MX_EVENTS];
     struct mx_group *parent;
     unsigned index;
     struct file *endpoint;
 };
 static struct mx_group mx_groups[NX_MX_GROUPS];
 static struct mx_channel mx_channels[NX_MX_CHANNELS];
+static struct mx_group *mx_listener;
 static bool mx_used(struct mx_entry e) { return e.group || e.channel; }
 static struct mx_group *mx_fd(struct user *u,int fd)
 {
@@ -74,19 +85,30 @@ static int mx_duplicate(struct user *u,struct file *f)
     int fd=fd_slot(u,0);if(fd<0)return fd;
     ++f->f_count;u->u_ofile[fd]=f;u->u_pofile[fd]=0;return fd;
 }
+static struct mx_channel *mx_allocate(struct mx_group *g)
+{
+    int i=mx_slot(g);if(i<0)return NULL;
+    for(unsigned j=0;j<NX_MX_CHANNELS;++j)if(!mx_channels[j].active){
+        struct mx_channel *c=&mx_channels[j];
+        c->active=true;c->parent=g;c->index=i;g->entry[i].channel=c;return c;
+    }
+    return NULL;
+}
+#include "mpx_io.inc"
 static void mx_detach(struct mx_entry e,bool orphan)
 {
     if(e.group){
         struct mx_group *g=e.group,*parent=g->parent;
+        mx_group_wake(g);
         parent->entry[g->index]=(struct mx_entry){0};g->parent=NULL;
         (void)file_put(g->file); /* Release the join's canonical-file reference. */
     }else{
         struct mx_channel *c=e.channel;
         /* Keep a detached endpoint alive without retaining the parent group. */
-        c->closing=true;
+        c->closing=true;mx_notify(c);
         if(orphan || !c->endpoint){
             c->parent->entry[c->index]=(struct mx_entry){0};c->parent=NULL;
-            if(!c->endpoint)zero(c,sizeof(*c));
+            mx_reap(c);
         }
     }
 }
@@ -97,12 +119,14 @@ static void mpx_close(struct file *f)
         /* A joined group cannot reach zero until its parent releases it. */
         if(g->parent)panic("joined mpx group lost reference");
         for(unsigned i=0;i<NX_MX_INDEX;++i)if(mx_used(g->entry[i]))mx_detach(g->entry[i],true);
+        if(mx_listener==g)mx_listener=NULL;
         zero(g,sizeof(*g));
     }else{
         struct mx_channel *c=f->f_private;c->endpoint=NULL;
-        if(!c->parent)zero(c,sizeof(*c));
-        else if(c->closing){c->parent->entry[c->index]=(struct mx_entry){0};zero(c,sizeof(*c));}
-        else c->closing=true; /* M_CLOSE delivery and drain are task 66. */
+        if(c->parent && c->closing){
+            mx_notify(c);c->parent->entry[c->index]=(struct mx_entry){0};c->parent=NULL;
+        }else if(c->parent){c->closing=true;c->close_event=true;mx_notify(c);}
+        mx_reap(c);
     }
 }
 static int mx_create(struct user *u,struct nx_mx_args *a,bool named)
@@ -146,21 +170,20 @@ static int mpx_call(struct user *u,uint64_t command,uintptr_t address)
         for(struct mx_group *p=g;p;p=p->parent){if(p==child)return -NX_EINVAL;if(p->parent)++depth;}
         if(depth+mx_height(child)>NX_MX_LEVELS)return -NX_EINVAL;
         int i=mx_slot(g);if(i<0)return i;
-        g->entry[i].group=child;child->parent=g;child->index=i;++child->file->f_count;return i;
+        g->entry[i].group=child;child->parent=g;child->index=i;++child->file->f_count;mx_group_wake(child);return i;
     }
     if(command==NX_MX_CHAN){
-        int i=mx_slot(g);if(i<0)return i;
-        struct mx_channel *c=NULL;
-        for(unsigned j=0;j<NX_MX_CHANNELS;++j)if(!mx_channels[j].active){c=&mx_channels[j];break;}
-        if(!c)return -NX_ENXIO;
-        c->active=true;c->parent=g;c->index=i;g->entry[i].channel=c;return mx_index(c);
+        struct mx_channel *c=mx_allocate(g);return c?(int)mx_index(c):-NX_ENXIO;
     }
     struct mx_entry e=mx_lookup(g,a.arg[0]);if(!mx_used(e))return -NX_ENXIO;
     if(command==NX_MX_DETACH){mx_detach(e,false);return 0;}
-    if(command==NX_MX_ATTACH)return e.channel && !e.channel->closing?(int)mx_index(e.channel):-NX_ENXIO;
+    if(command==NX_MX_ATTACH){
+        if(!e.channel || e.channel->closing)return -NX_ENXIO;
+        e.channel->pending=false;mx_notify(e.channel);return mx_index(e.channel);
+    }
     if(e.group)return mx_duplicate(u,e.group->file);
     struct mx_channel *c=e.channel;
-    if(c->closing)return -NX_ENXIO;
+    if(c->closing || c->pending)return -NX_ENXIO;
     if(c->endpoint)return mx_duplicate(u,c->endpoint);
     int fd=fd_slot(u,0);if(fd<0)return fd;
     struct file *f=file_alloc();if(!f)return -NX_ENFILE;

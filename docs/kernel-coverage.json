@@ -272,14 +272,15 @@
         "kernel/v7/files.c",
         "kernel/v7/tty.c",
         "kernel/v7/mpx.inc",
-        "include/nexix/mpx.h"
+        "include/nexix/mpx.h",
+        "kernel/v7/mpx_io.inc"
       ],
       "tasks": [
         65,
         66,
         67
       ],
-      "note": "fakemx is the optional historical stub, not acceptance. Task 65 supplies bounded group/channel creation, nibble paths and descriptor/inode ownership; events/data/open handshake remain 66 and TTY/libc remain 67."
+      "note": "Task 65 supplies group/channel ownership. Task 66 implements record data/control I/O, bounded queues, flow control and named-open/listener/attach handshakes. TTY bridging and libc remain 67; fakemx is the optional historical stub, not acceptance."
     },
     {
       "id": "support",
@@ -976,7 +977,7 @@
     {
       "number": 56,
       "routine": "mpxchan",
-      "label": "mpx group/channel ownership; data/control and TTY/libc remain 66/67",
+      "label": "mpx ownership and data/control implemented; TTY/libc remain 67",
       "status": "native_path",
       "task": 65,
       "native": "kernel/v7/syscall.c"
