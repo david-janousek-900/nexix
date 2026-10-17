@@ -124,8 +124,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 2 partial, 1 prototype and 203 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 64 done, 2 in progress
-and 300 to do** after task 64. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 65 done, 2 in progress
+and 299 to do** after task 65. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -283,7 +283,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 62 | Kernel-information snapshots | Done | Git history; [versioned native snapshots](docs/kernel-information.md); process/file/inode/text/mount/memory/I/O, root access, coherent pointer-free records and live metadata; `make test-kinfo` |
 | 63 | Resident-memory lock interface | Done | Git history; [V7 lock and native residency](docs/resident-lock.md); syscall 53, effective-root checks, SULOCK and fork/exec/exit lifetime; `make test-lock` |
 | 64 | Privileged phys interface | Done | Git history; [native physical windows](docs/physical-mappings.md); syscall 52, owned RAM/VGA, RW/NX aliases, atomic rollback and fork/exec/reference cleanup; `make test-phys` |
-| 65 | Multiplexed group/channel creation and ownership | To do | mx1/mx2 identifiers, descriptors and lifecycle |
+| 65 | Multiplexed group/channel creation and ownership | Done | Git history; `make test-mpx`; native syscall 56; bounded groups/channels, tree indices, join/extract/detach and fork/exec/close ownership; [contract](docs/multiplexor.md); data/control and TTY/libc remain 66–67 |
 | 66 | Multiplexed data/control events and flow control | To do | Read/write formats, bounded queues and wakeups |
 | 67 | Multiplexed TTY bridging and libc mpx wrappers | To do | Original consumers; no ENOSYS substitute |
 | 68 | V7 serial packet line discipline | To do | pk0–pk3 and libc pkon/pkoff; serial, not TCP/IP |

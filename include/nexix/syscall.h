@@ -50,6 +50,7 @@
 #define NX_SYS_PROFIL 44
 #define NX_SYS_GETGID 47
 #define NX_SYS_IOCTL 54
+#define NX_SYS_MPX 56
 #define NX_SYS_EXECVE 59
 #define NX_SYS_UMASK 60
 #define NX_SYS_CHROOT 61

@@ -270,14 +270,16 @@
       ],
       "native": [
         "kernel/v7/files.c",
-        "kernel/v7/tty.c"
+        "kernel/v7/tty.c",
+        "kernel/v7/mpx.inc",
+        "include/nexix/mpx.h"
       ],
       "tasks": [
         65,
         66,
         67
       ],
-      "note": "No native mpx implementation; existing files/TTY are integration points only. fakemx is the optional historical stub, not acceptance."
+      "note": "fakemx is the optional historical stub, not acceptance. Task 65 supplies bounded group/channel creation, nibble paths and descriptor/inode ownership; events/data/open handshake remain 66 and TTY/libc remain 67."
     },
     {
       "id": "support",
@@ -974,8 +976,8 @@
     {
       "number": 56,
       "routine": "mpxchan",
-      "label": "creat mpx comm channel",
-      "status": "pending",
+      "label": "mpx group/channel ownership; data/control and TTY/libc remain 66/67",
+      "status": "native_path",
       "task": 65,
       "native": "kernel/v7/syscall.c"
     },

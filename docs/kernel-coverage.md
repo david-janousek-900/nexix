@@ -26,7 +26,7 @@ contracts; task 355 and task 359 close whole-distribution integration.
 | sig | V7 signals, saved registers/FP frames and native ELF core dumps | Core policy/format implemented by 52; stop/wait/register access implemented by 57; memory changes and stepping implemented by 58 |
 | pipe | Native bounded pipes, sleep/wakeup, SIGPIPE and descriptor lifetime | Existing files tests; consumer acceptance remains distribution-wide |
 | acct | Process exit integration point | Accounting records, privileges, storage errors 56 |
-| prim/mx1/mx2/fakemx | File/TTY integration points only | Multiplexer lifecycle, events, TTY bridging 65–67; historical optional stub does not satisfy functionality |
+| prim/mx1/mx2/fakemx | Native group/channel allocation, tree indices and descriptor/inode lifecycle | Ownership implemented by 65; data/control/open notifications 66 and TTY/libc 67 remain; historical optional stub does not satisfy functionality |
 | tty/dc/dh/dz/kl/partab | COM1 cooked/raw/cbreak, process groups and supported parity/tab flags | Terminal equivalents and TANDEM/LCASE/delay/parity contracts 74; independent ports 89–93 |
 | pk0–pk3 | Serial/TTY integration points only | V7 serial packet discipline 68 |
 | dn/dhdm/dhfdm/du | Serial integration point only | Modem/dial control 75 |
@@ -59,7 +59,7 @@ not be treated as missing required features merely because they were stubs.
 | 51 | acct | 56 |
 | 52 | phys implemented | 64; native page windows, ownership and rollback |
 | 53 | lock implemented | 63; resident memory, V7 privilege and lifecycle rules |
-| 56 | mpx | 65–67 |
+| 56 | mpx ownership implemented; data/control and TTY/libc pending | 65; remaining 66–67 |
 
 `ftime` currently uses libc's `time` path and returns zero milliseconds. A native
 clock snapshot is required; merely having a library symbol does not finish it.

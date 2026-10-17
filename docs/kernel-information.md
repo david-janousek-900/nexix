@@ -111,3 +111,10 @@ user buffers and all seven unprivileged query/data requests. `make test-unit`
 includes these host fixtures plus TTY byte-counter checks. `make test-shell` checks
 RAM and IDE shells at both RAM sizes. The V7 command ports and raw memory devices
 remain their separate roadmap tasks.
+
+Multiplexor descriptors (task 65) use file kind `NX_KINFO_FILE_MPX` (5).
+Their flags retain V7 FMPX/FMPY side bits; a group has both bits set. File
+reference counts include group joins and shared extractions. Live group inode
+records expose IFMPC even though backing storage retains IFCHR; after group
+closure, any retained endpoint inode reports the inactive character-device mode.
+See [multiplexor ownership](multiplexor.md).

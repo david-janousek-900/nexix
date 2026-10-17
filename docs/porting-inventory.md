@@ -56,7 +56,7 @@ and original metadata to the recorded archive. See [source provenance](../refere
 ## Implementation priorities
 
 Priorities guide implementation order, not release exclusions. The expanded
-361-task roadmap is in [README.md](../README.md#roadmap). RTC/timestamps/TZ are
+366-task roadmap is in [README.md](../README.md#roadmap). RTC/timestamps/TZ are
 tasks 22–24; kernel/libc work spans 25–82, terminals 89–93, and multi-user
 integration 94–108. Individual component ports have their own IDs in the
 [coverage map](roadmap-coverage.json); shared support is developed as needed.
@@ -247,7 +247,7 @@ according to their actual Nexix implementation status.
 make TOOLCHAIN_PREFIX= test-inventory
 ```
 
-The read-only checker also validates all 361 roadmap IDs, summary statuses,
+The read-only checker also validates all 366 roadmap IDs, summary statuses,
 component/requirement mappings and task ownership, rejecting omissions and
 misleading completion mappings.
 
@@ -279,3 +279,11 @@ include protected address spaces, processes/signals, native ELF execution, file
 descriptors/pipes, one serial TTY, V7 disk encoding and synchronous IDE persistence.
 See [architecture](architecture.md), [userland](userland.md) and
 [syscall ABI](syscall-abi.md) for implemented behavior and current limits.
+
+
+Task 65 implements the multiplexor's group/channel creation, tree identifiers,
+join/extract/detach and descriptor/inode lifecycle from `usr/sys/dev/mx1.c`,
+`mx2.c`, `usr/sys/h/mx.h` and `usr/man/man2/mpx.2`.
+See the [native contract and tests](multiplexor.md). Data/control events and
+named-open handshakes remain task 66; TTY integration and libc wrappers remain
+67. This does not complete the kernel or libc inventory components.

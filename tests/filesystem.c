@@ -322,6 +322,23 @@ int main(int argc, char **argv)
     assert(v7fs_inode_get(&fs, ino, &scratch) == 0 && scratch.atime == 100 && scratch.mtime == now-1 && scratch.ctime == now-1);
     free(saved);
     assert(v7fs_unmount(&fs) == 0);
+    /* Unlinked character inodes own no directory entry or data blocks. */
+    reset();assert(v7fs_mount(&fs,&ram.device,false)==0);
+    unsigned anonymous_free=v7_disk_u16(super()->tinode);
+    uint8_t super_before[V7_BSIZE];memcpy(super_before,super(),V7_BSIZE);
+    assert(v7fs_anonymous(&fs,V7_IFREG|0600,12,34,0x500,&ino)==-NX_EINVAL);
+    assert(!memcmp(super_before,super(),V7_BSIZE));
+    for(unsigned repeat=0;repeat<3;++repeat){
+        assert(v7fs_anonymous(&fs,V7_IFCHR|0666,12,34,0x500,&ino)==0);
+        assert(v7fs_inode_get(&fs,ino,&scratch)==0 && scratch.nlink==0);
+        assert(scratch.mode==(V7_IFCHR|0666) && scratch.uid==12 && scratch.gid==34);
+        assert(scratch.addr[0]==0x500 && scratch.size==0 && scratch.ctime==now);
+        assert(v7_disk_u16(super()->tinode)==anonymous_free-1);
+        assert(v7fs_release_inode(&fs,ino)==0 && v7_disk_u16(super()->tinode)==anonymous_free);
+    }
+    assert(v7fs_unmount(&fs)==0 && v7fs_mount(&fs,&ram.device,true)==0);
+    assert(v7fs_anonymous(&fs,V7_IFCHR|0600,0,0,0x500,&ino)==-NX_EROFS);
+    assert(v7fs_unmount(&fs)==0);
     /* Timestamp write faults are reported and poison the write-through mount. */
     reset();
     fault.bad_read = UINT32_MAX; fault.bad_write = v7_itod(5);

@@ -3,12 +3,21 @@
 #include <signal.h>
 #include <sys/wait.h>
 #include <sys/ptrace.h>
+#include <nexix/mpx.h>
+#include <nexix/libc.h>
+#include <errno.h>
+#include <fcntl.h>
 static volatile long datum=33;
 extern int trace_patch_target(void);
 int main(int argc,char **argv)
 {
     if(argc!=4)return 90;
     int mode=atoi(argv[1]),ready=atoi(argv[2]),go=atoi(argv[3]);
+    if(mode==8){
+        struct nx_mx_args a={.arg={0,ready,0}};
+        return fcntl(go,F_GETFD)==-1 && errno==EBADF &&
+            nx_syscall6(NX_SYS_MPX,NX_MX_CHAN,(long)&a,0,0,0,0)==0xfff0?0:85;
+    }
     if(mode==7){
         volatile uint64_t *a=(void *)NX_PHYS_ADDRESS(0),*b=(void *)NX_PHYS_ADDRESS(1);
         if(a[0]!=0x5566 || a[512]!=0x7788 || b[0]!=0x7788)return 87;

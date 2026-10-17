@@ -55,6 +55,8 @@ int v7fs_truncate(struct v7fs *, v7_ino_t);
 int v7fs_release_inode(struct v7fs *, v7_ino_t); /* nlink zero, no live references */
 /* Names are trusted, zero-padded/truncated V7 components. Caller checks
  * credentials; release_inode additionally requires exclusive ownership. */
+/* Allocate an unlinked character inode; caller pins it until release_inode. */
+int v7fs_anonymous(struct v7fs *, uint16_t mode, uint16_t uid, uint16_t gid, uint16_t device, v7_ino_t *);
 int v7fs_create(struct v7fs *, v7_ino_t parent, const char name[V7_DIRSIZ], uint16_t mode, uint16_t uid, uint16_t gid, v7_ino_t *);
 int v7fs_mknod(struct v7fs *, v7_ino_t, const char[V7_DIRSIZ], uint16_t mode, uint16_t uid, uint16_t gid, uint16_t device, v7_ino_t *);
 int v7fs_link_privileged(struct v7fs *, v7_ino_t, v7_ino_t, const char[V7_DIRSIZ], bool);

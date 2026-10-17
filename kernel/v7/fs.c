@@ -578,6 +578,27 @@ int v7fs_mknod(struct v7fs *fs, v7_ino_t parent, const char name[V7_DIRSIZ],
     }
     return -NX_ENOSPC;
 }
+/* V7 ialloc without a directory link. The files layer must pin the result
+ * until its final close; release_inode then returns it to the free i-list. */
+int v7fs_anonymous(struct v7fs *fs,uint16_t mode,uint16_t uid,uint16_t gid,uint16_t device,v7_ino_t *out)
+{
+    int error=ready(fs,true);if(error)return error;
+    if(!out || (mode&V7_IFMT)!=V7_IFCHR)return -NX_EINVAL;
+    for(uint32_t n=3;n<=fs->inodes;++n){
+        struct v7fs_inode inode;error=v7fs_inode_get(fs,n,&inode);
+        if(error && error!=-NX_ENOENT)return error;
+        if(!error)continue;
+        inode=(struct v7fs_inode){.number=n,.mode=mode,.uid=uid,.gid=gid,
+            .atime=disk_time(),.mtime=disk_time(),.ctime=disk_time()};
+        inode.addr[0]=device;error=inode_put(fs,&inode);if(error)return error;
+        unsigned total=v7_disk_u16(fs->super.tinode);
+        if(total)v7_disk_put16(fs->super.tinode,total-1);
+        v7_disk_put16(fs->super.ninode,0);
+        error=write_block(fs,V7_SUPERB,&fs->super);if(error)return error;
+        *out=n;return 0;
+    }
+    return -NX_ENOSPC;
+}
 int v7fs_create(struct v7fs *fs, v7_ino_t parent, const char name[V7_DIRSIZ],
                 uint16_t mode, uint16_t uid, uint16_t gid, v7_ino_t *out)
 { return v7fs_mknod(fs, parent, name, V7_IFREG | (mode & 07777), uid, gid, 0, out); }

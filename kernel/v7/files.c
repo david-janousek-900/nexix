@@ -11,6 +11,7 @@
 #include "accounting.h"
 #include <nexix/syscall.h>
 #include <nexix/errno.h>
+#include <nexix/mpx.h>
 #define NPIPE 32
 #define FILE_STORAGE 0100 /* Native private-device discriminator. */
 struct pipe_buffer { bool active; unsigned readers, writers, head, size; uint8_t bytes[NX_PIPE_BUF]; };
@@ -109,12 +110,14 @@ static struct file *file_alloc(void)
     }
     return NULL;
 }
+static void mpx_close(struct file *);
 static int file_put(struct file *f)
 {
     if (!valid_file(f)) panic("invalid open file release");
     if (--f->f_count) return 0;
     int error = 0;
-    if (f->f_private && !(f->f_flag & V7_FPIPE)) {
+    if(f->f_flag&V7_FMP) mpx_close(f);
+    else if (f->f_private && !(f->f_flag & V7_FPIPE)) {
         if(f->f_flag & FILE_STORAGE) storage_close(f->f_private);
         else tty_close(f->f_private);
     }
@@ -277,6 +280,8 @@ int files_core_write(struct inode *inode,uint64_t offset,const void *bytes,size_
     size_t done=0;int error=v7fs_write(node_volume(inode_node(inode)),inode->i_number,(int64_t)offset,bytes,size,&done);
     return error?error:done!=size?-NX_EIO:0;
 }
+#include "mpx.inc"
+
 static int open_path(struct user *u, uintptr_t address, uint64_t flags, uint64_t mode)
 {
     uint64_t allowed = NX_O_ACCMODE | NX_O_CREAT | NX_O_TRUNC | NX_O_EXCL | NX_O_APPEND | NX_O_CLOEXEC;
@@ -320,6 +325,7 @@ static int open_path(struct user *u, uintptr_t address, uint64_t flags, uint64_t
         error=storage_open(disk.addr[0],type==V7_IFCHR,access!=0,&handle);
         if(!error){f->f_private=handle;f->f_flag=FILE_STORAGE;}
     }
+    if(!error && type==V7_IFCHR && (disk.addr[0]>>8)==NX_MX_MAJOR)error=-NX_ENXIO; /* Open handshake: task 66. */
     if (!error && !storage && type == V7_IFCHR && disk.addr[0] != NX_NULL_DEV) {
         struct tty *tty;
         error = tty_open(disk.addr[0], u, &tty);
@@ -392,6 +398,7 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
     struct address_space *vm = &proc_current()->p_vm;
     if (!user_access_ok(vm, address, count, !write)) return -NX_EFAULT;
     struct file *f = u->u_ofile[fd];
+    if (f->f_flag & V7_FMP) return count ? -NX_ENXIO : 0; /* Data/control: task 66. */
     if (f->f_flag & V7_FPIPE) return pipe_io(f, address, count, write);
     if(f->f_private && (f->f_flag & FILE_STORAGE)){
         bool raw=(f->f_inode->i_mode & V7_IFMT)==V7_IFCHR;
@@ -464,7 +471,7 @@ static int64_t seek(struct file *f, int64_t offset, uint64_t whence)
 static int stat_inode(struct fs_node ino, struct nx_stat *st)
 {
     struct v7fs_inode i; int error = node_inode_get(ino, &i); if (error) return error;
-    *st = (struct nx_stat){.dev=ino.dev, .ino = ino.ino, .mode = i.mode, .nlink = i.nlink, .uid = i.uid, .gid = i.gid,
+    *st = (struct nx_stat){.dev=ino.dev, .ino = ino.ino, .mode = mpx_mode(ino,i.mode), .nlink = i.nlink, .uid = i.uid, .gid = i.gid,
         .rdev = ((i.mode & V7_IFMT) == V7_IFCHR || (i.mode & V7_IFMT) == V7_IFBLK) ? i.addr[0] : 0,
         .size = i.size, .atime = i.atime, .mtime = i.mtime, .ctime = i.ctime}; return 0;
 }
@@ -497,6 +504,7 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
 {
     struct proc *p = proc_current(); struct user *u = p->p_user;
     uint64_t fd = args[0];
+    if(number==NX_SYS_MPX)return mpx_call(u,args[0],args[1]);
     if(number==NX_SYS_MOUNT)return mount_path(u,args);
     if(number==NX_SYS_UMOUNT){
         if(!proc_superuser(u))return -NX_EPERM;
@@ -618,7 +626,7 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
             u->u_pofile[fd] = request == NX_FIOCLEX ? V7_EXCLOSE : 0;
             return 0;
         }
-        if (!f->f_private || (f->f_flag & V7_FPIPE) || (f->f_flag & FILE_STORAGE)) return -NX_ENOTTY;
+        if (!f->f_private || (f->f_flag & (V7_FPIPE|V7_FMP)) || (f->f_flag & FILE_STORAGE)) return -NX_ENOTTY;
         return tty_ioctl(f->f_private, &p->p_vm, request, argument);
     }
     if (number == NX_SYS_CLOSE) return close_fd(u, fd);
@@ -673,6 +681,7 @@ bool files_info(unsigned i,struct nx_kinfo_file *r)
     if(r->inode_id){r->dev=f->f_inode->i_dev;r->ino=f->f_inode->i_number;}
     r->kind=(f->f_flag&V7_FPIPE)?NX_KINFO_FILE_PIPE:
         (f->f_flag&FILE_STORAGE)?NX_KINFO_FILE_STORAGE:
+        (f->f_flag&V7_FMP)?NX_KINFO_FILE_MPX:
         f->f_private?NX_KINFO_FILE_TTY:NX_KINFO_FILE_REGULAR;
     return true;
 }
@@ -681,7 +690,7 @@ bool inodes_info(unsigned i,struct nx_kinfo_inode *r)
     if(i>=V7_NINODE || !inodes[i].i_count)return false;
     const struct inode *ip=&inodes[i];zero(r,sizeof(*r));
     r->slot=i+1;r->refs=ip->i_count;r->dev=ip->i_dev;r->ino=ip->i_number;
-    r->mode=ip->i_mode;r->uid=ip->i_uid;r->gid=ip->i_gid;r->flags=ip->i_flag;
+    r->mode=mpx_mode(inode_node(ip),ip->i_mode);r->uid=ip->i_uid;r->gid=ip->i_gid;r->flags=ip->i_flag;
     r->nlink=ip->i_nlink;r->size=ip->i_size;
     unsigned type=ip->i_mode&V7_IFMT;
     if(type==V7_IFCHR || type==V7_IFBLK)r->rdev=ip->i_un.i_rdev;
