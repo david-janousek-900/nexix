@@ -1401,3 +1401,8 @@ test-su: rootfs iso build/credentials.elf
 test-newgrp: rootfs iso build/credentials.elf
 	$(PYTHON) tools/newgrp_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/newgrp_smoke.py $(QEMU) build/nexix.iso 128M
+
+.PHONY: test-who
+test-who: rootfs iso
+	$(PYTHON) tools/who_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/who_smoke.py $(QEMU) build/nexix.iso 128M

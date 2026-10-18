@@ -826,6 +826,19 @@
         "root": "programs",
         "path": "v7-newgrp.elf"
       }
+    },
+    {
+      "path": "/bin/who",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.who",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-who.elf"
+      }
     }
   ]
 }

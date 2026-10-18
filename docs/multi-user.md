@@ -185,3 +185,10 @@ keeps the login PID/group and inherited HOME/cwd.
 real/effective IDs, inherited environment, closure of an inherited fd 19, and
 wrong/correct group passwords for a private blank-password account. Tests use
 actual login and builtin dispatch at 16/128 MiB.
+
+Task 105 installs V7 `/bin/who` with its normal, explicit-file and three-argument
+(`who am i`) modes. It reads the native 24-byte records, retains source formatting
+and empty-record behavior, bounds fixed-width field comparisons/copies and checks
+time/stream errors. `make test-who` checks two live sessions, each terminal's
+identity, no-TTY fallback, explicit utmp and nonterminated eight-byte records,
+missing files and logout at 16/128 MiB.
