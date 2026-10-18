@@ -212,7 +212,7 @@ their sources alone does not provide a working native equivalent.
 | `elf-toolchain` | missing | Retarget retained compiler/assembler/linker and archive/symbol utilities to native x86_64 ELF. |
 | `spool-locks` | missing | Historical spool and UUCP configuration fixtures are supplied; native services, ownership and locking remain pending. |
 | `yacc-skeleton` | supplied | `/usr/lib/yaccpar` |
-| `lex-skeletons` | partial | C scanner skeleton ncform is supplied. Optional Ratfor nrform and EBCDIC ebcform are referenced by source but absent from the full archive. |
+| `lex-skeletons` | supplied | Supplied ncform, separately pinned/adapted Ratfor nrform and tested native extended-byte ebcform equivalent; see [support inputs](support-inputs.md). |
 | `lint-descriptions` | supplied | `/usr/lib/llib-lc`, `/usr/lib/llib-port` |
 | `word-dictionary` | supplied | `/usr/dict/words` |
 | `spell-lists` | supplied | American/British/local word additions and stop list are supplied in the reference spell directory. |
@@ -223,7 +223,7 @@ their sources alone does not provide a working native equivalent.
 | `formatter-macros` | supplied | `/usr/lib/tmac` |
 | `bibliography-data` | supplied | `/usr/dict/papers/Ind`, `/usr/lib/eign`, `/usr/dict/lookall/All` |
 | `units-data` | supplied | `/usr/lib/units` |
-| `bc-math` | missing | Optional /usr/lib/lib.b is referenced by bc source but absent from the full pinned archive; recover it separately or document the unresolved feature. |
+| `bc-math` | supplied | Historical V6 source-lineage lib.b recovered separately; six math functions supplied, native bc/dc acceptance remains task 209. |
 | `fortune-data` | supplied | `/usr/games/lib/fortunes` |
 | `quiz-data` | supplied | `/usr/games/quiz.k/index` |
 | `v7-source-archives` | supplied | libplot backends contain source in historical .c.a archives; bootstrap extraction must support the historical archive format. |
@@ -238,9 +238,9 @@ formatter macros, six lesson archives, dictionaries/bibliography data, units,
 fortune/quiz datasets and original configuration. “Supplied” means reference
 inputs are available, not that their native port or installation is complete.
 Historical font/terminal tables and spell hashes need native regeneration or
-format validation. Optional nrform/ebcform lex skeletons and bc's lib.b remain
-absent from the complete archive. Kernel/runtime requirements remain pending
-according to their actual Nexix implementation status.
+format validation. The optional lex and bc inputs absent from the pinned archive
+now have [separately recorded source/native-equivalent dispositions](support-inputs.md).
+Their full consuming-program ports retain their roadmap tasks.
 
 ## Coverage validation
 

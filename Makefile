@@ -1555,3 +1555,8 @@ test-development: build/nexix.iso build/devkit-crt0.elf build/devkit-fcrt0.elf b
 test-libc-source-coverage:
 	$(PYTHON) tests/libc_source_coverage.py
 test-inventory: test-libc-source-coverage
+
+.PHONY: test-support-inputs
+test-support-inputs: test-supplemental-inputs
+	$(PYTHON) tests/support_inputs.py --cc $(HOST_CC)
+test-unit: test-support-inputs

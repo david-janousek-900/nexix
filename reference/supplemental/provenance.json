@@ -8,6 +8,30 @@
       "sha256": "7ca2c4bcf2b1b8da2fc92f12512832adecc7d5173aaf47273b0603820ed3f163",
       "license": "reference/Caldera-license.pdf",
       "task": 80
+    },
+    {
+      "path": "reference/supplemental/v6/lib.b",
+      "url": "https://raw.githubusercontent.com/dspinellis/unix-history-repo/e005199fcbe9d3676ddf72c1d31dd42f7216ad8a/.ref-Research-V6/usr/lib/lib.b",
+      "origin": "Research V6 bc mathematics library preserved in V7 history; compatible source lineage, not a missing V7 archive member.",
+      "license": "reference/Caldera-license.pdf",
+      "sha256": "9c16f3046639bf9d5f2d51aff992d10739d5fbbea995dbd81d6f24f80c72e73d",
+      "task": 88
+    },
+    {
+      "path": "reference/supplemental/illumos/nrform",
+      "url": "https://raw.githubusercontent.com/illumos/illumos-gate/966c588f828c4693b5a80ec27b24ff16afa11ec9/usr/src/cmd/sgs/lex/common/nrform",
+      "origin": "Later illumos Ratfor scanner skeleton; CDDL-licensed replacement input, not original V7 source.",
+      "license": "reference/supplemental/illumos/OPENSOLARIS.LICENSE",
+      "sha256": "cbdd6f68b76123dc8e609a7d572a15e81061d372b4820c868eeb6a25af932d09",
+      "task": 88
+    },
+    {
+      "path": "reference/supplemental/illumos/OPENSOLARIS.LICENSE",
+      "url": "https://raw.githubusercontent.com/illumos/illumos-gate/966c588f828c4693b5a80ec27b24ff16afa11ec9/usr/src/OPENSOLARIS.LICENSE",
+      "origin": "License accompanying the separately recovered illumos source.",
+      "license": "reference/supplemental/illumos/OPENSOLARIS.LICENSE",
+      "sha256": "1ffb70c33c4f79f04e947facc5c7851f289609256aacb47fc115f700427d9520",
+      "task": 88
     }
   ]
 }

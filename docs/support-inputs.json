@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "policy": "Recover missing inputs separately from the pinned distribution; native equivalents and later-source adaptations are explicit, with consumer acceptance retained by later tasks.",
+  "inputs": [
+    {
+      "id": "bc-math",
+      "native": "user/v7/bc/lib.b",
+      "origin": "reference/supplemental/v6/lib.b",
+      "disposition": "recovered-source-lineage",
+      "consumer_tasks": [209],
+      "note": "All six historical math functions are supplied. Native bc/dc execution and numerical acceptance remain task 209."
+    },
+    {
+      "id": "lex-ratfor",
+      "native": "user/v7/lex/nrform",
+      "origin": "reference/supplemental/illumos/nrform",
+      "disposition": "adapted-later-source",
+      "consumer_tasks": [171, 172, 173, 216],
+      "note": "CDDL-licensed Ratfor skeleton adapted to V7 yyldat COMMON field order and generated YYTOPVAL constant. Ratfor/Fortran compilation and runtime acceptance remain consumer tasks."
+    },
+    {
+      "id": "lex-extended",
+      "native": "user/v7/lex/ebcform",
+      "origin": "reference/v7/usr/lib/lex/ncform",
+      "disposition": "native-equivalent",
+      "consumer_tasks": [171, 172, 173],
+      "note": "Exact historical ebcform not recovered. Native extended-byte driver derived from supplied ncform, with unsigned-byte promotion, native-width pointer comparisons and uncompressed miss/EOF handling. It retains extended table support instead of waiving the feature."
+    }
+  ]
+}

@@ -142,8 +142,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 3 partial, 1 prototype and 188 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 107 done, 0 in progress
-and 259 to do** after task 82. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 108 done, 0 in progress
+and 258 to do** after task 88. Tasks **1–108 are complete**. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -329,7 +329,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 85 | Separate full IDE root from embedded bootstrap/test root | Done | [Root image profiles](docs/root-images.md); fixed bootstrap manifest/config and 512 KiB RAM image, independent full IDE seed and atomic non-clobber disk creation; kernel hash isolation and cold boots at 16/128 MiB; `make test-root-separation`; Git history |
 | 86 | Per-component guest acceptance harness | Done | [Guest acceptance](docs/guest-acceptance.md); component suites, disposable staged IDE roots, serial fixtures, output/status assertions and JSON/log reports; `make test-guest-harness`; Git history |
 | 87 | Historical source/data archive extraction | Done | Validated PDP-11 ar reader/extractor; all twelve source/lesson archives round-trip with per-member provenance; make test-v7-archives; docs/source-archives.md; Git history |
-| 88 | Resolve missing referenced support inputs | To do | Track bc lib.b and optional lex nrform/ebcform individually; recover or obtain explicit disposition |
+| 88 | Resolve missing referenced support inputs | Done | bc math and later Ratfor sources separately pinned/licensed; tested native extended-byte lex equivalent retains optional mode; input provenance/COMMON and all-byte sanitizer fixtures; make test-support-inputs; docs/support-inputs.md; Git history |
 | 89 | Separate per-terminal queues, settings and ownership | Done | Independent TTY queues/settings/ownership with bound transports; `make test-tty-lines-unit`; COM1 controller/modem/mpx regressions and QEMU TTY/packet acceptance; Git history |
 | 90 | COM2 hardware initialization and interrupt routing | Done | Detected COM2 16550 transport at 0x2f8, IRQ3/vector 35, independent TX ring, RX errors and modem routing; `make test-serial-secondary` at 16/128 MiB; COM1 TTY/rootfs/packet regressions; Git history |
 | 91 | Independent controlling terminals and per-TTY signals | Done | Per-line controlling terminals/groups and V7 fork/exec/close lifecycle validated on both UARTs; `make test-terminal-sessions` at 16/128 MiB; cooked editing, empty lines, EOF, SIGINT and XOFF/XON isolation; [contract](docs/multi-terminal.md); Git history |
@@ -439,7 +439,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 170 | Complete yacc skeleton and native parser generation | To do | Install yaccpar; generate, compile and run parsers |
 | 171 | Port lex scanner generation | To do | C scanner skeleton and lexical fixtures |
 | 172 | Port libln and lex/smallex runtime targets | To do | Generated scanner execution and support libraries |
-| 173 | Complete lex/yacc native generator acceptance | To do | Bootstrap cycles resolved; optional skeleton gaps explicit |
+| 173 | Complete lex/yacc native generator acceptance | To do | C/extended-table/Ratfor generated scanner acceptance; Ratfor execution requires native Fortran toolchain |
 | 174 | Port awk parser and generated helper tables | To do | Uses working lex/yacc; include proc/tokenscript |
 | 175 | Port awk interpreter and data model | To do | Fields, arrays, arithmetic, strings and native widths |
 | 176 | Complete awk I/O/functions and end-to-end acceptance | To do | Pipes, files, regex and complete program fixtures |
@@ -489,7 +489,7 @@ are accounted for. Final native rebuild acceptance is task 207.
 | Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 208 | Port dc | To do | Numeric/language fixtures and native execution |
-| 209 | Port bc | To do | dc integration; optional lib.b unresolved until recovered/disposition |
+| 209 | Port bc | To do | dc integration; install/test all six functions from the separately recovered lib.b input |
 | 210 | Port factor | To do | Numeric/language fixtures and native execution |
 | 211 | Port primes | To do | Numeric/language fixtures and native execution |
 | 212 | Port random | To do | Numeric/language fixtures and native execution |

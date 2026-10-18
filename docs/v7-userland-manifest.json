@@ -296,12 +296,15 @@
     {
       "id": "lex-skeletons",
       "category": "data",
-      "status": "partial",
-      "description": "C scanner skeleton ncform is supplied. Optional Ratfor nrform and EBCDIC ebcform are referenced by source but absent from the full archive.",
+      "status": "supplied",
+      "description": "Supplied ncform plus separately pinned/adapted illumos nrform and tested native extended-byte ebcform equivalent. Exact historical ebcform text remains unrecovered; no mode is waived. Full generator/Ratfor/Fortran acceptance stays in consumer tasks.",
       "evidence": [
         "reference/v7/usr/lib/lex/ncform",
-        "reference/v7/usr/src/cmd/lex/once.c",
-        "reference/v7/usr/src/cmd/lex/lmain.c"
+        "reference/supplemental/provenance.json",
+        "user/v7/lex/nrform",
+        "user/v7/lex/ebcform",
+        "docs/support-inputs.json",
+        "tests/support_inputs.py"
       ],
       "locations": [
         "/usr/lib/lex/ncform",
@@ -474,10 +477,14 @@
     {
       "id": "bc-math",
       "category": "data",
-      "status": "missing",
-      "description": "Optional /usr/lib/lib.b is referenced by bc source but absent from the full pinned archive; recover it separately or document the unresolved feature.",
+      "status": "supplied",
+      "description": "Historical V6 lib.b recovered separately from the V7 source-history snapshot and retained unchanged; all six math function inputs supplied. Native bc/dc -l installation and numeric acceptance remain task 209.",
       "evidence": [
-        "reference/v7/usr/src/cmd/bc.y"
+        "reference/supplemental/provenance.json",
+        "reference/supplemental/v6/lib.b",
+        "user/v7/bc/lib.b",
+        "docs/support-inputs.json",
+        "tests/support_inputs.py"
       ],
       "locations": [
         "/usr/lib/lib.b"
@@ -2186,7 +2193,7 @@
         "Native API/width audit and functional port pending."
       ],
       "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
+        "Native bc/dc integration and all six recovered lib.b function fixtures remain task 209; input provenance/disposition is resolved by task 88."
       ],
       "acceptance": [
         "Evaluate arithmetic, variables and a loop through dc; exercise optional math library.",
@@ -7648,7 +7655,7 @@
         "Complete native ABI/API and data-asset audit before porting."
       ],
       "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
+        "Native generator/runtime and generated C/extended-table/Ratfor scanner acceptance remain tasks 171-173; separate Fortran/Ratfor toolchain is required for Ratfor execution. All skeleton source inputs now have explicit task 88 dispositions."
       ],
       "acceptance": [
         "Generate a scanner, compile it with libln and verify token/reject/pushback fixtures.",
