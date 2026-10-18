@@ -1327,3 +1327,12 @@ build/mesg-command.elf: build/crt0.o build/mesg-command.o build/libc.a user/user
 test-mesg: rootfs iso build/mesg-command.elf
 	$(PYTHON) tools/mesg_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/mesg_smoke.py $(QEMU) build/nexix.iso 128M
+
+build/getty-handoff.o: tests/getty-handoff.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/getty-handoff.elf: build/crt0.o build/getty-handoff.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+.PHONY: test-getty
+test-getty: rootfs iso build/getty-handoff.elf
+	$(PYTHON) tools/getty_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/getty_smoke.py $(QEMU) build/nexix.iso 128M

@@ -62,3 +62,18 @@ other-write bit and applies the source's 0622/0600 modes. A negative answer or
 checks ttyname failure before stat. `make test-mesg` checks both lines, independent
 modes, non-TTY/error paths, and a real UID-100 process failing to chmod a root-owned
 terminal that it inherited open. V7's message permission semantics are retained.
+
+Task 98 installs `/etc/getty` from V7 `usr/src/cmd/getty.c`. Its speed-table loop,
+username editing, case detection and login exec remain source-based. Profile `9`
+adds 115200 baud with native Ctrl-C, raw username input and cooked/echo login
+handoff. Other profile entries retain their historical settings. PC UART hardware
+handles parity, so the port removes software parity bits from transmitted ASCII.
+The private output routine is renamed to avoid interposing libc puts. The username
+buffer reserves a terminator after the original 16-character bound; ioctl failures
+exit rather than continuing with an unconfigured line.
+
+`make test-getty` uses an explicitly private `/bin/login` stand-in on a disposable
+IDE root. It verifies argv and cooked settings at the exec boundary, clean prompts,
+erase/kill, uppercase input, the full name bound, empty input, zero-byte speed
+cycling, EOT exit and both UARTs. Authentication is implemented separately in task
+99; production init supervision and respawn are task 101.

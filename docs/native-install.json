@@ -761,6 +761,19 @@
         "root": "programs",
         "path": "v7-mesg.elf"
       }
+    },
+    {
+      "path": "/etc/getty",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.getty",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-getty.elf"
+      }
     }
   ]
 }
