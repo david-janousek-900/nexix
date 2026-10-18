@@ -351,13 +351,17 @@
         "reference/v7/usr/sys/dev/pk3.c"
       ],
       "native": [
+        "kernel/v7/packet.c",
+        "kernel/v7/packet_tty.c",
+        "kernel/include/packet.h",
         "kernel/v7/tty.c",
-        "kernel/serial.c"
+        "kernel/serial.c",
+        "libc/packet.c"
       ],
       "tasks": [
         68
       ],
-      "note": "Native device equivalent and its protocol/error/lifetime tests remain required; referenced files are integration points, not completed replacements."
+      "note": "Task 68 implements bounded V7 packet framing/checksums, negotiation, windows/ACK/retries/EOF/CLOSE, IRQ-driven UART integration, pinned line ownership, mpx TTY data paths and libc pkon/pkoff/turnon. Source kernel receive limit 512 and libc pkon limit 128 are retained; malformed input is hardened. Real serial peer acceptance runs at 16/128 MiB. UUCP consumer integration and independent serial hardware remain with their owners; see docs/serial-packets.md."
     },
     {
       "id": "disk",

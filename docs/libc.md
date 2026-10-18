@@ -167,3 +167,7 @@ Task 56 adds `acct(path)` (syscall 51) in `<unistd.h>` and `<sys/acct.h>`.
 The latter exports the native 40-byte `struct acct`, `comp_t`, AFORK and ASU;
 see [accounting record and lifecycle contracts](accounting.md). accton and sa
 remain separate command ports (tasks 240–241).
+
+Task 68 adds [V7 serial packets](serial-packets.md), TIOCSETD/DIOCGETP
+negotiation and libc pkon/pkoff/turnon. Run `make test-packet` for host
+protocol/ownership/UART/libc checks and real QEMU COM1 exchanges at 16/128 MiB.

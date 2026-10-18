@@ -203,3 +203,7 @@ and process-lifecycle behavior on resident native memory. See
 Task 64 exports `phys` in `<sys/phys.h>` and `<unistd.h>` for privileged native
 page windows. The [physical mapping contract](physical-mappings.md) documents
 source-unit adaptations, supported ranges, ownership and process lifetime.
+
+Task 68 adds [V7 serial packets](serial-packets.md), TIOCSETD/DIOCGETP
+negotiation and libc pkon/pkoff/turnon. Run `make test-packet` for host
+protocol/ownership/UART/libc checks and real QEMU COM1 exchanges at 16/128 MiB.

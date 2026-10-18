@@ -71,6 +71,7 @@ bool boot_parse(uintptr_t address, size_t accessible_bytes, struct boot_info *in
             if (string_equal(s, "test=user-bad-stack")) info->test = BOOT_TEST_USER_BAD_STACK;
             if (string_equal(s, "test=user-df")) info->test = BOOT_TEST_USER_DF;
             if (string_equal(s, "test=tty")) info->test = BOOT_TEST_TTY;
+            if (string_equal(s, "test=packet")) info->test = BOOT_TEST_PACKET;
             if (string_equal(s, "test=tty-demo")) info->test = BOOT_TEST_TTY_DEMO;
         } else if (tag->type == 3) {
             if (size < 17)

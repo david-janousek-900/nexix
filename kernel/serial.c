@@ -2,6 +2,23 @@
 #include "serial.h"
 #include "tty.h"
 #define COM1 0x3f8
+#define TX_CAPACITY 4096
+static uint8_t tx[TX_CAPACITY];
+static unsigned tx_head,tx_count;
+static void transmit(void)
+{
+    if(!(inb(COM1+5)&0x20))return;
+    for(unsigned n=0;n<16 && tx_count;++n){
+        outb(COM1,tx[tx_head]);tx_head=(tx_head+1)%TX_CAPACITY;--tx_count;
+    }
+    if(!tx_count)outb(COM1+1,inb(COM1+1)&~2U);
+}
+bool serial_enqueue(const uint8_t *bytes,size_t count)
+{
+    if(count>TX_CAPACITY-tx_count)return false;
+    for(size_t i=0;i<count;++i)tx[(tx_head+tx_count+i)%TX_CAPACITY]=bytes[i];
+    tx_count+=count;outb(COM1+1,inb(COM1+1)|2);transmit();return true;
+}
 void serial_init(void)
 {
     outb(COM1 + 1, 0);
@@ -14,12 +31,14 @@ void serial_init(void)
 }
 void serial_putc(uint8_t byte)
 {
+    while(tx_count)transmit();
     while (!(inb(COM1 + 5) & 0x20)) __asm__ volatile ("pause");
     outb(COM1, byte);
 }
 void serial_puts(const char *s) { while (*s) serial_putc((uint8_t)*s++); }
 void serial_configure(unsigned rate, unsigned parity)
 {
+    while(tx_count)transmit();
     /* Caller has disabled IRQs; keep IER masked while DLAB aliases it. */
     while (!(inb(COM1 + 5) & 0x40)) __asm__ volatile ("pause");
     uint8_t ier = inb(COM1 + 1);
@@ -41,6 +60,7 @@ void serial_interrupt(void)
 {
     /* Bounded IRQ work. Remaining FIFO data retriggers RX or timeout IRQ. */
     for (unsigned i = 0; i < 256 && !(inb(COM1 + 2) & 1); ++i) {
+        transmit();
         uint8_t status = inb(COM1 + 5);
         if (status & 1) {
             uint8_t byte = inb(COM1);

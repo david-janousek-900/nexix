@@ -167,3 +167,7 @@ a sleeping child, and Ctrl-S/Ctrl-Q with a demonstrably sleeping
 writer. The automated demo waits for the response before sending the next line,
 so concurrent input echo does not obscure its output check. After each test,
 all process pages, descriptor/inode references and terminal opens are reclaimed.
+
+Task 68 adds [V7 serial packets](serial-packets.md), TIOCSETD/DIOCGETP
+negotiation and libc pkon/pkoff/turnon. Run `make test-packet` for host
+protocol/ownership/UART/libc checks and real QEMU COM1 exchanges at 16/128 MiB.

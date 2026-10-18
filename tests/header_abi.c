@@ -4,6 +4,7 @@
 #include <a.out.h>
 #include <sys/kinfo.h>
 #include <sys/phys.h>
+#include <sys/pk.h>
 #include <sys/acct.h>
 #include <sys/stat.h>
 #include <sys/dir.h>
@@ -89,6 +90,9 @@ _Static_assert(BSIZE==512 && NINDIR==128 && DIRSIZ==14,"disk constants");
 _Static_assert(HZ==100 && CLK_TCK==100,"native tick rate");
 _Static_assert(S_IFMPC==0030000 && S_IFMPB==0070000,"V7 mpx modes");
 _Static_assert(SIGINS==4 && SIGTRC==5 && SIGCLK==14,"V7 signal aliases");
+SIZE(struct piocb,12);FIELD(struct piocb,t,0);FIELD(struct piocb,psize,4);
+FIELD(struct piocb,mode,6);FIELD(struct piocb,state,8);FIELD(struct piocb,window,10);
+_Static_assert(DIOCGETP==0x6408 && NX_PK_WINDOW==2 && NX_PK_MAX_SIZE==512,"packet contract");
 int main(void)
 {
     for (unsigned a=0; a<256; a++)

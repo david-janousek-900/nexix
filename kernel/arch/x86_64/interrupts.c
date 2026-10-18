@@ -1,3 +1,4 @@
+#include "packet.h"
 #include "libc_test.h"
 #include "files.h"
 #include "tty.h"
@@ -161,7 +162,7 @@ static void dispatch(struct interrupt_frame *frame)
         if (frame->vector >= 40)
             outb(0xa0, 0x20);
         outb(0x20, 0x20);
-        if (frame->vector == 32) proc_timer(frame);
+        if (frame->vector == 32) {packet_timer(ticks);proc_timer(frame);}
         signal_deliver(frame);
         return;
     }

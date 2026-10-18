@@ -56,7 +56,7 @@ bit masks. These are private architecture implementation details and are not
 copied into the public native header. Native memory/device diagnostics use
 explicit interfaces from tasks 62–64 instead of historical kernel offsets.
 
-Headers for archives, standalone I/O, packet discipline,
+Headers for archives, standalone I/O,
 arbitrary-precision arithmetic and dump/tape formats remain with their
 consumers as listed in JSON. Task 61 supplies native ELF64 symbol/header contracts
 and the a.out.h source-include adapter; toolchain finalization remains task 177;
@@ -120,3 +120,8 @@ Private V7 proc/file/inode/mount layouts remain kernel-only; see
 Task 64 adds `<sys/phys.h>` and native physical-window constants. Historical
 segmentation descriptors remain private; callers adapt click units to pages/bytes.
 See [physical mappings](physical-mappings.md).
+
+Task 68 publishes `<sys/pk.h>` with a 12-byte native piocb and the original
+pkon/pkoff/turnon function names. The packet state machine and pk.p adaptation
+remain private under `kernel/include/packet.h`; no historical pointer layout is
+exported. See [serial packet limits and semantics](serial-packets.md).

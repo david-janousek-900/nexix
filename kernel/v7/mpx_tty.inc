@@ -21,6 +21,15 @@ void mpx_tty_resume(struct tty *t)
         }
     }
 }
+void mpx_tty_discipline(struct tty *t)
+{
+    for(unsigned i=0;i<NX_MX_CHANNELS+NX_MX_PORTS;++i){
+        struct mx_channel *c=mx_channel_at(i);
+        if(c->active && (c->input_tty==t || c->output_tty==t)){
+            ++c->generation;mx_notify(c);
+        }
+    }
+}
 static void mx_bridge_clear(struct mx_channel *c,int side)
 {
     struct file *input=NULL,*output=NULL,*port=NULL;

@@ -28,7 +28,7 @@ contracts; task 355 and task 359 close whole-distribution integration.
 | acct | Process exit integration point | Accounting records, privileges, storage errors 56 |
 | prim/mx1/mx2/fakemx | Native group/channel ownership, record I/O, bounded queues, flow control and open notifications | Ownership/data/TTY bridging and libc implemented by 65–67; independent terminals remain 89–93; historical optional stub does not satisfy functionality |
 | tty/dc/dh/dz/kl/partab | COM1 cooked/raw/cbreak, process groups and supported parity/tab flags | Terminal equivalents and TANDEM/LCASE/delay/parity contracts 74; independent ports 89–93 |
-| pk0–pk3 | Serial/TTY integration points only | V7 serial packet discipline 68 |
+| pk0–pk3 | Native framing/checksums, negotiation, windows/retries, EOF/CLOSE, pinned ownership and IRQ UART/TTY/mpx integration | Task 68 complete; [packet contract](serial-packets.md); UUCP and additional serial hardware retain their own acceptance tasks |
 | dn/dhdm/dhfdm/du | Serial integration point only | Modem/dial control 75 |
 | hp/rf/rk/rl/rp | Native IDE/block integration | Historical controller capabilities 70; raw device dispatch 53 |
 | ht/tm, tc | Block integration points only | Sequential tape 71; DECtape 72 |

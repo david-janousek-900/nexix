@@ -7,6 +7,7 @@
 #define REQUIRE(c) do { if (!(c)) panic("tty self-test: " #c); } while (0)
 extern const uint8_t _binary_build_root_test_img_start[], _binary_build_root_test_img_end[];
 extern const uint8_t _binary_build_tty_test_elf_start[], _binary_build_tty_test_elf_end[];
+extern const uint8_t _binary_build_packet_test_elf_start[], _binary_build_packet_test_elf_end[];
 static uint8_t backing[1024 * V7_BSIZE], input[4096];
 static struct ramdisk ram;
 static struct v7fs fs;
@@ -56,7 +57,7 @@ void tty_selftest(enum boot_test test)
     const char strings[] = "/bin/tty-test\0uart\0demo";
     for (size_t i = 0; i < sizeof(strings); ++i) args.bytes[i] = strings[i];
     args.used = sizeof(strings); args.argv[0] = 0;
-    unsigned passes = (test == BOOT_TEST_TTY || test == BOOT_TEST_TTY_DEMO) ? 3 : 2;
+    unsigned passes = (test == BOOT_TEST_TTY || test == BOOT_TEST_TTY_DEMO || test == BOOT_TEST_PACKET) ? 3 : 2;
     for (unsigned pass = 0; pass < passes; ++pass) {
         REQUIRE(v7fs_mount(&fs, &ram.device, pass == 1) == 0 && files_mount(&fs) == 0);
         args.argc = pass == 2 ? 2 : 1;
@@ -65,7 +66,10 @@ void tty_selftest(enum boot_test test)
         struct proc *p = proc_alloc(); REQUIRE(p);
         struct exec_image image = {0};
         length = (uintptr_t)_binary_build_tty_test_elf_end - (uintptr_t)_binary_build_tty_test_elf_start;
-        REQUIRE(elf_load(_binary_build_tty_test_elf_start, length, &args, &image) == 0);
+        const uint8_t *program=_binary_build_tty_test_elf_start;
+        if(pass==2 && test==BOOT_TEST_PACKET){program=_binary_build_packet_test_elf_start;
+            length=(uintptr_t)_binary_build_packet_test_elf_end-(uintptr_t)program;}
+        REQUIRE(elf_load(program, length, &args, &image) == 0);
         struct exec_image empty = {.vm = p->p_vm};
         p->p_vm = image.vm; p->p_size = image.size; p->p_brk_base = p->p_brk = image.heap; exec_image_release(&empty);
         REQUIRE(proc_start_user(p, image.entry, image.stack));
@@ -78,6 +82,7 @@ void tty_selftest(enum boot_test test)
         REQUIRE(files_live() == 0 && tty_open_count() == 0 && page_free_count() == before);
         REQUIRE(files_mount(NULL) == 0 && v7fs_unmount(&fs) == 0);
     }
+    if(test==BOOT_TEST_PACKET)serial_puts("NEXIX_PACKET_CLEANUP_OK\r\n");
     REQUIRE(sleeps == (test == BOOT_TEST_TTY ? 5U : 2U));
     serial_puts("NEXIX_TTY_OK\r\nNEXIX_TTY_CLEANUP_OK\r\n");
     if (test == BOOT_TEST_TTY) serial_puts("NEXIX_TTY_UART_OK\r\n");

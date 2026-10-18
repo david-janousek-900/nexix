@@ -1,5 +1,6 @@
 /* Native adaptation of V7 dev/tty.c's line discipline for the COM1 UART. */
 #include "tty.h"
+#include "packet.h"
 #include "serial.h"
 #include <nexix/kinfo.h>
 static uint64_t tty_in,tty_out;
@@ -65,6 +66,7 @@ int tty_open(v7_dev_t dev, struct user *u, struct tty **out)
 void tty_close(struct tty *t)
 {
     if (t != &console || !t->opens) panic("invalid tty close");
+    if(t->opens==1)packet_close(t);
     if (!--t->opens) { flush(t); resume(t); t->group = 0; }
 }
 static void output(struct tty *t, uint8_t c)
@@ -109,6 +111,7 @@ void tty_receive(uint8_t c)
     ++tty_in;
     struct tty *t = &console;
     if (!t->opens) return;
+    if(packet_active(t)){packet_receive(t,c);return;}
     if (!(t->settings.flags & NX_RAW)) {
         c &= 0177;
         if ((c == t->chars.intr || c == t->chars.quit) && c != 0377) {
@@ -144,6 +147,9 @@ void tty_receive(uint8_t c)
 }
 int64_t tty_io(struct tty *t, struct address_space *vm, uintptr_t address, size_t count, bool write)
 {
+    if(!write && !count)return 0;
+    if(!write && t->mpx_owner)return -NX_ENXIO;
+    if(packet_active(t))return packet_io(t,vm,address,count,write);
     if (!count) return 0;
     size_t done = 0;
     if (write) {
@@ -154,6 +160,7 @@ int64_t tty_io(struct tty *t, struct address_space *vm, uintptr_t address, size_
             for (size_t i = 0; i < n; ++i) {
                 while (t->stopped) if (proc_sleep_interruptible(&t->output_channel, 29))
                     return done + i ? (int64_t)(done + i) : -NX_EINTR;
+                if(packet_active(t))return done+i?(int64_t)(done+i):-NX_EIO;
                 output(t, bytes[i]);
             }
             done += n;
@@ -164,6 +171,7 @@ int64_t tty_io(struct tty *t, struct address_space *vm, uintptr_t address, size_
     while (!t->count){
         if(proc_sleep_interruptible(&t->input_channel,28))return -NX_EINTR;
         if(t->mpx_owner)return -NX_ENXIO;
+        if(packet_active(t))return -NX_EIO;
     }
     while (done < count && t->count) {
         uint16_t value = t->input[t->head];
@@ -190,6 +198,7 @@ int tty_control(struct tty *t,uint64_t request,void *argument)
         if (settings.flags & ~allowed || !settings.ospeed || settings.ospeed >= sizeof(rates) / sizeof(rates[0]) ||
             settings.ispeed != settings.ospeed ||
             ((settings.flags & NX_XTABS) && (settings.flags & NX_XTABS) != NX_XTABS)) return -NX_EINVAL;
+        if(packet_active(t))return -NX_EBUSY;
         /* Mode changes cannot reinterpret queued cooked record markers as bytes. */
         if (request == NX_TIOCSETP || ((settings.flags ^ t->settings.flags) & (NX_RAW | NX_CBREAK))) flush(t);
         t->settings = settings;
@@ -209,13 +218,14 @@ int tty_control(struct tty *t,uint64_t request,void *argument)
     }
     case NX_TIOCFLUSH: flush(t); resume(t); return 0;
     case NX_TIOCGETD: {
-        int32_t discipline = 0;
+        int32_t discipline = packet_active(t)?1:0;
         tcopy(argument,&discipline,sizeof(discipline));return 0;
     }
     case NX_TIOCSETD: {
         int32_t discipline;
         tcopy(&discipline,argument,sizeof(discipline));
-        return discipline ? -NX_ENXIO : 0;
+        if(discipline)return -NX_ENXIO;
+        packet_close(t);flush(t);return 0;
     }
     default: return -NX_ENOTTY;
     }
@@ -237,6 +247,22 @@ int tty_control_size(uint64_t request,bool *get)
 }
 int tty_ioctl(struct tty *t,struct address_space *vm,uint64_t request,uintptr_t address)
 {
+    if(request==NX_DIOCGETP){
+        struct nx_piocb p;int result=packet_status(t,&p);if(result<0)return result;
+        int error=copyout(vm,address,&p,sizeof(p));return error?error:result;
+    }
+    if(request==NX_TIOCSETD){
+        int32_t discipline;int error=copyin(vm,address,&discipline,sizeof(discipline));if(error)return error;
+        if(discipline==1){
+            struct nx_piocb p;
+            if(!user_access_ok(vm,address,sizeof(p),true))return -NX_EFAULT;
+            error=copyin(vm,address,&p,sizeof(p));if(error)return error;
+            if(!(t->settings.flags&NX_RAW))return -NX_EINVAL;
+            flush(t);error=packet_open(t,&p);
+            if(!error)error=copyout(vm,address,&p,sizeof(p));
+            return error;
+        }
+    }
     bool get;int size=tty_control_size(request,&get);if(size<0)return size;
     uint64_t data=0;int error=0;
     if(!get && size)error=copyin(vm,address,&data,size);
@@ -248,15 +274,16 @@ int tty_mpx_bind(struct tty *t,void *owner)
 {
     if(t!=&console || !t->opens)return -NX_ENXIO;
     if(t->mpx_owner && t->mpx_owner!=owner)return -NX_EBUSY;
-    t->mpx_owner=owner;proc_wakeup(&t->input_channel);return 0;
+    t->mpx_owner=owner;packet_changed(t);proc_wakeup(&t->input_channel);return 0;
 }
 void tty_mpx_unbind(struct tty *t,void *owner)
 {
     if(t->mpx_owner==owner){t->mpx_owner=NULL;proc_wakeup(&t->input_channel);}
 }
-bool tty_mpx_ready(struct tty *t){return t->count!=0;}
+bool tty_mpx_ready(struct tty *t){return packet_active(t)?packet_ready(t):t->count!=0;}
 size_t tty_mpx_read(struct tty *t,uint8_t *bytes,size_t count,bool *eof)
 {
+    if(packet_active(t))return packet_take(t,bytes,count,eof);
     size_t done=0;*eof=false;
     while(done<count && t->count){
         uint16_t value=t->input[t->head];t->head=(t->head+1)%TTY_INPUT_CAPACITY;--t->count;
@@ -265,9 +292,23 @@ size_t tty_mpx_read(struct tty *t,uint8_t *bytes,size_t count,bool *eof)
     }
     return done;
 }
-size_t tty_mpx_write(struct tty *t,const uint8_t *bytes,size_t count)
+int64_t tty_mpx_write(struct tty *t,const uint8_t *bytes,size_t count)
 {
+    if(packet_active(t))return packet_put(t,bytes,count);
     if(t->stopped)return 0;
     for(size_t i=0;i<count;++i)output(t,bytes[i]);
     return count;
+}
+
+bool tty_packet_emit(struct tty *t,const uint8_t *bytes,size_t n)
+{
+    (void)t;if(!serial_enqueue(bytes,n))return false;
+    tty_out+=n;return true;
+}
+bool tty_packet_reader(struct tty *t){return !t->mpx_owner;}
+void tty_packet_notice(struct tty *t)
+{
+    proc_wakeup(&t->input_channel);proc_wakeup(&t->output_channel);
+    if(t->mpx_owner)mpx_tty_notify(t->mpx_owner,0);
+    mpx_tty_resume(t);
 }

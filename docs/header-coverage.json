@@ -226,8 +226,8 @@
     },
     {
       "source": "reference/v7/usr/include/sys/pk.h",
-      "status": "private_kernel",
-      "native": null,
+      "status": "native_contract",
+      "native": "libc/include/sys/pk.h",
       "task": 68
     },
     {

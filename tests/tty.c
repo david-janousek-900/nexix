@@ -148,7 +148,7 @@ int main(void)
     assert(control(t, UINT64_MAX, NULL) == -NX_ENOTTY);
     int32_t discipline = -1;
     assert(control(t, NX_TIOCGETD, &discipline) == 0 && !discipline);
-    discipline = 1;
+    discipline = 2;
     assert(control(t, NX_TIOCSETD, &discipline) == -NX_ENXIO);
     struct tty *other;
     assert(tty_open(NX_CTTY_DEV, &u, &other) == 0 && other == t && tty_open_count() == 2);

@@ -414,3 +414,7 @@ counts and histogram samples, integer/FP/variadic register preservation,
 manual monitor, versioned file decoding, stdio/atexit ordering and fork/exec/
 _exit behavior. Existing root resource checks remain active. See
 [monitor.md](monitor.md) for the native call convention and output records.
+
+Task 68 adds [V7 serial packets](serial-packets.md), TIOCSETD/DIOCGETP
+negotiation and libc pkon/pkoff/turnon. Run `make test-packet` for host
+protocol/ownership/UART/libc checks and real QEMU COM1 exchanges at 16/128 MiB.

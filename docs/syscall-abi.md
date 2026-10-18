@@ -228,3 +228,7 @@ See [profiling.md](profiling.md) for V7 bucket arithmetic, native bounds and
 
 Task 63 supplies [lock(53)](resident-lock.md) with V7 effective-root checks and
 user lock-state lifetime; the native port continues using resident memory.
+
+Task 68 adds [V7 serial packets](serial-packets.md), TIOCSETD/DIOCGETP
+negotiation and libc pkon/pkoff/turnon. Run `make test-packet` for host
+protocol/ownership/UART/libc checks and real QEMU COM1 exchanges at 16/128 MiB.

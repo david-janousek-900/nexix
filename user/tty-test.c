@@ -130,7 +130,7 @@ int main(int argc, char **argv)
     REQUIRE(ioctl(0, TIOCGETC, &chars) == 0 && chars.t_eofc == 4);
     int discipline = -1;
     REQUIRE(ioctl(0, TIOCGETD, &discipline) == 0 && discipline == 0);
-    discipline = 1;
+    discipline = 2;
     REQUIRE(ioctl(0, TIOCSETD, &discipline) == -1 && errno == ENXIO);
     REQUIRE(ioctl(0, 0xdead, 0) == -1 && errno == ENOTTY);
     feed("ab\bcd\r", 6);

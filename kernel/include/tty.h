@@ -21,7 +21,7 @@ int tty_mpx_bind(struct tty *,void *owner);
 void tty_mpx_unbind(struct tty *,void *owner);
 bool tty_mpx_ready(struct tty *);
 size_t tty_mpx_read(struct tty *,uint8_t *,size_t,bool *eof);
-size_t tty_mpx_write(struct tty *,const uint8_t *,size_t);
+int64_t tty_mpx_write(struct tty *,const uint8_t *,size_t);
 int tty_control_size(uint64_t,bool *get);
 int tty_control(struct tty *,uint64_t,void *);
 void mpx_tty_notify(void *owner,unsigned signal);

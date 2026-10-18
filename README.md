@@ -124,8 +124,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 2 partial, 1 prototype and 203 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 67 done, 2 in progress
-and 297 to do** after task 67. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 68 done, 2 in progress
+and 296 to do** after task 68. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -146,8 +146,8 @@ Release scope and agreed native adaptations:
   birth-time field or planned timestamp-format extension.
 - Restore V7 serial communications and UUCP in 0.1.0. TCP/IP belongs to 0.2.0.
 
-Known gaps include multiplexed channels, complete
-accounting/tracing/profiling, raw devices and mount administration. Packaging
+Known gaps include complete TTY modes, additional devices, the native toolchain,
+multi-user startup and the remaining userland ports. Packaging
 currently has a 64-inode image builder and a fixed 512 KiB embedded RAM root;
 tasks 83–86 address these limits before full-distribution installation.
 
@@ -286,7 +286,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 65 | Multiplexed group/channel creation and ownership | Done | Git history; `make test-mpx`; native syscall 56; bounded groups/channels, tree indices, join/extract/detach and fork/exec/close ownership; [contract](docs/multiplexor.md); data/control added by 66; TTY/libc added by 67 |
 | 66 | Multiplexed data/control events and flow control | Done | Git history; `make test-mpx-data`; native record I/O, bounded queues, EOF/close/open events, listener/attach handshake, high/low-water flow control, interruptible wakeups and pinned detach lifetime; [contract](docs/multiplexor.md); TTY/libc added by 67 |
 | 67 | Multiplexed TTY bridging and libc mpx wrappers | Done | Git history; `make test-mpx-tty`; retained TTY ports, directional connect/disconnect, cooked/raw data, signal/flow events, process groups, ioctl request/reply and twelve libc exports; [contract](docs/multiplexor.md); independent TTY hardware remains 89–93 |
-| 68 | V7 serial packet line discipline | To do | pk0–pk3 and libc pkon/pkoff; serial, not TCP/IP |
+| 68 | V7 serial packet line discipline | Done | [V7 serial packet contract](docs/serial-packets.md); `make test-packet` at 16/128 MiB, host protocol/ownership/UART/libc tests; checksums, negotiation, windows/retries, EOF, mpx ports and last-close cleanup; Git history |
 | 69 | Native memory/special-device interfaces | To do | mem/sys equivalents with explicit native access rules |
 | 70 | Historical disk-controller equivalents | To do | hp/rf/rk/rl/rp mapped to native block media |
 | 71 | Sequential tape-device equivalent | To do | ht/tm control operations and file-backed tape marks |

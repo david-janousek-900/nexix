@@ -9,7 +9,7 @@ PYTHON ?= python3
 QEMU ?= qemu-system-x86_64
 DISK_IMAGE ?= build/nexix.img
 CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-stack-protector -fno-pie -m64 -mno-red-zone -mgeneral-regs-only -fno-asynchronous-unwind-tables -Ikernel/include -Iinclude -MMD -MP
-OBJECTS = build/boot.o build/main.o build/serial.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o build/elf.o build/exec.o build/exec_test.o build/exec_image.o build/libc_test.o build/libc_image.o build/block.o build/v7fs.o build/fs_test.o build/root_image.o build/files.o build/files_test.o build/files_image.o build/tty.o build/tty_test.o build/tty_image.o build/signals.o build/signals_test.o build/signals_image.o build/catalog.o build/v7_userland_test.o build/v7_test_image.o
+OBJECTS = build/packet.o build/packet_tty.o build/packet_image.o build/boot.o build/main.o build/serial.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o build/elf.o build/exec.o build/exec_test.o build/exec_image.o build/libc_test.o build/libc_image.o build/block.o build/v7fs.o build/fs_test.o build/root_image.o build/files.o build/files_test.o build/files_image.o build/tty.o build/tty_test.o build/tty_image.o build/signals.o build/signals_test.o build/signals_image.o build/catalog.o build/v7_userland_test.o build/v7_test_image.o
 HOST_CC ?= cc
 .DEFAULT_GOAL := all
 -include $(OBJECTS:.o=.d)
@@ -190,7 +190,7 @@ test-exec: check build/test-selftest.iso
 
 # Native userland: compiler freestanding headers plus Nexix headers only.
 USER_CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-builtin -fno-stack-protector -fno-pie -m64 -mno-red-zone -mno-avx -fno-asynchronous-unwind-tables -nostdinc -isystem $(shell $(CC) -print-file-name=include) -Ilibc/include -Iinclude -MMD -MP
-LIBC_OBJECTS = build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o build/libc_float.o build/libc_convert.o build/libc_scan.o build/libc_ctype.o build/libc_numbers.o build/libc_bytes.o build/libc_gcvt.o build/libc_abort.o build/libc_mktemp.o build/libc_errors.o build/libc_perror.o build/libc_passwd.o build/libc_group.o build/libc_crypt.o build/libc_terminal.o build/libc_getpass.o build/libc_system.o build/libc_popen.o build/libc_ptrace.o build/libc_profil.o build/libc_monitor.o build/libc_mcount.o build/libc_nlist.o build/libc_kinfo.o build/libc_lock.o build/libc_phys.o build/libc_mpx.o
+LIBC_OBJECTS = build/libc_packet.o build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o build/libc_float.o build/libc_convert.o build/libc_scan.o build/libc_ctype.o build/libc_numbers.o build/libc_bytes.o build/libc_gcvt.o build/libc_abort.o build/libc_mktemp.o build/libc_errors.o build/libc_perror.o build/libc_passwd.o build/libc_group.o build/libc_crypt.o build/libc_terminal.o build/libc_getpass.o build/libc_system.o build/libc_popen.o build/libc_ptrace.o build/libc_profil.o build/libc_monitor.o build/libc_mcount.o build/libc_nlist.o build/libc_kinfo.o build/libc_lock.o build/libc_phys.o build/libc_mpx.o
 -include $(LIBC_OBJECTS:.o=.d) build/libc_program.d
 build/crt0.o: libc/arch/x86_64/crt0.S | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
@@ -273,8 +273,8 @@ test-tty: check build/test-tty.iso build/test-tty-demo.iso
 run-tty: check build/test-tty-demo.iso
 	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -cdrom build/test-tty-demo.iso -display none -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -mon chardev=console,mode=readline -no-reboot
 
-build/tty-unit-test: tests/tty.c kernel/v7/tty.c kernel/include/tty.h kernel/include/serial.h kernel/include/uaccess.h kernel/include/process.h kernel/include/v7/core.h include/nexix/tty.h include/nexix/errno.h | build/.dir
-	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/tty.c kernel/v7/tty.c -o $@
+build/tty-unit-test: tests/packet-inactive.c tests/tty.c kernel/v7/tty.c kernel/include/tty.h kernel/include/serial.h kernel/include/uaccess.h kernel/include/process.h kernel/include/v7/core.h include/nexix/tty.h include/nexix/errno.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/tty.c tests/packet-inactive.c kernel/v7/tty.c -o $@
 
 # Task 15: signals and the remaining init/shell syscall fixture.
 build/signals.o: kernel/v7/signals.c | build/.dir
@@ -977,8 +977,8 @@ build/mpx_data_program.o: user/mpx-data-test.c | build/.dir
 .PHONY: test-mpx-data
 test-mpx-data: test-rootfs test-inventory test-libc-interfaces
 
-build/mpx-unit-test: tests/mpx.c kernel/v7/tty.c kernel/v7/mpx_tty.inc kernel/v7/files.c kernel/v7/mpx.inc kernel/v7/mpx_io.inc include/nexix/mpx.h | build/.dir
-	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -ffunction-sections -fdata-sections -Wl,--gc-sections -Ikernel/include -Iinclude tests/mpx.c kernel/v7/tty.c -o $@
+build/mpx-unit-test: tests/packet-inactive.c tests/mpx.c kernel/v7/tty.c kernel/v7/mpx_tty.inc kernel/v7/files.c kernel/v7/mpx.inc kernel/v7/mpx_io.inc include/nexix/mpx.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -ffunction-sections -fdata-sections -Wl,--gc-sections -Ikernel/include -Iinclude tests/mpx.c tests/packet-inactive.c kernel/v7/tty.c -o $@
 .PHONY: test-mpx-unit
 test-mpx-unit: build/mpx-unit-test
 	./build/mpx-unit-test
@@ -991,3 +991,37 @@ build/mpx_tty_program.o: user/mpx-tty-test.c | build/.dir
 -include build/mpx_tty_program.d
 .PHONY: test-mpx-tty
 test-mpx-tty: test-mpx-unit test-rootfs test-inventory test-libc-interfaces
+
+# Task 68: V7 packet line discipline over the COM1 UART.
+build/packet.o: kernel/v7/packet.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+build/packet_tty.o: kernel/v7/packet_tty.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+build/packet_program.o: user/packet-test.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+-include build/packet_program.d
+build/packet-test.elf: build/crt0.o build/packet_program.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/packet_program.o build/libc.a -o $@
+build/packet_image.o: build/packet-test.elf tools/embed_test_elf.py
+	$(PYTHON) tools/embed_test_elf.py $< $@ --ld $(LD) --objcopy $(OBJCOPY)
+.PHONY: test-packet
+test-packet: check build/test-packet.iso test-packet-unit test-libc-interfaces test-rootfs test-inventory
+	$(PYTHON) tools/packet_smoke.py $(QEMU) build/test-packet.iso 16M
+	$(PYTHON) tools/packet_smoke.py $(QEMU) build/test-packet.iso 128M
+build/packet-unit-test: tests/packet.c kernel/v7/packet.c kernel/include/packet.h include/nexix/packet.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/packet.c kernel/v7/packet.c -o $@
+.PHONY: test-packet-unit
+test-packet-unit: build/packet-unit-test build/packet-owner-test build/serial-unit-test build/packet-libc-test
+	./build/packet-unit-test
+	./build/packet-owner-test
+	./build/serial-unit-test
+	./build/packet-libc-test
+test-unit: test-packet-unit
+build/packet-owner-test: tests/packet-owner.c kernel/v7/packet.c kernel/v7/packet_tty.c kernel/include/packet.h include/nexix/packet.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/packet-owner.c kernel/v7/packet.c kernel/v7/packet_tty.c -o $@
+build/serial-unit-test: tests/serial.c tests/uart/io.h kernel/serial.c kernel/include/serial.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Itests/uart -Ikernel/include -Iinclude tests/serial.c kernel/serial.c -o $@
+build/packet-libc-unit.o: libc/packet.c libc/include/sys/pk.h libc/include/sys/ioctl.h include/nexix/packet.h | build/.dir
+	$(CC) $(USER_CFLAGS) -Derrno=nx_packet_errno -Dioctl=nx_packet_ioctl -Dclose=nx_packet_close -Dwrite=nx_packet_write -c $< -o $@
+build/packet-libc-test: tests/packet-libc.c build/packet-libc-unit.o | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -no-pie -Iinclude $^ -o $@

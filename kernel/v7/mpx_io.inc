@@ -94,7 +94,9 @@ static int64_t mx_output(struct mx_channel *c,uintptr_t address,size_t count,boo
         if(c->closing || generation!=c->generation)return done?(int64_t)done:-NX_ENXIO;
         uint8_t bytes[NX_MX_HIQ];unsigned n=count-done<NX_MX_HIQ?count-done:NX_MX_HIQ;
         int error=copyin(&proc_current()->p_vm,address+done,bytes,n);if(error)return done?(int64_t)done:error;
-        size_t moved=tty_mpx_write(c->output_tty,bytes,n);done+=moved;
+        int64_t moved=tty_mpx_write(c->output_tty,bytes,n);
+        if(moved<0)return done?(int64_t)done:moved;
+        done+=moved;
         if(!moved){
             if(nonblocking){c->tty_blocked=true;return done;}
             if(proc_sleep_interruptible(c,40))return done?(int64_t)done:-NX_EINTR;
