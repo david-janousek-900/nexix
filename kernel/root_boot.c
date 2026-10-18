@@ -102,6 +102,36 @@ static int disk_fixture_read(struct block_device *d,uint32_t b,void *p)
 static int disk_fixture_write(struct block_device *d,uint32_t b,const void *p)
 {(void)d;for(unsigned i=0;i<512;++i)disk_sector[i]=((const uint8_t *)p)[i];disk_saved=b;return 0;}
 static struct block_device disk_fixture={.blocks=340670,.read=disk_fixture_read,.write=disk_fixture_write};
+/* Task 73: two isolated sparse RAM media; positive tags gate real ATA tests. */
+static uint8_t order_sectors[2][512];
+static uint32_t order_saved[2];
+static bool order_native;
+static struct block_device order_ata[2];
+static int order_read(struct block_device *d,uint32_t b,void *bytes)
+{
+    unsigned u=(uintptr_t)d->context;
+    for(unsigned i=0;i<512;++i)((uint8_t *)bytes)[i]=b==order_saved[u]?order_sectors[u][i]:(uint8_t)(b+31*u+i);
+    return 0;
+}
+static int order_write(struct block_device *d,uint32_t b,const void *bytes)
+{
+    unsigned u=(uintptr_t)d->context;order_saved[u]=b;
+    for(unsigned i=0;i<512;++i)order_sectors[u][i]=((const uint8_t *)bytes)[i];
+    return 0;
+}
+static struct block_device order_ram[2]={
+    {.blocks=340670,.context=(void *)0,.read=order_read,.write=order_write},
+    {.blocks=340670,.context=(void *)1,.read=order_read,.write=order_write}};
+static int order_batch(void)
+{
+    struct disk_view view;int error=disk_acquire(NX_DISK_DEV(NX_DISK_HP,0,false),false,&view);if(error)return error;
+    struct disk_request requests[3]={0};uint8_t bytes[3][512];unsigned blocks[]={836,0,418};
+    for(unsigned i=0;i<3;++i){error=disk_submit(&view,&requests[i],blocks[i],bytes[i],false);if(error)break;}
+    int dispatch=disk_dispatch(view.binding);if(!error)error=dispatch;
+    for(unsigned i=0;!error && i<3;++i)
+        if(!requests[i].done || requests[i].error || bytes[i][0]!=(uint8_t)(i==1 && order_native?'N':blocks[i]))error=-NX_EIO;
+    int release=disk_release(&view);return error?error:release;
+}
 static bool exec_testing;
 static uint64_t memdev_probe=UINT64_C(0x123456789abcdef0);
 extern const uint8_t kernel_rodata_start[];
@@ -113,7 +143,7 @@ static v7_pid_t held_owner;
 static v7_pid_t trace_orphan;
 bool root_exec_test_gate(struct interrupt_frame *frame)
 {
-    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x91d)return false;
+    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x91e)return false;
     struct proc *p=proc_current();
     if(frame->rax==0x900){
         frame->rax=(uint64_t)-NX_ENOSYS;return true; /* Retired tracing test hook. */
@@ -281,6 +311,28 @@ bool root_exec_test_gate(struct interrupt_frame *frame)
         const char *tag=frame->rdi==2?"NEXIX_DECTAPE_TEST_ONLY72":"NEXIX_TAPE_TEST_ONLY71";
         if(!error)for(unsigned i=0;tag[i];++i)if(bytes[i]!=(uint8_t)tag[i]){error=-NX_ENXIO;break;}
         if(!error)error=disk_bind(NX_DISK_RP,0,&tape_aux);
+        frame->rax=error;return true;
+    }
+    else if(frame->rax==0x91e){
+        if(p->p_user->u_uid)panic("unprivileged ordering fixture");
+        int error=0;
+        if(frame->rdi==0){
+            order_native=false;
+            for(unsigned u=0;u<2;++u){order_saved[u]=UINT32_MAX;order_ram[u].read_only=false;error=disk_bind(NX_DISK_HP,u,&order_ram[u]);if(error)break;}
+        }else if(frame->rdi==1){
+            for(unsigned u=0;u<2;++u){error=disk_bind(NX_DISK_HP,u,NULL);if(error)break;}
+        }else if(frame->rdi==2){
+            uint8_t bytes[512];const char tag[]="NEXIX_ORDER_TEST_ONLY73";
+            for(unsigned u=0;u<2 && !error;++u){
+                error=ide_init_unit(&order_ata[u],u+1);
+                if(!error)error=block_read(&order_ata[u],0,1,bytes);
+                if(!error)for(unsigned i=0;i<sizeof(tag)-1;++i)if(bytes[i]!=(uint8_t)tag[i]){error=-NX_ENXIO;break;}
+                if(!error && bytes[32]!='0'+u)error=-NX_ENXIO;
+            }
+            if(!error){order_native=true;for(unsigned u=0;u<2;++u)if(disk_bind(NX_DISK_HP,u,&order_ata[u]))panic("order native bind");}
+        }else if(frame->rdi==3)error=order_batch();
+        else if(frame->rdi==4)order_ram[1].read_only=!!frame->rsi;
+        else error=-NX_EINVAL;
         frame->rax=error;return true;
     }
     else return false;

@@ -5,6 +5,8 @@
 #define NX_DISK_RK 2U
 #define NX_DISK_RL 3U
 #define NX_DISK_RP 4U
+#define NX_HP_INTERLEAVE 0100U
+#define NX_HP_INTERLEAVED_MINOR(drives,part) (NX_HP_INTERLEAVE+(((drives)-1U)<<3)+(part))
 #define NX_DISK_KINDS 5U
 #define NX_DISK_BLOCK_MAJOR(kind) (7U+(kind))
 #define NX_DISK_RAW_MAJOR(kind) (12U+(kind))

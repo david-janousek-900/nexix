@@ -6,13 +6,22 @@
 static struct storage_handle devices[STORAGE_SLOTS],views[32];
 bool storage_block_device(uint16_t d){return ((d>>8)==NX_BLOCK_DISK_MAJOR && (d&255)<STORAGE_SLOTS) || disk_major(d>>8,false) || tc_major(d>>8);}
 bool storage_raw_device(uint16_t d){return (d>>8)==NX_RAW_DISK_MAJOR || disk_major(d>>8,true);}
-static struct block_device *backing(struct storage_handle *h)
-{return h->dectape?tc_backing(h->device):h->controller?h->view.binding->device:h->device;}
+static bool region(struct storage_handle *h,unsigned i,struct block_device **base,uint32_t *first,uint32_t *length)
+{
+    if(!h->device)return false;
+    if(h->controller)return disk_region(&h->view,i,base,first,length);
+    if(i)return false;
+    *base=h->dectape?tc_backing(h->device):h->device;*first=0;*length=h->device->blocks;return true;
+}
+static bool readonly(struct storage_handle *h)
+{return h->controller?disk_read_only(&h->view):h->dectape?tc_backing(h->device)->read_only:h->device->read_only;}
 static bool overlaps(struct storage_handle *a,struct storage_handle *b)
 {
-    if(!a->device || !b->device || backing(a)!=backing(b))return false;
-    uint64_t x=a->controller?a->view.first:0,y=b->controller?b->view.first:0;
-    return x<y+b->device->blocks && y<x+a->device->blocks;
+    struct block_device *x,*y;uint32_t ax,an,bx,bn;
+    for(unsigned i=0;region(a,i,&x,&ax,&an);++i)
+        for(unsigned j=0;region(b,j,&y,&bx,&bn);++j)
+            if(x==y && (uint64_t)ax<((uint64_t)bx+bn) && (uint64_t)bx<((uint64_t)ax+an))return true;
+    return false;
 }
 static bool mounted_overlap(struct storage_handle *h)
 {
@@ -51,7 +60,7 @@ int storage_open(uint16_t dev,bool raw,bool write,struct storage_handle **result
             h->device=&h->view.device;h->controller=true;h->dev=dev;
         }
     }else return -NX_ENODEV;
-    if(h->controller || h->dectape)h->device->read_only=backing(h)->read_only;
+    if(h->controller || h->dectape)h->device->read_only=readonly(h);
     int error=0;
     if(write && h->device->read_only)error=-NX_EROFS;
     else if(write && mounted_overlap(h))error=-NX_EBUSY;
@@ -72,7 +81,7 @@ int storage_transfer(struct storage_handle *h,uint64_t offset,void *buffer,size_
 {
     *done=0;
     if(!h||!h->refs||!h->device)return -NX_ENODEV;
-    if(h->controller || h->dectape)h->device->read_only=backing(h)->read_only;
+    if(h->controller || h->dectape)h->device->read_only=readonly(h);
     if(write&&h->device->read_only)return -NX_EROFS;
     if(write&&mounted_overlap(h))return -NX_EBUSY;
     uint64_t limit=(uint64_t)h->device->blocks*BLOCK_SIZE;

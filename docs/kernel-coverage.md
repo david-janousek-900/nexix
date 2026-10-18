@@ -30,10 +30,10 @@ contracts; task 355 and task 359 close whole-distribution integration.
 | tty/dc/dh/dz/kl/partab | COM1 cooked/raw/cbreak, process groups and supported parity/tab flags | Terminal equivalents and TANDEM/LCASE/delay/parity contracts 74; independent ports 89–93 |
 | pk0–pk3 | Native framing/checksums, negotiation, windows/retries, EOF/CLOSE, pinned ownership and IRQ UART/TTY/mpx integration | Task 68 complete; [packet contract](serial-packets.md); UUCP and additional serial hardware retain their own acceptance tasks |
 | dn/dhdm/dhfdm/du | Serial integration point only | Modem/dial control 75 |
-| hp/rf/rk/rl/rp | Native disk views, source partitions/units, bounded recovery, ATA media and overlapping mount protection | Tasks 53/70 complete; [controller contracts](disk-controllers.md); queue/interleave acceptance remains 73 |
+| hp/rf/rk/rl/rp | Native disk views, source partitions/units, bounded recovery, ATA media and overlapping mount protection | Tasks 53/70 complete; [controller contracts](disk-controllers.md); task 73 adds [ordering/interleave](disk-ordering.md) |
 | ht/tm | Sequential records, marks, rewind/spacing and pinned regular-file media | Task 71 complete; [tape contracts](tape-devices.md) |
 | tc | Eight random-block DECtapes, retries/select errors, pinned file media and V7 filesystem mounts | Task 72 complete; [DECtape contracts](dectape.md) |
-| dsort/dkleave | Block integration point only | Queue ordering/interleave 73 |
+| dsort/dkleave | Source-compatible ordering and block/unit mapping integrated with HP queues and interleaved members | Task 73 complete; [queue/interleave contracts](disk-ordering.md) |
 | mem/sys | Byte-addressed memory/null devices and controlling-TTY forwarding | Task 69 complete; [native access rules](memory-devices.md), host and 16/128 MiB syscall acceptance; independent TTYs remain 89–93 |
 | cat, vp/vs | Future native endpoints | Typesetter 76; printer/plotter protocols 77 |
 | prf/subr | Serial diagnostics and native memory/user-copy helpers | Helper/consumer contracts 39/79; memory device consumers 69 |

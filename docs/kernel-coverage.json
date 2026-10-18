@@ -384,7 +384,7 @@
         53,
         70
       ],
-      "note": "Tasks 53 and 70 implement block/raw access and the five HP/RF/RK/RL/RP native disk-family equivalents: source partition/unit/capacity contracts, bounded retries, ATA auxiliary media, alias/mount overlap protection and pinned view lifetime. Host models and real auxiliary ATA mount/cold-boot persistence tests run at 16/128 MiB. Hardware ECC/seeks remain backing-controller responsibilities; HP interleaving and queue ordering retain task 73. See docs/disk-controllers.md."
+      "note": "Tasks 53 and 70 implement block/raw access and the five HP/RF/RK/RL/RP native disk-family equivalents: source partition/unit/capacity contracts, bounded retries, ATA auxiliary media, alias/mount overlap protection and pinned view lifetime. Host models and real auxiliary ATA mount/cold-boot persistence tests run at 16/128 MiB. Hardware ECC/seeks remain backing-controller responsibilities; Task 73 adds HP interleaving and queue ordering; see docs/disk-ordering.md. See docs/disk-controllers.md."
     },
     {
       "id": "ordering",
@@ -393,13 +393,15 @@
         "reference/v7/usr/sys/dev/dkleave.c"
       ],
       "native": [
-        "kernel/block.c",
-        "kernel/ide.c"
+        "kernel/v7/disk_order.c",
+        "kernel/include/disk_order.h",
+        "kernel/v7/disk.c",
+        "kernel/v7/storage.c"
       ],
       "tasks": [
         73
       ],
-      "note": "Native device equivalent and its protocol/error/lifetime tests remain required; referenced files are integration points, not completed replacements."
+      "note": "Task 73 ports the supplied dsort/dkleave algorithms into HP per-drive queues and one/two-drive interleaved block views. Differential tests compile unchanged original source bytes; native dispatch, completion/errors, pending/member ownership, readonly and physical alias guards are tested. Two auxiliary ATA drives host a striped V7 filesystem across cold boots at 16/128 MiB; ordinary PIO remains synchronous. See docs/disk-ordering.md."
     },
     {
       "id": "tape",

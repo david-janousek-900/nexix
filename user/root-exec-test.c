@@ -24,6 +24,7 @@ extern int lock_test(void);
 extern int phys_test(void);
 extern int memdev_test(void);
 extern int disk_test(void);
+extern int disk_order_test(void);
 extern int tape_test(void);
 extern int dectape_test(void);
 extern int mpx_test(void);
@@ -98,6 +99,7 @@ int main(void)
     error=phys_test();if(error)return error;
     error=memdev_test();if(error)return error;
     error=disk_test();if(error)return error;
+    error=disk_order_test();if(error)return error;
     error=tape_test();if(error)return error;
     error=dectape_test();if(error)return error;
     error=mpx_test();if(error)return error;

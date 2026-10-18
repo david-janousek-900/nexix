@@ -82,8 +82,9 @@ sizes/manual. Unchecked RK/RL unit selectors and RF address wrapping are also
 rejected. RL exposes the four entries supported by its drive-state array;
 the supplied `RL_CNT=1` define is unused in that driver's strategy routine.
 
-HP interleaved minors are not accepted by this noninterleaved view interface.
-Their distribution and disksort/dkleave queue behavior remain task 73. Physical
+Task 73 adds [HP interleaved block minors and request ordering](disk-ordering.md),
+including physical-member alias checks and bounded view ownership. Interleaved
+raw opens are rejected, following the source manual's documented limitation. Physical
 head offsets, software ECC bit corrections and seek calibration are not applied
 to unrelated ATA media: the backing controller handles physical media/ECC, and
 unrecoverable faults propagate through native error results.

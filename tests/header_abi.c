@@ -113,3 +113,5 @@ int main(void)
 _Static_assert(sizeof(struct nx_tape_operation)==8 && offsetof(struct nx_tape_status,position)==24,"tape native ABI");
 
 _Static_assert(NX_TC_DEV(7)==0x1607 && NX_TC_BYTES==295936,"DECtape native ABI");
+
+_Static_assert(NX_HP_INTERLEAVED_MINOR(2,1)==0111,"HP interleaved minor ABI");
