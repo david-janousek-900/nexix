@@ -7,6 +7,10 @@ void serial_init(void);
 bool serial_enqueue(const uint8_t *,size_t);
 void serial_putc(uint8_t byte);
 void serial_configure(unsigned rate, unsigned parity); /* 0 none, 1 odd, 2 even */
+void serial_format(unsigned rate,uint8_t line_control);
+void serial_flush(void);
+bool serial_idle(void);
+void serial_dtr(bool);
 void serial_receive_enable(void);
 void serial_interrupt(void);
 void serial_puts(const char *s);

@@ -3,6 +3,9 @@
 /* V7 ioctl numbers and sgtty flags; records use the native ABI. */
 #define NX_TIOCGETD 0x7400
 #define NX_TIOCSETD 0x7401
+#define NX_TIOCHPCL 0x7402
+#define NX_TIOCEXCL 0x740d
+#define NX_TIOCNXCL 0x740e
 #define NX_TIOCGETP 0x7408
 #define NX_TIOCSETP 0x7409
 #define NX_TIOCSETN 0x740a
@@ -11,6 +14,13 @@
 #define NX_TIOCGETC 0x7412
 #define NX_FIOCLEX 0x6601
 #define NX_FIONCLEX 0x6602
+#define NX_TANDEM 0000001
+#define NX_LCASE 0000004
+#define NX_NLDELAY 001400
+#define NX_TBDELAY 006000
+#define NX_CRDELAY 030000
+#define NX_VTDELAY 040000
+#define NX_BSDELAY 0100000 /* Historical flag; V7 ttyoutput applies no BS delay. */
 #define NX_CBREAK 0000002
 #define NX_ECHO 0000010
 #define NX_CRMOD 0000020
@@ -35,6 +45,16 @@
 #define NX_EXTA 14
 #define NX_EXTB 15
 #define NX_B115200 16 /* Nexix extension; boot console rate */
+#define NX_TTY_NATIVE 0U
+#define NX_TTY_DC 1U
+#define NX_TTY_DH 2U
+#define NX_TTY_DZ 3U
+#define NX_TTY_KL 4U
+#define NX_TTY_CONTROLLER_DEV(profile,line) (((22U+(profile))*256U)+(line))
+#define NX_RX_PARITY 1U
+#define NX_RX_FRAME 2U
+#define NX_RX_BREAK 4U
+#define NX_RX_OVERRUN 8U
 #define NX_CONSOLE_DEV 0x0100
 #define NX_CTTY_DEV 0x0200
 #ifndef __ASSEMBLER__

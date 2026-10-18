@@ -5,9 +5,14 @@
 #define TX_CAPACITY 4096
 static uint8_t tx[TX_CAPACITY];
 static unsigned tx_head,tx_count;
+/* LSR error bits clear on read. TX/idle polling must preserve the receive
+ * head's status until the corresponding RBR byte (or break event) is taken. */
+static uint8_t pending_status;
+static uint8_t line_status(void)
+{uint8_t status=inb(COM1+5);if(status&(1|16))pending_status|=status&0x1e;return status;}
 static void transmit(void)
 {
-    if(!(inb(COM1+5)&0x20))return;
+    if(!(line_status()&0x20))return;
     for(unsigned n=0;n<16 && tx_count;++n){
         outb(COM1,tx[tx_head]);tx_head=(tx_head+1)%TX_CAPACITY;--tx_count;
     }
@@ -21,6 +26,7 @@ bool serial_enqueue(const uint8_t *bytes,size_t count)
 }
 void serial_init(void)
 {
+    pending_status=0;
     outb(COM1 + 1, 0);
     outb(COM1 + 3, 0x80);
     outb(COM1, 1);
@@ -32,23 +38,30 @@ void serial_init(void)
 void serial_putc(uint8_t byte)
 {
     while(tx_count)transmit();
-    while (!(inb(COM1 + 5) & 0x20)) __asm__ volatile ("pause");
+    while (!(line_status() & 0x20)) __asm__ volatile ("pause");
     outb(COM1, byte);
 }
 void serial_puts(const char *s) { while (*s) serial_putc((uint8_t)*s++); }
-void serial_configure(unsigned rate, unsigned parity)
+void serial_format(unsigned rate,uint8_t line_control)
 {
     while(tx_count)transmit();
     /* Caller has disabled IRQs; keep IER masked while DLAB aliases it. */
-    while (!(inb(COM1 + 5) & 0x40)) __asm__ volatile ("pause");
+    while (!(line_status() & 0x40)) __asm__ volatile ("pause");
     uint8_t ier = inb(COM1 + 1);
     outb(COM1 + 1, 0);
     uint16_t divisor = 115200 / rate;
     outb(COM1 + 3, 0x80);
     outb(COM1, divisor & 255); outb(COM1 + 1, divisor >> 8);
-    outb(COM1 + 3, parity ? (parity == 1 ? 0x0a : 0x1a) : 0x03);
+    outb(COM1 + 3, line_control);
     outb(COM1 + 1, ier);
 }
+void serial_configure(unsigned rate,unsigned parity)
+{serial_format(rate,parity?(parity==1?0x0a:0x1a):3);}
+bool serial_idle(void){return !tx_count && (line_status()&0x40);}
+void serial_flush(void)
+{tx_head=tx_count=0;outb(COM1+1,inb(COM1+1)&~2U);}
+void serial_dtr(bool on)
+{outb(COM1+4,on?(inb(COM1+4)|1):(inb(COM1+4)&~1U));}
 void serial_receive_enable(void)
 {
     outb(COM1 + 2, 0x07); /* FIFO, one-byte receive threshold. */
@@ -59,13 +72,19 @@ void serial_receive_enable(void)
 void serial_interrupt(void)
 {
     /* Bounded IRQ work. Remaining FIFO data retriggers RX or timeout IRQ. */
-    for (unsigned i = 0; i < 256 && !(inb(COM1 + 2) & 1); ++i) {
+    for (unsigned i = 0; i < 256 && (!(inb(COM1 + 2) & 1) || (pending_status&16)); ++i) {
         transmit();
-        uint8_t status = inb(COM1 + 5);
+        uint8_t status = line_status()|pending_status;
+        pending_status=0;
         if (status & 1) {
             uint8_t byte = inb(COM1);
-            if (!(status & 0x1c)) tty_receive(byte); /* Discard parity/framing/break errors. */
-        } else (void)inb(COM1 + 6); /* Acknowledge any modem-status interrupt. */
+            unsigned errors=(status&4?NX_RX_PARITY:0)|(status&8?NX_RX_FRAME:0)|
+                (status&16?NX_RX_BREAK:0)|(status&2?NX_RX_OVERRUN:0);
+            tty_receive_status(byte,errors);
+        } else {
+            if(status&16)tty_receive_status(0,NX_RX_BREAK|NX_RX_FRAME);
+            (void)inb(COM1+6); /* Acknowledge modem status. */
+        }
     }
 }
 void serial_hex(uint64_t value)

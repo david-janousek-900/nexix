@@ -57,6 +57,9 @@ def build(blocks, programs, config):
     for unit in range(8):
         number+=1;entries['/dev/tap'+str(unit)]=number
         image.inode(number,BLK|0o600,device=0x1600+unit)
+    for profile,name in enumerate(('dc','dh','dz','kl'),1):
+        number+=1;entries['/dev/'+name+'0']=number
+        image.inode(number,CHR|0o600,device=(22+profile)*256)
     # Children before parents: directory link counts depend on inode types.
     for path in ('/bin', '/etc', '/dev', '/tmp', '/usr/adm', '/usr', '/'):
         parent = path.rsplit('/', 1)[0] or '/'

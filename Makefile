@@ -273,8 +273,8 @@ test-tty: check build/test-tty.iso build/test-tty-demo.iso
 run-tty: check build/test-tty-demo.iso
 	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -cdrom build/test-tty-demo.iso -display none -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -mon chardev=console,mode=readline -no-reboot
 
-build/tty-unit-test: tests/packet-inactive.c tests/tty.c kernel/v7/tty.c kernel/include/tty.h kernel/include/serial.h kernel/include/uaccess.h kernel/include/process.h kernel/include/v7/core.h include/nexix/tty.h include/nexix/errno.h | build/.dir
-	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/tty.c tests/packet-inactive.c kernel/v7/tty.c -o $@
+build/tty-unit-test: kernel/v7/tty_controller.c kernel/include/tty_controller.h tests/packet-inactive.c tests/tty.c kernel/v7/tty.c kernel/include/tty.h kernel/include/serial.h kernel/include/uaccess.h kernel/include/process.h kernel/include/v7/core.h include/nexix/tty.h include/nexix/errno.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/tty.c tests/packet-inactive.c kernel/v7/tty.c kernel/v7/tty_controller.c -o $@
 
 # Task 15: signals and the remaining init/shell syscall fixture.
 build/signals.o: kernel/v7/signals.c | build/.dir
@@ -376,8 +376,8 @@ build/nexix.elf: build/root_boot.o
 
 build/root_exec_program.o: user/root-exec-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
-build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/memdev_program.o build/disk_program.o build/disk_order_program.o build/tape_program.o build/dectape_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/mpx_tty_program.o build/libc.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/memdev_program.o build/disk_program.o build/disk_order_program.o build/tape_program.o build/dectape_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/mpx_tty_program.o build/libc.a -o $@
+build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/memdev_program.o build/disk_program.o build/disk_order_program.o build/tape_program.o build/dectape_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/mpx_tty_program.o build/tty_controller_program.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/memdev_program.o build/disk_program.o build/disk_order_program.o build/tape_program.o build/dectape_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/mpx_tty_program.o build/tty_controller_program.o build/libc.a -o $@
 build/root_exec_image.o: build/root-exec-test.elf tools/embed_test_elf.py
 	$(PYTHON) tools/embed_test_elf.py $< $@ --ld $(LD) --objcopy $(OBJCOPY)
 OBJECTS += build/root_exec_image.o
@@ -976,8 +976,8 @@ build/mpx_data_program.o: user/mpx-data-test.c | build/.dir
 .PHONY: test-mpx-data
 test-mpx-data: test-rootfs test-inventory test-libc-interfaces
 
-build/mpx-unit-test: tests/packet-inactive.c tests/mpx.c kernel/v7/tty.c kernel/v7/mpx_tty.inc kernel/v7/files.c kernel/v7/mpx.inc kernel/v7/mpx_io.inc include/nexix/mpx.h | build/.dir
-	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -ffunction-sections -fdata-sections -Wl,--gc-sections -Ikernel/include -Iinclude tests/mpx.c tests/packet-inactive.c kernel/v7/tty.c -o $@
+build/mpx-unit-test: kernel/v7/tty_controller.c kernel/include/tty_controller.h tests/packet-inactive.c tests/mpx.c kernel/v7/tty.c kernel/v7/mpx_tty.inc kernel/v7/files.c kernel/v7/mpx.inc kernel/v7/mpx_io.inc include/nexix/mpx.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -ffunction-sections -fdata-sections -Wl,--gc-sections -Ikernel/include -Iinclude tests/mpx.c tests/packet-inactive.c kernel/v7/tty.c kernel/v7/tty_controller.c -o $@
 .PHONY: test-mpx-unit
 test-mpx-unit: build/mpx-unit-test
 	./build/mpx-unit-test
@@ -1131,3 +1131,24 @@ test-unit: test-disk-order-unit
 test-disk-order: test-disk-order-unit test-rootfs test-inventory test-libc-interfaces
 	$(PYTHON) tools/disk_order_smoke.py $(QEMU) build/test-selftest.iso 16M
 	$(PYTHON) tools/disk_order_smoke.py $(QEMU) build/test-selftest.iso 128M
+
+# Task 74: native historical terminal-controller contracts.
+build/tty_controller.o: kernel/v7/tty_controller.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+OBJECTS += build/tty_controller.o
+build/nexix.elf: build/tty_controller.o
+-include build/tty_controller.d
+
+build/tty-controller-test: tests/tty-controller.c tests/packet-inactive.c kernel/v7/tty.c kernel/v7/tty_controller.c kernel/include/tty_controller.h kernel/include/tty.h include/nexix/tty.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude $(filter %.c,$^) -o $@
+.PHONY: test-tty-controller-unit test-tty-controllers
+test-tty-controller-unit: build/tty-controller-test build/serial-unit-test
+	$(PYTHON) tools/check_tty_controller.py --cc "$(HOST_CC)"
+	./build/tty-controller-test
+	./build/serial-unit-test
+test-unit: test-tty-controller-unit
+test-tty-controllers: test-tty-controller-unit test-rootfs test-inventory test-libc-interfaces test-tty test-packet
+
+build/tty_controller_program.o: user/tty-controller-test.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+-include build/tty_controller_program.d

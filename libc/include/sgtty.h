@@ -4,13 +4,12 @@
 #include <stddef.h>
 struct sgttyb { uint8_t sg_ispeed, sg_ospeed, sg_erase, sg_kill; uint32_t sg_flags; };
 struct tchars { uint8_t t_intrc, t_quitc, t_startc, t_stopc, t_eofc, t_brkc; };
-/* Values are exported even where the driver rejects unsupported modes.
- * Implementing these modes belongs to task 74. */
+/* Historical mode values; controller support is documented in tty-controllers.md. */
 _Static_assert(sizeof(struct sgttyb) == sizeof(struct nx_sgttyb), "sgtty ABI size");
 _Static_assert(offsetof(struct sgttyb, sg_flags) == offsetof(struct nx_sgttyb, flags), "sgtty ABI flags");
 _Static_assert(sizeof(struct tchars) == sizeof(struct nx_tchars), "tchars ABI size");
-#define TANDEM 01
-#define LCASE 04
+#define TANDEM NX_TANDEM
+#define LCASE NX_LCASE
 #define ANYP 0300
 #define NLDELAY 001400
 #define TBDELAY 006000

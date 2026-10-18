@@ -44,9 +44,10 @@ remains valid.
 
 `pwd.h` and `grp.h` expose all original record fields and typed native routine
 declarations. Password and group database functions are implemented by tasks 44–45.
-Terminal flag constants do not enable TANDEM, LCASE or delay modes: those remain
-task 74 and the driver continues rejecting unsupported configurations. Mpx mode
-constants likewise do not implement channels (65–67).
+Task 74 implements TANDEM, LCASE, delay modes and controller parity contracts
+on the shared COM1 endpoint; see [terminal controllers](tty-controllers.md).
+Tasks 65–67 implement mpx channels and TTY bridging. Independent terminals remain
+tasks 89–93.
 
 The original `sys/types.h` includes a six-int kernel `label_t`; consumers must
 use native `jmp_buf`/kernel context switching, with runtime assembly adapters

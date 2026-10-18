@@ -19,3 +19,11 @@ __attribute__((weak)) void mpx_tty_discipline(struct tty *t){(void)t;}
 __attribute__((weak)) bool serial_enqueue(const uint8_t *b,size_t n){while(n--)serial_putc(*b++);return true;}
 __attribute__((weak)) bool user_access_ok(const struct address_space *v,uintptr_t a,size_t n,bool w)
 {(void)v;(void)n;(void)w;return a>=4096;}
+
+__attribute__((weak)) uint64_t timer_ticks(void){return 0;}
+__attribute__((weak)) void serial_format(unsigned rate,uint8_t control)
+{serial_configure(rate,(control&8)?((control&16)?2:1):0);}
+__attribute__((weak)) void serial_flush(void){}
+__attribute__((weak)) void serial_dtr(bool on){(void)on;}
+
+__attribute__((weak)) bool serial_idle(void){return true;}

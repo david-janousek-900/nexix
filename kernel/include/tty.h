@@ -13,6 +13,8 @@ int tty_open(v7_dev_t device, struct user *u, struct tty **result);
 void tty_close(struct tty *);
 unsigned tty_open_count(void);
 void tty_receive(uint8_t byte);
+void tty_receive_status(uint8_t,unsigned errors);
+void tty_timer(uint64_t now);
 /* File layer preflights the entire user buffer before entry/sleep. */
 int64_t tty_io(struct tty *, struct address_space *, uintptr_t buffer, size_t count, bool write);
 int tty_ioctl(struct tty *, struct address_space *, uint64_t request, uintptr_t argument);

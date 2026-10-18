@@ -69,6 +69,10 @@ class RootImage(unittest.TestCase):
         self.assertEqual(contents(lookup('/.profile')), Path('rootfs/profile').read_bytes())
         for path in ('/etc/utmp','/usr/adm/wtmp'):
             self.assertEqual(contents(lookup(path)), b'')
+        for profile, name in enumerate(('dc0', 'dh0', 'dz0', 'kl0'), 23):
+            node = inode(lookup('/dev/' + name))
+            self.assertEqual(node[0], 0o20600)
+            self.assertEqual(node[3][0], profile << 8)
         console = lookup('/dev/console')
         self.assertEqual(console, lookup('/dev/ttyS0'))
         self.assertEqual(inode(console)[:2], (0o20600, 2))

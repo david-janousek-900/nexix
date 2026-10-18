@@ -317,13 +317,15 @@
       ],
       "native": [
         "kernel/v7/tty.c",
-        "kernel/serial.c"
+        "kernel/serial.c",
+        "kernel/v7/tty_controller.c",
+        "kernel/include/tty_controller.h"
       ],
       "tasks": [
         14,
         74
       ],
-      "note": "Existing native integration points do not implement all historical protocols. Terminal closure includes TANDEM, LCASE, delay and parity contracts."
+      "note": "Task 74 implements DC/DH/DZ/KL profiles on shared COM1, parity/error filtering, TANDEM, LCASE and timed output. Modem/carrier task 75 and independent terminals 89\u201393 remain; see docs/tty-controllers.md."
     },
     {
       "id": "modem",

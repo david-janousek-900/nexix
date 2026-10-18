@@ -125,6 +125,7 @@ int main(void)
     sg.flags = NX_CRMOD | NX_XTABS | NX_ODDP;
     sg.ispeed = sg.ospeed = NX_B9600;
     assert(control(t, NX_TIOCSETP, &sg) == 0 && baud == 9600 && parity == 1);
+    assert(tty_io(t,&vm,(uintptr_t)"\r",1,true)==1); /* Raw output does not track the V7 printing column. */
     output_size = 0;
     assert(tty_io(t, &vm, (uintptr_t)"ab\tc\n", 5, true) == 5);
     assert(output_size == 11 && !memcmp(output, "ab      c\r\n", 11));
@@ -140,8 +141,9 @@ int main(void)
     assert(control(t, NX_TIOCSETN, &sg) == 0 && !parity);
     sg.flags = NX_RAW | NX_ODDP;
     assert(control(t, NX_TIOCSETN, &sg) == 0 && !parity);
-    sg.flags = 002000; /* partial tab delay is not XTABS */
-    assert(control(t, NX_TIOCSETN, &sg) == -NX_EINVAL);
+    sg.flags = 002000; /* Historical tab delay now supported. */
+    assert(control(t, NX_TIOCSETN, &sg) == 0);
+    sg.flags=NX_RAW;assert(control(t,NX_TIOCSETN,&sg)==0);
     feed("old", 3); assert(control(t, NX_TIOCFLUSH, NULL) == 0);
     feed("new", 3); expect(t, "new", 3);
     assert(control(t, NX_TIOCGETP, (void *)1) == -NX_EFAULT);

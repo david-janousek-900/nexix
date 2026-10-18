@@ -27,7 +27,7 @@ contracts; task 355 and task 359 close whole-distribution integration.
 | pipe | Native bounded pipes, sleep/wakeup, SIGPIPE and descriptor lifetime | Existing files tests; consumer acceptance remains distribution-wide |
 | acct | Process exit integration point | Accounting records, privileges, storage errors 56 |
 | prim/mx1/mx2/fakemx | Native group/channel ownership, record I/O, bounded queues, flow control and open notifications | Ownership/data/TTY bridging and libc implemented by 65–67; independent terminals remain 89–93; historical optional stub does not satisfy functionality |
-| tty/dc/dh/dz/kl/partab | COM1 cooked/raw/cbreak, process groups and supported parity/tab flags | Terminal equivalents and TANDEM/LCASE/delay/parity contracts 74; independent ports 89–93 |
+| tty/dc/dh/dz/kl/partab | COM1 controller profiles, parity/error filtering, TANDEM, LCASE, timed output and generic terminal controls | 74 implemented; modem/carrier 75 and independent ports 89–93 remain; [contracts](tty-controllers.md) |
 | pk0–pk3 | Native framing/checksums, negotiation, windows/retries, EOF/CLOSE, pinned ownership and IRQ UART/TTY/mpx integration | Task 68 complete; [packet contract](serial-packets.md); UUCP and additional serial hardware retain their own acceptance tasks |
 | dn/dhdm/dhfdm/du | Serial integration point only | Modem/dial control 75 |
 | hp/rf/rk/rl/rp | Native disk views, source partitions/units, bounded recovery, ATA media and overlapping mount protection | Tasks 53/70 complete; [controller contracts](disk-controllers.md); task 73 adds [ordering/interleave](disk-ordering.md) |

@@ -24,6 +24,8 @@
 #include <nexix/disk.h>
 #include <nexix/tty.h>
 #include "v7/types.h"
+_Static_assert(NX_TIOCHPCL==0x7402 && NX_TIOCEXCL==0x740d && NX_TIOCNXCL==0x740e, "terminal ioctl numbers");
+_Static_assert(NX_TTY_CONTROLLER_DEV(NX_TTY_KL,0)==0x1a00, "controller device number");
 #define SIZE(t,n) _Static_assert(sizeof(t)==(n), #t " size")
 #define FIELD(t,f,n) _Static_assert(offsetof(t,f)==(n), #t "." #f " offset")
 _Static_assert(NX_PHYS_WINDOWS==8 && NX_PHYS_PAGES==2 && NX_PHYS_PAGE_SIZE==4096, "phys window units");
