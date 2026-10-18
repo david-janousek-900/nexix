@@ -67,8 +67,9 @@ terminal that it inherited open. V7's message permission semantics are retained.
 Task 98 installs `/etc/getty` from V7 `usr/src/cmd/getty.c`. Its speed-table loop,
 username editing, case detection and login exec remain source-based. Profile `9`
 adds 115200 baud with native Ctrl-C, raw username input and cooked/echo login
-handoff. Other profile entries retain their historical settings. PC UART hardware
-handles parity, so the port removes software parity bits from transmitted ASCII.
+handoff. Other profile entries retain their historical settings and source
+software parity in the raw username protocol. Native profile 9 sends clean ASCII;
+the final acceptance also checks the historical 9600 baud profile and its parity.
 The private output routine is renamed to avoid interposing libc puts. The username
 buffer reserves a terminator after the original 16-character bound; ioctl failures
 exit rather than continuing with an unconfigured line.
@@ -213,3 +214,26 @@ and validates fixed-width terminal paths and device type before opening.
 and root permissions, exactly 3000 bytes, oversize/missing input and a malformed
 utmp entry naming a regular file. That file must survive unchanged. Runs at
 16/128 MiB wait for each asynchronous delivery and verify both shells survive.
+
+Task 108 completes the multi-user milestone. `make test-multiuser-acceptance`
+copies the exact production seed using the same non-clobber disk publisher as
+`make run`, then boots two authenticated terminals at 16/128 MiB. It exercises
+wrong/correct hidden passwords, permissions, messaging, passwd/su/newgrp,
+per-terminal flow control, empty lines and logout. Host decoding independently
+checks persisted UID/GID/modes, contents and V7 timestamps. A second cold boot
+uses the next day's RTC, authenticates the changed password and reads the saved
+files; reseeding must preserve the changed disk, and mtime must remain intact.
+
+A separate disposable fixture uses a private kinfo observer with the production
+init/getty/login to compare process/file/inode/text counts and free physical pages
+across four logout/login cycles. The exact-production-seed tests install no
+private observer. Working-disk hashes are checked before and after acceptance.
+Final source review also closes the getty profile parity split: native profile 9
+stays clean, and a legacy profile handoff checks the original even-parity bytes.
+Terminal and QEMU logs use `build/multiuser-*`; the private observer logs use
+`build/multiuser-resources-*`.
+
+`make test-multiuser` runs all terminal, account, command, init, messaging and final
+multi-user acceptance targets. This completes tasks 86 and 89–108; it does not
+declare the complete V7 distribution port or version 0.1.0 finished. Remaining
+ports and release work stay on the README roadmap.

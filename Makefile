@@ -1416,3 +1416,13 @@ test-write: rootfs iso
 test-wall: rootfs iso
 	$(PYTHON) tools/wall_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/wall_smoke.py $(QEMU) build/nexix.iso 128M
+
+build/session-resources.o: tests/session-resources.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/session-resources.elf: build/crt0.o build/session-resources.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+.PHONY: test-multiuser-acceptance test-multiuser
+test-multiuser-acceptance: rootfs iso build/session-resources.elf
+	$(PYTHON) tools/multiuser_acceptance.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/multiuser_acceptance.py $(QEMU) build/nexix.iso 128M
+test-multiuser: test-two-terminals test-account-config test-stty test-tty-command test-mesg test-getty test-login test-session-accounting test-multiuser-init test-passwd-command test-su test-newgrp test-who test-write test-wall test-multiuser-acceptance

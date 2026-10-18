@@ -1,5 +1,10 @@
 # Bootstrap validation environment
 
+The multi-user milestone is accepted with `make test-multiuser`, including
+two-terminal production-seed cold boots, persisted credentials/data and exact
+resource recovery at 16/128 MiB. See [multi-user acceptance](multi-user.md).
+The observations below also retain the earlier bootstrap/component history.
+
 Initial observed boot: Debian 13, x86_64 host GCC 14.2.0, GNU binutils 2.44,
 QEMU 10.0.13, GRUB 2.12, and xorriso 1.5.6. These versions record the tested
 environment; they are not yet a pinned cross-toolchain or reproducible SDK.

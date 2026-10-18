@@ -108,6 +108,7 @@ char	name[17]; /* Sixteen source characters plus a bounded terminator. */
 int	crmod;
 int	upper;
 int	lower;
+int	native_output;
 
 char partab[] = {
 	0001,0201,0201,0001,0201,0001,0001,0201,
@@ -153,6 +154,7 @@ char **argv;
 				break;
 		if(tabp >= &itab[NITAB])
 			tabp = itab;
+		native_output = tabp->tname == '9';
 		tmode.sg_flags = tabp->iflags;
 		tmode.sg_ispeed = tabp->ispeed;
 		tmode.sg_ospeed = tabp->ospeed;
@@ -240,6 +242,9 @@ putchr(cc)
 {
 	char c;
 	c = cc;
-	/* PC UART line control supplies parity; do not corrupt ASCII data. */
+	/* Native PC profile is clean ASCII; preserve source software parity for
+	 * historical tables whose raw terminal protocol expects the parity bit. */
+	if (!native_output)
+		c |= partab[c&0177] & 0200;
 	write(1, &c, 1);
 }

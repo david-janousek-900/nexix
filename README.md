@@ -39,6 +39,7 @@ make iso
 make test-boot
 make test-shell
 make test-storage
+make test-multiuser
 make smoke
 make test
 make test-process
@@ -60,6 +61,12 @@ to connect to COM2. Ctrl-] disconnects the second terminal. See
 [account configuration](docs/multi-user.md) for the prepared development users. Fresh full disks
 include `/dev/ttyS1` and enable login on both lines. See
 [independent terminals](docs/multi-terminal.md).
+
+For an older installation, keep its disk and try the new seed with an unused
+path: `make DISK_IMAGE=build/fresh.img run`. To make a fresh disk the default,
+stop QEMU and move `build/nexix.img` to an unused backup filename before running
+`make run`. Saved files remain in the old image; automatic upgrades are task 357.
+
 To use an installed cross-toolchain, run `make TOOLCHAIN_PREFIX=x86_64-elf- run`
 (or the same override for other targets). A pinned cross-toolchain remains planned.
 The kernel does not link host libc. Build artifacts go into `build/`.
@@ -133,8 +140,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 4 partial, 1 prototype and 190 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 98 done, 2 in progress
-and 266 to do** after task 107. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 99 done, 2 in progress
+and 265 to do** after task 108. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -345,7 +352,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 105 | Port who | Done | Retained who modes and native utmp formatting; per-line identity, no-TTY fallback, explicit records, eight-byte nonterminated fields, missing files and logout; `make test-who` at 16/128 MiB; Git history |
 | 106 | Port write | Done | Retained write messaging, explicit tty, mesg permissions, headers/bells, local shell escape and EOF/SIGINT; bounded fields/paths/buffers, typed signals and pre-open device checks; `make test-write` at 16/128 MiB; Git history |
 | 107 | Port wall | Done | Retained asynchronous per-user wall broadcast; checked 3000-byte bound, streams and fixed-width device paths; file/stdin delivery, non-root/root mesg behavior and preserved regular-file trap; `make test-wall` at 16/128 MiB; Git history |
-| 108 | Multi-user boot and reboot acceptance | To do | Old 27 completion; two concurrent logins, logout, init recovery, persistence |
+| 108 | Multi-user boot and reboot acceptance | Done | Exact production-seed two-user boot and cold reboot; hidden authentication, permissions, messaging, passwd/su/newgrp owner metadata, RTC/persistent times and files; non-clobber reseeding and four-login exact resource recovery and legacy getty parity handoff; `make test-multiuser` at 16/128 MiB; working disk preserved; Git history |
 
 ### Additional libraries
 
