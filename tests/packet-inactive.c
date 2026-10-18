@@ -27,3 +27,7 @@ __attribute__((weak)) void serial_flush(void){}
 __attribute__((weak)) void serial_dtr(bool on){(void)on;}
 
 __attribute__((weak)) bool serial_idle(void){return true;}
+
+__attribute__((weak)) unsigned serial_modem_status(void){return 0;}
+__attribute__((weak)) void serial_modem_outputs(bool dtr,bool rts){(void)rts;serial_dtr(dtr);}
+__attribute__((weak)) struct proc *proc_current(void){return NULL;}

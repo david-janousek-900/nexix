@@ -124,8 +124,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 2 partial, 1 prototype and 203 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 74 done, 2 in progress
-and 290 to do** after task 74. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 75 done, 2 in progress
+and 289 to do** after task 75. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -293,7 +293,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 72 | DECtape-device equivalent | Done | [TC contracts and format](docs/dectape.md); `make test-dectape`; eight 578-block units, random/partial I/O, bounded retries, persistent select errors, file-backed media, mounted-alias guards, tp-format and nested V7 filesystem fixtures; cold boots at 16/128 MiB; Git history |
 | 73 | Disk ordering/interleave helpers | Done | [V7 queue/interleave contracts](docs/disk-ordering.md); `make test-disk-order`; source-differential helpers, real HP request dispatch, one/two-drive block interleave, member lifetime/read-only/mount guards and striped V7 filesystem persistence at 16/128 MiB; Git history |
 | 74 | Historical terminal-controller equivalents | Done | DC/DH/DZ/KL profiles, parity/errors, TANDEM, LCASE and timed output; `make test-tty-controllers`; [contracts and limits](docs/tty-controllers.md); Git history |
-| 75 | Modem and dial-control equivalents | To do | dn/dhdm/dhfdm/du controls on testable serial endpoints |
+| 75 | Modem and dial-control equivalents | Done | [Native modem/dial contracts](docs/modems.md); local/UART/virtual carrier, SIGHUP, B0, DN dialing and DU synchronous records; `make test-modem`; forked peers at 16/128 MiB, host handshake/error/timeout tests; Git history |
 | 76 | Typesetter device equivalent | To do | cat driver output protocol captured on native endpoint |
 | 77 | Printer/plotter device equivalents | To do | vp/vs output/control with captured protocol fixtures |
 | 78 | Native kernel configuration/build tooling | To do | mkconf and kernel recipes; existing bootstrap remains |

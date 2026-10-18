@@ -73,6 +73,9 @@ class RootImage(unittest.TestCase):
             node = inode(lookup('/dev/' + name))
             self.assertEqual(node[0], 0o20600)
             self.assertEqual(node[3][0], profile << 8)
+        for name, device in [('dn'+str(i),0x1b00+i) for i in range(4)]+[('du0',0x1c00),('modemctl',0x1d00)]:
+            self.assertEqual(inode(lookup('/dev/'+name))[0],0o20600)
+            self.assertEqual(inode(lookup('/dev/'+name))[3][0],device)
         console = lookup('/dev/console')
         self.assertEqual(console, lookup('/dev/ttyS0'))
         self.assertEqual(inode(console)[:2], (0o20600, 2))

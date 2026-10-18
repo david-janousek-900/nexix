@@ -124,6 +124,12 @@ int main(void)
     h=(struct nx_mx_write){.index=0xfff0,.ccount=sizeof(request),.data=&request};
     assert(mx_group_write(g,(uintptr_t)&h,sizeof(h))==16);
     assert(mx_group_read(g,(uintptr_t)buffer,sizeof(buffer))==18 && ((struct nx_mx_ioctl *)(buffer+6))->command==NX_TIOCGETP);
+    request.command=NX_MDM_GET;
+    assert(mx_group_write(g,(uintptr_t)&h,sizeof(h))==-NX_ENOTTY);
+    assert(mx_ioctl_control(c,&request)==-NX_ENOTTY);
+    struct file modem_request={.f_private=c,.f_flag=V7_FMPY};
+    assert(mx_endpoint_ioctl(&modem_request,&process.p_vm,NX_MDM_GET,(uintptr_t)buffer)==-NX_ENOTTY);
+    request.command=NX_TIOCGETP;
     tty_mpx_unbind(t,c);c->input_tty=c->output_tty=NULL;tty_close(t);
     /* A reply remains owned by its sleeping caller until it consumes data. */
     c->ioctl_busy=c->ioctl_pending=true;c->ioctl_command=NX_TIOCGETP;

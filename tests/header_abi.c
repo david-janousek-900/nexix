@@ -1,4 +1,5 @@
 #include <nexix/dectape.h>
+#include <nexix/modem.h>
 #include <nexix/tape.h>
 /* Independently specified LP64 record contracts, shared kernel/libc boundaries. */
 #include <sys/types.h>
@@ -27,7 +28,10 @@
 _Static_assert(NX_TIOCHPCL==0x7402 && NX_TIOCEXCL==0x740d && NX_TIOCNXCL==0x740e, "terminal ioctl numbers");
 _Static_assert(NX_TTY_CONTROLLER_DEV(NX_TTY_KL,0)==0x1a00, "controller device number");
 #define SIZE(t,n) _Static_assert(sizeof(t)==(n), #t " size")
+SIZE(struct nx_modem_tty,16); SIZE(struct nx_modem_peer,536);
 #define FIELD(t,f,n) _Static_assert(offsetof(t,f)==(n), #t "." #f " offset")
+FIELD(struct nx_modem_peer,data,24); FIELD(struct nx_modem_peer,count,12);
+_Static_assert(NX_MDM_GET==0x6d01 && NX_MDM_SET==0x6d02 && NX_MDM_PEER==0x6d03,"modem ioctl numbers");
 _Static_assert(NX_PHYS_WINDOWS==8 && NX_PHYS_PAGES==2 && NX_PHYS_PAGE_SIZE==4096, "phys window units");
 _Static_assert(NX_PHYS_BASE==0x600000000000UL && NX_PHYS_ADDRESS(7)==0x60000000e000UL, "phys window addresses");
 SIZE(struct nx_kinfo_header,48); FIELD(struct nx_kinfo_header,total_bytes,24); FIELD(struct nx_kinfo_header,ticks,32);

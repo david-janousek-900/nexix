@@ -11,6 +11,8 @@ void serial_format(unsigned rate,uint8_t line_control);
 void serial_flush(void);
 bool serial_idle(void);
 void serial_dtr(bool);
+unsigned serial_modem_status(void);
+void serial_modem_outputs(bool dtr,bool rts);
 void serial_receive_enable(void);
 void serial_interrupt(void);
 void serial_puts(const char *s);

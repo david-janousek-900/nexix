@@ -34,10 +34,10 @@ received bytes without interpreting UART error flags. Native error policy is
 unchanged. Overrun does not discard the available byte.
 
 The 16550 shares one receive/transmit clock, so unequal rates are rejected for
-non-KL profiles. B0 hangup and unsupported selectors return EINVAL atomically.
+non-KL profiles. Task 75 adds B0 hangup for DH/DZ; unsupported selectors return EINVAL atomically.
 DH external selectors use native 19200/38400 rates; PDP-11 external clock and
-134-baud half-duplex wiring are not emulated. Modem/carrier behavior, including
-B0 carrier transitions, remains task 75; the current endpoint is locally attached.
+134-baud half-duplex wiring are not emulated. [Task 75](modems.md) adds modem/carrier modes and B0 transitions. The default
+endpoint remains locally attached.
 
 ## Shared line discipline
 
@@ -66,8 +66,7 @@ TIOCSETP drains output and flushes input; TIOCSETN retains input and waits for
 wire-idle before changing hardware format. TIOCFLUSH cancels queued output and
 delays. TIOCEXCL/TIOCNXCL reject subsequent non-root opens while exclusive;
 TIOCHPCL drops DTR on final close. Final close drains output, or cancels stopped
-output, and releases input flow control. DTR handling does not imply carrier or
-modem signal emulation.
+output, and releases input flow control. Task 75 adds [carrier and modem signal handling](modems.md).
 
 ## Validation
 

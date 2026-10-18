@@ -376,8 +376,8 @@ build/nexix.elf: build/root_boot.o
 
 build/root_exec_program.o: user/root-exec-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
-build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/memdev_program.o build/disk_program.o build/disk_order_program.o build/tape_program.o build/dectape_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/mpx_tty_program.o build/tty_controller_program.o build/libc.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/memdev_program.o build/disk_program.o build/disk_order_program.o build/tape_program.o build/dectape_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/mpx_tty_program.o build/tty_controller_program.o build/libc.a -o $@
+build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/memdev_program.o build/disk_program.o build/disk_order_program.o build/tape_program.o build/dectape_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/mpx_tty_program.o build/tty_controller_program.o build/modem_program.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/memdev_program.o build/disk_program.o build/disk_order_program.o build/tape_program.o build/dectape_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/mpx_tty_program.o build/tty_controller_program.o build/modem_program.o build/libc.a -o $@
 build/root_exec_image.o: build/root-exec-test.elf tools/embed_test_elf.py
 	$(PYTHON) tools/embed_test_elf.py $< $@ --ld $(LD) --objcopy $(OBJCOPY)
 OBJECTS += build/root_exec_image.o
@@ -1152,3 +1152,22 @@ test-tty-controllers: test-tty-controller-unit test-rootfs test-inventory test-l
 build/tty_controller_program.o: user/tty-controller-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 -include build/tty_controller_program.d
+
+# Task 75: DN/DU endpoints and DH modem/carrier support.
+build/modem.o: kernel/v7/modem.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+OBJECTS += build/modem.o
+build/nexix.elf: build/modem.o
+-include build/modem.d
+build/modem-unit-test: tests/modem.c tests/packet-inactive.c kernel/v7/tty.c kernel/v7/tty_controller.c kernel/v7/modem.c kernel/include/modem.h include/nexix/modem.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude $(filter %.c,$^) -o $@
+.PHONY: test-modem-unit test-modem
+test-modem-unit: build/modem-unit-test build/serial-unit-test
+	./build/modem-unit-test
+	./build/serial-unit-test
+test-unit: test-modem-unit
+test-modem: test-modem-unit test-rootfs test-inventory test-libc-interfaces test-tty test-packet
+
+build/modem_program.o: user/modem-test.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+-include build/modem_program.d

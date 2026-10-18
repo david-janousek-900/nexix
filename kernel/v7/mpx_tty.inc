@@ -48,7 +48,7 @@ static struct file *mx_tty_file(struct user *u,int fd)
 {
     if(fd<0 || fd>=V7_NOFILE)return NULL;
     struct file *f=u->u_ofile[fd];
-    return f && f->f_private && !(f->f_flag&(V7_FMP|V7_FPIPE|FILE_STORAGE|FILE_TAPE))?f:NULL;
+    return f && f->f_private && !modem_file(f) && !(f->f_flag&(V7_FMP|V7_FPIPE|FILE_STORAGE|FILE_TAPE))?f:NULL;
 }
 static int mx_join_tty(struct user *u,struct mx_group *g,int fd)
 {
@@ -94,6 +94,7 @@ static int mx_ioctl_control(struct mx_channel *c,const struct nx_mx_ioctl *contr
 {
     if(c->closing)return -NX_ENXIO;
     bool get;int size=tty_control_size(control->command,&get);if(size<0)return size;
+    if(size>8)return -NX_ENOTTY;
     uint64_t data=0;for(unsigned i=0;i<sizeof(control->data);++i)((uint8_t *)&data)[i]=control->data[i];
     struct tty *t=c->output_tty?c->output_tty:c->input_tty;
     if(t){
@@ -124,6 +125,7 @@ static int mx_endpoint_ioctl(struct file *f,struct address_space *vm,uint64_t re
     if(c->closing)return -NX_ENXIO;
     bool get;int size=tty_control_size(request,&get);
     if(size<0)return size;
+    if(size>8)return -NX_ENOTTY;
     if(!user_access_ok(vm,address,size,get))return -NX_EFAULT;
     struct nx_mx_ioctl event={.code=NX_M_IOCTL,.command=request};
     if(!get && size){int error=copyin(vm,address,event.data,size);if(error)return error;}

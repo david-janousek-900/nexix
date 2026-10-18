@@ -325,7 +325,7 @@
         14,
         74
       ],
-      "note": "Task 74 implements DC/DH/DZ/KL profiles on shared COM1, parity/error filtering, TANDEM, LCASE and timed output. Modem/carrier task 75 and independent terminals 89\u201393 remain; see docs/tty-controllers.md."
+      "note": "Task 74 implements DC/DH/DZ/KL profiles on shared COM1, parity/error filtering, TANDEM, LCASE and timed output. Task 75 supplies modem/carrier handling; independent terminals 89\u201393 remain; see docs/tty-controllers.md."
     },
     {
       "id": "modem",
@@ -337,12 +337,15 @@
       ],
       "native": [
         "kernel/v7/tty.c",
-        "kernel/serial.c"
+        "kernel/serial.c",
+        "kernel/v7/modem.c",
+        "kernel/include/modem.h",
+        "include/nexix/modem.h"
       ],
       "tasks": [
         75
       ],
-      "note": "Native device equivalent and its protocol/error/lifetime tests remain required; referenced files are integration points, not completed replacements."
+      "note": "Task 75 implements local/UART/virtual carrier control, SIGHUP, B0, four DN dial lines and one DU synchronous peer endpoint. Native privileged peer API replaces unavailable PDP-11 dial/synchronous hardware; see docs/modems.md."
     },
     {
       "id": "packet",

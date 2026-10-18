@@ -1,6 +1,7 @@
 #include "io.h"
 #include "serial.h"
 #include "tty.h"
+#include <nexix/modem.h>
 #define COM1 0x3f8
 #define TX_CAPACITY 4096
 static uint8_t tx[TX_CAPACITY];
@@ -62,11 +63,15 @@ void serial_flush(void)
 {tx_head=tx_count=0;outb(COM1+1,inb(COM1+1)&~2U);}
 void serial_dtr(bool on)
 {outb(COM1+4,on?(inb(COM1+4)|1):(inb(COM1+4)&~1U));}
+unsigned serial_modem_status(void)
+{unsigned s=inb(COM1+6);return (s&128?NX_MDM_DCD:0)|(s&16?NX_MDM_CTS:0)|(s&32?NX_MDM_DSR:0)|(s&64?NX_MDM_RI:0);}
+void serial_modem_outputs(bool dtr,bool rts)
+{outb(COM1+4,(inb(COM1+4)&~3U)|(dtr?1:0)|(rts?2:0));}
 void serial_receive_enable(void)
 {
     outb(COM1 + 2, 0x07); /* FIFO, one-byte receive threshold. */
     outb(COM1 + 4, 0x0b); /* OUT2 routes the UART interrupt to IRQ4. */
-    outb(COM1 + 1, 0x05); /* Receive data and line status, no TX IRQ. */
+    outb(COM1 + 1, 0x0d); /* Receive, line and modem status; no TX IRQ. */
     outb(0x21, inb(0x21) & ~(1U << 4));
 }
 void serial_interrupt(void)
@@ -83,7 +88,7 @@ void serial_interrupt(void)
             tty_receive_status(byte,errors);
         } else {
             if(status&16)tty_receive_status(0,NX_RX_BREAK|NX_RX_FRAME);
-            (void)inb(COM1+6); /* Acknowledge modem status. */
+            tty_modem_status(serial_modem_status());
         }
     }
 }

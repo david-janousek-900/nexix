@@ -204,7 +204,8 @@ static int mx_validate_record(struct mx_group *g,struct address_space *vm,const 
         else if(event.code==NX_M_IOCTL){
             if(h->ccount!=sizeof(struct nx_mx_ioctl))return -NX_EINVAL;
             struct nx_mx_ioctl control;error=copyin(vm,(uintptr_t)h->data,&control,sizeof(control));if(error)return error;
-            bool get;if(tty_control_size(control.command,&get)<0)return -NX_ENOTTY;
+            bool get;int size=tty_control_size(control.command,&get);
+            if(size<0 || size>8)return -NX_ENOTTY;
         }else return -NX_ENXIO;
     }
     struct mx_entry e=mx_lookup(g,h->index);if(!e.channel || e.channel->pending)return -NX_ENXIO;

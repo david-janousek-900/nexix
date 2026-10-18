@@ -60,6 +60,9 @@ def build(blocks, programs, config):
     for profile,name in enumerate(('dc','dh','dz','kl'),1):
         number+=1;entries['/dev/'+name+'0']=number
         image.inode(number,CHR|0o600,device=(22+profile)*256)
+    for name,dev in [("dn"+str(i),0x1b00+i) for i in range(4)]+[("du0",0x1c00),("modemctl",0x1d00)]:
+        number+=1;entries['/dev/'+name]=number
+        image.inode(number,CHR|0o600,device=dev)
     # Children before parents: directory link counts depend on inode types.
     for path in ('/bin', '/etc', '/dev', '/tmp', '/usr/adm', '/usr', '/'):
         parent = path.rsplit('/', 1)[0] or '/'

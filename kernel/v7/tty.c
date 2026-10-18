@@ -1,6 +1,7 @@
 /* Native adaptation of V7 dev/tty.c's line discipline for the COM1 UART. */
 #include "tty.h"
 #include "tty_controller.h"
+#include <nexix/modem.h>
 #include "interrupts.h"
 #include "packet.h"
 #include "serial.h"
@@ -25,7 +26,9 @@ struct tty {
     v7_pid_t group;
     bool stopped,flow_blocked,flow_release,exclusive,hangup,pumping;
     uint8_t flow_resume;
-    unsigned profile,out_head,out_count;
+    unsigned profile,out_head,out_count,waiting,modem_mode,modem_signals;
+    bool carrier,hungup;
+    unsigned modem_outputs;
     uint16_t output[OUTPUT_CAPACITY];
     uint64_t delay_until;
     struct tty_parameters parameters;
@@ -42,6 +45,28 @@ static void flush_output(struct tty *t)
 {t->out_head=t->out_count=0;t->delay_until=0;serial_flush();proc_wakeup(&t->output_channel);}
 static void resume(struct tty *t)
 { t->stopped = false; start(t);proc_wakeup(&t->output_channel);mpx_tty_resume(t); }
+static void modem_outputs(struct tty *t,bool on)
+{t->modem_outputs=on?NX_MDM_DTR|NX_MDM_RTS:0;serial_modem_outputs(on,on);}
+static void carrier_update(struct tty *t,unsigned signals,bool notify)
+{
+    bool old=t->carrier;t->modem_signals=signals;
+    t->carrier=!t->hungup && (t->modem_mode==NX_MDM_LOCAL || (signals&NX_MDM_DCD));
+    if(old && !t->carrier && notify && t->opens>t->waiting){
+        packet_close(t);t->flow_blocked=t->flow_release=false;
+        flush_output(t);flush(t);t->stopped=false;
+        if(t->mpx_owner)mpx_tty_notify(t->mpx_owner,NX_SIGHUP);else signal_group(t->group,NX_SIGHUP);
+        modem_outputs(t,false);
+    }
+    proc_wakeup(&t->input_channel);proc_wakeup(&t->output_channel);
+}
+void tty_modem_status(unsigned signals)
+{if(console.modem_mode==NX_MDM_UART)carrier_update(&console,signals,true);}
+int tty_modem_peer(unsigned signals)
+{
+    if(signals&~31U)return -NX_EINVAL;
+    if(console.modem_mode!=NX_MDM_VIRTUAL)return -NX_EBUSY;
+    carrier_update(&console,signals,true);return 0;
+}
 static void defaults(struct tty *t,unsigned profile)
 {
     t->profile=profile;
@@ -55,7 +80,9 @@ static void defaults(struct tty *t,unsigned profile)
     }
     (void)tty_parameters(profile,&t->settings,&t->parameters);
     flush(t);resume(t);t->column=0;
-    serial_dtr(true);serial_format(t->parameters.rate,t->parameters.format);
+    t->hungup=false;modem_outputs(t,true);
+    carrier_update(t,t->modem_mode==NX_MDM_UART?serial_modem_status():t->modem_signals,false);
+    serial_format(t->parameters.rate,t->parameters.format);
 }
 void tty_init(void)
 {
@@ -73,7 +100,18 @@ int tty_open(v7_dev_t dev, struct user *u, struct tty **out)
     if(console.exclusive && u->u_uid)return -NX_EBUSY;
     if (dev == NX_CTTY_DEV && u->u_ttyp != &console) return -NX_ENXIO;
     if (!console.opens) defaults(&console,profile);
-    ++console.opens;
+    ++console.opens;++console.waiting;
+    while(!console.carrier){
+        if(proc_sleep_interruptible(&console.input_channel,28)){
+            --console.waiting;if(!--console.opens)modem_outputs(&console,false);return -NX_EINTR;
+        }
+    }
+    --console.waiting;
+    if(console.profile==NX_TTY_DH && (console.modem_signals&NX_MDM_SECONDARY)){
+        console.settings.ispeed=console.settings.ospeed=NX_B1200;
+        (void)tty_parameters(console.profile,&console.settings,&console.parameters);
+        serial_format(console.parameters.rate,console.parameters.format);
+    }
     if (!u->u_ttyp) { u->u_ttyp = &console; u->u_ttyd = dev==NX_CTTY_DEV?NX_CONSOLE_DEV:dev; }
     /* V7 ttyopen: a process without a group joins the terminal group,
      * creating it from its PID on the first open. Keep init outside it. */
@@ -87,7 +125,7 @@ int tty_open(v7_dev_t dev, struct user *u, struct tty **out)
 }
 static void start(struct tty *t)
 {
-    if(t->pumping || t->stopped)return;
+    if(t->pumping || t->stopped || !t->carrier)return;
     t->pumping=true;
     if(t->delay_until){if(timer_ticks()<t->delay_until){t->pumping=false;return;}t->delay_until=0;}
     for(unsigned budget=0;budget<64 && t->out_count;++budget){
@@ -106,7 +144,7 @@ void tty_timer(uint64_t now)
 {(void)now;start(&console);input_flow(&console);proc_wakeup(&console.output_channel);if(console.mpx_owner && !console.stopped)mpx_tty_resume(&console);}
 static int drain(struct tty *t)
 {
-    while(t->out_count || t->delay_until || !serial_idle()){start(t);if(!t->out_count && !t->delay_until && serial_idle())break;
+    while(t->out_count || t->delay_until || !serial_idle()){if(!t->carrier)return -NX_EIO;start(t);if(!t->out_count && !t->delay_until && serial_idle())break;
         if(proc_sleep_interruptible(&t->output_channel,29))return -NX_EINTR;
     }
     return 0;
@@ -117,7 +155,7 @@ void tty_close(struct tty *t)
     if(t->opens==1){
         packet_close(t);if(t->stopped)flush_output(t);if(drain(t))flush_output(t);
         flush(t);resume(t);if(drain(t))flush_output(t);t->group=0;t->exclusive=false;
-        if(t->hangup)serial_dtr(false);
+        if(t->hangup)modem_outputs(t,false);
         t->hangup=false;
     }
     --t->opens;
@@ -202,7 +240,7 @@ void tty_receive(uint8_t c)
 {
     ++tty_in;
     struct tty *t = &console;
-    if (!t->opens) return;
+    if (!t->opens || !t->carrier) return;
     if(packet_active(t)){packet_receive(t,c);return;}
     input_high(t);
     if (!(t->settings.flags & NX_RAW)) {
@@ -251,6 +289,7 @@ int64_t tty_io(struct tty *t, struct address_space *vm, uintptr_t address, size_
 {
     if(!write && !count)return 0;
     if(!write && t->mpx_owner)return -NX_ENXIO;
+    if(!t->carrier)return write?-NX_EIO:0;
     if(packet_active(t))return packet_io(t,vm,address,count,write);
     if (!count) return 0;
     size_t done = 0;
@@ -261,7 +300,7 @@ int64_t tty_io(struct tty *t, struct address_space *vm, uintptr_t address, size_
             if (copyin(vm, address + done, bytes, n)) panic("tty write mapping changed");
             for (size_t i = 0; i < n; ++i) {
                 for(;;){
-                    if(packet_active(t))return done+i?(int64_t)(done+i):-NX_EIO;
+                    if(!t->carrier || packet_active(t))return done+i?(int64_t)(done+i):-NX_EIO;
                     if(!t->stopped && output(t,bytes[i]))break;
                     if(proc_sleep_interruptible(&t->output_channel,29))return done+i?(int64_t)(done+i):-NX_EINTR;
                 }
@@ -272,6 +311,7 @@ int64_t tty_io(struct tty *t, struct address_space *vm, uintptr_t address, size_
     }
     if(t->mpx_owner)return -NX_ENXIO;
     while (!t->count){
+        if(!t->carrier)return 0;
         if(proc_sleep_interruptible(&t->input_channel,28))return -NX_EINTR;
         if(t->mpx_owner)return -NX_ENXIO;
         if(packet_active(t))return -NX_EIO;
@@ -293,6 +333,17 @@ static void tcopy(void *destination,const void *source,size_t n)
 int tty_control(struct tty *t,uint64_t request,void *argument)
 {
     switch (request) {
+    case NX_MDM_GET:{
+        struct nx_modem_tty status={t->modem_mode,t->modem_signals,t->modem_outputs,0};
+        tcopy(argument,&status,sizeof(status));return 0;
+    }
+    case NX_MDM_SET:{
+        struct proc *p=proc_current();if(!p || p->p_user->u_uid)return -NX_EPERM;
+        struct nx_modem_tty status;tcopy(&status,argument,sizeof(status));
+        if(status.mode>NX_MDM_VIRTUAL || status.signals || status.outputs || status.reserved)return -NX_EINVAL;
+        t->modem_mode=status.mode;modem_outputs(t,!t->hungup);
+        carrier_update(t,status.mode==NX_MDM_UART?serial_modem_status():0,false);return 0;
+    }
     case NX_TIOCGETP: tcopy(argument,&t->settings,sizeof(t->settings));return 0;
     case NX_TIOCSETP: case NX_TIOCSETN: {
         struct nx_sgttyb settings;
@@ -300,15 +351,24 @@ int tty_control(struct tty *t,uint64_t request,void *argument)
         uint32_t allowed=NX_TANDEM|NX_CBREAK|NX_LCASE|NX_ECHO|NX_CRMOD|NX_RAW|NX_ODDP|NX_EVENP|
             NX_NLDELAY|NX_TBDELAY|NX_CRDELAY|NX_VTDELAY|NX_BSDELAY;
         struct tty_parameters parameters;
-        if(settings.flags&~allowed || tty_parameters(t->profile,&settings,&parameters))return -NX_EINVAL;
+        bool b0=!settings.ispeed && !settings.ospeed && (t->profile==NX_TTY_DH || t->profile==NX_TTY_DZ);
+        if(settings.flags&~allowed || (!b0 && tty_parameters(t->profile,&settings,&parameters)))return -NX_EINVAL;
+        if(b0){
+            if(packet_active(t))return -NX_EBUSY;
+            t->flow_blocked=t->flow_release=false;flush_output(t);flush(t);
+            t->settings=settings;t->hangup=t->hungup=true;
+            modem_outputs(t,false);carrier_update(t,t->modem_signals,false);return 0;
+        }
         if(packet_active(t))return -NX_EBUSY;
-        if(request==NX_TIOCSETP){if(t->stopped)resume(t);int error=drain(t);if(error)return error;}
+        if(request==NX_TIOCSETP && t->carrier){if(t->stopped)resume(t);int error=drain(t);if(error)return error;}
         else if(parameters.rate!=t->parameters.rate || parameters.format!=t->parameters.format){
             while(!serial_idle())if(proc_sleep_interruptible(&t->output_channel,29))return -NX_EINTR;
         }
         if(request==NX_TIOCSETP || ((settings.flags^t->settings.flags)&(NX_RAW|NX_CBREAK|NX_LCASE)))flush(t);
         bool configure=parameters.rate!=t->parameters.rate || parameters.format!=t->parameters.format;
-        t->settings=settings;t->parameters=parameters;input_flow(t);
+        t->settings=settings;t->parameters=parameters;
+        if(t->hungup){t->hungup=false;modem_outputs(t,true);carrier_update(t,t->modem_signals,false);}
+        input_flow(t);
         if(configure)serial_format(parameters.rate,parameters.format);
         if(request==NX_TIOCSETP || (settings.flags&NX_RAW))resume(t);
         return 0;
@@ -344,6 +404,8 @@ int tty_control_size(uint64_t request,bool *get)
 {
     *get=false;
     switch(request){
+    case NX_MDM_GET:*get=true;return sizeof(struct nx_modem_tty);
+    case NX_MDM_SET:return sizeof(struct nx_modem_tty);
     case NX_TIOCGETP:*get=true;return sizeof(struct nx_sgttyb);
     case NX_TIOCSETP:case NX_TIOCSETN:return sizeof(struct nx_sgttyb);
     case NX_TIOCGETC:*get=true;return sizeof(struct nx_tchars);
@@ -374,7 +436,7 @@ int tty_ioctl(struct tty *t,struct address_space *vm,uint64_t request,uintptr_t 
         }
     }
     bool get;int size=tty_control_size(request,&get);if(size<0)return size;
-    uint64_t data=0;int error=0;
+    uint64_t data[2]={0};int error=0;
     if(!get && size)error=copyin(vm,address,&data,size);
     if(!error)error=tty_control(t,request,&data);
     if(!error && get)error=copyout(vm,address,&data,size);
@@ -404,6 +466,7 @@ size_t tty_mpx_read(struct tty *t,uint8_t *bytes,size_t count,bool *eof)
 }
 int64_t tty_mpx_write(struct tty *t,const uint8_t *bytes,size_t count)
 {
+    if(!t->carrier)return -NX_EIO;
     if(packet_active(t))return packet_put(t,bytes,count);
     if(t->stopped)return 0;
     size_t done=0;while(done<count && output(t,bytes[done]))++done;

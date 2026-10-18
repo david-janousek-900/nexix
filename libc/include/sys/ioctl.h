@@ -1,6 +1,7 @@
 #ifndef NEXIX_LIBC_SYS_IOCTL_H
 #define NEXIX_LIBC_SYS_IOCTL_H
 #include <nexix/tty.h>
+#include <nexix/modem.h>
 #include <nexix/packet.h>
 #define DIOCGETP NX_DIOCGETP
 #include <nexix/mpx.h>
