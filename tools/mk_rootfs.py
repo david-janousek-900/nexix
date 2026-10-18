@@ -6,7 +6,7 @@ from mk_v7fs import Image, DIR, REG, CHR, BLK
 COMMANDS = ('sh', 'echo', 'cat', 'ls', 'pwd', 'cp', 'ln', 'rm', 'date', 'touch')
 
 def build(blocks, programs, config):
-    image = Image(blocks)
+    image = Image(blocks,inode_blocks=12)  # Spare inodes for devices and mount fixtures.
     # Fixed inode assignments preserve reproducibility and leave spare inodes.
     entries = {
         '/': 2, '/bin': 3, '/etc': 4, '/dev': 5, '/tmp': 6,
@@ -50,6 +50,10 @@ def build(blocks, programs, config):
         for raw in (False,True):
             number+=1;path='/dev/'+('r' if raw else '')+name+'0';entries[path]=number
             image.inode(number,(CHR if raw else BLK)|0o600,device=((12 if raw else 7)+kind)*256)
+    for path,kind,dev in (('/dev/tapectl',CHR,0x1500),('/dev/ht0',BLK,0x1100),
+                          ('/dev/rht0',CHR,0x1300),('/dev/tm0',BLK,0x1200),('/dev/rtm0',CHR,0x1400)):
+        number+=1;entries[path]=number
+        image.inode(number,kind|0o600,device=dev)
     # Children before parents: directory link counts depend on inode types.
     for path in ('/bin', '/etc', '/dev', '/tmp', '/usr/adm', '/usr', '/'):
         parent = path.rsplit('/', 1)[0] or '/'

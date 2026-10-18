@@ -7,6 +7,7 @@
 #include "exec.h"
 #include "text.h"
 #include "storage.h"
+#include "tape.h"
 #include "memdev.h"
 #include "namespace.h"
 #include "accounting.h"
@@ -15,6 +16,7 @@
 #include <nexix/mpx.h>
 #define NPIPE 32
 #define FILE_STORAGE 0100 /* Native private-device discriminator. */
+#define FILE_TAPE 0200
 struct pipe_buffer { bool active; unsigned readers, writers, head, size; uint8_t bytes[NX_PIPE_BUF]; };
 static struct pipe_buffer pipes[NPIPE];
 static struct file table[V7_NFILE];
@@ -120,9 +122,10 @@ static int file_put(struct file *f)
     if(f->f_flag&V7_FMP) mpx_close(f);
     else if (f->f_private && !(f->f_flag & V7_FPIPE)) {
         if(f->f_flag & FILE_STORAGE) storage_close(f->f_private);
+        else if(f->f_flag & FILE_TAPE) error=tape_close(f->f_private);
         else tty_close(f->f_private);
     }
-    if (f->f_inode) error = files_inode_put(f->f_inode);
+    if (f->f_inode) { int e=files_inode_put(f->f_inode);if(!error)error=e; }
     if (f->f_flag & V7_FPIPE) {
         struct pipe_buffer *p = f->f_private;
         if (f->f_flag & V7_FREAD) --p->readers; else --p->writers;
@@ -180,6 +183,7 @@ static struct inode *cached_inode(struct fs_node ino)
 static int text_write_check(struct fs_node ino)
 {
     struct inode *inode=cached_inode(ino);
+    if(inode && tape_image_busy(inode))return -NX_EBUSY;
     if(!inode||!(inode->i_flag&V7_ITEXT))return 0;
     int error=text_evict(inode);if(error)return error;
     return inode->i_count&&(inode->i_flag&V7_ITEXT)?-NX_ETXTBSY:0;
@@ -242,6 +246,36 @@ int files_account_open(uintptr_t address,struct inode **out)
      * Writes enforce those storage constraints without impersonating the exiter. */
     *out=inode_get(node,&disk);return *out?0:-NX_ENFILE;
 }
+/* A loaded tape pins its regular inode and excludes ordinary writers. */
+int files_tape_backing(uintptr_t address,bool write,struct inode **out)
+{
+    *out=NULL;if(!root)return -NX_ENODEV;
+    struct user *u=proc_current()->p_user;char path[256];
+    int error=path_copy(address,path);if(error)return error;
+    struct fs_node node;error=lookup_path(u,path,&node);if(error)return error;
+    struct v7fs_inode disk;error=node_inode_get(node,&disk);if(error)return error;
+    if((disk.mode&V7_IFMT)!=V7_IFREG)return -NX_EINVAL;
+    if(!v7fs_access(&disk,u->u_uid,u->u_gid,write?6:4))return -NX_EACCES;
+    if(write && node_volume(node)->read_only)return -NX_EROFS;
+    error=text_write_check(node);if(error)return error;
+    struct inode *inode=inode_get(node,&disk);if(!inode)return -NX_ENFILE;
+    for(unsigned i=0;i<V7_NFILE;++i)if(table[i].f_count && table[i].f_inode==inode && (table[i].f_flag&V7_FWRITE)){
+        (void)files_inode_put(inode);return -NX_EBUSY;
+    }
+    *out=inode;return 0;
+}
+int files_tape_read(struct inode *inode,uint64_t offset,void *bytes,size_t size)
+{
+    if(!valid_inode(inode)||offset>INT64_MAX)return -NX_EINVAL;
+    size_t done=0;int error=v7fs_read(node_volume(inode_node(inode)),inode->i_number,(int64_t)offset,bytes,size,&done);
+    return error?error:done!=size?-NX_EIO:0;
+}
+int files_tape_write(struct inode *inode,uint64_t offset,const void *bytes,size_t size)
+{
+    if(!valid_inode(inode)||offset>INT64_MAX)return -NX_EINVAL;
+    size_t done=0;int error=v7fs_write(node_volume(inode_node(inode)),inode->i_number,(int64_t)offset,bytes,size,&done);
+    return error?error:done!=size?-NX_EIO:0;
+}
 int files_account_append(struct inode *inode,const void *bytes,size_t size)
 {
     if(!valid_inode(inode))return -NX_EINVAL;
@@ -278,6 +312,7 @@ int files_core_begin(struct inode **result)
 int files_core_write(struct inode *inode,uint64_t offset,const void *bytes,size_t size)
 {
     if(!valid_inode(inode)||offset>INT64_MAX)return -NX_EINVAL;
+    if(tape_image_busy(inode))return -NX_EBUSY;
     size_t done=0;int error=v7fs_write(node_volume(inode_node(inode)),inode->i_number,(int64_t)offset,bytes,size,&done);
     return error?error:done!=size?-NX_EIO:0;
 }
@@ -320,7 +355,12 @@ static int open_path(struct user *u, uintptr_t address, uint64_t flags, uint64_t
         if (!f->f_inode) error = -NX_ENFILE;
     }
     if (!error && (flags & NX_O_TRUNC) && type == V7_IFREG) error = v7fs_truncate(node_volume(ino), ino.ino);
-    bool storage = type == V7_IFBLK || (type == V7_IFCHR && storage_raw_device(disk.addr[0]));
+    bool tape=(type==V7_IFCHR || type==V7_IFBLK) && tape_matches(disk.addr[0],type==V7_IFCHR);
+    if(!error && tape){
+        error=tape_open(disk.addr[0],type==V7_IFCHR,access,&f->f_private);
+        if(!error)f->f_flag=FILE_TAPE;
+    }
+    bool storage = !tape && (type == V7_IFBLK || (type == V7_IFCHR && storage_raw_device(disk.addr[0])));
     if(!error && storage){
         struct storage_handle *handle;
         error=storage_open(disk.addr[0],type==V7_IFCHR,access!=0,&handle);
@@ -330,7 +370,7 @@ static int open_path(struct user *u, uintptr_t address, uint64_t flags, uint64_t
     if(!error && multiplexor)error=mpx_open(f,path,u);
     bool memory=type==V7_IFCHR && memdev_matches(disk.addr[0]);
     if(!error && memory)error=memdev_open(disk.addr[0],u);
-    if (!error && !storage && !multiplexor && !memory && type == V7_IFCHR) {
+    if (!error && !storage && !tape && !multiplexor && !memory && type == V7_IFCHR) {
         struct tty *tty;
         error = tty_open(disk.addr[0], u, &tty);
         if (!error) f->f_private = tty;
@@ -411,6 +451,15 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
         return mpx_io(f,address,count,write);
     }
     if (f->f_flag & V7_FPIPE) return pipe_io(f, address, count, write);
+    if(f->f_flag & FILE_TAPE){
+        if(count>(uint64_t)(INT64_MAX-f->f_offset))return -NX_EINVAL;
+        int error=0;
+        if(count)error=v7fs_touch(node_volume(inode_node(f->f_inode)),f->f_inode->i_number,write?V7FS_MTIME|V7FS_CTIME:V7FS_ATIME);
+        if(error)return error;
+        int64_t n=tape_io(f->f_private,vm,address,count,write,f->f_offset);
+        if(n>0)f->f_offset+=n;
+        return n;
+    }
     if(f->f_private && (f->f_flag & FILE_STORAGE)){
         bool raw=(f->f_inode->i_mode & V7_IFMT)==V7_IFCHR;
         if(raw && count && ((address|count)&1))return -NX_EFAULT;
@@ -474,7 +523,7 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
 }
 static int64_t seek(struct file *f, int64_t offset, uint64_t whence)
 {
-    if ((f->f_flag & V7_FPIPE) || (f->f_private && !(f->f_flag & FILE_STORAGE))) return -NX_ESPIPE;
+    if ((f->f_flag & V7_FPIPE) || (f->f_private && !(f->f_flag & FILE_STORAGE) && !((f->f_flag&FILE_TAPE)&&tape_seekable(f->f_private)))) return -NX_ESPIPE;
     int64_t base = 0;
     if (whence == NX_SEEK_CUR) base = f->f_offset;
     else if (whence == NX_SEEK_END) {
@@ -643,6 +692,9 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
             u->u_pofile[fd] = request == NX_FIOCLEX ? V7_EXCLOSE : 0;
             return 0;
         }
+        if(f->f_flag&FILE_TAPE){
+            return tape_ioctl(f->f_private,&p->p_vm,request,argument,&f->f_offset);
+        }
         if(f->f_flag&V7_FMP)return mpx_ioctl(f,&p->p_vm,request,argument);
         if (!f->f_private || (f->f_flag & (V7_FPIPE|V7_FMP)) || (f->f_flag & FILE_STORAGE)) return -NX_ENOTTY;
         return tty_ioctl(f->f_private, &p->p_vm, request, argument);
@@ -694,11 +746,12 @@ bool files_info(unsigned i,struct nx_kinfo_file *r)
     if(i>=V7_NFILE || !table[i].f_count)return false;
     const struct file *f=&table[i];
     zero(r,sizeof(*r));r->slot=i+1;r->refs=f->f_count;
-    r->flags=f->f_flag & ~FILE_STORAGE;r->open_flags=f->f_open_flags;
+    r->flags=f->f_flag & ~(FILE_STORAGE|FILE_TAPE);r->open_flags=f->f_open_flags;
     r->offset=f->f_offset;r->inode_id=files_info_inode_id(f->f_inode);
     if(r->inode_id){r->dev=f->f_inode->i_dev;r->ino=f->f_inode->i_number;}
     r->kind=(f->f_flag&V7_FPIPE)?NX_KINFO_FILE_PIPE:
         (f->f_flag&FILE_STORAGE)?NX_KINFO_FILE_STORAGE:
+        (f->f_flag&FILE_TAPE)?NX_KINFO_FILE_TAPE:
         (f->f_flag&V7_FMP)?NX_KINFO_FILE_MPX:
         f->f_private?NX_KINFO_FILE_TTY:
         f->f_inode && (f->f_inode->i_mode&V7_IFMT)==V7_IFCHR && memdev_matches(f->f_inode->i_un.i_rdev)?

@@ -1,3 +1,4 @@
+#include <nexix/tape.h>
 /* Independently specified LP64 record contracts, shared kernel/libc boundaries. */
 #include <sys/types.h>
 #include <mon.h>
@@ -107,3 +108,5 @@ int main(void)
     if (NODEV!=65535 || itod(1)!=2 || itoo(1)!=0 || itod(65535)!=8193 || itoo(65535)!=6) return 2;
     return 0;
 }
+
+_Static_assert(sizeof(struct nx_tape_operation)==8 && offsetof(struct nx_tape_status,position)==24,"tape native ABI");

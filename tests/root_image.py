@@ -91,6 +91,13 @@ class RootImage(unittest.TestCase):
                 self.assertEqual(record[0],(0o20000 if raw else 0o60000)|0o600)
                 self.assertEqual(record[3][0],((12 if raw else 7)+kind)*256)
 
+    def test_tape_devices(self):
+        for path,mode,dev in (('/dev/tapectl',0o20600,0x1500),('/dev/ht0',0o60600,0x1100),
+                              ('/dev/rht0',0o20600,0x1300),('/dev/tm0',0o60600,0x1200),('/dev/rtm0',0o20600,0x1400)):
+            record=inode(lookup(path))
+            self.assertEqual(record[0],mode)
+            self.assertEqual(record[3][0],dev)
+
     def test_storage_devices(self):
         self.assertEqual(inode(lookup('/dev/root'))[0], 0o60600)
         self.assertEqual(inode(lookup('/dev/root'))[3][0], 0)
@@ -108,9 +115,10 @@ class RootImage(unittest.TestCase):
             children = sum(inode(child)[0] & 0o170000 == 0o40000
                            for name, child in entries.items() if name not in ('.','..'))
             self.assertEqual(inode(number)[:2], (0o40755, 2+children))
-        owned = set(range(10))
+        isize=u16(IMAGE,512)
+        owned = set(range(isize))
         allocated = set()
-        for number in range(2, 65):
+        for number in range(2,(isize-2)*8+1):
             if inode(number)[0]:
                 allocated.add(number)
                 contents(number, owned)
@@ -132,7 +140,7 @@ class RootImage(unittest.TestCase):
                 stack = [u32(sector, 2+i*4) for i in range(count)]
         self.assertEqual(owned | free, set(range(len(IMAGE)//512)))
         self.assertEqual(len(free), u32(superblock,418))
-        spare = {i for i in range(3,65) if i not in allocated}
+        spare = {i for i in range(3,(isize-2)*8+1) if i not in allocated}
         self.assertEqual(len(spare), u16(superblock,422))
         cached = {u16(superblock,210+i*2) for i in range(u16(superblock,208))}
         self.assertEqual(cached, spare)

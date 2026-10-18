@@ -18,6 +18,7 @@
 #define NX_KINFO_FILE_TTY 3U
 #define NX_KINFO_FILE_STORAGE 4U
 #define NX_KINFO_FILE_MPX 5U
+#define NX_KINFO_FILE_TAPE 7
 #define NX_KINFO_FILE_MEMORY 6U
 /* Process states and flags preserve V7's meanings, independent of private layouts. */
 #define NX_KPROC_SLEEP 1U

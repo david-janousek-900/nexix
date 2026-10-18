@@ -113,7 +113,7 @@ static v7_pid_t held_owner;
 static v7_pid_t trace_orphan;
 bool root_exec_test_gate(struct interrupt_frame *frame)
 {
-    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x91c)return false;
+    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x91d)return false;
     struct proc *p=proc_current();
     if(frame->rax==0x900){
         frame->rax=(uint64_t)-NX_ENOSYS;return true; /* Retired tracing test hook. */
@@ -271,6 +271,17 @@ bool root_exec_test_gate(struct interrupt_frame *frame)
             }
         }else if(frame->rdi==2)disk_fixture.read_only=!!frame->rsi;
         else panic("invalid disk fixture operation");
+    }
+    else if(frame->rax==0x91d){
+        static struct block_device tape_aux;
+        if(p->p_user->u_uid)panic("unprivileged tape fixture");
+        if(frame->rdi==1){frame->rax=disk_bind(NX_DISK_RP,0,NULL);return true;}
+        int error=ide_init_unit(&tape_aux,1);uint8_t bytes[512];
+        if(!error)error=block_read(&tape_aux,0,1,bytes);
+        const char tag[]="NEXIX_TAPE_TEST_ONLY71";
+        if(!error)for(unsigned i=0;i<sizeof(tag)-1;++i)if(bytes[i]!=(uint8_t)tag[i]){error=-NX_ENXIO;break;}
+        if(!error)error=disk_bind(NX_DISK_RP,0,&tape_aux);
+        frame->rax=error;return true;
     }
     else return false;
     frame->rax=0;return true;

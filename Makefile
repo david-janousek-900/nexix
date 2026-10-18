@@ -376,8 +376,8 @@ build/nexix.elf: build/root_boot.o
 
 build/root_exec_program.o: user/root-exec-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
-build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/memdev_program.o build/disk_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/mpx_tty_program.o build/libc.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/memdev_program.o build/disk_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/mpx_tty_program.o build/libc.a -o $@
+build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/memdev_program.o build/disk_program.o build/tape_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/mpx_tty_program.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/memdev_program.o build/disk_program.o build/tape_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/mpx_tty_program.o build/libc.a -o $@
 build/root_exec_image.o: build/root-exec-test.elf tools/embed_test_elf.py
 	$(PYTHON) tools/embed_test_elf.py $< $@ --ld $(LD) --objcopy $(OBJCOPY)
 OBJECTS += build/root_exec_image.o
@@ -650,9 +650,8 @@ build/setid_probe_program.o: user/setid-probe.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 build/setid-probe.elf: build/crt0.o build/setid_probe_program.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/setid_probe_program.o build/libc.a -o $@
-build/setid_probe_image.o: build/setid-probe.elf
-	$(LD) -r -b binary $< -o build/setid_probe_raw.o
-	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/setid_probe_raw.o $@
+build/setid_probe_image.o: build/setid-probe.elf tools/embed_test_elf.py
+	$(PYTHON) tools/embed_test_elf.py $< $@ --ld $(LD) --objcopy $(OBJCOPY)
 OBJECTS += build/setid_probe_image.o
 build/nexix.elf: build/setid_probe_image.o
 -include build/setid_program.d build/setid_probe_program.d
@@ -1070,3 +1069,26 @@ build/ide-bus-test: tests/ide-bus.c kernel/ide.c kernel/block.c | build/.dir
 test-disk: test-disk-unit test-rootfs test-inventory test-libc-interfaces
 	$(PYTHON) tools/disk_smoke.py $(QEMU) build/test-selftest.iso 16M
 	$(PYTHON) tools/disk_smoke.py $(QEMU) build/test-selftest.iso 128M
+
+# Task 71: sequential ht/tm records backed by regular files.
+build/tape.o: kernel/v7/tape.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+build/tape_device.o: kernel/v7/tape_device.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+OBJECTS += build/tape.o build/tape_device.o
+build/nexix.elf: build/tape.o build/tape_device.o
+build/tape_program.o: user/tape-test.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+-include build/tape.d build/tape_device.d build/tape_program.d
+build/tape-unit-test: tests/tape.c kernel/v7/tape.c kernel/include/tape.h include/nexix/tape.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/tape.c kernel/v7/tape.c -o $@
+.PHONY: test-tape-unit test-tape
+test-tape-unit: build/tape-unit-test build/tape-device-test
+	./build/tape-unit-test
+	./build/tape-device-test
+test-unit: test-tape-unit
+test-tape: test-tape-unit test-rootfs test-inventory test-libc-interfaces
+	$(PYTHON) tools/tape_smoke.py $(QEMU) build/test-selftest.iso 16M
+	$(PYTHON) tools/tape_smoke.py $(QEMU) build/test-selftest.iso 128M
+build/tape-device-test: tests/tape-device.c kernel/v7/tape.c kernel/v7/tape_device.c kernel/include/tape.h include/nexix/tape.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/tape-device.c kernel/v7/tape.c kernel/v7/tape_device.c -o $@

@@ -18,11 +18,13 @@ def address(value):
     return bytes((value >> 16, value & 255, (value >> 8) & 255))
 
 class Image:
-    def __init__(self, blocks):
+    def __init__(self, blocks, inode_blocks=8):
         if not 256 <= blocks <= 65536:
             raise ValueError('fixture volume must have 256..65536 blocks')
         self.blocks = blocks
-        self.isize = 10  # 64 inodes, blocks 2..9
+        if not 1 <= inode_blocks <= 125 or inode_blocks+2 >= blocks:
+            raise ValueError('invalid inode area')
+        self.isize = 2+inode_blocks
         self.bytes = bytearray(blocks * BSIZE)
         self.used = set(range(self.isize))
         self.next_block = self.isize
@@ -119,9 +121,9 @@ class Image:
         superblock[6:8] = short(len(stack))
         for i, block in enumerate(stack):
             superblock[8 + 4 * i:12 + 4 * i] = long(block)
-        spare_inodes = [i for i in range(3, 65) if i not in self.allocated_inodes]
-        superblock[208:210] = short(len(spare_inodes))
-        for i, ino in enumerate(spare_inodes):
+        spare_inodes = [i for i in range(3, (self.isize-2)*8+1) if i not in self.allocated_inodes]
+        superblock[208:210] = short(min(100,len(spare_inodes)))
+        for i, ino in enumerate(spare_inodes[:100]):
             superblock[210 + 2 * i:212 + 2 * i] = short(ino)
         superblock[418:422] = long(len(free_blocks))
         superblock[422:424] = short(len(spare_inodes))

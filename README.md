@@ -124,8 +124,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 2 partial, 1 prototype and 203 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 70 done, 2 in progress
-and 294 to do** after task 70. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 71 done, 2 in progress
+and 293 to do** after task 71. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -289,7 +289,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 68 | V7 serial packet line discipline | Done | [V7 serial packet contract](docs/serial-packets.md); `make test-packet` at 16/128 MiB, host protocol/ownership/UART/libc tests; checksums, negotiation, windows/retries, EOF, mpx ports and last-close cleanup; Git history |
 | 69 | Native memory/special-device interfaces | Done | [V7 memory/special-device contract](docs/memory-devices.md); `make test-memdev`; privileged mem/kmem byte access, backing/page permissions, null aliases, controlling-TTY forwarding and shared offsets; host and 16/128 MiB acceptance; Git history |
 | 70 | Historical disk-controller equivalents | Done | [Native V7 disk families](docs/disk-controllers.md); `make test-disk`; five geometry/unit/partition contracts, bounded recovery, ATA backing, mounted-alias protection and cold-boot persistence at 16/128 MiB; host failure/lifetime tests; Git history |
-| 71 | Sequential tape-device equivalent | To do | ht/tm control operations and file-backed tape marks |
+| 71 | Sequential tape-device equivalent | Done | [HT/TM tape contracts](docs/tape-devices.md); `make test-tape`; regular-file media, raw/buffered records, marks/spacing/rewind, exclusive ownership, bounded recovery and cold-boot persistence at 16/128 MiB; native controls; Git history |
 | 72 | DECtape-device equivalent | To do | tc random-block tape behavior and format fixtures |
 | 73 | Disk ordering/interleave helpers | To do | dsort/dkleave algorithms with native device queues |
 | 74 | Historical terminal-controller equivalents | To do | dc/dh/dz/kl and parity mapped to native TTYs |
