@@ -10189,14 +10189,16 @@
           "name": "passwd",
           "install": "/bin/passwd",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/passwd.c",
+            "Makefile",
+            "docs/multi-user.md"
           ]
         }
       ],
       "priority": 2,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -10249,9 +10251,7 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
+      "blockers": [],
       "unresolved": [
         "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
       ],

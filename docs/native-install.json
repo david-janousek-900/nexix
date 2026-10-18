@@ -787,6 +787,19 @@
         "root": "programs",
         "path": "v7-login.elf"
       }
+    },
+    {
+      "path": "/bin/passwd",
+      "type": "file",
+      "mode": "4755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.passwd",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-passwd.elf"
+      }
     }
   ]
 }

@@ -141,3 +141,24 @@ and getty EOT at 16/128 MiB. Existing shell/storage tests use explicitly generat
 single-user fixtures; the installed seed remains multi-user. Existing working
 disks keep their configuration. To preserve one while testing a fresh seed, use
 an unused path with `make DISK_IMAGE=build/fresh.img run`.
+
+Task 102 installs V7 `/bin/passwd` set-ID root (04755). It keeps real-UID account
+authorization, old-password checks, strength/confirmation prompts, DES salts and
+the original command's exit status 1, including after successful updates. Native
+declarations and failed password-input/stdio operations are checked.
+
+The native update path acquires `/etc/ptmp` with O_EXCL, writes and closes a full
+candidate, and publishes it using V7 link/unlink operations. A temporary
+`/etc/opasswd` hard link preserves the original while its directory name changes.
+Failed publication restores the original; failed rollback retains both recovery
+copies and reports the backup path. An existing backup is never overwritten.
+Successful updates restore root:root 0644 and remove lock/backup names. Syncs bound
+the publication stages, but the two name-changing operations are not an atomic
+rename. An interrupted update may require root to inspect `/etc/opasswd` and
+`/etc/ptmp` before restoring a missing `/etc/passwd` with the retained `ln` command.
+
+`make test-passwd-command` injects failed backup, unlink, publish and rollback
+operations around real isolated host files. Guest runs at 16/128 MiB exercise
+non-owner denial, wrong old passwords, confirmation mismatch, lock/backup
+conflicts, ordinary updates, root reset, final metadata and authentication with
+the changed password. Plaintext input remains behind getpass's echo suppression.

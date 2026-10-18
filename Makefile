@@ -1367,3 +1367,23 @@ build/init-control.elf: build/crt0.o build/init-control.o build/libc.a user/user
 test-multiuser-init: rootfs iso build/init-control.elf
 	$(PYTHON) tools/multiuser_init_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/multiuser_init_smoke.py $(QEMU) build/nexix.iso 128M
+
+build/v7-password-file.o: user/v7/password-file.c user/v7/password-file.h | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+-include build/v7-password-file.d
+build/v7-passwd.elf: build/v7-password-file.o
+build/password-file-unit.o: user/v7/password-file.c user/v7/password-file.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -D_DEFAULT_SOURCE -Dchown=nx_password_chown -Dsync=nx_password_sync -Dlink=nx_password_link -Dunlink=nx_password_unlink -c $< -o $@
+build/password-file-test: tests/password-file.c build/password-file-unit.o
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror $^ -o $@
+build/password-state.o: tests/password-state.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/password-state.elf: build/crt0.o build/password-state.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+.PHONY: test-passwd-command-unit test-passwd-command
+test-passwd-command-unit: build/password-file-test
+	./build/password-file-test
+test-unit: test-passwd-command-unit
+test-passwd-command: test-passwd-command-unit rootfs iso build/password-state.elf
+	$(PYTHON) tools/passwd_command_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/passwd_command_smoke.py $(QEMU) build/nexix.iso 128M
