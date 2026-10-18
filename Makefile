@@ -1283,3 +1283,13 @@ test-unit: test-terminal-config-unit
 test-terminal-config: test-terminal-config-unit rootfs iso build/serial-secondary-guest.elf
 	$(PYTHON) tools/serial_secondary_smoke.py $(QEMU) build/nexix.iso 16M --packaged
 	$(PYTHON) tools/serial_secondary_smoke.py $(QEMU) build/nexix.iso 128M --packaged
+
+# Task 93: real concurrent shells and repeated resource recovery.
+build/terminal-shells.o: tests/terminal-shells.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/terminal-shells.elf: build/crt0.o build/terminal-shells.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+.PHONY: test-two-terminals
+test-two-terminals: test-serial-secondary test-terminal-sessions test-terminal-config build/terminal-shells.elf
+	$(PYTHON) tools/terminal_shells_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/terminal_shells_smoke.py $(QEMU) build/nexix.iso 128M

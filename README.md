@@ -131,8 +131,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 2 partial, 1 prototype and 203 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 83 done, 2 in progress
-and 281 to do** after task 92. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 84 done, 2 in progress
+and 280 to do** after task 93. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -323,7 +323,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 90 | COM2 hardware initialization and interrupt routing | Done | Detected COM2 16550 transport at 0x2f8, IRQ3/vector 35, independent TX ring, RX errors and modem routing; `make test-serial-secondary` at 16/128 MiB; COM1 TTY/rootfs/packet regressions; Git history |
 | 91 | Independent controlling terminals and per-TTY signals | Done | Per-line controlling terminals/groups and V7 fork/exec/close lifecycle validated on both UARTs; `make test-terminal-sessions` at 16/128 MiB; cooked editing, empty lines, EOF, SIGINT and XOFF/XON isolation; [contract](docs/multi-terminal.md); Git history |
 | 92 | Package ttyS1 and terminal configuration | Done | Full-root ttyS1 node and disabled V7 ttys records; default COM2 pipe and `make terminal` connector; `make test-terminal-config` at 16/128 MiB, staging and bootstrap separation checks; [usage](docs/multi-terminal.md); Git history |
-| 93 | Two-terminal end-to-end acceptance | To do | Old 26; concurrent input/output and resource recovery |
+| 93 | Two-terminal end-to-end acceptance | Done | Concurrent native V7 shells, partial input, ctty writes, foreground Ctrl-C, empty lines, EOF and four restarts; exact process/file/inode/text/free-page recovery after each pair; `make test-two-terminals` at 16/128 MiB; Git history |
 
 ### Multi-user startup and accounts
 

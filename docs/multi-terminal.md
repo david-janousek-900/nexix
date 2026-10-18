@@ -81,3 +81,19 @@ The login prompt is a later multi-user milestone, not claimed by this task.
 `make test-terminal-config` verifies the packaged node's type, mode, owner and
 device number plus actual binary I/O at 16/128 MiB. Host connector tests verify
 that non-FIFO paths survive errors and that disconnect leaves QEMU's pipe intact.
+
+Task 93's `make test-two-terminals` combines the UART, discipline and device
+acceptance with two concurrent, unmodified native V7 Bourne shells. A private init
+fixture starts and reaps four pairs of shells; it does not replace production
+init's forthcoming multi-user policy. Partial input on COM1 cannot hold up COM2.
+Both shells run filesystem commands, write through `/dev/tty`, process empty
+lines, and exit on Ctrl-D. Interrupting a foreground cat on COM1 leaves COM2
+usable, and closing the first shell leaves the second running.
+
+After every pair exits, the fixture compares process, file, referenced-inode and
+text counts and free physical pages with its initial snapshot, using the existing
+root-only kinfo ABI. A mismatch fails acceptance. Runs use disposable IDE disks
+and separate terminal/QEMU logs at 16/128 MiB; the user's working disk is never
+attached. Together with task 91's XOFF/XON and binary UART acceptance, this closes
+the independent-terminal milestone. Authentication, accounting and production
+getty respawn remain tasks 94–108.
