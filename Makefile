@@ -13,7 +13,13 @@ INSTALL_CONFIG ?= rootfs
 INSTALL_STAGE ?= build/stage
 FULL_ROOT_IMAGE ?= build/distribution.img
 CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-stack-protector -fno-pie -m64 -mno-red-zone -mgeneral-regs-only -fno-asynchronous-unwind-tables -Ikernel/include -Iinclude -MMD -MP
-OBJECTS = build/packet.o build/packet_tty.o build/packet_image.o build/boot.o build/main.o build/serial_secondary.o build/serial.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o build/elf.o build/exec.o build/exec_test.o build/exec_image.o build/libc_test.o build/libc_image.o build/block.o build/v7fs.o build/fs_test.o build/root_image.o build/files.o build/files_test.o build/files_image.o build/tty.o build/tty_test.o build/tty_image.o build/signals.o build/signals_test.o build/signals_image.o build/catalog.o build/v7_userland_test.o build/v7_test_image.o
+OBJECTS = build/packet.o build/packet_tty.o build/packet_image.o build/boot.o build/main.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o build/elf.o build/exec.o build/exec_test.o build/exec_image.o build/libc_test.o build/libc_image.o build/block.o build/v7fs.o build/fs_test.o build/root_image.o build/files.o build/files_test.o build/files_image.o build/tty.o build/tty_test.o build/tty_image.o build/signals.o build/signals_test.o build/signals_image.o build/catalog.o build/v7_userland_test.o build/v7_test_image.o
+-include build/native-config.mk
+OBJECTS += $(NATIVE_CONFIG_OBJECTS)
+
+build/native-config.mk: config/kernel.json tools/mkconf.py
+	$(PYTHON) tools/mkconf.py config/kernel.json $@
+
 HOST_CC ?= cc
 .DEFAULT_GOAL := all
 -include $(OBJECTS:.o=.d)
@@ -439,7 +445,7 @@ disk: $(FULL_ROOT_IMAGE) tools/seed_disk.py
 	$(PYTHON) tools/seed_disk.py --seed "$(FULL_ROOT_IMAGE)" --output "$(DISK_IMAGE)"
 build/ide.o: kernel/ide.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
-OBJECTS += build/ide.o
+
 build/nexix.elf: build/ide.o
 -include build/ide.d
 test-storage: rootfs iso
@@ -463,7 +469,7 @@ build/rtc.o: kernel/arch/x86_64/rtc.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 build/clock.o: kernel/clock.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
-OBJECTS += build/rtc.o build/clock.o
+OBJECTS += build/clock.o
 build/nexix.elf: build/rtc.o build/clock.o
 -include build/rtc.d build/clock.d
 build/rtc-test: tests/rtc.c tests/rtc/io.h kernel/arch/x86_64/rtc.c kernel/clock.c kernel/include/clock.h | build/.dir
@@ -488,7 +494,7 @@ test: test-time
 # Task 25: eager native x87/MMX/SSE state management.
 build/fpu.o: kernel/arch/x86_64/fpu.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
-OBJECTS += build/fpu.o
+
 build/nexix.elf: build/fpu.o
 -include build/fpu.d
 build/fpu_program.o: user/fpu-test.S include/nexix/syscall.h | build/.dir
@@ -1455,3 +1461,8 @@ build/runtime-equivalent.elf: build/crt0.o build/runtime-equivalent.o build/libc
 test-runtime-equivalent: build/nexix.iso build/runtime-equivalent.elf stage
 	$(PYTHON) tools/runtime_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/runtime_smoke.py $(QEMU) build/nexix.iso 128M
+
+.PHONY: test-mkconf
+test-mkconf:
+	$(PYTHON) tests/test_mkconf.py
+test-unit: test-mkconf

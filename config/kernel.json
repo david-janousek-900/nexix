@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "architecture": "x86_64",
+  "root": "ide-with-bootstrap-fallback",
+  "memory": "resident",
+  "drivers": ["console", "terminal2", "ide", "rtc", "fpu"]
+}

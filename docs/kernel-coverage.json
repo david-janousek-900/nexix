@@ -63,13 +63,15 @@
       "native": [
         "Makefile",
         "kernel/v7/catalog.c",
-        "kernel/v7/storage.c"
+        "kernel/v7/storage.c",
+        "config/kernel.json",
+        "tools/mkconf.py"
       ],
       "tasks": [
         53,
         78
       ],
-      "note": "Native block/raw device routing exists. Historical objects/archives are provenance, not executable native inputs; native configuration generation and recipes remain pending."
+      "note": "Task 78 validates the native x86_64 required-driver/root/resident-memory profile and generates the driver object list consumed by the kernel link. Native ELF recipes replace historical PDP-11 archives, generated vectors and mkconf executable; all historical configuration responsibilities are mapped in docs/kernel-configuration.md. Host invalid-profile tests and RAM/IDE QEMU acceptance cover the production profile."
     },
     {
       "id": "filesystem",
