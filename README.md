@@ -140,8 +140,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 4 partial, 1 prototype and 190 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 99 done, 2 in progress
-and 265 to do** after task 108. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 100 done, 2 in progress
+and 264 to do** after task 87. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -326,7 +326,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 84 | Scalable V7 image builder | Done | [Image sizing and limits](docs/image-builder.md); automatic volume/inode sizing, free-space budgets, mapped large images and atomic output; 64 MiB/4096-inode host and 16/128 MiB QEMU acceptance; `make test-image-builder`; Git history |
 | 85 | Separate full IDE root from embedded bootstrap/test root | Done | [Root image profiles](docs/root-images.md); fixed bootstrap manifest/config and 512 KiB RAM image, independent full IDE seed and atomic non-clobber disk creation; kernel hash isolation and cold boots at 16/128 MiB; `make test-root-separation`; Git history |
 | 86 | Per-component guest acceptance harness | Done | [Guest acceptance](docs/guest-acceptance.md); component suites, disposable staged IDE roots, serial fixtures, output/status assertions and JSON/log reports; `make test-guest-harness`; Git history |
-| 87 | Historical source/data archive extraction | To do | Validate all six source archives and six lesson archives; no host-format assumptions |
+| 87 | Historical source/data archive extraction | Done | Validated PDP-11 ar reader/extractor; all twelve source/lesson archives round-trip with per-member provenance; make test-v7-archives; docs/source-archives.md; Git history |
 | 88 | Resolve missing referenced support inputs | To do | Track bc lib.b and optional lex nrform/ebcform individually; recover or obtain explicit disposition |
 | 89 | Separate per-terminal queues, settings and ownership | Done | Independent TTY queues/settings/ownership with bound transports; `make test-tty-lines-unit`; COM1 controller/modem/mpx regressions and QEMU TTY/packet acceptance; Git history |
 | 90 | COM2 hardware initialization and interrupt routing | Done | Detected COM2 16550 transport at 0x2f8, IRQ3/vector 35, independent TX ring, RX errors and modem routing; `make test-serial-secondary` at 16/128 MiB; COM1 TTY/rootfs/packet regressions; Git history |

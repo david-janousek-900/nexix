@@ -1426,3 +1426,14 @@ test-multiuser-acceptance: rootfs iso build/session-resources.elf
 	$(PYTHON) tools/multiuser_acceptance.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/multiuser_acceptance.py $(QEMU) build/nexix.iso 128M
 test-multiuser: test-two-terminals test-account-config test-stty test-tty-command test-mesg test-getty test-login test-session-accounting test-multiuser-init test-passwd-command test-su test-newgrp test-who test-write test-wall test-multiuser-acceptance
+
+.PHONY: test-v7-archives extract-v7-archives
+test-v7-archives:
+	$(PYTHON) tests/test_v7_archive.py
+
+test-unit: test-v7-archives
+
+# Explicit extraction refuses to overwrite an existing directory.
+extract-v7-archives:
+	$(PYTHON) tools/v7_archive.py --output $(ARCHIVE_OUTPUT)
+ARCHIVE_OUTPUT ?= build/v7-archives
