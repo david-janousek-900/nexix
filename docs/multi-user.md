@@ -16,7 +16,8 @@ Fresh development disks provide these login credentials when login is installed:
 | bob | bob | 101:100 | /home/bob |
 
 The two user homes are mode 0700 with their respective ownership. Their mode-0644
-profiles set PATH and TZ, preserving the HOME supplied by login. Root retains its
+profiles set PATH and TZ, preserving the HOME supplied by login. The shared V7
+`/tmp` is mode 0777 for unprivileged temporary files. Root retains its
 existing profile. TZ defaults to `GMT0`; native time-zone handling is documented
 in [timekeeping](time.md). `/etc/motd` identifies the development system.
 `/etc/rc` runs startup commands; init supervises terminal processes. `/etc/ttys`
@@ -171,3 +172,16 @@ The port checks password-input and credential failures and uses a native null
 vararg terminator. `make test-su` checks wrong/unknown credentials, hidden input,
 root bypass, real/effective IDs, inherited HOME/cwd, nested shells and failed exec
 at 16/128 MiB.
+
+Task 104 installs V7 `/bin/newgrp` set-ID root. Membership and the special `other`
+group follow the source. Its historical group-password branch applies when a
+member's account has an empty password. Denial and usage errors still replace
+the shell with unchanged credentials, rather than returning a modern failure
+status. The port checks password/UID-drop errors and closes all native extra
+descriptors 3–19. The V7 shell's `newgrp` builtin uses exec, so the replacement
+keeps the login PID/group and inherited HOME/cwd.
+
+`make test-newgrp` checks membership, `other`, denial, unknown group, usage,
+real/effective IDs, inherited environment, closure of an inherited fd 19, and
+wrong/correct group passwords for a private blank-password account. Tests use
+actual login and builtin dispatch at 16/128 MiB.

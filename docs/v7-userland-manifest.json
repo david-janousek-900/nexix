@@ -120,8 +120,8 @@
     {
       "id": "accounts",
       "category": "configuration",
-      "status": "partial",
-      "description": "Native account databases, DES authentication, owned homes/profiles and automatic two-line getty/login supervision are installed and tested. Password/group switching commands are being integrated.",
+      "status": "supplied",
+      "description": "Native account databases, DES authentication, owned homes/profiles, shared V7 temporary files, automatic two-line getty/login, passwd, su and newgrp are installed and tested.",
       "evidence": [
         "rootfs/etc/passwd",
         "docs/userland.md",
@@ -133,7 +133,11 @@
         "tests/account-config.c",
         "user/v7/cmd/login.c",
         "user/v7/cmd/getty.c",
-        "tools/multiuser_init_smoke.py"
+        "tools/multiuser_init_smoke.py",
+        "user/v7/cmd/passwd.c",
+        "user/v7/cmd/su.c",
+        "user/v7/cmd/newgrp.c",
+        "tools/newgrp_smoke.py"
       ],
       "locations": [
         "/etc/passwd",
@@ -9770,14 +9774,16 @@
           "name": "newgrp",
           "install": "/bin/newgrp",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/newgrp.c",
+            "Makefile",
+            "docs/multi-user.md"
           ]
         }
       ],
       "priority": 2,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -9830,9 +9836,7 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
+      "blockers": [],
       "unresolved": [
         "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
       ],

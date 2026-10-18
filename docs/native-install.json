@@ -38,7 +38,7 @@
     {
       "path": "/tmp",
       "type": "directory",
-      "mode": "0755",
+      "mode": "0777",
       "uid": 0,
       "gid": 0,
       "component": "distribution.config"
@@ -812,6 +812,19 @@
       "source": {
         "root": "programs",
         "path": "v7-su.elf"
+      }
+    },
+    {
+      "path": "/bin/newgrp",
+      "type": "file",
+      "mode": "4755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.newgrp",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-newgrp.elf"
       }
     }
   ]

@@ -1396,3 +1396,8 @@ build/credentials.elf: build/crt0.o build/credentials.o build/libc.a user/user.l
 test-su: rootfs iso build/credentials.elf
 	$(PYTHON) tools/su_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/su_smoke.py $(QEMU) build/nexix.iso 128M
+
+.PHONY: test-newgrp
+test-newgrp: rootfs iso build/credentials.elf
+	$(PYTHON) tools/newgrp_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/newgrp_smoke.py $(QEMU) build/nexix.iso 128M

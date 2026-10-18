@@ -24,6 +24,7 @@ int main(void)
     struct group *g=getgrnam("staff");CHECK(g && g->gr_gid==100 && !strcmp(g->gr_mem[0],"root") && !strcmp(g->gr_mem[1],"alice") && !strcmp(g->gr_mem[2],"bob") && !g->gr_mem[3]);endgrent();
     const char *config[]={"/etc/passwd","/etc/group","/etc/ttys","/etc/rc","/etc/motd"};
     for(unsigned n=0;n<5;++n)CHECK(!stat(config[n],&s) && S_ISREG(s.st_mode) && (s.st_mode&0777)==0644 && !s.st_uid && !s.st_gid);
+    CHECK(!stat("/tmp",&s) && s.st_mode==(S_IFDIR|0777));
     for(unsigned n=1;n<3;++n){
         pid_t pid=fork();CHECK(pid>=0);
         if(!pid){
@@ -33,6 +34,7 @@ int main(void)
             if(creat("/etc/forbidden",0600)!=-1 || errno!=EACCES)_exit(5);
             fd=open("/etc/passwd",O_RDONLY);if(fd<0 || close(fd))_exit(6);
             fd=open(".profile",O_RDONLY);if(fd<0 || close(fd))_exit(7);
+            fd=creat("/tmp/account-temp",0600);if(fd<0 || close(fd) || unlink("/tmp/account-temp"))_exit(8);
             _exit(0);
         }
         int status;CHECK(wait(&status)==pid && status==0);

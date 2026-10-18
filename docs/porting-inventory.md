@@ -12,7 +12,7 @@ contains 1,121 files and its original 174 component records. The full audit adds
 installed scripts, additional games, the root diagnostic source, kernel/boot
 references, and supporting-data groups. All archive contents are preserved.
 
-**init, sh, echo, cat, ls, pwd, cp, ln, rm, date, touch, stty, tty, mesg, getty, login, passwd and su** are installed native ports.
+**init, sh, echo, cat, ls, pwd, cp, ln, rm, date, touch, stty, tty, mesg, getty, login, passwd, su and newgrp** are installed native ports.
 Native libc is partial. The archive's **213 installed program paths** are listed
 separately; scripts and old executables in reference/v7 are not installed Nexix
 ports. **13 binary-only program components** are blocked pending source recovery
@@ -201,7 +201,7 @@ their sources alone does not provide a working native equivalent.
 | `floating-point` | partial | Native FP process/signal state, binary64 helpers, decimal formatting and retained libm C sources are implemented; complete libc coverage and installed math headers/archive remain pending. |
 | `wall-clock` | supplied | RTC initializes the UTC system clock; inode timestamps and sync superblock time use that clock and persist in the existing V7 disk encoding. |
 | `timezone` | supplied | Native time conversion and configurable TZ support fixed offsets, one-hour DST, explicit M rules and historical V7 US defaults; see time.md for the supported grammar. |
-| `accounts` | partial | Native passwd/group, owned homes/profiles, DES authentication and automatic getty/login installed; remaining account commands being integrated; [configuration](multi-user.md) |
+| `accounts` | supplied | Native passwd/group, owned homes/profiles, shared temporary files, DES authentication, automatic getty/login and passwd/su/newgrp installed and tested; [configuration](multi-user.md) |
 | `multi-tty` | supplied | Independent COM1/COM2, controlling terminals, signals/flow isolation and repeated two-shell resource recovery; production login supervision tracked separately. |
 | `accounting` | partial | Kernel exit accounting and privileged acct control exist; native login/logout utmp/wtmp integration is tested with concurrent sessions. Accton/sa command ports remain pending. |
 | `kernel-information` | supplied | Versioned privileged native process/file/inode/text/mount/memory/I/O snapshots replace historical kernel-memory layouts. Diagnostic command ports remain pending. |

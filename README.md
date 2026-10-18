@@ -126,15 +126,15 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 18 native programs are
-installed: **init, sh, echo, cat, ls, pwd, cp, ln, rm, date, touch, stty, tty, mesg, getty, login, passwd and su**.
+to multi-user V7 login with persistent IDE storage. 19 native programs are
+installed: **init, sh, echo, cat, ls, pwd, cp, ln, rm, date, touch, stty, tty, mesg, getty, login, passwd, su and newgrp**.
 The inventory accounts for **217 components, 2,144 distribution files and
-35 supporting/platform requirements**. Its component statuses are 18 implemented,
-4 partial, 1 prototype and 194 not ported; importing reference inputs does not
+35 supporting/platform requirements**. Its component statuses are 19 implemented,
+4 partial, 1 prototype and 193 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 94 done, 2 in progress
-and 270 to do** after task 103. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 95 done, 2 in progress
+and 269 to do** after task 104. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -341,7 +341,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 101 | Complete multi-user init startup and respawn | Done | Automatic full-disk getty/login on both lines; source init rc/respawn/reload, checked line failures, distinct groups, group cleanup, preserved accounting and single-user recovery; `make test-multiuser-init` at 16/128 MiB; explicit single-user regression fixtures; Git history |
 | 102 | Port passwd | Done | Retained set-ID passwd, real-UID authorization, old/new password prompts and historical status; exclusive lock, recoverable V7 link publication and checked I/O; fault injection and changed-password login/mode acceptance; `make test-passwd-command` at 16/128 MiB; Git history |
 | 103 | Port su | Done | Retained set-ID su with original environment/cwd preservation and target shell; checked credentials, hidden/wrong passwords, root bypass, real/effective IDs, nested sessions and failed shell; `make test-su` at 16/128 MiB; Git history |
-| 104 | Port newgrp | To do | Group authorization and replacement shell |
+| 104 | Port newgrp | Done | Retained set-ID newgrp membership/other/password rules and replacement shell; checked UID drop, all native extra descriptors closed, shared V7 /tmp prerequisite; `make test-newgrp` at 16/128 MiB including real group passwords; Git history |
 | 105 | Port who | To do | Active users and session accounting |
 | 106 | Port write | To do | Cross-terminal delivery and permission denials |
 | 107 | Port wall | To do | Broadcast to logged-in users |
