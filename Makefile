@@ -1336,3 +1336,12 @@ build/getty-handoff.elf: build/crt0.o build/getty-handoff.o build/libc.a user/us
 test-getty: rootfs iso build/getty-handoff.elf
 	$(PYTHON) tools/getty_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/getty_smoke.py $(QEMU) build/nexix.iso 128M
+
+build/login-identity.o: tests/login-identity.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/login-identity.elf: build/crt0.o build/login-identity.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+.PHONY: test-login
+test-login: rootfs iso build/login-identity.elf test-libc-interfaces
+	$(PYTHON) tools/login_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/login_smoke.py $(QEMU) build/nexix.iso 128M

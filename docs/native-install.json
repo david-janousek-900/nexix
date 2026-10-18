@@ -774,6 +774,19 @@
         "root": "programs",
         "path": "v7-getty.elf"
       }
+    },
+    {
+      "path": "/bin/login",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.login",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-login.elf"
+      }
     }
   ]
 }

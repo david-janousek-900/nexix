@@ -125,15 +125,15 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The reviewed implementation baseline is commit `fa6076d`. Nexix boots into a working
-single-user V7 shell with persistent IDE storage. 15 native programs are
-installed: **init, sh, echo, cat, ls, pwd, cp, ln, rm, date, touch, stty, tty, mesg and getty**.
+single-user V7 shell with persistent IDE storage. 16 native programs are
+installed: **init, sh, echo, cat, ls, pwd, cp, ln, rm, date, touch, stty, tty, mesg, getty and login**.
 The inventory accounts for **217 components, 2,144 distribution files and
-35 supporting/platform requirements**. Its component statuses are 15 implemented,
-4 partial, 1 prototype and 197 not ported; importing reference inputs does not
+35 supporting/platform requirements**. Its component statuses are 16 implemented,
+4 partial, 1 prototype and 196 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 89 done, 2 in progress
-and 275 to do** after task 98. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 90 done, 2 in progress
+and 274 to do** after task 99. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -335,7 +335,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 96 | Port tty | Done | Retained tty command installed with fd-0 identity and original -s behavior; COM1/COM2, piped output, regular-file and pipe input checked with exact status/output; `make test-tty-command` at 16/128 MiB; Git history |
 | 97 | Port mesg | Done | Retained mesg with V7 mode/status behavior; per-line permission changes, non-TTY/usage errors and real non-owner chmod denial; `make test-mesg` at 16/128 MiB; Git history |
 | 98 | Port getty | Done | Retained getty tables/editing/exec with native 115200 profile, Ctrl-C, clean ASCII and bounded name terminator; private login handoff, EOT, editing/case/length and speed-cycle acceptance on both UARTs; `make test-getty` at 16/128 MiB; Git history |
-| 99 | Port login authentication and credentials | To do | Correct/wrong passwords, home, shell, UID/GID and environment |
+| 99 | Port login authentication and credentials | Done | Retained login with DES retries, checked credential drop, home, environment, motd and shell exec; native execlp consumer gap closed; hidden-password, UID/GID/cwd/umask, user shell and EOF acceptance; `make test-login` at 16/128 MiB; Git history |
 | 100 | Integrate login/logout utmp and wtmp | To do | Records across concurrent sessions; native format documented |
 | 101 | Complete multi-user init startup and respawn | To do | Existing init port extended; rc, ttys changes, logout and single-user recovery |
 | 102 | Port passwd | To do | Password updates, authorization and recovery after failures |

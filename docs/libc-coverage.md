@@ -83,6 +83,11 @@ va_list packets; see [stdio compatibility](stdio-compat.md).
 
 ## General helpers
 
+Task 99 adds the V7 `execlp` entry point from `gen/execvp.c` with native varargs.
+It uses the existing bounded argument list and PATH-search implementation. Login
+acceptance executes an ELF shell by a bare name and checks argv/environment after
+exec; wider execvp script/fallback compatibility remains part of consumer closure.
+
 ctype.h retains V7 classification bits, ASCII table entries and arithmetic
 toupper/tolower macros. Callers test islower/isupper before converting, as in
 the original header. The table has zero entries for high bytes and EOF; native

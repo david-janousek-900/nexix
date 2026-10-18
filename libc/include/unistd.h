@@ -64,6 +64,7 @@ gid_t getegid(void);
 int execve(const char *path, char *const argv[], char *const envp[]);
 int execle(const char *, const char *, ...);
 int execl(const char *, const char *, ...);
+int execlp(const char *, const char *, ...);
 int execvp(const char *, char *const []);
 int execv(const char *path, char *const argv[]);
 int pkon(int fd,int size);

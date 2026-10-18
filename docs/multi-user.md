@@ -77,3 +77,18 @@ IDE root. It verifies argv and cooked settings at the exec boundary, clean promp
 erase/kill, uppercase input, the full name bound, empty input, zero-byte speed
 cycling, EOT exit and both UARTs. Authentication is implemented separately in task
 99; production init supervision and respawn are task 101.
+
+Task 99 installs V7 `/bin/login`: DES password checking and retry, home selection,
+tty ownership, UID/GID transition, HOME/PATH, umask, motd and login-shell exec.
+The port uses the native setpwent declaration, terminates the eight-byte login
+name before string lookup, checks password/credential errors, and maps the source
+nice reset to the native bounded increment. Failed shell exec exits unsuccessfully.
+The missing V7 `execlp` libc entry point is supplied with native varargs and the
+existing PATH-search implementation; login's bare-shell fixture exercises it.
+
+`make test-login` checks wrong/unknown passwords without echo, retries, a missing
+home, and a private shell's real/effective IDs, cwd, HOME/PATH, tty ownership and
+umask. It then starts the real V7 user shell in Alice's home and checks clean
+logout and username EOF. Runs use disposable IDE volumes at 16/128 MiB. Source
+login record writes are present; concurrent accounting and logout integration
+are accepted in task 100. Automatic getty supervision remains task 101.
