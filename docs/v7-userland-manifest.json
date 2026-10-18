@@ -121,7 +121,7 @@
       "id": "accounts",
       "category": "configuration",
       "status": "partial",
-      "description": "Native passwd/group databases, locked service identities, development users, owned homes and profiles are installed and tested. Getty/login authentication and account commands are being integrated.",
+      "description": "Native account databases, DES authentication, owned homes/profiles and automatic two-line getty/login supervision are installed and tested. Password/group switching commands are being integrated.",
       "evidence": [
         "rootfs/etc/passwd",
         "docs/userland.md",
@@ -130,7 +130,10 @@
         "rootfs/etc/group",
         "rootfs/user-profile",
         "docs/multi-user.md",
-        "tests/account-config.c"
+        "tests/account-config.c",
+        "user/v7/cmd/login.c",
+        "user/v7/cmd/getty.c",
+        "tools/multiuser_init_smoke.py"
       ],
       "locations": [
         "/etc/passwd",
@@ -6892,7 +6895,9 @@
           "role": "installed",
           "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "reference/v7/usr/src/cmd/cmake",
+            "docs/multi-user.md",
+            "tools/multiuser_init_smoke.py"
           ]
         }
       ],
@@ -6950,7 +6955,7 @@
         }
       ],
       "blockers": [
-        "Retained native port covers current acceptance tests; wider V7 behavior still needs auditing."
+        "Remaining complete-distribution consumer audits are tracked separately; native multi-user init acceptance is implemented."
       ],
       "unresolved": [
         "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
@@ -18798,7 +18803,7 @@
       "dependencies": [],
       "reference_includes": [],
       "blockers": [
-        "Native passwd/group/ttys/rc, profiles, homes and utmp/wtmp placeholders are packaged; remaining historical configuration assets and consuming services still require integration."
+        "Native account/startup configuration is integrated; /etc/mtab remains with mount/umount tasks 220/221 and /etc/ddate with dump task 232."
       ],
       "unresolved": [
         "Audit native API/format compatibility and remaining transitive dependencies."

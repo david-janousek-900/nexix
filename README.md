@@ -6,16 +6,16 @@ Nexix ports UNIX Seventh Edition (V7) to x86_64 and adds features including TCP/
 It preserves V7 source and behavior where practical, with native ELF64 programs
 rebuilt from source rather than PDP-11 binary compatibility.
 
-Nexix now boots into the rebuilt V7 Bourne shell on COM1. The kernel mounts a
-persistent IDE-backed V7 filesystem and launches `/etc/init` as
-PID 1. Init starts the single-user shell; native ELF64 programs execute from
-filesystem paths. See [booting Nexix](docs/booting.md).
+Fresh Nexix installations boot to `login:` on COM1 and COM2. The kernel mounts a
+persistent IDE-backed V7 filesystem and launches `/etc/init` as PID 1. Init runs
+rc and supervises the rebuilt V7 getty/login and Bourne shell; native ELF64
+programs execute from filesystem paths. See [booting Nexix](docs/booting.md).
 
 The kernel provides protected x86_64 address spaces, guarded kernel stacks,
 physical-page allocation, scheduling, timer preemption, eager fork, exit/wait
 and orphan reparenting. Its native syscall ABI validates user-memory access.
 File descriptors support regular files, directories, links, pipes, permissions
-and descriptor ownership across fork/exec/exit. COM1 provides cooked editing,
+and descriptor ownership across fork/exec/exit. Both UART terminals provide cooked editing,
 raw/cbreak modes, echo, flow control and controlling-terminal signals.
 
 Native libc supports the installed V7 init, shell and utilities. Signals,
@@ -58,7 +58,7 @@ and working disk without starting QEMU; existing working disks are preserved.
 COM1 is attached to that terminal; run `make terminal` in another host terminal
 to connect to COM2. Ctrl-] disconnects the second terminal. See
 [account configuration](docs/multi-user.md) for the prepared development users. Fresh full disks
-include `/dev/ttyS1`; getty/login startup is still being integrated. See
+include `/dev/ttyS1` and enable login on both lines. See
 [independent terminals](docs/multi-terminal.md).
 To use an installed cross-toolchain, run `make TOOLCHAIN_PREFIX=x86_64-elf- run`
 (or the same override for other targets). A pinned cross-toolchain remains planned.
@@ -69,8 +69,9 @@ fixed embedded `build/root.img`. See [installation staging](docs/install-staging
 
 `make clean` deletes the entire `build/` directory, including the persistent
 `build/nexix.img` disk and all files saved inside Nexix. Stop QEMU before cleaning.
-`make run` displays the shell prompt. Ctrl-D closes the shell and init starts
-a replacement; Ctrl-A, release, then X exits QEMU.
+`make run` displays `login:` on a fresh disk. Log in as `root` with password
+`nexix`, or as `alice`/`alice` or `bob`/`bob`. Ctrl-D logs out and returns to login;
+Ctrl-A, release, then X exits QEMU. Existing disks retain their configuration.
 `make smoke` boots the `test=selftest` regression ISO with one CPU with 128 MiB RAM under QEMU TCG, requires the serial
 boot and timer markers within 15 seconds, and saves `build/boot.log`.
 `make test-process` runs process scheduling and lifecycle checks with 16 MiB
@@ -124,16 +125,16 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 
 ### Current implementation and scope
 
-The reviewed implementation baseline is commit `fa6076d`. Nexix boots into a working
-single-user V7 shell with persistent IDE storage. 16 native programs are
+The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
+to multi-user V7 login with persistent IDE storage. 16 native programs are
 installed: **init, sh, echo, cat, ls, pwd, cp, ln, rm, date, touch, stty, tty, mesg, getty and login**.
 The inventory accounts for **217 components, 2,144 distribution files and
 35 supporting/platform requirements**. Its component statuses are 16 implemented,
 4 partial, 1 prototype and 196 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 91 done, 2 in progress
-and 273 to do** after task 100. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 92 done, 2 in progress
+and 272 to do** after task 101. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -337,7 +338,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 98 | Port getty | Done | Retained getty tables/editing/exec with native 115200 profile, Ctrl-C, clean ASCII and bounded name terminator; private login handoff, EOT, editing/case/length and speed-cycle acceptance on both UARTs; `make test-getty` at 16/128 MiB; Git history |
 | 99 | Port login authentication and credentials | Done | Retained login with DES retries, checked credential drop, home, environment, motd and shell exec; native execlp consumer gap closed; hidden-password, UID/GID/cwd/umask, user shell and EOF acceptance; `make test-login` at 16/128 MiB; Git history |
 | 100 | Integrate login/logout utmp and wtmp | Done | Shared native V7 login/rmut record adapters; one-based utmp, O_APPEND wtmp, RTC record times and per-line logout; two authenticated sessions with peer preservation and getty respawn; `make test-session-accounting` at 16/128 MiB; Git history |
-| 101 | Complete multi-user init startup and respawn | To do | Existing init port extended; rc, ttys changes, logout and single-user recovery |
+| 101 | Complete multi-user init startup and respawn | Done | Automatic full-disk getty/login on both lines; source init rc/respawn/reload, checked line failures, distinct groups, group cleanup, preserved accounting and single-user recovery; `make test-multiuser-init` at 16/128 MiB; explicit single-user regression fixtures; Git history |
 | 102 | Port passwd | To do | Password updates, authorization and recovery after failures |
 | 103 | Port su | To do | Credential transition and environment modes |
 | 104 | Port newgrp | To do | Group authorization and replacement shell |
@@ -495,8 +496,8 @@ are accounted for. Final native rebuild acceptance is task 207.
 | Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 219 | Port mknod | To do | Disposable storage fixtures; bounds, permissions and error paths |
-| 220 | Port mount | To do | Disposable storage fixtures; bounds, permissions and error paths |
-| 221 | Port umount | To do | Disposable storage fixtures; bounds, permissions and error paths |
+| 220 | Port mount | To do | Native /etc/mtab integration; disposable storage fixtures, bounds, permissions and error paths |
+| 221 | Port umount | To do | Shared /etc/mtab lifecycle; disposable storage fixtures, bounds, permissions and error paths |
 | 222 | Port mkfs | To do | Format disposable media; mount and populate |
 | 223 | Port df | To do | Disposable storage fixtures; bounds, permissions and error paths |
 | 224 | Port du | To do | Disposable storage fixtures; bounds, permissions and error paths |
@@ -507,7 +508,7 @@ are accounted for. Final native rebuild acceptance is task 207.
 | 229 | Port icheck | To do | Disposable storage fixtures; bounds, permissions and error paths |
 | 230 | Port ncheck | To do | Disposable storage fixtures; bounds, permissions and error paths |
 | 231 | Port quot | To do | Disposable storage fixtures; bounds, permissions and error paths |
-| 232 | Port dump | To do | Historical archive/media formats and full restore fixtures |
+| 232 | Port dump | To do | Native /etc/ddate integration, historical archive/media formats and full restore fixtures |
 | 233 | Port dumpdir | To do | Historical archive/media formats and full restore fixtures |
 | 234 | Port restor | To do | Historical archive/media formats and full restore fixtures |
 | 235 | Port tar | To do | Both tar/v6tar; historical header fixtures and native round trips |
@@ -754,7 +755,8 @@ the first release. See [architecture notes](docs/architecture.md) and
 `make TOOLCHAIN_PREFIX= v7-userland` builds V7 init, the Bourne shell and
 nine utilities as native ELF64 executables. `make TOOLCHAIN_PREFIX= test-v7`
 tests the rebuilt shell and utilities in QEMU with 16 MiB and 128 MiB RAM.
-Normal boot now launches init as PID 1 and runs its single-user shell. See [V7 userland](docs/userland.md).
+Normal full-disk boot launches init as PID 1 and supervises multi-user login.
+The fixed RAM bootstrap retains its single-user recovery shell. See [V7 userland](docs/userland.md).
 
 `make TOOLCHAIN_PREFIX= rootfs` packages the programs and startup files into
 `build/root.img`. `make TOOLCHAIN_PREFIX= test-rootfs` validates the image on

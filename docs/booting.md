@@ -1,5 +1,9 @@
 # Root and PID 1 startup (task 18)
 
+Fresh full IDE installations now boot to `login:` on both serial lines. See
+[multi-user startup and credentials](multi-user.md). The single-user startup
+described below remains the fixed RAM recovery path and its `test-boot` fixture.
+
 Run `make build` to create boot artifacts without launching QEMU, or `make run`
 to build and boot, on an x86_64 Linux host with GCC/binutils. Host tools are the
 default; an installed cross-toolchain can be selected with

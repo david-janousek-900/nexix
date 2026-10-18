@@ -7,9 +7,18 @@ from mk_v7fs import Image, DIR, REG, CHR, BLK, MAX_BLOCKS, MAX_INODE_BLOCKS, fil
 from install_manifest import MANIFEST, load, materialize, read_stage
 
 
-def build(blocks, programs, config, manifest=MANIFEST, stage=None, inode_blocks=None, spare_inodes=24, spare_blocks=None):
+def build(blocks, programs, config, manifest=MANIFEST, stage=None, inode_blocks=None, spare_inodes=24, spare_blocks=None, fixture_overrides=None):
     records, payloads = (read_stage(stage, manifest) if stage is not None else
                          materialize(load(manifest), programs, config))
+    # Explicit test-only payload overrides never modify staging or its receipt.
+    # Production CLI image builds do not expose this fixture parameter.
+    if fixture_overrides:
+        payloads=dict(payloads)
+        for path,data in fixture_overrides.items():
+            entry=next((e for e in records if e['path']==path),None)
+            if not entry or entry.get('type')!='file' or entry.get('format') not in ('data','empty') or entry['component']!='distribution.config' or not isinstance(data,bytes):
+                raise ValueError('fixture override requires configuration data: '+path)
+            payloads[path]=data
     numbers = {}
     number = 2
     for entry in records:

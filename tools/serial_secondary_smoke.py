@@ -21,7 +21,7 @@ def main():
             'source':{'root':'programs','path':'serial-secondary-guest.elf'}})
         plan=Path(temp)/'install.json';plan.write_text(json.dumps(manifest))
         disk=Path(temp)/'root.img'
-        data=build(None,ROOT/'build',ROOT/'rootfs',plan,spare_inodes=64,spare_blocks=2048)
+        data=build(None,ROOT/'build',ROOT/'rootfs',plan,spare_inodes=64,spare_blocks=2048,fixture_overrides={'/etc/ttys':b''})
         write_image(disk,data)
         if hasattr(data,'close'):data.close()
         guest=Guest(qemu,iso,disk,ram,2)

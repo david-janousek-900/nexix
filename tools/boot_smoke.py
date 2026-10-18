@@ -48,7 +48,7 @@ try:
     # A copied executable has no embedded-catalog entry: it must be read from disk.
     exchange(b'echo disk > /tmp/boot-file; cat /tmp/boot-file; cp /bin/echo /tmp/disk-echo; /tmp/disk-echo NEXIX_DISK_EXEC; rm /tmp/boot-file /tmp/disk-echo; echo NEXIX_BOOT_WRITE_OK',
              re.compile(rb'\r\ndisk\r\nNEXIX_DISK_EXEC\r\nNEXIX_BOOT_WRITE_OK\r\n# '))
-    exchange(b'\x04', re.compile(rb'Nexix 0\.1\.0\r\n# '), raw=True)
+    exchange(b'\x04', re.compile(rb'Nexix 0\.1\.0\r\ninit: single-user recovery\r\n# '), raw=True)
     reply = exchange(b'echo NEXIX_RESTART_CHILD_$$',
                      re.compile(rb'\r\nNEXIX_RESTART_CHILD_([0-9]+)\r\n# '))
     pid = int(re.search(rb'\r\nNEXIX_RESTART_CHILD_([0-9]+)\r\n', reply)[1])

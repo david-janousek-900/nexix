@@ -12,6 +12,7 @@ def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 def fixture(base):
     base=Path(base);config=base/'config';shutil.copytree('rootfs',config)
+    (config/'etc/ttys').write_bytes(b'') # Explicit single-user fixture.
     plan=json.loads(MANIFEST.read_text())
     common=dict(type='file',format='data',mode='0644',uid=0,gid=0,component='distribution.config')
     for name in ('full-data','full-only'):

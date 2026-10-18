@@ -7,6 +7,7 @@ import subprocess
 import sys
 import time
 import tempfile
+from mk_rootfs import build
 
 ram = sys.argv[3] if len(sys.argv) > 3 else '128M'
 disk_directory = tempfile.TemporaryDirectory(prefix='nexix-shell-')
@@ -14,7 +15,7 @@ ide = len(sys.argv) > 4 and sys.argv[4] == 'ide'
 extra = []
 if ide:
     disk = Path(disk_directory.name) / 'root.img'
-    disk.write_bytes(Path('build/distribution.img').read_bytes())
+    disk.write_bytes(bytes(build(None,None,None,stage=Path('build/stage'),spare_inodes=2048,spare_blocks=32768,fixture_overrides={'/etc/ttys':b''})))
     extra = ['-boot', 'd', '-drive', f'file={disk},format=raw,if=ide,index=0']
 try:
     process = subprocess.Popen([sys.argv[1], '-machine', 'pc', '-accel', 'tcg',

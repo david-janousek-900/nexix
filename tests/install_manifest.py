@@ -61,6 +61,18 @@ class Installation(unittest.TestCase):
         self.assertEqual(inode(5), (0o20755, 1, 123, 456))
         self.assertEqual((self.stage/'root/home/data').stat().st_mode & 0o7777, 0o750)
 
+    def test_explicit_fixture_overrides_preserve_verified_stage(self):
+        self.stage_it()
+        receipt=(self.stage/'receipt.json').read_bytes()
+        original=build(None,None,None,self.manifest,self.stage)
+        fixture=build(None,None,None,self.manifest,self.stage,fixture_overrides={'/etc/ttys':b''})
+        self.assertNotEqual(fixture,original)
+        self.assertEqual(build(None,None,None,self.manifest,self.stage),original)
+        self.assertEqual(install.read_stage(self.stage,self.manifest)[1]['/etc/ttys'],Path('rootfs/etc/ttys').read_bytes())
+        self.assertEqual((self.stage/'receipt.json').read_bytes(),receipt)
+        for overrides in ({'/bin/sh':b'fake'},{'/missing':b''},{'/etc/ttys':'text'}):
+            with self.assertRaises(ValueError):build(None,None,None,self.manifest,self.stage,fixture_overrides=overrides)
+
     def test_removes_only_verified_previous_outputs(self):
         self.stage_it()
         self.plan['entries'] = [e for e in self.plan['entries'] if e['path'] != '/.profile']

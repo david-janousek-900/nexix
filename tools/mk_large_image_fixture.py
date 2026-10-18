@@ -14,6 +14,7 @@ def fixture(output):
         # Preserve ordinary bootstrap configuration while adding synthetic data.
         import shutil
         shutil.copytree('rootfs',config,dirs_exist_ok=True)
+        (config/'etc/ttys').write_bytes(b'') # Explicit single-user fixture.
         (config/'sample').write_bytes(b'LARGE_INODE_DATA\n')
         with (config/'filler').open('wb') as f:f.truncate(34*1024*1024)
         manifest=json.loads(MANIFEST.read_text())

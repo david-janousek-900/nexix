@@ -20,8 +20,8 @@ profiles set PATH and TZ, preserving the HOME supplied by login. Root retains it
 existing profile. TZ defaults to `GMT0`; native time-zone handling is documented
 in [timekeeping](time.md). `/etc/motd` identifies the development system.
 `/etc/rc` runs startup commands; init supervises terminal processes. `/etc/ttys`
-currently declares both lines disabled until getty/login and automatic multi-user
-startup are ready. Bootstrap configuration remains the fixed single-user recovery
+now enables both native lines for automatic multi-user startup (task 101).
+Bootstrap configuration remains the fixed single-user recovery
 installation with its original password-less root account and empty ttys file.
 
 Reference configuration is preserved in `reference/v7/etc/passwd`, `group`, `ttys`
@@ -114,3 +114,30 @@ utmp slots, wtmp sequence, RTC times and file mtimes. Alice's logout must preser
 Bob's session; root then logs in and Bob logs out. Both lines respawn getty. Runs
 use disposable roots at 16/128 MiB. Automatic startup and reload/recovery acceptance
 follow in task 101.
+
+Task 101 boots a fresh full IDE installation through rc directly to `login:` on
+COM1 and COM2. `/etc/ttys` contains `19console` and `19ttyS1`: enabled flag `1`,
+native 115200 profile `9`, and the device basename. Empty/disabled configuration
+retains the single-user path, including the fixed RAM bootstrap. Logging out or
+sending EOT to getty starts a replacement prompt.
+
+V7 init still owns its table, rc execution, wait/reap loop, ttys merge and recovery
+path. Native changes retry interrupted wait after SIGINT reload, establish each
+line's own group, clean up remaining members of an exited/disabled line's group,
+and check line setup/exec failures through a close-on-exec readiness pipe. Normal
+shell exit codes (including 126/127) still respawn. An unavailable line is retried on the next
+reload rather than spinning; failed getty setup on all lines leads to recovery.
+Only PID 1 may execute init's supervisor path.
+
+Root can signal PID 1: SIGINT merges terminal configuration, preserving unchanged
+sessions and their utmp records; SIGHUP stops sessions and opens the console
+single-user recovery shell. Ctrl-D then runs rc and restores configured gettys.
+The historical `kill` command is still tracked by task 126; acceptance uses a
+private signal helper rather than claiming that command is installed.
+
+`make test-multiuser-init` checks automatic two-line login, process groups,
+unchanged-session reload, disable/enable, recovery, return to multi-user, logout
+and getty EOT at 16/128 MiB. Existing shell/storage tests use explicitly generated
+single-user fixtures; the installed seed remains multi-user. Existing working
+disks keep their configuration. To preserve one while testing a fresh seed, use
+an unused path with `make DISK_IMAGE=build/fresh.img run`.

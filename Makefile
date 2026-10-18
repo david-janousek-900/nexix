@@ -1358,3 +1358,12 @@ build/session-records.elf: build/crt0.o build/session-records.o build/libc.a use
 test-session-accounting: rootfs iso build/session-records.elf
 	$(PYTHON) tools/session_accounting_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/session_accounting_smoke.py $(QEMU) build/nexix.iso 128M
+
+build/init-control.o: tests/init-control.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/init-control.elf: build/crt0.o build/init-control.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+.PHONY: test-multiuser-init
+test-multiuser-init: rootfs iso build/init-control.elf
+	$(PYTHON) tools/multiuser_init_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/multiuser_init_smoke.py $(QEMU) build/nexix.iso 128M

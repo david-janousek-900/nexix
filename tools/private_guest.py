@@ -10,7 +10,7 @@ from mk_v7fs import write_image
 
 
 @contextmanager
-def private_guest(qemu,iso,ram,label,artifacts,terminals=1):
+def private_guest(qemu,iso,ram,label,artifacts,terminals=1,single_user=True):
     with tempfile.TemporaryDirectory(prefix='nx-private-') as temp:
         plan=json.loads(MANIFEST.read_text())
         for path,artifact in artifacts.items():
@@ -22,7 +22,7 @@ def private_guest(qemu,iso,ram,label,artifacts,terminals=1):
             if existing is None:plan['entries'].append(record)
             else:existing.clear();existing.update(record)
         manifest=Path(temp)/'install.json';manifest.write_text(json.dumps(plan))
-        disk=Path(temp)/'root.img';data=build(None,ROOT/'build',ROOT/'rootfs',manifest,spare_inodes=256,spare_blocks=8192)
+        disk=Path(temp)/'root.img';data=build(None,ROOT/'build',ROOT/'rootfs',manifest,spare_inodes=256,spare_blocks=8192,fixture_overrides={'/etc/ttys':b''} if single_user else None)
         write_image(disk,data)
         if hasattr(data,'close'):data.close()
         guest=Guest(qemu,iso,disk,ram,terminals)

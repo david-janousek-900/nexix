@@ -2,19 +2,56 @@
   "schema_version": 1,
   "terminals": 2,
   "cases": [
-    {"id":"console","component":"cmd.tty","steps":[
-      {"command":"tty","stdout":"/dev/console\n"},
-      {"command":"tty -s"},
-      {"command":"tty | cat","stdout":"/dev/console\n"}
-    ]},
-    {"id":"second-line","component":"cmd.tty","steps":[
-      {"command":"tty < /dev/ttyS1","stdout":"/dev/ttyS1\n"},
-      {"command":"tty -s < /dev/ttyS1"}
-    ]},
-    {"id":"no-terminal","component":"cmd.tty","steps":[
-      {"command":"tty < /etc/rc","stdout":"not a tty\n","status":1},
-      {"command":"tty -s < /etc/rc","status":1},
-      {"command":"echo x | tty","stdout":"not a tty\n","status":1}
-    ]}
-  ]
+    {
+      "id": "console",
+      "component": "cmd.tty",
+      "steps": [
+        {
+          "command": "tty",
+          "stdout": "/dev/console\n"
+        },
+        {
+          "command": "tty -s"
+        },
+        {
+          "command": "tty | cat",
+          "stdout": "/dev/console\n"
+        }
+      ]
+    },
+    {
+      "id": "second-line",
+      "component": "cmd.tty",
+      "steps": [
+        {
+          "command": "tty < /dev/ttyS1",
+          "stdout": "/dev/ttyS1\n"
+        },
+        {
+          "command": "tty -s < /dev/ttyS1"
+        }
+      ]
+    },
+    {
+      "id": "no-terminal",
+      "component": "cmd.tty",
+      "steps": [
+        {
+          "command": "tty < /etc/rc",
+          "stdout": "not a tty\n",
+          "status": 1
+        },
+        {
+          "command": "tty -s < /etc/rc",
+          "status": 1
+        },
+        {
+          "command": "echo x | tty",
+          "stdout": "not a tty\n",
+          "status": 1
+        }
+      ]
+    }
+  ],
+  "single_user": true
 }

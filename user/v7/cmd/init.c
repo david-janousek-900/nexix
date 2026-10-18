@@ -3,10 +3,14 @@
 #include <sys/types.h>
 #include <utmp.h>
 #include <setjmp.h>
+#include <errno.h>
+#include <stdio.h>
 
 static void reset(int);
 static void merge_signal(int);
 int merge(void);
+int configured(void);
+int initial_boot = 1;
 
 #define	TABSIZ	100
 #define	ALL	p = &itab[0]; p < &itab[TABSIZ]; p++
@@ -33,6 +37,7 @@ struct	tab
 	char	line[8];
 	char	comn;
 	int	pid;
+	int	failed;
 } itab[TABSIZ];
 
 int	fi;
@@ -41,14 +46,18 @@ jmp_buf	sjbuf;
 
 main()
 {
-
-
+	if (getpid() != 1) {
+		fprintf(stderr, "init: must be pid 1\n");
+		exit(1);
+	}
 	(void)v7_accounting_reset();
 	setjmp(sjbuf);
 	signal(SIGHUP, reset);
 	for(EVER) {
 		shutdown();
-		single();
+		if (!initial_boot || !configured())
+			single();
+		initial_boot = 0;
 		runcom();
 		merge();
 		multiple();
@@ -90,6 +99,8 @@ single()
 		open(ctty, 2);
 		dup(0);
 		dup(0);
+		if (!initial_boot)
+			write(1, "init: single-user recovery\n", 27);
 		execl(shell, minus, (char *)0);
 		exit(0);
 	}
@@ -120,12 +131,19 @@ multiple()
 
 	for(EVER) {
 		pid = wait((int *)0);
+		if(pid == -1 && errno == EINTR)
+			continue;
 		if(pid == -1)
 			return;
 		for(ALL)
 			if(p->pid == pid || p->pid == -1) {
 				rmut(p);
-				dfork(p);
+				if (p->pid > 1)
+					kill(-p->pid, SIGKILL);
+				if (pid == p->pid && p->failed)
+					p->pid = 0; /* Failed line setup: retry on configuration reload. */
+				else
+					dfork(p);
 			}
 	}
 }
@@ -134,9 +152,11 @@ term(p)
 register struct tab *p;
 {
 
-	if(p->pid != 0) {
+	if(p->pid > 0) {
 		rmut(p);
 		kill(p->pid, SIGKILL);
+		if (p->pid > 1)
+			kill(-p->pid, SIGKILL);
 	}
 	p->pid = 0;
 	p->line[0] = 0;
@@ -223,6 +243,9 @@ merge()
 				i = p->pid;
 				p->pid = q->pid;
 				q->pid = i;
+				i = p->failed;
+				p->failed = q->failed;
+				q->failed = i;
 				for(i=0; i<8; i++)
 					p->line[i] = q->line[i];
 				p->comn = q->comn;
@@ -248,22 +271,41 @@ dfork(p)
 struct tab *p;
 {
 	register pid;
+	int ready[2], n;
+	char failed;
 
+	if (pipe(ready) < 0) {
+		p->pid = -1;
+		return;
+	}
 	pid = fork();
 	if(pid == 0) {
+		close(ready[0]);
+		if (dup2(ready[1], 19) != 19)
+			_exit(126);
+		close(ready[1]);
+		if (fcntl(19, F_SETFD, FD_CLOEXEC) < 0)
+			goto failed;
 		signal(SIGHUP, SIG_DFL);
 		signal(SIGINT, SIG_DFL);
 		maktty(p->line);
-		chown(tty, 0, 0);
-		chmod(tty, 0622);
-		open(tty, 2);
-		dup(0);
-		dup(0);
+		if (chown(tty, 0, 0) < 0 || chmod(tty, 0622) < 0 ||
+		    open(tty, 2) != 0 || dup(0) != 1 || dup(0) != 2 ||
+		    setpgrp() != getpid())
+			goto failed;
 		tty[0] = p->comn;
 		tty[1] = 0;
 		execl(getty, minus, tty, (char *)0);
-		exit(0);
+	failed:
+		write(19, "f", 1);
+		_exit(127);
 	}
+	close(ready[1]);
+	if (pid > 0) {
+		do n = read(ready[0], &failed, 1); while(n < 0 && errno == EINTR);
+		p->failed = n != 0;
+	}
+	close(ready[0]);
 	p->pid = pid;
 }
 
@@ -278,5 +320,21 @@ static void merge_signal(int n) { (void)n; merge(); }
 static void reset(int n)
 {
     (void)n;
+	initial_boot = 0;
 	longjmp(sjbuf, 1);
+}
+
+int configured(void)
+{
+	int enabled = 0;
+	fi = open(ifile, 0);
+	if (fi < 0)
+		return(0);
+	while(rline())
+		if(line.flag != '0') {
+			enabled = 1;
+			break;
+		}
+	close(fi);
+	return(enabled);
 }

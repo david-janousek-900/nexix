@@ -29,6 +29,7 @@ The test is also included in `make TOOLCHAIN_PREFIX= test`.
 
 The task 16 acceptance fixtures retain an embedded exec catalog and their
 small test filesystem. Normal boot now uses the production root image and
-filesystem-backed exec, runs init as PID 1 and starts the single-user shell;
+filesystem-backed exec, runs init as PID 1 and starts multi-user login on fresh
+full IDE disks (the fixed RAM recovery image retains the single-user shell);
 see [booting.md](booting.md). Task 19 verifies interactive operation; see [interactive-shell.md](interactive-shell.md); persistent
 IDE storage is implemented in task 20; see [storage.md](storage.md).

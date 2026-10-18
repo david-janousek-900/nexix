@@ -6,6 +6,7 @@ import select
 import subprocess
 import sys
 import tempfile
+from mk_rootfs import build
 import time
 
 ram = sys.argv[3] if len(sys.argv) > 3 else '128M'
@@ -81,7 +82,7 @@ error = None
 try:
     with tempfile.TemporaryDirectory(prefix='nexix-ide-') as directory:
         disk = Path(directory) / 'root.img'
-        seed = Path('build/distribution.img').read_bytes()
+        seed = bytes(build(None,None,None,stage=Path('build/stage'),spare_inodes=2048,spare_blocks=32768,fixture_overrides={'/etc/ttys':b''}))
         disk.write_bytes(seed)
         boot(disk, [
             ('echo persisted > /tmp/data; touch /tmp/data; ln /tmp/data /tmp/link; cp /bin/echo /tmp/exec; echo STORED', response('STORED')),

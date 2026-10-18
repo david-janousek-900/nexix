@@ -1,8 +1,42 @@
 {
   "schema_version": 1,
   "cases": [
-    {"id":"echo", "component":"cmd.echo", "steps":[{"command":"echo guest acceptance", "stdout":"guest acceptance\n"}]},
-    {"id":"shell-status", "component":"cmd.sh", "steps":[{"command":"/bin/sh -c 'exit 7'", "status":7}]},
-    {"id":"files", "component":"cmd.cat", "steps":[{"command":"echo disposable > /tmp/guest-file"},{"command":"cat /tmp/guest-file", "stdout":"disposable\n"},{"command":"rm /tmp/guest-file"}]}
-  ]
+    {
+      "id": "echo",
+      "component": "cmd.echo",
+      "steps": [
+        {
+          "command": "echo guest acceptance",
+          "stdout": "guest acceptance\n"
+        }
+      ]
+    },
+    {
+      "id": "shell-status",
+      "component": "cmd.sh",
+      "steps": [
+        {
+          "command": "/bin/sh -c 'exit 7'",
+          "status": 7
+        }
+      ]
+    },
+    {
+      "id": "files",
+      "component": "cmd.cat",
+      "steps": [
+        {
+          "command": "echo disposable > /tmp/guest-file"
+        },
+        {
+          "command": "cat /tmp/guest-file",
+          "stdout": "disposable\n"
+        },
+        {
+          "command": "rm /tmp/guest-file"
+        }
+      ]
+    }
+  ],
+  "single_user": true
 }

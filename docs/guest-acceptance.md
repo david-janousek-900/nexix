@@ -25,6 +25,13 @@ expected `stdout`, numeric `status` and optional terminal/prompt. Interactive st
 contain an `expect` regex and optional `send`, terminal and timeout. Output is
 normalized from serial CRLF to LF; stdout/stderr share the terminal stream.
 
+Suites that test single-user shell behavior set `single_user: true` explicitly.
+The disposable image then overrides only `/etc/ttys` to empty data; verified
+staging and its receipt remain untouched. Reports record the override's SHA-256.
+Production image builds expose no override CLI. Multi-user suites retain the
+enabled full configuration and supply their own startup/login steps. Private
+component fixtures also choose single-user setup explicitly by default.
+
 The V7 build inventories (`cmd/in`, `cmake`, `makeall`) and individual source
 fixtures inform component identity and acceptance. This is native test
 infrastructure, not a port of those historical build scripts. Their ports remain

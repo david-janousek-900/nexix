@@ -15,5 +15,9 @@ class Harness(unittest.TestCase):
                 with self.assertRaises((ValueError,KeyError,re.error)):load_suite(path)
     def test_missing_component(self):
         with self.assertRaisesRegex(ValueError,'no selected'):run_suite('tests/guest/foundation.json','build/unused-report.json',components=['missing'])
+    def test_invalid_single_user_override(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path=Path(temp)/'suite';path.write_text(json.dumps({'schema_version':1,'single_user':'yes','cases':[]}))
+            with self.assertRaisesRegex(ValueError,'single_user'):load_suite(path)
 
 if __name__=='__main__':unittest.main()

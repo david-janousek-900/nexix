@@ -21,6 +21,7 @@ def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 def load_suite(path):
     suite=json.loads(Path(path).read_text())
     if suite.get('schema_version')!=1 or suite.get('terminals',1) not in (1,2):raise ValueError('invalid suite version/terminals')
+    if type(suite.get('single_user',False)) is not bool:raise ValueError('invalid single_user fixture flag')
     owners={e['id'] for e in json.loads(INVENTORY.read_text())['entries']}
     seen=set()
     for case in suite['cases']:
@@ -98,9 +99,11 @@ def run_suite(suite_path,report,qemu='qemu-system-x86_64',iso='build/nexix.iso',
     if not cases:raise ValueError('no selected cases')
     report=Path(report);report.parent.mkdir(parents=True,exist_ok=True)
     results={'schema_version':1,'suite_sha256':sha(suite_path),'manifest_sha256':sha(manifest),'kernel_iso_sha256':sha(iso),'ram':ram,'cases':[]}
+    overrides={'/etc/ttys':b''} if suite.get('single_user') else None
+    results['fixture_overrides']={path:hashlib.sha256(data).hexdigest() for path,data in (overrides or {}).items()}
     try:
         with tempfile.TemporaryDirectory(prefix='nx-acceptance-') as temp:
-            disk=Path(temp)/'root.img';data=build(None,None,None,manifest,stage,spare_inodes=256,spare_blocks=8192);write_image(disk,data)
+            disk=Path(temp)/'root.img';data=build(None,None,None,manifest,stage,spare_inodes=256,spare_blocks=8192,fixture_overrides=overrides);write_image(disk,data)
             if hasattr(data,'close'):data.close()
             guest=Guest(qemu,iso,disk,ram,suite.get('terminals',1))
             try:

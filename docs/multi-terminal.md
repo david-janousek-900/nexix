@@ -61,9 +61,8 @@ Production init's startup policy and respawn acceptance remain task 101.
 Task 92 installs `/dev/ttyS1` as major 1/minor 1, root:root, mode 0600 in the full
 IDE seed. `/dev/ttyS0` remains a hard link to `/dev/console`; `/dev/tty` is the
 controlling-terminal alias, not a third UART. The fixed RAM bootstrap is unchanged.
-Full `/etc/ttys` lists `09console` and `09ttyS1`: disabled lines (`0`) with the
-reserved native 115200 profile (`9`). Multi-user startup enables them after the
-getty/login ports are available. These are V7's flag/profile/name records, not a
+Task 92 initially listed disabled lines `09console` and `09ttyS1`. Task 101
+now enables them as `19console` and `19ttyS1`, using native 115200 profile `9`. These are V7's flag/profile/name records, not a
 modern termios or inittab format.
 
 `make run` prepares mode-0600 FIFOs `build/ttyS1.in` and `.out`, and attaches COM2
@@ -76,7 +75,8 @@ at a time. QEMU still exits through Ctrl-A, release, X on COM1.
 Existing working disks are preserved and do not acquire newly packaged device or
 configuration files automatically. To test the current seed while retaining your
 old disk, run `make DISK_IMAGE=build/fresh.img run` with an unused image path.
-The login prompt is a later multi-user milestone, not claimed by this task.
+Fresh full disks now boot to login (task 101); the task 92 device acceptance
+continues to use an explicit single-user fixture.
 
 `make test-terminal-config` verifies the packaged node's type, mode, owner and
 device number plus actual binary I/O at 16/128 MiB. Host connector tests verify
@@ -96,4 +96,4 @@ root-only kinfo ABI. A mismatch fails acceptance. Runs use disposable IDE disks
 and separate terminal/QEMU logs at 16/128 MiB; the user's working disk is never
 attached. Together with task 91's XOFF/XON and binary UART acceptance, this closes
 the independent-terminal milestone. Authentication, accounting and production
-getty respawn remain tasks 94–108.
+getty supervision are covered by tasks 94–101; final acceptance remains task 108.
