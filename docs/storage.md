@@ -1,36 +1,43 @@
 # Persistent root storage (task 20)
 
-`make TOOLCHAIN_PREFIX= run` boots the ISO and attaches `build/nexix.img` as
-QEMU's primary IDE master. `make disk` creates this working disk from
-`build/root.img` only when it does not already exist. Builds preserve it, so
-files and metadata survive QEMU restarts. `make clean` deletes the entire
-`build/` directory, including the working disk and its saved files. The ISO still supplies
-GRUB and the kernel; the raw disk contains the V7 filesystem without a partition
-table or boot loader.
+`make run` boots the ISO and attaches `build/nexix.img` as QEMU's primary IDE
+master. `make disk` seeds a new working disk from `build/distribution.img` using
+atomic, exclusive publication. Existing disks are preserved byte-for-byte,
+including when their contents differ from the current seed. Files and metadata
+therefore survive restarts. `make clean` deletes the entire `build/` directory,
+including working disks and saved files.
+
+The ISO supplies GRUB and the kernel; the raw disk contains an unpartitioned V7
+filesystem. The fixed 512 KiB `build/root.img` is embedded for RAM bootstrap and
+tests. It is separate from the full IDE distribution and is used only when no
+primary IDE root device is found. An invalid attached IDE root fails explicitly.
+See [root image profiles](root-images.md).
 
 To test persistence yourself:
 
 ```sh
-make TOOLCHAIN_PREFIX= run
+make run
 # Inside Nexix:
 echo hello > /tmp/message
 cat /tmp/message
 # Quit QEMU with Ctrl-A, release, then X.
-make TOOLCHAIN_PREFIX= run
+make run
 # Inside Nexix:
 cat /tmp/message
 ```
 
-To replace the working disk with a fresh packaged root, stop QEMU first and run:
+To boot the latest packaged installation without changing the existing working
+disk, choose a new path:
 
 ```sh
-make TOOLCHAIN_PREFIX= rootfs
-cp build/root.img build/nexix.img
+make rootfs
+make DISK_IMAGE=build/fresh.img run
 ```
 
-That explicitly discards changes on the working disk. Rebuilding userland changes
-the packaged root, while an existing working disk retains its installed files.
-Copy `build/nexix.img` while QEMU is stopped to back it up.
+Rebuilding userland updates the distribution seed, not an existing working disk.
+Existing small disks remain small and retain their installed programs; migration
+and upgrade tooling belongs to task 357. Copy a working disk while QEMU is stopped
+to back it up.
 
 The driver identifies the primary master, requires LBA28, 512-byte sectors and
 cache-flush support, and transfers one sector at a time through polling PIO.

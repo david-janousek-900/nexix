@@ -11,6 +11,8 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / 'docs/native-install.json'
 INVENTORY = ROOT / 'docs/v7-userland-manifest.json'
+BOOTSTRAP = ROOT / 'docs/bootstrap-install.json'
+BOOTSTRAP_CONFIG = ROOT / 'rootfs/bootstrap'
 
 
 def digest(data):
@@ -100,8 +102,20 @@ def load(path=MANIFEST):
     return entries
 
 
-def inputs(entries):
-    return [str(Path('build' if e['source']['root'] == 'programs' else 'rootfs') / e['source']['path'])
+def validate_profiles(full, bootstrap):
+    if any('bootstrap' in e for e in full):
+        raise ValueError('bootstrap flags belong to the fixed bootstrap manifest')
+    selected={e['path']:e for e in bootstrap if e.get('format')=='elf'}
+    if not {'/etc/init','/bin/sh'}<=selected.keys() or any(not e.get('bootstrap') for e in selected.values()):
+        raise ValueError('bootstrap must embed its init/shell and selected programs')
+    installed={e['path']:e for e in full if e.get('format')=='elf'}
+    for path,e in selected.items():
+        if path not in installed or installed[path]['source']!=e['source'] or installed[path]['component']!=e['component']:
+            raise ValueError(f'bootstrap executable missing from full installation: {path}')
+
+
+def inputs(entries, programs=Path("build"), config=Path("rootfs")):
+    return [str((programs if e['source']['root'] == 'programs' else config) / e['source']['path'])
             for e in entries if 'source' in e]
 
 
@@ -225,7 +239,7 @@ def main():
         elif args.commands:
             print(' '.join(Path(e['path']).name for e in entries if e.get('format') == 'elf'))
         elif args.inputs:
-            print(' '.join(inputs(entries)))
+            print(' '.join(inputs(entries,args.programs,args.config)))
         else:
             count = stage_tree(args.output, args.manifest, args.programs, args.config)
             print(f'Staged {count} files and guest metadata in {args.output}')

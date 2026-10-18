@@ -1,6 +1,7 @@
 # Task 83: manifest-driven installation staging
 
-`docs/native-install.json` is the native installation plan. Each entry names its
+`docs/native-install.json` is the full native installation plan. Task 85 adds
+a separate fixed [bootstrap plan](root-images.md). Each entry names its
 V7 inventory component, guest path, kind, mode, UID and GID. Regular files name
 their build/configuration source and format; empty files, directories, devices
 and hard links have explicit entries. Component IDs resolve through
@@ -9,9 +10,9 @@ The installation plan describes current native outputs, not all planned ports.
 
 GNU Make derives installed ELF targets and command names from this plan.
 Native executable artifacts currently use `build/v7-NAME.elf`; component-specific
-recipes can produce them. Entries marked `bootstrap` also generate the embedded
-catalog and image list used by existing kernel acceptance fixtures. Future
-installed programs need not be embedded. Script and data payloads use the data
+recipes can produce them. The separate `docs/bootstrap-install.json` generates the embedded catalog and
+image list used by kernel acceptance fixtures. Full installation entries do not
+select embedded programs; adding them does not enlarge the kernel. Script and data payloads use the data
 format with the required guest execute permissions; they are not mistaken for
 ELF executables. The inventory audit checks implemented program claims against
 the same plan rather than parsing independent hard-coded lists.
@@ -56,7 +57,8 @@ construction must match, and the default image remains byte-identical to its
 pre-task layout. QEMU root acceptance runs at 16/128 MiB; shell and persistent
 storage regressions protect boot behavior and user data.
 
-[Task 84](image-builder.md) supplies scalable image capacity; task 85 owns separating the full
-IDE distribution from the fixed embedded bootstrap root. Independent terminal
+[Task 84](image-builder.md) supplies scalable image capacity;
+[task 85](root-images.md) separates the full IDE distribution from the fixed
+embedded bootstrap root. Independent terminal
 and multi-user implementation tasks follow those prerequisites. Task 83 alone
 does not install getty/login or enable multi-user boot.

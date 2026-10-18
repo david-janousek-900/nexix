@@ -40,7 +40,8 @@ class Installation(unittest.TestCase):
         direct = build(1024, Path('build'), Path('rootfs'))
         staged = build(1024, Path('/unused'), Path('/unused'), self.manifest, self.stage)
         self.assertEqual(staged, direct)
-        self.assertEqual(direct, Path('build/root.img').read_bytes())
+        bootstrap=build(1024,Path('build'),install.BOOTSTRAP_CONFIG,install.BOOTSTRAP,inode_blocks=12)
+        self.assertEqual(bootstrap, Path('build/root.img').read_bytes())
         self.assertFalse((self.stage / 'root/dev/console').exists())
 
     def test_metadata_and_hardlinks_reach_disk(self):

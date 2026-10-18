@@ -70,8 +70,7 @@
         "root": "programs",
         "path": "v7-init.elf"
       },
-      "format": "elf",
-      "bootstrap": true
+      "format": "elf"
     },
     {
       "path": "/bin/sh",
@@ -84,8 +83,7 @@
         "root": "programs",
         "path": "v7-sh.elf"
       },
-      "format": "elf",
-      "bootstrap": true
+      "format": "elf"
     },
     {
       "path": "/bin/echo",
@@ -98,8 +96,7 @@
         "root": "programs",
         "path": "v7-echo.elf"
       },
-      "format": "elf",
-      "bootstrap": true
+      "format": "elf"
     },
     {
       "path": "/bin/cat",
@@ -112,8 +109,7 @@
         "root": "programs",
         "path": "v7-cat.elf"
       },
-      "format": "elf",
-      "bootstrap": true
+      "format": "elf"
     },
     {
       "path": "/bin/ls",
@@ -126,8 +122,7 @@
         "root": "programs",
         "path": "v7-ls.elf"
       },
-      "format": "elf",
-      "bootstrap": true
+      "format": "elf"
     },
     {
       "path": "/bin/pwd",
@@ -140,8 +135,7 @@
         "root": "programs",
         "path": "v7-pwd.elf"
       },
-      "format": "elf",
-      "bootstrap": true
+      "format": "elf"
     },
     {
       "path": "/bin/cp",
@@ -154,8 +148,7 @@
         "root": "programs",
         "path": "v7-cp.elf"
       },
-      "format": "elf",
-      "bootstrap": true
+      "format": "elf"
     },
     {
       "path": "/bin/ln",
@@ -168,8 +161,7 @@
         "root": "programs",
         "path": "v7-ln.elf"
       },
-      "format": "elf",
-      "bootstrap": true
+      "format": "elf"
     },
     {
       "path": "/bin/rm",
@@ -182,8 +174,7 @@
         "root": "programs",
         "path": "v7-rm.elf"
       },
-      "format": "elf",
-      "bootstrap": true
+      "format": "elf"
     },
     {
       "path": "/bin/date",
@@ -196,8 +187,7 @@
         "root": "programs",
         "path": "v7-date.elf"
       },
-      "format": "elf",
-      "bootstrap": true
+      "format": "elf"
     },
     {
       "path": "/bin/touch",
@@ -210,8 +200,7 @@
         "root": "programs",
         "path": "v7-touch.elf"
       },
-      "format": "elf",
-      "bootstrap": true
+      "format": "elf"
     },
     {
       "path": "/etc/rc",

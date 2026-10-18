@@ -8,6 +8,10 @@ OBJCOPY = $(TOOLCHAIN_PREFIX)objcopy
 PYTHON ?= python3
 QEMU ?= qemu-system-x86_64
 DISK_IMAGE ?= build/nexix.img
+INSTALL_MANIFEST ?= docs/native-install.json
+INSTALL_CONFIG ?= rootfs
+INSTALL_STAGE ?= build/stage
+FULL_ROOT_IMAGE ?= build/distribution.img
 CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-stack-protector -fno-pie -m64 -mno-red-zone -mgeneral-regs-only -fno-asynchronous-unwind-tables -Ikernel/include -Iinclude -MMD -MP
 OBJECTS = build/packet.o build/packet_tty.o build/packet_image.o build/boot.o build/main.o build/serial.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o build/elf.o build/exec.o build/exec_test.o build/exec_image.o build/libc_test.o build/libc_image.o build/block.o build/v7fs.o build/fs_test.o build/root_image.o build/files.o build/files_test.o build/files_image.o build/tty.o build/tty_test.o build/tty_image.o build/signals.o build/signals_test.o build/signals_image.o build/catalog.o build/v7_userland_test.o build/v7_test_image.o
 HOST_CC ?= cc
@@ -303,9 +307,10 @@ build/signals_abi.o: user/signals-test-abi.S include/nexix/syscall.h | build/.di
 
 # Native builds of retained V7 K&R sources; original reference/ stays pristine.
 V7_CFLAGS = $(filter-out -std=c11 -Werror,$(USER_CFLAGS)) -std=gnu89 -funsigned-char -fcommon -fno-strict-aliasing -Wno-implicit-int -Wno-implicit-function-declaration -Wno-return-type -Wno-incompatible-pointer-types -Wno-int-conversion -Wno-pointer-sign -Wno-unused-parameter -Wno-parentheses -Wno-missing-field-initializers
-INSTALL_COMMANDS := $(shell $(PYTHON) tools/install_manifest.py --commands)
-INSTALL_INPUTS := $(shell $(PYTHON) tools/install_manifest.py --inputs)
-INSTALL_EMBEDDED := $(shell $(PYTHON) tools/install_manifest.py --embedded)
+INSTALL_COMMANDS := $(shell $(PYTHON) tools/install_manifest.py --manifest $(INSTALL_MANIFEST) --commands)
+INSTALL_INPUTS := $(shell $(PYTHON) tools/install_manifest.py --manifest $(INSTALL_MANIFEST) --config $(INSTALL_CONFIG) --inputs)
+BOOTSTRAP_INPUTS := $(shell $(PYTHON) tools/install_manifest.py --manifest docs/bootstrap-install.json --config rootfs/bootstrap --inputs)
+INSTALL_EMBEDDED := $(shell $(PYTHON) tools/install_manifest.py --manifest docs/bootstrap-install.json --embedded)
 ifeq ($(strip $(INSTALL_COMMANDS)),)
 $(error Invalid or empty native installation manifest; see tools/install_manifest.py)
 endif
@@ -330,8 +335,8 @@ V7_IMAGES = $(addprefix build/v7_image_,$(addsuffix .o,$(INSTALL_EMBEDDED)))
 # Embedded executable images for the task 16 acceptance fixture.
 OBJECTS += $(V7_IMAGES)
 -include build/catalog.d build/v7_userland_test.d build/v7_test_program.d
-build/install_catalog.inc: docs/native-install.json docs/v7-userland-manifest.json tools/install_manifest.py | build/.dir
-	$(PYTHON) tools/install_manifest.py --catalog > $@
+build/install_catalog.inc: docs/bootstrap-install.json docs/v7-userland-manifest.json tools/install_manifest.py | build/.dir
+	$(PYTHON) tools/install_manifest.py --manifest docs/bootstrap-install.json --catalog > $@
 build/catalog.o: kernel/v7/catalog.c build/install_catalog.inc | build/.dir
 	$(CC) $(CFLAGS) -Ibuild -c $< -o $@
 build/v7_userland_test.o: kernel/v7_userland_test.c | build/.dir
@@ -354,14 +359,21 @@ build/nexix.elf: $(V7_IMAGES)
 .SECONDARY: $(addprefix build/v7-,$(addsuffix .o,$(V7_COMMANDS)))
 
 # Packaged 0.1.0 root, separate from the filesystem regression fixture.
-.PHONY: rootfs test-rootfs stage
-stage: build/stage/receipt.json
-	$(PYTHON) tools/install_manifest.py --verify --output build/stage
-build/stage/receipt.json: docs/native-install.json docs/v7-userland-manifest.json tools/install_manifest.py $(INSTALL_INPUTS) | build/.dir
-	$(PYTHON) tools/install_manifest.py --output build/stage
-rootfs: build/root.img
-build/root.img: tools/mk_rootfs.py tools/mk_v7fs.py tools/install_manifest.py build/stage/receipt.json | stage
-	$(PYTHON) tools/mk_rootfs.py --stage build/stage --output $@
+.PHONY: rootfs bootstrap-rootfs test-rootfs stage bootstrap-stage
+stage: $(INSTALL_STAGE)/receipt.json
+	$(PYTHON) tools/install_manifest.py --manifest $(INSTALL_MANIFEST) --verify --output $(INSTALL_STAGE)
+$(INSTALL_STAGE)/receipt.json: $(INSTALL_MANIFEST) docs/v7-userland-manifest.json tools/install_manifest.py $(INSTALL_INPUTS) | build/.dir
+	$(PYTHON) tools/install_manifest.py --manifest $(INSTALL_MANIFEST) --config $(INSTALL_CONFIG) --output $(INSTALL_STAGE)
+rootfs: $(FULL_ROOT_IMAGE)
+$(FULL_ROOT_IMAGE): tools/mk_rootfs.py tools/mk_v7fs.py tools/install_manifest.py $(INSTALL_STAGE)/receipt.json | stage
+	$(PYTHON) tools/mk_rootfs.py --manifest $(INSTALL_MANIFEST) --stage $(INSTALL_STAGE) --blocks auto --spare-blocks 32768 --spare-inodes 2048 --output $@
+bootstrap-stage: build/bootstrap-stage/receipt.json
+	$(PYTHON) tools/install_manifest.py --manifest docs/bootstrap-install.json --verify --output build/bootstrap-stage
+build/bootstrap-stage/receipt.json: docs/bootstrap-install.json docs/v7-userland-manifest.json tools/install_manifest.py $(BOOTSTRAP_INPUTS) | build/.dir
+	$(PYTHON) tools/install_manifest.py --manifest docs/bootstrap-install.json --config rootfs/bootstrap --output build/bootstrap-stage
+bootstrap-rootfs: build/root.img
+build/root.img: tools/mk_rootfs.py tools/mk_v7fs.py tools/install_manifest.py build/bootstrap-stage/receipt.json | bootstrap-stage
+	$(PYTHON) tools/mk_rootfs.py --manifest docs/bootstrap-install.json --stage build/bootstrap-stage --blocks 1024 --inodes 96 --output $@
 build/boot_root_image.o: build/root.img
 	$(LD) -r -b binary $< -o build/boot_root_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/boot_root_raw.o $@
@@ -402,23 +414,23 @@ test-boot: iso
 test: test-boot
 
 .PHONY: test-shell
-test-shell: iso
+test-shell: iso rootfs
 	$(PYTHON) tools/interactive_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/interactive_smoke.py $(QEMU) build/nexix.iso 128M
 	$(PYTHON) tools/interactive_smoke.py $(QEMU) build/nexix.iso 16M ide
 	$(PYTHON) tools/interactive_smoke.py $(QEMU) build/nexix.iso 128M ide
 test: test-shell
 
-# Preserve the working disk across builds; root.img is the seed.
+# Preserve working disks; only new disks receive the full distribution seed.
 .PHONY: disk test-storage
-disk: build/root.img
-	$(PYTHON) -c 'from pathlib import Path; import sys; p=Path(sys.argv[1]); p.exists() or p.write_bytes(Path("build/root.img").read_bytes())' "$(DISK_IMAGE)"
+disk: $(FULL_ROOT_IMAGE) tools/seed_disk.py
+	$(PYTHON) tools/seed_disk.py --seed "$(FULL_ROOT_IMAGE)" --output "$(DISK_IMAGE)"
 build/ide.o: kernel/ide.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 OBJECTS += build/ide.o
 build/nexix.elf: build/ide.o
 -include build/ide.d
-test-storage: iso
+test-storage: rootfs iso
 	$(PYTHON) tools/storage_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/storage_smoke.py $(QEMU) build/nexix.iso 128M
 test: test-storage
@@ -1203,3 +1215,12 @@ test-unit: test-image-builder-unit
 test-image-builder: test-image-builder-unit test-rootfs test-inventory test-libc-interfaces iso
 	$(PYTHON) tools/image_scale_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/image_scale_smoke.py $(QEMU) build/nexix.iso 128M
+
+# Task 85: independent full IDE seed and fixed embedded bootstrap.
+.PHONY: test-root-separation-unit test-root-separation
+test-root-separation-unit: build/nexix.elf
+	$(PYTHON) tests/root_separation.py
+test-unit: test-root-separation-unit
+test-root-separation: test-root-separation-unit rootfs test-rootfs test-inventory test-libc-interfaces iso
+	$(PYTHON) tools/root_separation_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/root_separation_smoke.py $(QEMU) build/nexix.iso 128M

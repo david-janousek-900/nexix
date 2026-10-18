@@ -81,7 +81,7 @@ error = None
 try:
     with tempfile.TemporaryDirectory(prefix='nexix-ide-') as directory:
         disk = Path(directory) / 'root.img'
-        seed = Path('build/root.img').read_bytes()
+        seed = Path('build/distribution.img').read_bytes()
         disk.write_bytes(seed)
         boot(disk, [
             ('echo persisted > /tmp/data; touch /tmp/data; ln /tmp/data /tmp/link; cp /bin/echo /tmp/exec; echo STORED', response('STORED')),

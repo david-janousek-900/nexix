@@ -8,9 +8,9 @@ The preserved reference sources and V7 timestamp/disk encodings are unchanged.
 
 ## Sizing
 
-The default `make rootfs` still produces the byte-identical 512 KiB bootstrap
-root with 96 inode slots. Task 85 owns separating the full IDE distribution from
-this embedded bootstrap; task 84 does not enlarge the kernel's RAM root.
+The `make bootstrap-rootfs` target produces the fixed 512 KiB bootstrap root
+with 96 inode slots. [Task 85](root-images.md) supplies the independent full IDE
+distribution through `make rootfs`; the embedded RAM root remains unchanged.
 
 To create a separate image from the verified installation stage:
 

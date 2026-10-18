@@ -188,9 +188,10 @@ def validate(manifest, root=ROOT):
     for file in (reference / 'bin').iterdir():
         need(str(file.relative_to(root)) in program_files, f'missing installed program: {file.name}')
     # Build and packaging consume the same validated native installation plan.
-    from install_manifest import load
+    from install_manifest import load, validate_profiles
     try:
         plan = load(root / 'docs/native-install.json')
+        validate_profiles(plan,load(root / 'docs/bootstrap-install.json'))
         packaged = {Path(e['path']).name for e in plan if e.get('format') == 'elf'}
         need(installed == packaged, f'implemented output drift: inventory={sorted(installed)}, install={sorted(packaged)}')
     except (OSError, ValueError, KeyError, TypeError) as error:

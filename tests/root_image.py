@@ -6,7 +6,10 @@ import unittest
 import tempfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
-from mk_rootfs import build
+from mk_rootfs import build as build_root
+from install_manifest import BOOTSTRAP, BOOTSTRAP_CONFIG
+def build(blocks, programs, config):
+    return build_root(blocks,programs,config,BOOTSTRAP,inode_blocks=12)
 
 IMAGE = Path('build/root.img').read_bytes()
 def u16(data, offset):
@@ -65,8 +68,8 @@ class RootImage(unittest.TestCase):
             self.assertEqual(inode(number)[0], 0o100755)
             self.assertEqual(contents(number), Path(f'build/v7-{name}.elf').read_bytes())
         for name in ('rc','ttys','passwd'):
-            self.assertEqual(contents(lookup('/etc/'+name)), Path('rootfs/etc/'+name).read_bytes())
-        self.assertEqual(contents(lookup('/.profile')), Path('rootfs/profile').read_bytes())
+            self.assertEqual(contents(lookup('/etc/'+name)), (BOOTSTRAP_CONFIG / 'etc' / name).read_bytes())
+        self.assertEqual(contents(lookup('/.profile')), (BOOTSTRAP_CONFIG / 'profile').read_bytes())
         for path in ('/etc/utmp','/usr/adm/wtmp'):
             self.assertEqual(contents(lookup(path)), b'')
         for profile, name in enumerate(('dc0', 'dh0', 'dz0', 'kl0'), 23):
@@ -160,7 +163,7 @@ class RootImage(unittest.TestCase):
         self.assertGreater(len(free), 100)
 
     def test_reproducible_build(self):
-        self.assertEqual(build(len(IMAGE)//512, Path('build'), Path('rootfs')), IMAGE)
+        self.assertEqual(build(len(IMAGE)//512, Path('build'), BOOTSTRAP_CONFIG), IMAGE)
 
     def test_rejects_non_native_program(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -169,11 +172,11 @@ class RootImage(unittest.TestCase):
             bad[18:20] = b'\x03\x00'  # ELF32 x86 machine, not x86_64.
             (programs / 'v7-init.elf').write_bytes(bad)
             with self.assertRaisesRegex(ValueError, 'expected native'):
-                build(1024, programs, Path('rootfs'))
+                build(1024, programs, BOOTSTRAP_CONFIG)
 
     def test_rejects_too_small_volume(self):
         with self.assertRaisesRegex(ValueError, 'does not fit'):
-            build(256, Path('build'), Path('rootfs'))
+            build(256, Path('build'), BOOTSTRAP_CONFIG)
 
 if __name__ == '__main__':
     unittest.main()

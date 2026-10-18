@@ -14,7 +14,7 @@ ide = len(sys.argv) > 4 and sys.argv[4] == 'ide'
 extra = []
 if ide:
     disk = Path(disk_directory.name) / 'root.img'
-    disk.write_bytes(Path('build/root.img').read_bytes())
+    disk.write_bytes(Path('build/distribution.img').read_bytes())
     extra = ['-boot', 'd', '-drive', f'file={disk},format=raw,if=ide,index=0']
 try:
     process = subprocess.Popen([sys.argv[1], '-machine', 'pc', '-accel', 'tcg',

@@ -58,8 +58,9 @@ and working disk without starting QEMU; existing working disks are preserved.
 To use an installed cross-toolchain, run `make TOOLCHAIN_PREFIX=x86_64-elf- run`
 (or the same override for other targets). A pinned cross-toolchain remains planned.
 The kernel does not link host libc. Build artifacts go into `build/`.
-`make stage` prepares the manifest-driven installation tree and receipt in
-`build/stage`; `make rootfs` builds its V7 image. See [installation staging](docs/install-staging.md).
+`make stage` prepares the full installation tree and receipt in `build/stage`;
+`make rootfs` builds `build/distribution.img`. `make bootstrap-rootfs` builds the
+fixed embedded `build/root.img`. See [installation staging](docs/install-staging.md).
 
 `make clean` deletes the entire `build/` directory, including the persistent
 `build/nexix.img` disk and all files saved inside Nexix. Stop QEMU before cleaning.
@@ -126,8 +127,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 2 partial, 1 prototype and 203 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 77 done, 2 in progress
-and 287 to do** after task 84. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 78 done, 2 in progress
+and 286 to do** after task 85. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -151,7 +152,7 @@ Release scope and agreed native adaptations:
 Known gaps include complete TTY modes, additional devices, the native toolchain,
 multi-user startup and the remaining userland ports. The default embedded RAM
 root remains 512 KiB with 96 inode slots; task 84 supports larger external images.
-Tasks 85–86 complete full-distribution root separation and guest test staging.
+Task 85 separates the full IDE root; task 86 completes per-component guest test staging.
 
 See the [porting inventory](docs/porting-inventory.md) and its
 [component manifest](docs/v7-userland-manifest.json) for original inputs,
@@ -310,7 +311,7 @@ coverage and installation remain subject to later acceptance tasks.
 |---:|---|---|---|
 | 83 | Manifest-driven build/install staging | Done | [Native installation manifest and staging](docs/install-staging.md); shared build/catalog/root plan, modes/UID/GID, verified payload hashes and safe stage replacement; `make test-install`; Git history |
 | 84 | Scalable V7 image builder | Done | [Image sizing and limits](docs/image-builder.md); automatic volume/inode sizing, free-space budgets, mapped large images and atomic output; 64 MiB/4096-inode host and 16/128 MiB QEMU acceptance; `make test-image-builder`; Git history |
-| 85 | Separate full IDE root from embedded bootstrap/test root | To do | Keep 512 KiB RAM baseline; full distribution must not inflate the kernel image |
+| 85 | Separate full IDE root from embedded bootstrap/test root | Done | [Root image profiles](docs/root-images.md); fixed bootstrap manifest/config and 512 KiB RAM image, independent full IDE seed and atomic non-clobber disk creation; kernel hash isolation and cold boots at 16/128 MiB; `make test-root-separation`; Git history |
 | 86 | Per-component guest acceptance harness | To do | Disposable staged roots, serial fixtures and manifests; keep existing user disk intact |
 | 87 | Historical source/data archive extraction | To do | Validate all six source archives and six lesson archives; no host-format assumptions |
 | 88 | Resolve missing referenced support inputs | To do | Track bc lib.b and optional lex nrform/ebcform individually; recover or obtain explicit disposition |

@@ -1,0 +1,653 @@
+{
+  "schema_version": 1,
+  "version": "0.1.0",
+  "inventory": "docs/v7-userland-manifest.json",
+  "entries": [
+    {
+      "path": "/",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config"
+    },
+    {
+      "path": "/bin",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config"
+    },
+    {
+      "path": "/etc",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config"
+    },
+    {
+      "path": "/dev",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config"
+    },
+    {
+      "path": "/tmp",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config"
+    },
+    {
+      "path": "/usr",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config"
+    },
+    {
+      "path": "/usr/adm",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config"
+    },
+    {
+      "path": "/etc/init",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.init",
+      "source": {
+        "root": "programs",
+        "path": "v7-init.elf"
+      },
+      "format": "elf",
+      "bootstrap": true
+    },
+    {
+      "path": "/bin/sh",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.sh",
+      "source": {
+        "root": "programs",
+        "path": "v7-sh.elf"
+      },
+      "format": "elf",
+      "bootstrap": true
+    },
+    {
+      "path": "/bin/echo",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.echo",
+      "source": {
+        "root": "programs",
+        "path": "v7-echo.elf"
+      },
+      "format": "elf",
+      "bootstrap": true
+    },
+    {
+      "path": "/bin/cat",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.cat",
+      "source": {
+        "root": "programs",
+        "path": "v7-cat.elf"
+      },
+      "format": "elf",
+      "bootstrap": true
+    },
+    {
+      "path": "/bin/ls",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.ls",
+      "source": {
+        "root": "programs",
+        "path": "v7-ls.elf"
+      },
+      "format": "elf",
+      "bootstrap": true
+    },
+    {
+      "path": "/bin/pwd",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.pwd",
+      "source": {
+        "root": "programs",
+        "path": "v7-pwd.elf"
+      },
+      "format": "elf",
+      "bootstrap": true
+    },
+    {
+      "path": "/bin/cp",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.cp",
+      "source": {
+        "root": "programs",
+        "path": "v7-cp.elf"
+      },
+      "format": "elf",
+      "bootstrap": true
+    },
+    {
+      "path": "/bin/ln",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.ln",
+      "source": {
+        "root": "programs",
+        "path": "v7-ln.elf"
+      },
+      "format": "elf",
+      "bootstrap": true
+    },
+    {
+      "path": "/bin/rm",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.rm",
+      "source": {
+        "root": "programs",
+        "path": "v7-rm.elf"
+      },
+      "format": "elf",
+      "bootstrap": true
+    },
+    {
+      "path": "/bin/date",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.date",
+      "source": {
+        "root": "programs",
+        "path": "v7-date.elf"
+      },
+      "format": "elf",
+      "bootstrap": true
+    },
+    {
+      "path": "/bin/touch",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.touch",
+      "source": {
+        "root": "programs",
+        "path": "v7-touch.elf"
+      },
+      "format": "elf",
+      "bootstrap": true
+    },
+    {
+      "path": "/etc/rc",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config",
+      "source": {
+        "root": "config",
+        "path": "etc/rc"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/etc/ttys",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config",
+      "source": {
+        "root": "config",
+        "path": "etc/ttys"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/etc/passwd",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config",
+      "source": {
+        "root": "config",
+        "path": "etc/passwd"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/.profile",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config",
+      "source": {
+        "root": "config",
+        "path": "profile"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/etc/utmp",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config",
+      "format": "empty"
+    },
+    {
+      "path": "/usr/adm/wtmp",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config",
+      "format": "empty"
+    },
+    {
+      "path": "/dev/console",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 256
+    },
+    {
+      "path": "/dev/ttyS0",
+      "type": "link",
+      "target": "/dev/console",
+      "component": "distribution.devices"
+    },
+    {
+      "path": "/dev/tty",
+      "type": "character",
+      "mode": "0666",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 512
+    },
+    {
+      "path": "/dev/null",
+      "type": "character",
+      "mode": "0666",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 768
+    },
+    {
+      "path": "/dev/root",
+      "type": "block",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 0
+    },
+    {
+      "path": "/dev/rroot",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 1024
+    },
+    {
+      "path": "/dev/mem",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 1536
+    },
+    {
+      "path": "/dev/kmem",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 1537
+    },
+    {
+      "path": "/dev/hp0",
+      "type": "block",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 1792
+    },
+    {
+      "path": "/dev/rhp0",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 3072
+    },
+    {
+      "path": "/dev/rf0",
+      "type": "block",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 2048
+    },
+    {
+      "path": "/dev/rrf0",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 3328
+    },
+    {
+      "path": "/dev/rk0",
+      "type": "block",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 2304
+    },
+    {
+      "path": "/dev/rrk0",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 3584
+    },
+    {
+      "path": "/dev/rl0",
+      "type": "block",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 2560
+    },
+    {
+      "path": "/dev/rrl0",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 3840
+    },
+    {
+      "path": "/dev/rp0",
+      "type": "block",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 2816
+    },
+    {
+      "path": "/dev/rrp0",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 4096
+    },
+    {
+      "path": "/dev/tapectl",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 5376
+    },
+    {
+      "path": "/dev/ht0",
+      "type": "block",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 4352
+    },
+    {
+      "path": "/dev/rht0",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 4864
+    },
+    {
+      "path": "/dev/tm0",
+      "type": "block",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 4608
+    },
+    {
+      "path": "/dev/rtm0",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 5120
+    },
+    {
+      "path": "/dev/tap0",
+      "type": "block",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 5632
+    },
+    {
+      "path": "/dev/tap1",
+      "type": "block",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 5633
+    },
+    {
+      "path": "/dev/tap2",
+      "type": "block",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 5634
+    },
+    {
+      "path": "/dev/tap3",
+      "type": "block",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 5635
+    },
+    {
+      "path": "/dev/tap4",
+      "type": "block",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 5636
+    },
+    {
+      "path": "/dev/tap5",
+      "type": "block",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 5637
+    },
+    {
+      "path": "/dev/tap6",
+      "type": "block",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 5638
+    },
+    {
+      "path": "/dev/tap7",
+      "type": "block",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 5639
+    },
+    {
+      "path": "/dev/dc0",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 5888
+    },
+    {
+      "path": "/dev/dh0",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 6144
+    },
+    {
+      "path": "/dev/dz0",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 6400
+    },
+    {
+      "path": "/dev/kl0",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 6656
+    },
+    {
+      "path": "/dev/dn0",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 6912
+    },
+    {
+      "path": "/dev/dn1",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 6913
+    },
+    {
+      "path": "/dev/dn2",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 6914
+    },
+    {
+      "path": "/dev/dn3",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 6915
+    },
+    {
+      "path": "/dev/du0",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 7168
+    },
+    {
+      "path": "/dev/modemctl",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 7424
+    }
+  ]
+}
