@@ -36,9 +36,9 @@ is the historical two-field structure interface, not C99 complex arithmetic.
 V7 polynomial coefficients, finite-input algorithms and domain rules are
 retained. For example sqrt(-1) returns zero with EDOM and log(0) returns -HUGE
 with EDOM; HUGE retains the V7 value. This is not a claim of C99 libm conformance
-or exhaustive correctly-rounded accuracy. The historical header's gamma is
-not implemented; this archive has no gamma implementation C file. Installing
-the archive and native headers on the root filesystem is still pending.
+or exhaustive correctly-rounded accuracy. Task 80 adds [gamma/signgam and math boundary coverage](math-coverage.md), with
+a separately pinned historical source equivalent for the missing gamma source.
+Installing the archive and native headers is task 82.
 
 Libc supplies IEEE binary64 frexp, ldexp and modf replacements for the PDP-11
 assembly helpers, and an x87 FPREM implementation of fmod. Decimal atof/strtod

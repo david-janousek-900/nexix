@@ -22809,15 +22809,13 @@
         }
       ],
       "blockers": [
-        "Install native math headers/archive and validate consuming V7 programs.",
-        "Complete exceptional-input and large-argument acceptance; historical gamma lacks a retained implementation C file."
+        "Task 82 installs native math headers/archive; consuming command ports remain their own tasks."
       ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "unresolved": [],
       "acceptance": [
         "Compare function outputs with numerical reference fixtures across domain boundaries and exceptional inputs.",
-        "Test exported routines with native callers, boundary/error cases and consuming programs."
+        "Test exported routines with native callers, boundary/error cases and consuming programs.",
+        "Task 80: make test-math-coverage tests recovered gamma/signgam, exceptional/large inputs and Bessel order bounds at 16/128 MiB; docs/math-coverage.md records source-gap disposition."
       ],
       "source_files": [
         "reference/v7/usr/src/libm/asin.c",

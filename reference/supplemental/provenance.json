@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "inputs": [
+    {
+      "path": "reference/supplemental/v6/gamma.s",
+      "origin": "Research V6 source carried by the V7 history snapshot; not a retained V7 C source",
+      "url": "https://raw.githubusercontent.com/dspinellis/unix-history-repo/e005199fcbe9d3676ddf72c1d31dd42f7216ad8a/.ref-Research-V6/usr/source/s3/gamma.s",
+      "sha256": "7ca2c4bcf2b1b8da2fc92f12512832adecc7d5173aaf47273b0603820ed3f163",
+      "license": "reference/Caldera-license.pdf",
+      "task": 80
+    }
+  ]
+}

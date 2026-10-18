@@ -140,8 +140,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 4 partial, 1 prototype and 189 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 105 done, 2 in progress
-and 259 to do** after task 77. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 106 done, 1 in progress
+and 259 to do** after task 80. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -314,7 +314,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 77 | Printer/plotter device equivalents | Done | VP mode/control framing and PPLOT transition; VS GO burst/input protocols with bounded peer; make test-printer test-typesetter test-output-unit; docs/output-devices.md; Git history |
 | 78 | Native kernel configuration/build tooling | Done | Validated native configuration generates actual kernel driver link inputs; native build recipes and every historical configuration responsibility mapped; make test-mkconf build test-boot test-multiuser-acceptance; Git history |
 | 79 | Resolve V6 wrappers and PDP-11 runtime assembly replacements | Done | Every V6 wrapper and libc compiler helper mapped to native ABI; signed/compound arithmetic, stack/varargs and API guest tests at 16/128 MiB; docs/runtime-equivalents.md; Git history |
-| 80 | Complete native libm coverage and source-gap resolution | In progress | libm built; header-only gamma and missing inputs cannot be silently claimed |
+| 80 | Complete native libm coverage and source-gap resolution | Done | All retained math families plus pinned historical gamma/signgam equivalent; safe large trig/Bessel boundaries and IEEE cases; make test-math-coverage test-libc test-libc-interfaces; docs/math-coverage.md; Git history |
 | 81 | Document/test native replacement for libfpsim/fakfp | Done | Native x87/SSE2 mapping for every libfpsim/fakfp input; arithmetic/conversion/SIGILL guest acceptance; make test-fpsim-equivalent test-fpu; docs/fpsim-equivalent.md; Git history |
 | 82 | Final libc consumer acceptance and installed development interfaces | In progress | libc remains partial; complete crt0/fcrt0/profiling headers/archives |
 

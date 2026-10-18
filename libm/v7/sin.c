@@ -44,7 +44,7 @@ double arg;
 int quad;
 {
 	double modf();
-	double e, f;
+	double e;
 	double ysq;
 	double x,y;
 	int k;
@@ -59,9 +59,7 @@ int quad;
 	x = x*twoopi;	/*underflow?*/
 	if(x>32764){
 		y = modf(x,&e);
-		e = e + quad;
-		modf(0.25*e,&f);
-		quad = e - 4*f;
+		quad = (quad + (int)fmod(e, 4.0)) & 03;
 	}else{
 		k = x;
 		y = x - k;

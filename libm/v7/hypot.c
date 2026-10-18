@@ -11,6 +11,8 @@ hypot(a,b)
 double a,b;
 {
 	double t;
+	if(a==INFINITY || a==-INFINITY || b==INFINITY || b==-INFINITY)return INFINITY;
+	if(isnan(a) || isnan(b))return NAN;
 	if(a<0) a = -a;
 	if(b<0) b = -b;
 	if(a > b) {

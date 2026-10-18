@@ -1498,3 +1498,17 @@ build/printer.elf: build/crt0.o build/printer.o build/libc.a user/user.ld
 test-printer: build/nexix.iso build/printer.elf stage test-output-unit
 	$(PYTHON) tools/printer_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/printer_smoke.py $(QEMU) build/nexix.iso 128M
+
+build/math-coverage.o: tests/math-coverage.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/math-coverage.elf: build/crt0.o build/math-coverage.o build/libm.a build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o,$^) $(filter %.a,$^) -o $@
+.PHONY: test-math-coverage
+test-math-coverage: build/nexix.iso build/math-coverage.elf stage
+	$(PYTHON) tools/math_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/math_smoke.py $(QEMU) build/nexix.iso 128M
+
+.PHONY: test-supplemental-inputs
+test-supplemental-inputs:
+	$(PYTHON) tests/supplemental_inputs.py
+test-unit: test-supplemental-inputs
