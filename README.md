@@ -125,15 +125,15 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The reviewed implementation baseline is commit `fa6076d`. Nexix boots into a working
-single-user V7 shell with persistent IDE storage. 13 native programs are
-installed: **init, sh, echo, cat, ls, pwd, cp, ln, rm, date, touch, stty and tty**.
+single-user V7 shell with persistent IDE storage. 14 native programs are
+installed: **init, sh, echo, cat, ls, pwd, cp, ln, rm, date, touch, stty, tty and mesg**.
 The inventory accounts for **217 components, 2,144 distribution files and
-35 supporting/platform requirements**. Its component statuses are 13 implemented,
-4 partial, 1 prototype and 199 not ported; importing reference inputs does not
+35 supporting/platform requirements**. Its component statuses are 14 implemented,
+4 partial, 1 prototype and 198 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 87 done, 2 in progress
-and 277 to do** after task 96. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 88 done, 2 in progress
+and 276 to do** after task 97. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -333,7 +333,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 94 | Install native passwd/group/ttys/rc configuration | Done | Native passwd/group/ttys/rc/motd, locked service identities, development DES passwords and private owned homes/profiles; `make test-account-config` at 16/128 MiB; bootstrap unchanged; [accounts](docs/multi-user.md); Git history |
 | 95 | Port stty | Done | Retained stty source with native 115200 reporting and bounded operand/error handling; installed command tests on both terminals, independent settings, raw/echo, malformed input and non-TTY descriptors; `make test-stty` at 16/128 MiB; Git history |
 | 96 | Port tty | Done | Retained tty command installed with fd-0 identity and original -s behavior; COM1/COM2, piped output, regular-file and pipe input checked with exact status/output; `make test-tty-command` at 16/128 MiB; Git history |
-| 97 | Port mesg | To do | Terminal write-permission toggles |
+| 97 | Port mesg | Done | Retained mesg with V7 mode/status behavior; per-line permission changes, non-TTY/usage errors and real non-owner chmod denial; `make test-mesg` at 16/128 MiB; Git history |
 | 98 | Port getty | To do | Line initialization, username handoff and respawn |
 | 99 | Port login authentication and credentials | To do | Correct/wrong passwords, home, shell, UID/GID and environment |
 | 100 | Integrate login/logout utmp and wtmp | To do | Records across concurrent sessions; native format documented |

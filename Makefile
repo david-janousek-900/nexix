@@ -1318,3 +1318,12 @@ test-stty: rootfs iso build/stty-command.elf
 test-tty-command: rootfs iso
 	$(PYTHON) tools/guest_acceptance.py tests/guest/tty.json --qemu $(QEMU) --ram 16M --report build/tty-command-16M.json
 	$(PYTHON) tools/guest_acceptance.py tests/guest/tty.json --qemu $(QEMU) --ram 128M --report build/tty-command-128M.json
+
+build/mesg-command.o: tests/mesg-command.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/mesg-command.elf: build/crt0.o build/mesg-command.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+.PHONY: test-mesg
+test-mesg: rootfs iso build/mesg-command.elf
+	$(PYTHON) tools/mesg_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/mesg_smoke.py $(QEMU) build/nexix.iso 128M

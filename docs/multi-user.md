@@ -55,3 +55,10 @@ fails, and suppress output with `-s` while retaining that status. The native
 stdio declaration is included explicitly. `make test-tty-command` uses the
 component guest harness at 16/128 MiB to check COM1 (`/dev/console`), COM2
 (`/dev/ttyS1`), output through a pipe, regular-file/pipe input, and silent mode.
+
+Task 97 installs V7 `/bin/mesg`. It identifies fd 2, tests the terminal inode's
+other-write bit and applies the source's 0622/0600 modes. A negative answer or
+`mesg n` exits 1; invalid usage and failures retain exit 255. The port explicitly
+checks ttyname failure before stat. `make test-mesg` checks both lines, independent
+modes, non-TTY/error paths, and a real UID-100 process failing to chmod a root-owned
+terminal that it inherited open. V7's message permission semantics are retained.
