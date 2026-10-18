@@ -18,7 +18,7 @@ File descriptors support regular files, directories, links, pipes, permissions
 and descriptor ownership across fork/exec/exit. COM1 provides cooked editing,
 raw/cbreak modes, echo, flow control and controlling-terminal signals.
 
-Native libc supports the retained V7 init, shell and nine utilities. Signals,
+Native libc supports the installed V7 init, shell and utilities. Signals,
 alarms, brk/sbrk, credentials, process groups and time calls supply their basic
 services. The original V7 reference sources and historical disk encodings are
 preserved. `make run` keeps root changes in `build/nexix.img` across boots.
@@ -125,15 +125,15 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The reviewed implementation baseline is commit `fa6076d`. Nexix boots into a working
-single-user V7 shell with persistent IDE storage. Eleven native programs are
-installed: **init, sh, echo, cat, ls, pwd, cp, ln, rm, date and touch**.
+single-user V7 shell with persistent IDE storage. Twelve native programs are
+installed: **init, sh, echo, cat, ls, pwd, cp, ln, rm, date, touch and stty**.
 The inventory accounts for **217 components, 2,144 distribution files and
-35 supporting/platform requirements**. Its component statuses are 11 implemented,
-4 partial, 1 prototype and 201 not ported; importing reference inputs does not
+35 supporting/platform requirements**. Its component statuses are 12 implemented,
+4 partial, 1 prototype and 200 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 85 done, 2 in progress
-and 279 to do** after task 94. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 86 done, 2 in progress
+and 278 to do** after task 95. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -331,7 +331,7 @@ coverage and installation remain subject to later acceptance tasks.
 | Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 94 | Install native passwd/group/ttys/rc configuration | Done | Native passwd/group/ttys/rc/motd, locked service identities, development DES passwords and private owned homes/profiles; `make test-account-config` at 16/128 MiB; bootstrap unchanged; [accounts](docs/multi-user.md); Git history |
-| 95 | Port stty | To do | Query/change each terminal independently |
+| 95 | Port stty | Done | Retained stty source with native 115200 reporting and bounded operand/error handling; installed command tests on both terminals, independent settings, raw/echo, malformed input and non-TTY descriptors; `make test-stty` at 16/128 MiB; Git history |
 | 96 | Port tty | To do | Controlling-terminal identification and no-TTY errors |
 | 97 | Port mesg | To do | Terminal write-permission toggles |
 | 98 | Port getty | To do | Line initialization, username handoff and respawn |

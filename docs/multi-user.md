@@ -34,3 +34,17 @@ looks up the installed users/groups and verifies the DES hashes; forked children
 drop credentials, create owned files in their own homes, read the account data,
 and fail to access another home or write `/etc`. Staging and bootstrap separation
 checks verify the installed modes/owners without host chown or device nodes.
+
+Task 95 installs `/bin/stty` from `reference/v7/usr/src/cmd/stty.c`. Its mode,
+erase/kill, speed and reporting tables remain source-based. The native port adds
+115200 to both the accepted-speed and reporting tables; the latter must cover
+Nexix's additional speed index. It reports failed terminal operations and missing
+erase/kill operands instead of reading past argv or reporting uninitialized data.
+Unknown modes produce the original diagnostic and a deterministic failure status.
+The PC UART uses one rate for input/output; unsupported unequal-rate requests
+fail through the existing TTY contract.
+
+`make test-stty` executes the installed command on real guest terminals at
+16/128 MiB. It checks 115200/9600 reporting, erase/kill, raw and echo changes on
+COM2 while COM1 settings remain unchanged, plus missing operands, unknown modes
+and a regular-file descriptor. Both stderr and exit status are checked.

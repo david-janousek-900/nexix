@@ -722,6 +722,19 @@
       "uid": 101,
       "gid": 100,
       "component": "distribution.config"
+    },
+    {
+      "path": "/bin/stty",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.stty",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-stty.elf"
+      }
     }
   ]
 }

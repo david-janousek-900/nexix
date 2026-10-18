@@ -1303,3 +1303,13 @@ build/account-config.elf: build/crt0.o build/account-config.o build/libc.a user/
 test-account-config: rootfs iso build/account-config.elf test-install-unit test-root-separation-unit
 	$(PYTHON) tools/account_config_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/account_config_smoke.py $(QEMU) build/nexix.iso 128M
+
+# Task 95: retained stty command against independent native UARTs.
+build/stty-command.o: tests/stty-command.c tests/command-runner.h | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/stty-command.elf: build/crt0.o build/stty-command.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+.PHONY: test-stty
+test-stty: rootfs iso build/stty-command.elf
+	$(PYTHON) tools/stty_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/stty_smoke.py $(QEMU) build/nexix.iso 128M
