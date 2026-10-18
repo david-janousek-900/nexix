@@ -126,15 +126,15 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 21 native programs are
-installed: **init, sh, echo, cat, ls, pwd, cp, ln, rm, date, touch, stty, tty, mesg, getty, login, passwd, su, newgrp, who and write**.
+to multi-user V7 login with persistent IDE storage. 22 native programs are
+installed: **init, sh, echo, cat, ls, pwd, cp, ln, rm, date, touch, stty, tty, mesg, getty, login, passwd, su, newgrp, who, write and wall**.
 The inventory accounts for **217 components, 2,144 distribution files and
-35 supporting/platform requirements**. Its component statuses are 21 implemented,
-4 partial, 1 prototype and 191 not ported; importing reference inputs does not
+35 supporting/platform requirements**. Its component statuses are 22 implemented,
+4 partial, 1 prototype and 190 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 97 done, 2 in progress
-and 267 to do** after task 106. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 98 done, 2 in progress
+and 266 to do** after task 107. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -344,7 +344,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 104 | Port newgrp | Done | Retained set-ID newgrp membership/other/password rules and replacement shell; checked UID drop, all native extra descriptors closed, shared V7 /tmp prerequisite; `make test-newgrp` at 16/128 MiB including real group passwords; Git history |
 | 105 | Port who | Done | Retained who modes and native utmp formatting; per-line identity, no-TTY fallback, explicit records, eight-byte nonterminated fields, missing files and logout; `make test-who` at 16/128 MiB; Git history |
 | 106 | Port write | Done | Retained write messaging, explicit tty, mesg permissions, headers/bells, local shell escape and EOF/SIGINT; bounded fields/paths/buffers, typed signals and pre-open device checks; `make test-write` at 16/128 MiB; Git history |
-| 107 | Port wall | To do | Broadcast to logged-in users |
+| 107 | Port wall | Done | Retained asynchronous per-user wall broadcast; checked 3000-byte bound, streams and fixed-width device paths; file/stdin delivery, non-root/root mesg behavior and preserved regular-file trap; `make test-wall` at 16/128 MiB; Git history |
 | 108 | Multi-user boot and reboot acceptance | To do | Old 27 completion; two concurrent logins, logout, init recovery, persistence |
 
 ### Additional libraries

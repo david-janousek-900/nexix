@@ -1411,3 +1411,8 @@ test-who: rootfs iso
 test-write: rootfs iso
 	$(PYTHON) tools/write_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/write_smoke.py $(QEMU) build/nexix.iso 128M
+
+.PHONY: test-wall
+test-wall: rootfs iso
+	$(PYTHON) tools/wall_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/wall_smoke.py $(QEMU) build/nexix.iso 128M

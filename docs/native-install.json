@@ -852,6 +852,19 @@
         "root": "programs",
         "path": "v7-write.elf"
       }
+    },
+    {
+      "path": "/etc/wall",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.wall",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-wall.elf"
+      }
     }
   ]
 }

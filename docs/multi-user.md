@@ -201,3 +201,15 @@ strings are explicit, and a 128-byte escape reserves its terminator. Native writ
 errors are checked. `make test-write` exchanges real messages between Alice and
 Bob at 16/128 MiB, checks mesg denial/enable, invalid names/usage, explicit tty,
 the full escape-buffer boundary, EOF and Ctrl-C, then verifies both shells live.
+
+Task 107 installs V7 `/etc/wall`. It retains file/stdin input, the 50-record table,
+per-recipient sleep/fork, source broadcast header and asynchronous child delivery.
+The parent retains status 0 even if a delivery child reports failure. Ordinary
+senders respect device permissions; root can broadcast to a `mesg n` terminal.
+The port bounds the original 3000-byte message buffer, checks input/output errors,
+and validates fixed-width terminal paths and device type before opening.
+
+`make test-wall` checks file/stdin delivery to both authenticated users, ordinary
+and root permissions, exactly 3000 bytes, oversize/missing input and a malformed
+utmp entry naming a regular file. That file must survive unchanged. Runs at
+16/128 MiB wait for each asynchronous delivery and verify both shells survive.
