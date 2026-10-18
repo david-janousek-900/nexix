@@ -1,6 +1,5 @@
 """Read-only validation of the V7 userland manifest and reference coverage."""
 import argparse
-import ast
 import json
 from pathlib import Path
 import re
@@ -188,19 +187,14 @@ def validate(manifest, root=ROOT):
             need(owner in entry_map and file in entry_map[owner]['sources'], f'invalid installed program owner: {file}')
     for file in (reference / 'bin').iterdir():
         need(str(file.relative_to(root)) in program_files, f'missing installed program: {file.name}')
-    # Compare claimed implemented programs with both build and packaging declarations.
-    makefile = (root / 'Makefile').read_text()
-    match = re.search(r'^V7_COMMANDS\s*=\s*(.+)$', makefile, re.M)
-    need(match is not None, 'cannot locate V7_COMMANDS')
-    built = set(match[1].split()) | {'sh'} if match else set()
-    tree = ast.parse((root / 'tools/mk_rootfs.py').read_text())
-    packaged = set()
-    for node in tree.body:
-        if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == 'COMMANDS' for t in node.targets):
-            packaged = set(ast.literal_eval(node.value))
-    if any(isinstance(node, ast.Constant) and node.value == '/etc/init' for node in ast.walk(tree)):
-        packaged.add('init')
-    need(installed == built == packaged, f'implemented output drift: manifest={sorted(installed)}, build={sorted(built)}, packaged={sorted(packaged)}')
+    # Build and packaging consume the same validated native installation plan.
+    from install_manifest import load
+    try:
+        plan = load(root / 'docs/native-install.json')
+        packaged = {Path(e['path']).name for e in plan if e.get('format') == 'elf'}
+        need(installed == packaged, f'implemented output drift: inventory={sorted(installed)}, install={sorted(packaged)}')
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        errors.append(f'invalid native installation plan: {error}')
     need(manifest.get('roadmap_coverage') == 'docs/roadmap-coverage.json', 'missing or invalid roadmap coverage path')
     try:
         coverage = json.loads((root / 'docs/roadmap-coverage.json').read_text())

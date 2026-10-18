@@ -303,10 +303,16 @@ build/signals_abi.o: user/signals-test-abi.S include/nexix/syscall.h | build/.di
 
 # Native builds of retained V7 K&R sources; original reference/ stays pristine.
 V7_CFLAGS = $(filter-out -std=c11 -Werror,$(USER_CFLAGS)) -std=gnu89 -funsigned-char -fcommon -fno-strict-aliasing -Wno-implicit-int -Wno-implicit-function-declaration -Wno-return-type -Wno-incompatible-pointer-types -Wno-int-conversion -Wno-pointer-sign -Wno-unused-parameter -Wno-parentheses -Wno-missing-field-initializers
-V7_COMMANDS = init echo cat ls pwd cp ln rm date touch
+INSTALL_COMMANDS := $(shell $(PYTHON) tools/install_manifest.py --commands)
+INSTALL_INPUTS := $(shell $(PYTHON) tools/install_manifest.py --inputs)
+INSTALL_EMBEDDED := $(shell $(PYTHON) tools/install_manifest.py --embedded)
+ifeq ($(strip $(INSTALL_COMMANDS)),)
+$(error Invalid or empty native installation manifest; see tools/install_manifest.py)
+endif
+V7_COMMANDS = $(filter-out sh,$(INSTALL_COMMANDS))
 V7_SH_SOURCES = $(wildcard user/v7/sh/*.c)
 V7_SH_OBJECTS = $(patsubst user/v7/sh/%.c,build/v7-sh-%.o,$(V7_SH_SOURCES))
-V7_ELFS = build/v7-sh.elf $(addprefix build/v7-,$(addsuffix .elf,$(V7_COMMANDS)))
+V7_ELFS = $(filter build/%.elf,$(INSTALL_INPUTS))
 -include $(V7_SH_OBJECTS:.o=.d) $(addprefix build/v7-,$(addsuffix .d,$(V7_COMMANDS)))
 build/v7-sh-%.o: user/v7/sh/%.c | build/.dir
 	$(CC) $(V7_CFLAGS) -c $< -o $@
@@ -320,12 +326,14 @@ build/v7-%.elf: build/crt0.o build/v7-%.o build/libc.a user/user.ld
 v7-userland: $(V7_ELFS)
 userland: v7-userland
 
-V7_IMAGES = $(addprefix build/v7_image_,$(addsuffix .o,sh init echo cat ls pwd cp ln rm date touch))
+V7_IMAGES = $(addprefix build/v7_image_,$(addsuffix .o,$(INSTALL_EMBEDDED)))
 # Embedded executable images for the task 16 acceptance fixture.
 OBJECTS += $(V7_IMAGES)
 -include build/catalog.d build/v7_userland_test.d build/v7_test_program.d
-build/catalog.o: kernel/v7/catalog.c | build/.dir
-	$(CC) $(CFLAGS) -c $< -o $@
+build/install_catalog.inc: docs/native-install.json docs/v7-userland-manifest.json tools/install_manifest.py | build/.dir
+	$(PYTHON) tools/install_manifest.py --catalog > $@
+build/catalog.o: kernel/v7/catalog.c build/install_catalog.inc | build/.dir
+	$(CC) $(CFLAGS) -Ibuild -c $< -o $@
 build/v7_userland_test.o: kernel/v7_userland_test.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 build/v7_image_%.o: build/v7-%.elf
@@ -346,10 +354,14 @@ build/nexix.elf: $(V7_IMAGES)
 .SECONDARY: $(addprefix build/v7-,$(addsuffix .o,$(V7_COMMANDS)))
 
 # Packaged 0.1.0 root, separate from the filesystem regression fixture.
-.PHONY: rootfs test-rootfs
+.PHONY: rootfs test-rootfs stage
+stage: build/stage/receipt.json
+	$(PYTHON) tools/install_manifest.py --verify --output build/stage
+build/stage/receipt.json: docs/native-install.json docs/v7-userland-manifest.json tools/install_manifest.py $(INSTALL_INPUTS) | build/.dir
+	$(PYTHON) tools/install_manifest.py --output build/stage
 rootfs: build/root.img
-build/root.img: tools/mk_rootfs.py tools/mk_v7fs.py $(V7_ELFS) rootfs/etc/rc rootfs/etc/ttys rootfs/etc/passwd rootfs/profile
-	$(PYTHON) tools/mk_rootfs.py --output $@
+build/root.img: tools/mk_rootfs.py tools/mk_v7fs.py tools/install_manifest.py build/stage/receipt.json | stage
+	$(PYTHON) tools/mk_rootfs.py --stage build/stage --output $@
 build/boot_root_image.o: build/root.img
 	$(LD) -r -b binary $< -o build/boot_root_raw.o
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/boot_root_raw.o $@
@@ -1171,3 +1183,10 @@ test-modem: test-modem-unit test-rootfs test-inventory test-libc-interfaces test
 build/modem_program.o: user/modem-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 -include build/modem_program.d
+
+# Task 83: manifest-driven installation staging and root-image equivalence.
+.PHONY: test-install-unit test-install
+test-install-unit: v7-userland
+	$(PYTHON) tests/install_manifest.py
+test-install: test-install-unit stage test-rootfs test-inventory test-libc-interfaces
+test-unit: test-install-unit

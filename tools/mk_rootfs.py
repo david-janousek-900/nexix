@@ -1,89 +1,65 @@
-"""Package Nexix 0.1.0 native userland into a deterministic V7 root volume."""
+"""Package the native installation manifest into a deterministic V7 root volume."""
 import argparse
 from pathlib import Path
 from mk_v7fs import Image, DIR, REG, CHR, BLK
+from install_manifest import MANIFEST, load, materialize, read_stage
 
-COMMANDS = ('sh', 'echo', 'cat', 'ls', 'pwd', 'cp', 'ln', 'rm', 'date', 'touch')
 
-def build(blocks, programs, config):
-    image = Image(blocks,inode_blocks=12)  # Spare inodes for devices and mount fixtures.
-    # Fixed inode assignments preserve reproducibility and leave spare inodes.
-    entries = {
-        '/': 2, '/bin': 3, '/etc': 4, '/dev': 5, '/tmp': 6,
-        '/usr': 7, '/usr/adm': 8,
-    }
-    files = [('/etc/init', programs / 'v7-init.elf', 0o755)]
-    files += [('/bin/' + name, programs / ('v7-' + name + '.elf'), 0o755)
-              for name in COMMANDS]
-    files += [('/etc/' + name, config / 'etc' / name, 0o644)
-              for name in ('rc', 'ttys', 'passwd')]
-    files += [('/.profile', config / 'profile', 0o644)]
-    number = 9
-    for path, source, mode in files:
-        data = source.read_bytes()
-        if mode & 0o111 and (len(data) < 64 or data[:7] != b'\x7fELF\x02\x01\x01' or
-                            data[16:20] != b'\x02\x00\x3e\x00'):
-            raise ValueError(f'{source}: expected native x86_64 ELF64')
-        entries[path] = number
-        image.inode(number, REG | mode, data)
-        number += 1
-    for path in ('/etc/utmp', '/usr/adm/wtmp'):
-        entries[path] = number
-        image.inode(number, REG | 0o644)
-        number += 1
-    entries['/dev/console'] = entries['/dev/ttyS0'] = number
-    image.inode(number, CHR | 0o600, device=0x100, nlink=2)
-    number += 1
-    entries['/dev/tty'] = number
-    image.inode(number, CHR | 0o666, device=0x200)
-    number += 1
-    entries['/dev/null'] = number
-    image.inode(number, CHR | 0o666, device=0x300)
-    for path, kind, dev in (('/dev/root', BLK, 0), ('/dev/rroot', CHR, 0x400)):
-        number += 1
-        entries[path] = number
-        image.inode(number, kind | 0o600, device=dev)
-    for path,dev in (('/dev/mem',0x600),('/dev/kmem',0x601)):
-        number+=1;entries[path]=number
-        image.inode(number,CHR|0o600,device=dev)
-    for kind,name in enumerate(('hp','rf','rk','rl','rp')):
-        for raw in (False,True):
-            number+=1;path='/dev/'+('r' if raw else '')+name+'0';entries[path]=number
-            image.inode(number,(CHR if raw else BLK)|0o600,device=((12 if raw else 7)+kind)*256)
-    for path,kind,dev in (('/dev/tapectl',CHR,0x1500),('/dev/ht0',BLK,0x1100),
-                          ('/dev/rht0',CHR,0x1300),('/dev/tm0',BLK,0x1200),('/dev/rtm0',CHR,0x1400)):
-        number+=1;entries[path]=number
-        image.inode(number,kind|0o600,device=dev)
-    for unit in range(8):
-        number+=1;entries['/dev/tap'+str(unit)]=number
-        image.inode(number,BLK|0o600,device=0x1600+unit)
-    for profile,name in enumerate(('dc','dh','dz','kl'),1):
-        number+=1;entries['/dev/'+name+'0']=number
-        image.inode(number,CHR|0o600,device=(22+profile)*256)
-    for name,dev in [("dn"+str(i),0x1b00+i) for i in range(4)]+[("du0",0x1c00),("modemctl",0x1d00)]:
-        number+=1;entries['/dev/'+name]=number
-        image.inode(number,CHR|0o600,device=dev)
-    # Children before parents: directory link counts depend on inode types.
-    for path in ('/bin', '/etc', '/dev', '/tmp', '/usr/adm', '/usr', '/'):
-        parent = path.rsplit('/', 1)[0] or '/'
-        children = [(child.rsplit('/', 1)[1], ino) for child, ino in entries.items()
-                    if child != '/' and (child.rsplit('/', 1)[0] or '/') == path]
-        image.directory(entries[path], entries[parent], sorted(children))
+def build(blocks, programs, config, manifest=MANIFEST, stage=None):
+    records, payloads = (read_stage(stage, manifest) if stage is not None else
+                         materialize(load(manifest), programs, config))
+    image = Image(blocks, inode_blocks=12)  # Full-release capacity belongs to task 84.
+    numbers = {}
+    number = 2
+    for entry in records:
+        path = entry['path']
+        if entry['type'] == 'link':
+            numbers[path] = numbers[entry['target']]
+        else:
+            numbers[path] = number
+            number += 1
+    if number-1 > (image.isize-2)*8:
+        raise ValueError('installation does not fit inode area')
+    kinds = {'file': REG, 'directory': DIR, 'character': CHR, 'block': BLK}
+    for e in records:
+        if e['type'] in ('directory', 'link'):
+            continue
+        ino = numbers[e['path']]
+        image.inode(ino, kinds[e['type']] | int(e['mode'], 8), payloads.get(e['path'], b''),
+                    device=e.get('device', 0), nlink=sum(n == ino for n in numbers.values()),
+                    uid=e['uid'], gid=e['gid'])
+    pending = [e for e in records if e['type'] == 'directory']
+    while pending:
+        # Stable child-before-parent order preserves existing fixture disk bytes.
+        e = next(e for e in pending if not any(
+            other['path'] != e['path'] and str(Path(other['path']).parent) == e['path']
+            for other in pending))
+        path = e['path']
+        parent = str(Path(path).parent)
+        children = [(Path(child).name, ino) for child, ino in numbers.items()
+                    if child != '/' and str(Path(child).parent) == path]
+        image.directory(numbers[path], numbers[parent], sorted(children),
+                        mode=int(e['mode'], 8), uid=e['uid'], gid=e['gid'])
+        pending.remove(e)
     return image.finish()
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--blocks', type=int, default=1024)
     parser.add_argument('--programs', type=Path, default=Path('build'))
     parser.add_argument('--config', type=Path, default=Path('rootfs'))
+    parser.add_argument('--manifest', type=Path, default=MANIFEST)
+    parser.add_argument('--stage', type=Path)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     try:
-        data = build(args.blocks, args.programs, args.config)
+        data = build(args.blocks, args.programs, args.config, args.manifest, args.stage)
         args.output.write_bytes(data)
-    except (OSError, ValueError) as error:
+    except (OSError, ValueError, KeyError, TypeError) as error:
         parser.error(str(error))
-    print(f'Built {args.output}: {len(data)//512} V7 blocks, init, shell and {len(COMMANDS)-1} utilities')
+    print(f'Built {args.output}: {len(data)//512} V7 blocks from {args.manifest.name}')
+
 
 if __name__ == '__main__':
     main()

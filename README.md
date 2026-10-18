@@ -58,6 +58,8 @@ and working disk without starting QEMU; existing working disks are preserved.
 To use an installed cross-toolchain, run `make TOOLCHAIN_PREFIX=x86_64-elf- run`
 (or the same override for other targets). A pinned cross-toolchain remains planned.
 The kernel does not link host libc. Build artifacts go into `build/`.
+`make stage` prepares the manifest-driven installation tree and receipt in
+`build/stage`; `make rootfs` builds its V7 image. See [installation staging](docs/install-staging.md).
 
 `make clean` deletes the entire `build/` directory, including the persistent
 `build/nexix.img` disk and all files saved inside Nexix. Stop QEMU before cleaning.
@@ -124,8 +126,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 2 partial, 1 prototype and 203 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 75 done, 2 in progress
-and 289 to do** after task 75. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 76 done, 2 in progress
+and 288 to do** after task 83. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -148,7 +150,7 @@ Release scope and agreed native adaptations:
 
 Known gaps include complete TTY modes, additional devices, the native toolchain,
 multi-user startup and the remaining userland ports. Packaging
-currently has a 64-inode image builder and a fixed 512 KiB embedded RAM root;
+currently uses a 96-inode root image and a fixed 512 KiB embedded RAM root;
 tasks 83–86 address these limits before full-distribution installation.
 
 See the [porting inventory](docs/porting-inventory.md) and its
@@ -306,8 +308,8 @@ coverage and installation remain subject to later acceptance tasks.
 
 | Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
-| 83 | Manifest-driven build/install staging | To do | Per-component outputs, modes and provenance; replace hard-coded 11-program declarations |
-| 84 | Scalable V7 image builder | To do | Current builder has 64 inodes; configurable inode table and adequate full-release capacity |
+| 83 | Manifest-driven build/install staging | Done | [Native installation manifest and staging](docs/install-staging.md); shared build/catalog/root plan, modes/UID/GID, verified payload hashes and safe stage replacement; `make test-install`; Git history |
+| 84 | Scalable V7 image builder | To do | Root uses 96 inodes; scalable configuration and adequate full-release capacity |
 | 85 | Separate full IDE root from embedded bootstrap/test root | To do | Keep 512 KiB RAM baseline; full distribution must not inflate the kernel image |
 | 86 | Per-component guest acceptance harness | To do | Disposable staged roots, serial fixtures and manifests; keep existing user disk intact |
 | 87 | Historical source/data archive extraction | To do | Validate all six source archives and six lesson archives; no host-format assumptions |

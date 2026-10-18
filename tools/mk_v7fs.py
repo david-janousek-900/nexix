@@ -71,7 +71,7 @@ class Image:
             block = next_block
         return block
 
-    def inode(self, number, mode, data=b'', sparse=None, device=0, nlink=1):
+    def inode(self, number, mode, data=b'', sparse=None, device=0, nlink=1, uid=0, gid=0):
         self.allocated_inodes.add(number)
         roots = [0] * 13
         size = len(data)
@@ -87,13 +87,13 @@ class Image:
                 block = self.pointer(roots, logical)
                 payload = data[offset:offset + BSIZE]
                 self.sector(block)[:len(payload)] = payload
-        record = (short(mode) + short(nlink) + short(0) + short(0) + long(size)
+        record = (short(mode) + short(nlink) + short(uid) + short(gid) + long(size)
                   + b''.join(address(x) for x in roots) + b'\0' + long(0) * 3)
         assert len(record) == 64
         offset = 2 * BSIZE + (number - 1) * 64
         self.bytes[offset:offset + 64] = record
 
-    def directory(self, number, parent, entries):
+    def directory(self, number, parent, entries, mode=0o755, uid=0, gid=0):
         data = bytearray()
         for name, ino in [('.', number), ('..', parent)] + entries:
             encoded = name.encode('ascii')
@@ -103,7 +103,7 @@ class Image:
         subdirectories = sum(
             (struct.unpack_from('<H', self.bytes, 2 * BSIZE + (ino - 1) * 64)[0] & 0o170000) == DIR
             for _, ino in entries)
-        self.inode(number, DIR | 0o755, data, nlink=2 + subdirectories)
+        self.inode(number, DIR | mode, data, nlink=2 + subdirectories, uid=uid, gid=gid)
 
     def finish(self):
         # V7 free(): stack of 50, chained through a freed data block.
