@@ -98,6 +98,12 @@ class RootImage(unittest.TestCase):
             self.assertEqual(record[0],mode)
             self.assertEqual(record[3][0],dev)
 
+    def test_dectape_devices(self):
+        for unit in range(8):
+            record=inode(lookup('/dev/tap'+str(unit)))
+            self.assertEqual(record[0],0o60600)
+            self.assertEqual(record[3][0],0x1600+unit)
+
     def test_storage_devices(self):
         self.assertEqual(inode(lookup('/dev/root'))[0], 0o60600)
         self.assertEqual(inode(lookup('/dev/root'))[3][0], 0)

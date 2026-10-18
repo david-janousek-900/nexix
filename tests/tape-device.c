@@ -1,12 +1,13 @@
 /* Production adapter with in-memory regular-inode backing and user mappings. */
 #include "tape.h"
+#include "dectape.h"
 #include "files.h"
 #include <nexix/errno.h>
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
 static struct proc process;static struct user user;
-static struct inode image;static unsigned pins;static unsigned char disk[8192];
+static struct inode image;static unsigned pins;static unsigned char disk[NX_TC_BYTES];
 static int failure;
 struct proc *proc_current(void){return &process;}
 bool proc_superuser(struct user *u){return !u->u_uid;}
@@ -76,5 +77,17 @@ int main(void)
     assert(!op(h,NX_TAPE_REWIND,1) && !op(h,NX_TAPE_ERASE,1));
     assert(!tape_io(h,&process.p_vm,(uintptr_t)b,512,false,0) && !tape_close(h));
     a=(struct nx_tape_load){.family=NX_TAPE_TM};assert(!control(c,NX_TAPE_UNLOAD,&a) && !pins);
-    assert(!tape_close(c));puts("PASS: tape adapter privileges, aliases, pins, marks/spacing, read-only and failure cleanup");
+    image.i_size=0;a=(struct nx_tape_load){.family=NX_TAPE_TC,.unit=7,.flags=NX_TAPE_INITIALIZE,.path=4096};
+    failure=-NX_ENOSPC;assert(control(c,NX_TAPE_LOAD,&a)==-NX_ENOSPC && !pins && !tape_image_busy(&image));failure=0;
+    assert(!control(c,NX_TAPE_LOAD,&a) && pins==1 && image.i_size==NX_TC_BYTES && tc_image_busy(&image));
+    a=(struct nx_tape_load){.family=NX_TAPE_HT,.path=4096};assert(control(c,NX_TAPE_LOAD,&a)==-NX_EBUSY);
+    struct block_device *tc;assert(!tc_acquire(NX_TC_DEV(7),&tc));
+    memset(b,0xab,512);assert(!tc->write(tc,577,b));memset(b,0,512);assert(!tc->read(tc,577,b));
+    for(unsigned i=0;i<512;++i)assert(b[i]==0xab);
+    a=(struct nx_tape_load){.family=NX_TAPE_TC,.unit=7};assert(control(c,NX_TAPE_UNLOAD,&a)==-NX_EBUSY);
+    tc_release(tc);assert(!control(c,NX_TAPE_UNLOAD,&a) && !pins && !tc_image_busy(&image));
+    a.path=4096;a.flags=NX_TAPE_INITIALIZE;assert(control(c,NX_TAPE_LOAD,&a)==-NX_EEXIST && !pins);
+    a.flags=NX_TAPE_READONLY;assert(!control(c,NX_TAPE_LOAD,&a) && !tc_acquire(NX_TC_DEV(7),&tc) && tc->read_only && !tc->write);
+    tc_release(tc);a=(struct nx_tape_load){.family=NX_TAPE_TC,.unit=7};assert(!control(c,NX_TAPE_UNLOAD,&a) && !pins);
+    assert(!tape_close(c));puts("PASS: HT/TM/TC media privileges, leases/pins, marks/spacing, fixed-size initialization, read-only and failure cleanup");
 }

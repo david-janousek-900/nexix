@@ -4,7 +4,8 @@ The native equivalents of V7 `usr/sys/dev/ht.c` and `tm.c` use regular files
 on a mounted V7 filesystem as removable media. They retain exclusive opens,
 variable raw records, 512-byte buffered records, tape marks, spacing,
 rewind-on-close and source retry limits. No PDP-11 registers are emulated.
-DECtape remains task 72; archive commands have their own roadmap tasks.
+Task 72 adds [random-block DECtape media](dectape.md) through the same native
+media-loading control; archive commands have their own roadmap tasks.
 
 ## Devices and ownership
 

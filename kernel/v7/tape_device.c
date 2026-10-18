@@ -1,5 +1,6 @@
 /* Native regular-file media for V7 ht/tm; serialized with the file layer. */
 #include "tape.h"
+#include "dectape.h"
 #include "files.h"
 #include "accounting.h"
 #include "uaccess.h"
@@ -20,7 +21,7 @@ static int read_media(void *p,uint64_t at,void *bytes,size_t n)
 static int write_media(void *p,uint64_t at,const void *bytes,size_t n)
 {return files_tape_write(((struct tape_unit *)p)->inode,at,bytes,n);}
 bool tape_image_busy(const struct inode *inode)
-{if(!inode)return false;for(unsigned i=0;i<9;++i)if(units[i].inode==inode)return true;return false;}
+{if(tc_image_busy(inode))return true;if(!inode)return false;for(unsigned i=0;i<9;++i)if(units[i].inode==inode)return true;return false;}
 bool tape_matches(uint16_t dev,bool raw)
 {return (raw && dev==NX_TAPE_CONTROL_DEV) || (dev>>8)==(raw?19U:17U) || (dev>>8)==(raw?20U:18U);}
 static void origin(struct tape_unit *u){u->origin=u->tape.position;u->origin_record=u->tape.record;u->buffer_cursor=true;}
@@ -28,6 +29,7 @@ static int load(struct address_space *vm,uintptr_t address,bool unload)
 {
     if(!proc_superuser(proc_current()->p_user))return -NX_EPERM;
     struct nx_tape_load a;int error=copyin(vm,address,&a,sizeof(a));if(error)return error;
+    if(a.family==NX_TAPE_TC)return tc_media_load(&a,unload);
     struct tape_unit *u=unit(a.family,a.unit);
     if(!u || a.reserved || a.flags&~(NX_TAPE_READONLY|NX_TAPE_INITIALIZE))return -NX_EINVAL;
     if(u->opened)return -NX_EBUSY;

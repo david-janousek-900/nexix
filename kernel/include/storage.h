@@ -4,7 +4,7 @@
 #include "disk.h"
 #define STORAGE_SLOTS 8
 /* IRQs disabled. Backing lifetime extends through the final close. */
-struct storage_handle { struct block_device *device; unsigned refs; bool mounted; bool controller; uint16_t dev; struct disk_view view; };
+struct storage_handle { struct block_device *device; unsigned refs; bool mounted; bool controller; bool dectape; uint16_t dev; struct disk_view view; };
 bool storage_block_device(uint16_t);
 bool storage_raw_device(uint16_t);
 int storage_bind(unsigned minor, struct block_device *, bool mounted);

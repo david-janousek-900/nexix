@@ -1,3 +1,4 @@
+#include <nexix/dectape.h>
 #include <nexix/tape.h>
 /* Independently specified LP64 record contracts, shared kernel/libc boundaries. */
 #include <sys/types.h>
@@ -110,3 +111,5 @@ int main(void)
 }
 
 _Static_assert(sizeof(struct nx_tape_operation)==8 && offsetof(struct nx_tape_status,position)==24,"tape native ABI");
+
+_Static_assert(NX_TC_DEV(7)==0x1607 && NX_TC_BYTES==295936,"DECtape native ABI");

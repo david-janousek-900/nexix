@@ -278,8 +278,8 @@ bool root_exec_test_gate(struct interrupt_frame *frame)
         if(frame->rdi==1){frame->rax=disk_bind(NX_DISK_RP,0,NULL);return true;}
         int error=ide_init_unit(&tape_aux,1);uint8_t bytes[512];
         if(!error)error=block_read(&tape_aux,0,1,bytes);
-        const char tag[]="NEXIX_TAPE_TEST_ONLY71";
-        if(!error)for(unsigned i=0;i<sizeof(tag)-1;++i)if(bytes[i]!=(uint8_t)tag[i]){error=-NX_ENXIO;break;}
+        const char *tag=frame->rdi==2?"NEXIX_DECTAPE_TEST_ONLY72":"NEXIX_TAPE_TEST_ONLY71";
+        if(!error)for(unsigned i=0;tag[i];++i)if(bytes[i]!=(uint8_t)tag[i]){error=-NX_ENXIO;break;}
         if(!error)error=disk_bind(NX_DISK_RP,0,&tape_aux);
         frame->rax=error;return true;
     }

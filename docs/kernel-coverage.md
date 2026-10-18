@@ -32,7 +32,7 @@ contracts; task 355 and task 359 close whole-distribution integration.
 | dn/dhdm/dhfdm/du | Serial integration point only | Modem/dial control 75 |
 | hp/rf/rk/rl/rp | Native disk views, source partitions/units, bounded recovery, ATA media and overlapping mount protection | Tasks 53/70 complete; [controller contracts](disk-controllers.md); queue/interleave acceptance remains 73 |
 | ht/tm | Sequential records, marks, rewind/spacing and pinned regular-file media | Task 71 complete; [tape contracts](tape-devices.md) |
-| tc | Block integration points only | DECtape 72 |
+| tc | Eight random-block DECtapes, retries/select errors, pinned file media and V7 filesystem mounts | Task 72 complete; [DECtape contracts](dectape.md) |
 | dsort/dkleave | Block integration point only | Queue ordering/interleave 73 |
 | mem/sys | Byte-addressed memory/null devices and controlling-TTY forwarding | Task 69 complete; [native access rules](memory-devices.md), host and 16/128 MiB syscall acceptance; independent TTYs remain 89–93 |
 | cat, vp/vs | Future native endpoints | Typesetter 76; printer/plotter protocols 77 |
