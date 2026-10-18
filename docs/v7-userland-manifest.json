@@ -40,11 +40,13 @@
       "id": "headers",
       "category": "headers",
       "status": "partial",
-      "description": "Original inputs are supplied in the full archive. Adapt declarations and layouts to the native ABI; complete Nexix libc coverage remains partial.",
+      "description": "Native public headers are installed and tested without host headers. Seven application-owned format headers retain their explicit consumer tasks; see docs/header-coverage.json.",
       "evidence": [
         "reference/v7/usr/include",
         "libc/include/ctype.h",
-        "docs/libc-coverage.md"
+        "docs/libc-coverage.md",
+        "docs/development-interfaces.md",
+        "docs/native-install.json"
       ],
       "locations": [
         "/usr/include"
@@ -54,8 +56,8 @@
     {
       "id": "kernel-abi",
       "category": "kernel",
-      "status": "partial",
-      "description": "File/process/TTY syscalls, device-qualified inodes, mount/umount, chroot, process accounting and parent/child tracing with debugger writes/single-step exist. Native profil sampling, the V7 resident-memory lock interface and owned native phys windows are implemented; remaining device interfaces are pending.",
+      "status": "supplied",
+      "description": "Native V7 process/filesystem/TTY/device/syscall ABI and architecture equivalents through tasks 76-82 are implemented and tested; later programs retain consumer acceptance.",
       "evidence": [
         "docs/syscall-abi.md",
         "docs/files.md",
@@ -70,7 +72,10 @@
         "docs/resident-lock.md",
         "kernel/v7/phys.c",
         "libc/phys.c",
-        "docs/physical-mappings.md"
+        "docs/physical-mappings.md",
+        "docs/output-devices.md",
+        "docs/kernel-configuration.md",
+        "docs/runtime-equivalents.md"
       ],
       "locations": []
     },
@@ -19259,15 +19264,13 @@
       "source_availability": "not_applicable",
       "outputs": [],
       "priority": 0,
-      "status": "not_ported",
+      "status": "partial",
       "dependencies": [],
       "reference_includes": [],
       "blockers": [
-        "Not installed in Nexix; native integration and functional acceptance remain pending."
+        "Native libc/kernel ABI headers are installed and isolated-compile tested. Remaining application-owned format headers retain explicit consumer tasks 109/177/179/232/234/236/344 in docs/header-coverage.json."
       ],
-      "unresolved": [
-        "Audit native API/format compatibility and remaining transitive dependencies."
-      ],
+      "unresolved": [],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
       ]
@@ -21992,68 +21995,82 @@
           "name": "libc.a",
           "install": "/lib/libc.a",
           "role": "library",
-          "status": "partial",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/libc/mklib"
+            "Makefile",
+            "docs/development-interfaces.md",
+            "docs/native-install.json"
           ]
         },
         {
           "name": "crt0.o",
           "install": "/lib/crt0.o",
           "role": "runtime_object",
-          "status": "partial",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/libc/mklib"
+            "Makefile",
+            "docs/development-interfaces.md",
+            "docs/native-install.json"
           ]
         },
         {
           "name": "mcrt0.o",
           "install": "/lib/mcrt0.o",
           "role": "runtime_object",
-          "status": "partial",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/libc/mklib"
+            "Makefile",
+            "docs/development-interfaces.md",
+            "docs/native-install.json"
           ]
         },
         {
           "name": "fcrt0.o",
           "install": "/lib/fcrt0.o",
           "role": "runtime_object",
-          "status": "partial",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/libc/mklib"
+            "Makefile",
+            "docs/development-interfaces.md",
+            "docs/native-install.json"
           ]
         },
         {
           "name": "fmcrt0.o",
           "install": "/lib/fmcrt0.o",
           "role": "runtime_object",
-          "status": "partial",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/libc/mklib"
+            "Makefile",
+            "docs/development-interfaces.md",
+            "docs/native-install.json"
           ]
         },
         {
           "name": "compall",
           "install": null,
           "role": "build_helper",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/libc/compall"
+            "Makefile",
+            "docs/development-interfaces.md",
+            "docs/native-install.json"
           ]
         },
         {
           "name": "mklib",
           "install": null,
           "role": "build_helper",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/libc/mklib"
+            "Makefile",
+            "docs/development-interfaces.md",
+            "docs/native-install.json"
           ]
         }
       ],
       "priority": 0,
-      "status": "partial",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -22277,16 +22294,12 @@
           ]
         }
       ],
-      "blockers": [
-        "Complete multiplexor/packet and V6/runtime interfaces and remaining startup/header installation; validate profiling and ELF symbol interfaces in their full consumers.",
-        "Validate staged internal V7 FILE adapters and remote printf conventions in all full consuming-program ports."
-      ],
-      "unresolved": [
-        "Native libc is partial; implemented helpers, stdio, account/crypt and terminal/login lookup and system/process-pipe interfaces are documented in docs/libc-coverage.md and docs/terminal-accounts.md."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
-        "Verify buffered stdio, account lookup, allocation, strings, time, syscall errors and native startup using consuming programs.",
-        "Test exported routines with native callers, boundary/error cases and consuming programs."
+        "make test-development: installed headers/archives and all startup variants with native and V7 consumers at 16/128 MiB.",
+        "make test-libc test-libc-interfaces test-inventory; per-interface task suites retain semantic and boundary coverage.",
+        "Every libc-owned source maps through docs/libc-source-coverage.json; FP/math source gaps and architecture equivalence are documented separately."
       ],
       "source_files": [
         "reference/v7/usr/src/libc/compall",
@@ -22723,34 +22736,38 @@
           "name": "libm.a",
           "install": "/lib/libm.a",
           "role": "library",
-          "status": "partial",
+          "status": "implemented",
           "evidence": [
             "Makefile",
-            "libm/v7",
-            "docs/floating-point.md"
+            "docs/development-interfaces.md",
+            "docs/native-install.json"
           ]
         },
         {
           "name": "compall",
           "install": null,
           "role": "build_helper",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/libm/compall"
+            "Makefile",
+            "docs/development-interfaces.md",
+            "docs/native-install.json"
           ]
         },
         {
           "name": "mklib",
           "install": null,
           "role": "build_helper",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/libm/mklib"
+            "Makefile",
+            "docs/development-interfaces.md",
+            "docs/native-install.json"
           ]
         }
       ],
       "priority": 7,
-      "status": "partial",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -22808,14 +22825,12 @@
           ]
         }
       ],
-      "blockers": [
-        "Task 82 installs native math headers/archive; consuming command ports remain their own tasks."
-      ],
+      "blockers": [],
       "unresolved": [],
       "acceptance": [
-        "Compare function outputs with numerical reference fixtures across domain boundaries and exceptional inputs.",
-        "Test exported routines with native callers, boundary/error cases and consuming programs.",
-        "Task 80: make test-math-coverage tests recovered gamma/signgam, exceptional/large inputs and Bessel order bounds at 16/128 MiB; docs/math-coverage.md records source-gap disposition."
+        "make test-development: installed headers/archives and all startup variants with native and V7 consumers at 16/128 MiB.",
+        "make test-libc test-libc-interfaces test-inventory; per-interface task suites retain semantic and boundary coverage.",
+        "Every libc-owned source maps through docs/libc-source-coverage.json; FP/math source gaps and architecture equivalence are documented separately."
       ],
       "source_files": [
         "reference/v7/usr/src/libm/asin.c",

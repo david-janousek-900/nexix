@@ -13,7 +13,8 @@ installed scripts, additional games, the root diagnostic source, kernel/boot
 references, and supporting-data groups. All archive contents are preserved.
 
 **init, sh, echo, cat, ls, pwd, cp, ln, rm, date, touch, stty, tty, mesg, getty, login, passwd, su, newgrp, who, write and wall** are installed native ports.
-Native libc is partial. The archive's **213 installed program paths** are listed
+Task 82 completes the native libc ABI and installs its headers, archives and
+startup objects; see [development interfaces](development-interfaces.md). The archive's **213 installed program paths** are listed
 separately; scripts and old executables in reference/v7 are not installed Nexix
 ports. **13 binary-only program components** are blocked pending source recovery
 or an explicitly approved alternative. No historical hardware exception is
@@ -196,8 +197,8 @@ their sources alone does not provide a working native equivalent.
 | Requirement | State | Supplied inputs / remaining work |
 |---|---|---|
 | `native-build-tools` | supplied | Host GCC/binutils bootstrap native Nexix ELF builds; retained native tools remain unported. |
-| `headers` | partial | Original inputs are supplied in the full archive. Adapt declarations and layouts to the native ABI; complete Nexix libc coverage remains partial. |
-| `kernel-abi` | partial | File/process/TTY syscalls, device-qualified inodes, mount/umount, chroot, process accounting and parent/child tracing with debugger writes/single-step exist. Native profil sampling, the V7 resident-memory lock interface and owned native phys windows are implemented; remaining device interfaces are pending. |
+| `headers` | partial | Native public ABI headers are installed/tested. Seven application-owned format headers retain explicit consumer tasks in header-coverage.json. |
+| `kernel-abi` | supplied | Native V7 syscall/device behavior and architecture equivalents through tasks 76–82 are implemented and tested; later applications retain consumer acceptance. |
 | `floating-point` | partial | Native FP process/signal state, binary64 helpers, decimal formatting and retained libm C sources are implemented; complete libc coverage and installed math headers/archive remain pending. |
 | `wall-clock` | supplied | RTC initializes the UTC system clock; inode timestamps and sync superblock time use that clock and persist in the existing V7 disk encoding. |
 | `timezone` | supplied | Native time conversion and configurable TZ support fixed offsets, one-hour DST, explicit M rules and historical V7 US defaults; see time.md for the supported grammar. |

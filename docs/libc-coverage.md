@@ -1,5 +1,10 @@
 # Native libc interface progress (tasks 28 and 33–49)
 
+Current status: task 82 completes the native libc ABI and installs development
+interfaces. See [development interfaces](development-interfaces.md) for source
+coverage, startup/consumer acceptance and remaining application-owned headers.
+The sections below record the earlier implementation stages.
+
 Libc remains partial. The implementations below are native interfaces for
 rebuilt V7 sources; their addition does not complete V7 userland or the remaining kernel/libc
 prerequisites (tasks 38–82). The original source distribution remains unchanged.

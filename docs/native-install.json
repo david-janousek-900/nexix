@@ -892,6 +892,961 @@
       "gid": 0,
       "component": "distribution.devices",
       "device": 7682
+    },
+    {
+      "path": "/lib",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc"
+    },
+    {
+      "path": "/lib/crt0.o",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "crt0.o"
+      }
+    },
+    {
+      "path": "/lib/fcrt0.o",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "fcrt0.o"
+      }
+    },
+    {
+      "path": "/lib/mcrt0.o",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "mcrt0.o"
+      }
+    },
+    {
+      "path": "/lib/fmcrt0.o",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "fmcrt0.o"
+      }
+    },
+    {
+      "path": "/lib/libc.a",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "libc.a"
+      }
+    },
+    {
+      "path": "/lib/libm.a",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libm",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "libm.a"
+      }
+    },
+    {
+      "path": "/usr/include",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc"
+    },
+    {
+      "path": "/usr/include/a.out.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/a.out.h"
+      }
+    },
+    {
+      "path": "/usr/include/assert.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/assert.h"
+      }
+    },
+    {
+      "path": "/usr/include/core.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/core.h"
+      }
+    },
+    {
+      "path": "/usr/include/crypt.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/crypt.h"
+      }
+    },
+    {
+      "path": "/usr/include/ctype.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/ctype.h"
+      }
+    },
+    {
+      "path": "/usr/include/elf.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/elf.h"
+      }
+    },
+    {
+      "path": "/usr/include/errno.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/errno.h"
+      }
+    },
+    {
+      "path": "/usr/include/fcntl.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/fcntl.h"
+      }
+    },
+    {
+      "path": "/usr/include/grp.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/grp.h"
+      }
+    },
+    {
+      "path": "/usr/include/limits.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/limits.h"
+      }
+    },
+    {
+      "path": "/usr/include/math.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/math.h"
+      }
+    },
+    {
+      "path": "/usr/include/mon.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/mon.h"
+      }
+    },
+    {
+      "path": "/usr/include/nexix",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc"
+    },
+    {
+      "path": "/usr/include/nexix/acct.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/acct.h"
+      }
+    },
+    {
+      "path": "/usr/include/nexix/core.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/core.h"
+      }
+    },
+    {
+      "path": "/usr/include/nexix/dectape.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/dectape.h"
+      }
+    },
+    {
+      "path": "/usr/include/nexix/disk.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/disk.h"
+      }
+    },
+    {
+      "path": "/usr/include/nexix/errno.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/errno.h"
+      }
+    },
+    {
+      "path": "/usr/include/nexix/file.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/file.h"
+      }
+    },
+    {
+      "path": "/usr/include/nexix/fpu.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/fpu.h"
+      }
+    },
+    {
+      "path": "/usr/include/nexix/kinfo.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/kinfo.h"
+      }
+    },
+    {
+      "path": "/usr/include/nexix/libc.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/libc.h"
+      }
+    },
+    {
+      "path": "/usr/include/nexix/memdev.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/memdev.h"
+      }
+    },
+    {
+      "path": "/usr/include/nexix/modem.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/modem.h"
+      }
+    },
+    {
+      "path": "/usr/include/nexix/mon.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/mon.h"
+      }
+    },
+    {
+      "path": "/usr/include/nexix/mpx.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/mpx.h"
+      }
+    },
+    {
+      "path": "/usr/include/nexix/output.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/output.h"
+      }
+    },
+    {
+      "path": "/usr/include/nexix/packet.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/packet.h"
+      }
+    },
+    {
+      "path": "/usr/include/nexix/phys.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/phys.h"
+      }
+    },
+    {
+      "path": "/usr/include/nexix/ptrace.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/ptrace.h"
+      }
+    },
+    {
+      "path": "/usr/include/nexix/signal.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/signal.h"
+      }
+    },
+    {
+      "path": "/usr/include/nexix/stdio.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/stdio.h"
+      }
+    },
+    {
+      "path": "/usr/include/nexix/syscall.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/syscall.h"
+      }
+    },
+    {
+      "path": "/usr/include/nexix/tape.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/tape.h"
+      }
+    },
+    {
+      "path": "/usr/include/nexix/tty.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/tty.h"
+      }
+    },
+    {
+      "path": "/usr/include/nlist.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nlist.h"
+      }
+    },
+    {
+      "path": "/usr/include/pwd.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/pwd.h"
+      }
+    },
+    {
+      "path": "/usr/include/sched.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/sched.h"
+      }
+    },
+    {
+      "path": "/usr/include/setjmp.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/setjmp.h"
+      }
+    },
+    {
+      "path": "/usr/include/sgtty.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/sgtty.h"
+      }
+    },
+    {
+      "path": "/usr/include/signal.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/signal.h"
+      }
+    },
+    {
+      "path": "/usr/include/stdarg.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/stdarg.h"
+      }
+    },
+    {
+      "path": "/usr/include/stddef.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/stddef.h"
+      }
+    },
+    {
+      "path": "/usr/include/stdint.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/stdint.h"
+      }
+    },
+    {
+      "path": "/usr/include/stdio.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/stdio.h"
+      }
+    },
+    {
+      "path": "/usr/include/stdlib.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/stdlib.h"
+      }
+    },
+    {
+      "path": "/usr/include/string.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/string.h"
+      }
+    },
+    {
+      "path": "/usr/include/sys",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc"
+    },
+    {
+      "path": "/usr/include/sys/acct.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/sys/acct.h"
+      }
+    },
+    {
+      "path": "/usr/include/sys/dir.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/sys/dir.h"
+      }
+    },
+    {
+      "path": "/usr/include/sys/ioctl.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/sys/ioctl.h"
+      }
+    },
+    {
+      "path": "/usr/include/sys/kinfo.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/sys/kinfo.h"
+      }
+    },
+    {
+      "path": "/usr/include/sys/mx.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/sys/mx.h"
+      }
+    },
+    {
+      "path": "/usr/include/sys/param.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/sys/param.h"
+      }
+    },
+    {
+      "path": "/usr/include/sys/phys.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/sys/phys.h"
+      }
+    },
+    {
+      "path": "/usr/include/sys/pk.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/sys/pk.h"
+      }
+    },
+    {
+      "path": "/usr/include/sys/ptrace.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/sys/ptrace.h"
+      }
+    },
+    {
+      "path": "/usr/include/sys/stat.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/sys/stat.h"
+      }
+    },
+    {
+      "path": "/usr/include/sys/timeb.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/sys/timeb.h"
+      }
+    },
+    {
+      "path": "/usr/include/sys/times.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/sys/times.h"
+      }
+    },
+    {
+      "path": "/usr/include/sys/types.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/sys/types.h"
+      }
+    },
+    {
+      "path": "/usr/include/sys/wait.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/sys/wait.h"
+      }
+    },
+    {
+      "path": "/usr/include/time.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/time.h"
+      }
+    },
+    {
+      "path": "/usr/include/unistd.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/unistd.h"
+      }
+    },
+    {
+      "path": "/usr/include/utime.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/utime.h"
+      }
+    },
+    {
+      "path": "/usr/include/utmp.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/utmp.h"
+      }
+    },
+    {
+      "path": "/usr/include/whoami.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/whoami.h"
+      }
     }
   ]
 }

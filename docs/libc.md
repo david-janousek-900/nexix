@@ -1,5 +1,10 @@
 # Native libc foundation (task 11)
 
+Current status: task 82 completes the native libc ABI and installs development
+interfaces. See [development interfaces](development-interfaces.md) for source
+coverage, startup/consumer acceptance and remaining application-owned headers.
+The sections below record the earlier implementation stages.
+
 Nexix builds `build/crt0.o` and `build/libc.a` for statically linked ELF64
 programs. They are native AMD64 implementations using the Nexix syscall ABI.
 Historical PDP-11 assembly is retained under reference/ and is not linked.

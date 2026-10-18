@@ -121,7 +121,7 @@ ownership, permissions and blocking pipes with 16 MiB RAM (`build/files-16M.log`
 `make TOOLCHAIN_PREFIX= test-tty` exchanges real COM1 input with 16 MiB and
 128 MiB RAM and tests an interactive demo. `make TOOLCHAIN_PREFIX= run-tty`
 starts that demo: type a line and Enter, use Backspace/Ctrl-U to edit, or type
-`quit` to finish. Ctrl-A, release, then X exits QEMU. Normal `make TOOLCHAIN_PREFIX= run` starts the V7 shell.
+`quit` to finish. Ctrl-A, release, then X exits QEMU. Normal `make TOOLCHAIN_PREFIX= run` on a fresh IDE image starts the V7 login prompt.
 
 ## Roadmap
 
@@ -135,13 +135,15 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
 to multi-user V7 login with persistent IDE storage. 22 native programs are
 installed: **init, sh, echo, cat, ls, pwd, cp, ln, rm, date, touch, stty, tty, mesg, getty, login, passwd, su, newgrp, who, write and wall**.
+Native libc/libm archives, four startup variants and public headers are installed;
+see [development interfaces](docs/development-interfaces.md).
 The inventory accounts for **217 components, 2,144 distribution files and
-35 supporting/platform requirements**. Its component statuses are 23 implemented,
-4 partial, 1 prototype and 189 not ported; importing reference inputs does not
+35 supporting/platform requirements**. Its component statuses are 25 implemented,
+3 partial, 1 prototype and 188 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 106 done, 1 in progress
-and 259 to do** after task 80. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 107 done, 0 in progress
+and 259 to do** after task 82. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -316,7 +318,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 79 | Resolve V6 wrappers and PDP-11 runtime assembly replacements | Done | Every V6 wrapper and libc compiler helper mapped to native ABI; signed/compound arithmetic, stack/varargs and API guest tests at 16/128 MiB; docs/runtime-equivalents.md; Git history |
 | 80 | Complete native libm coverage and source-gap resolution | Done | All retained math families plus pinned historical gamma/signgam equivalent; safe large trig/Bessel boundaries and IEEE cases; make test-math-coverage test-libc test-libc-interfaces; docs/math-coverage.md; Git history |
 | 81 | Document/test native replacement for libfpsim/fakfp | Done | Native x87/SSE2 mapping for every libfpsim/fakfp input; arithmetic/conversion/SIGILL guest acceptance; make test-fpsim-equivalent test-fpu; docs/fpsim-equivalent.md; Git history |
-| 82 | Final libc consumer acceptance and installed development interfaces | In progress | libc remains partial; complete crt0/fcrt0/profiling headers/archives |
+| 82 | Final libc consumer acceptance and installed development interfaces | Done | Installed native headers/libc/libm and all four crt variants; 174-input libc responsibility audit, V7 execvp script/retry closure and staged-only consumer builds at 16/128 MiB; docs/development-interfaces.md; Git history |
 
 ### Source inputs and independent terminals
 

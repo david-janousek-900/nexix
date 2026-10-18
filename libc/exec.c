@@ -37,14 +37,38 @@ int execle(const char *path, const char *first, ...)
 }
 int execvp(const char *name,char *const argv[])
 {
-    if(strchr(name,'/'))return execv(name,argv);
-    const char *path=getenv("PATH");if(!path)path="/bin:/usr/bin";
-    int denied=0;
-    do{char candidate[256];size_t n=0;while(*path&&*path!=':'){if(n<sizeof(candidate)-1)candidate[n++]=*path;++path;}
+    const char *path=strchr(name,'/') ? "" : getenv("PATH");
+    if(!path)path=":/bin:/usr/bin";
+    unsigned busy=1;int denied=0;
+    do {
+        char candidate[256];size_t n=0;
+        while(*path && *path!=':' && *path!='-'){
+            if(n==sizeof(candidate)-1){errno=E2BIG;return -1;}
+            candidate[n++]=*path++;
+        }
         if(n){if(n==sizeof(candidate)-1){errno=E2BIG;return -1;}candidate[n++]='/';}
-        size_t length=strlen(name);if(length>=sizeof(candidate)-n){errno=E2BIG;return -1;}
-        memcpy(candidate+n,name,length+1);execv(candidate,argv);
-        if(errno==EACCES)denied=1;else if(errno!=ENOENT)return -1;
+        size_t length=strlen(name);
+        if(length>=sizeof(candidate)-n){errno=E2BIG;return -1;}
+        memcpy(candidate+n,name,length+1);
+        for(;;){
+            execv(candidate,argv);
+            if(errno==ENOEXEC){
+                char *arguments[257];size_t i=1;
+                arguments[0]="sh";arguments[1]=candidate;
+                while(argv[i]){
+                    if(i>=255){errno=E2BIG;return -1;}
+                    arguments[i+1]=argv[i];++i;
+                }
+                arguments[i+1]=NULL;
+                return execv("/bin/sh",arguments);
+            }
+            if(errno!=ETXTBSY)break;
+            if(++busy>5)return -1;
+            sleep(busy);
+        }
+        if(errno==EACCES)denied=1;
+        else if(errno==ENOMEM || errno==E2BIG)return -1;
     }while(*path++);
-    errno=denied?EACCES:ENOENT;return -1;
+    if(denied)errno=EACCES;
+    return -1;
 }

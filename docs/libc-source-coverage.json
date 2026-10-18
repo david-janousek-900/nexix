@@ -1,0 +1,1243 @@
+{
+  "schema_version": 1,
+  "policy": "Every libc-owned reference input maps to a tested native implementation, compiler architecture equivalent or native build recipe; no historical binary execution claim.",
+  "sources": [
+    {
+      "source": "reference/v7/lib/crt0.o",
+      "native": [
+        "Makefile"
+      ],
+      "note": "Historical build/object input is replaced by native archive/startup recipes and staged ELF64 development files."
+    },
+    {
+      "source": "reference/v7/lib/fcrt0.o",
+      "native": [
+        "Makefile"
+      ],
+      "note": "Historical build/object input is replaced by native archive/startup recipes and staged ELF64 development files."
+    },
+    {
+      "source": "reference/v7/lib/fmcrt0.o",
+      "native": [
+        "Makefile"
+      ],
+      "note": "Historical build/object input is replaced by native archive/startup recipes and staged ELF64 development files."
+    },
+    {
+      "source": "reference/v7/lib/libc.a",
+      "native": [
+        "Makefile"
+      ],
+      "note": "Historical build/object input is replaced by native archive/startup recipes and staged ELF64 development files."
+    },
+    {
+      "source": "reference/v7/lib/mcrt0.o",
+      "native": [
+        "Makefile"
+      ],
+      "note": "Historical build/object input is replaced by native archive/startup recipes and staged ELF64 development files."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/compall",
+      "native": [
+        "Makefile"
+      ],
+      "note": "Historical build/object input is replaced by native archive/startup recipes and staged ELF64 development files."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/crt/aldiv.s",
+      "native": [
+        "tests/runtime-equivalent.c",
+        "Makefile"
+      ],
+      "note": "Native compiler instructions and SysV frames replace PDP-11 helper entry points; task 79."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/crt/almul.s",
+      "native": [
+        "tests/runtime-equivalent.c",
+        "Makefile"
+      ],
+      "note": "Native compiler instructions and SysV frames replace PDP-11 helper entry points; task 79."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/crt/alrem.s",
+      "native": [
+        "tests/runtime-equivalent.c",
+        "Makefile"
+      ],
+      "note": "Native compiler instructions and SysV frames replace PDP-11 helper entry points; task 79."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/crt/cerror.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/crt/csv.s",
+      "native": [
+        "tests/runtime-equivalent.c",
+        "Makefile"
+      ],
+      "note": "Native compiler instructions and SysV frames replace PDP-11 helper entry points; task 79."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/crt/ldiv.s",
+      "native": [
+        "tests/runtime-equivalent.c",
+        "Makefile"
+      ],
+      "note": "Native compiler instructions and SysV frames replace PDP-11 helper entry points; task 79."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/crt/lmul.s",
+      "native": [
+        "tests/runtime-equivalent.c",
+        "Makefile"
+      ],
+      "note": "Native compiler instructions and SysV frames replace PDP-11 helper entry points; task 79."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/crt/lrem.s",
+      "native": [
+        "tests/runtime-equivalent.c",
+        "Makefile"
+      ],
+      "note": "Native compiler instructions and SysV frames replace PDP-11 helper entry points; task 79."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/crt/mcount.s",
+      "native": [
+        "libc/arch/x86_64/mcount.S",
+        "libc/monitor.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/csu/crt0.s",
+      "native": [
+        "libc/arch/x86_64/crt0.S"
+      ],
+      "note": "Native argc/argv/environ/exit startup; hardware FP mandatory; profiling variants use native monitor."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/csu/fcrt0.s",
+      "native": [
+        "libc/arch/x86_64/fcrt0.S"
+      ],
+      "note": "Native argc/argv/environ/exit startup; hardware FP mandatory; profiling variants use native monitor."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/csu/fmcrt0.s",
+      "native": [
+        "libc/arch/x86_64/fmcrt0.S"
+      ],
+      "note": "Native argc/argv/environ/exit startup; hardware FP mandatory; profiling variants use native monitor."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/csu/mcrt0.s",
+      "native": [
+        "libc/arch/x86_64/mcrt0.S"
+      ],
+      "note": "Native argc/argv/environ/exit startup; hardware FP mandatory; profiling variants use native monitor."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/abort.s",
+      "native": [
+        "libc/abort.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/abs.c",
+      "native": [
+        "libc/numbers.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/atof.c",
+      "native": [
+        "libc/convert.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/atoi.c",
+      "native": [
+        "libc/numbers.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/atol.c",
+      "native": [
+        "libc/numbers.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/calloc.c",
+      "native": [
+        "libc/malloc.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/crypt.c",
+      "native": [
+        "libc/crypt.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/ctime.c",
+      "native": [
+        "libc/time.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/ctype_.c",
+      "native": [
+        "libc/ctype.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/cuexit.s",
+      "native": [
+        "libc/stdlib.c",
+        "libc/stdio.c"
+      ],
+      "note": "Native exit/fflush cleanup replaces assembly cleanup linkage and fake no-stdio stub."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/ecvt.c",
+      "native": [
+        "libc/float.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/errlst.c",
+      "native": [
+        "libc/errors.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/execvp.c",
+      "native": [
+        "libc/exec.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/fakcu.s",
+      "native": [
+        "libc/stdlib.c",
+        "libc/stdio.c"
+      ],
+      "note": "Native exit/fflush cleanup replaces assembly cleanup linkage and fake no-stdio stub."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/fakfp.s",
+      "native": [
+        "kernel/arch/x86_64/fpu.c"
+      ],
+      "note": "PDP-11 FP simulator/control entry is replaced by mandatory native FP initialization/context, task 81; no PDP-11 status-word ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/frexp11.s",
+      "native": [
+        "libc/float.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/getenv.c",
+      "native": [
+        "libc/stdlib.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/getlogin.c",
+      "native": [
+        "libc/terminal.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/index.c",
+      "native": [
+        "libc/string.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/isatty.c",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/l3.c",
+      "native": [
+        "libc/bytes.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/ldexp11.s",
+      "native": [
+        "libc/float.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/ldfps.s",
+      "native": [
+        "kernel/arch/x86_64/fpu.c"
+      ],
+      "note": "PDP-11 FP simulator/control entry is replaced by mandatory native FP initialization/context, task 81; no PDP-11 status-word ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/malloc.c",
+      "native": [
+        "libc/malloc.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/mktemp.c",
+      "native": [
+        "libc/mktemp.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/modf11.s",
+      "native": [
+        "libc/float.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/mon.c",
+      "native": [
+        "libc/monitor.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/mpx.c",
+      "native": [
+        "libc/mpx.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/nlist.c",
+      "native": [
+        "libc/nlist.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/perror.c",
+      "native": [
+        "libc/perror.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/pkon.c",
+      "native": [
+        "libc/packet.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/qsort.c",
+      "native": [
+        "libc/malloc.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/rand.c",
+      "native": [
+        "libc/numbers.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/rindex.c",
+      "native": [
+        "libc/string.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/setjmp.s",
+      "native": [
+        "libc/arch/x86_64/setjmp.S"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/sleep.c",
+      "native": [
+        "libc/sleep.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/strcat.c",
+      "native": [
+        "libc/string.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/strcmp.c",
+      "native": [
+        "libc/string.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/strcpy.c",
+      "native": [
+        "libc/string.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/strlen.c",
+      "native": [
+        "libc/string.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/strncat.c",
+      "native": [
+        "libc/string.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/strncmp.c",
+      "native": [
+        "libc/string.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/strncpy.c",
+      "native": [
+        "libc/string.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/stty.c",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/swab.c",
+      "native": [
+        "libc/bytes.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/tell.c",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/timezone.c",
+      "native": [
+        "libc/time.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/ttyname.c",
+      "native": [
+        "libc/terminal.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/gen/ttyslot.c",
+      "native": [
+        "libc/terminal.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/mklib",
+      "native": [
+        "Makefile"
+      ],
+      "note": "Historical build/object input is replaced by native archive/startup recipes and staged ELF64 development files."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/clrerr.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/data.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native va_list/FILE implementation replaces private PDP-11 stack/layout helpers; consumers use task 41 adapters."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/doprnt.s",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native va_list/FILE implementation replaces private PDP-11 stack/layout helpers; consumers use task 41 adapters."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/doscan.c",
+      "native": [
+        "libc/scan.c"
+      ],
+      "note": "Native va_list/FILE implementation replaces private PDP-11 stack/layout helpers; consumers use task 41 adapters."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/endopen.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/fdopen.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/ffltpr.s",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native va_list/FILE implementation replaces private PDP-11 stack/layout helpers; consumers use task 41 adapters."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/fgetc.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/fgets.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/filbuf.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native va_list/FILE implementation replaces private PDP-11 stack/layout helpers; consumers use task 41 adapters."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/findiop.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native va_list/FILE implementation replaces private PDP-11 stack/layout helpers; consumers use task 41 adapters."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/flsbuf.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native va_list/FILE implementation replaces private PDP-11 stack/layout helpers; consumers use task 41 adapters."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/fltpr.s",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native va_list/FILE implementation replaces private PDP-11 stack/layout helpers; consumers use task 41 adapters."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/fopen.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/fprintf.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/fputc.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/fputs.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/freopen.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/fseek.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/ftell.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/gcvt.c",
+      "native": [
+        "libc/gcvt.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/getchar.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/getgrent.c",
+      "native": [
+        "libc/group.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/getgrgid.c",
+      "native": [
+        "libc/group.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/getgrnam.c",
+      "native": [
+        "libc/group.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/getpass.c",
+      "native": [
+        "libc/getpass.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/getpw.c",
+      "native": [
+        "libc/passwd.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/getpwent.c",
+      "native": [
+        "libc/passwd.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/getpwnam.c",
+      "native": [
+        "libc/passwd.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/getpwuid.c",
+      "native": [
+        "libc/passwd.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/gets.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/getw.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/popen.c",
+      "native": [
+        "libc/popen.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/printf.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/putchar.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/puts.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/putw.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/rdwr.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/rew.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/scanf.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/setbuf.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/sprintf.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/strout.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native va_list/FILE implementation replaces private PDP-11 stack/layout helpers; consumers use task 41 adapters."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/system.c",
+      "native": [
+        "libc/system.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/stdio/ungetc.c",
+      "native": [
+        "libc/stdio.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/access.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/acct.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/alarm.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/chdir.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/chmod.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/chown.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/chroot.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/close.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/creat.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/dup.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/execl.s",
+      "native": [
+        "libc/exec.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/execle.s",
+      "native": [
+        "libc/exec.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/execv.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/execve.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/exit.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/fork.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/fstat.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/getgid.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/getpid.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/getuid.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/ioctl.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/kill.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/link.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/lock.s",
+      "native": [
+        "libc/lock.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/lseek.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/mknod.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/mount.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/mpxcall.s",
+      "native": [
+        "libc/mpx.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/nice.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/open.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/pause.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/phys.s",
+      "native": [
+        "libc/phys.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/pipe.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/profil.s",
+      "native": [
+        "libc/profil.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/ptrace.s",
+      "native": [
+        "libc/ptrace.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/read.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/sbrk.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/setgid.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/setuid.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/signal.s",
+      "native": [
+        "libc/arch/x86_64/signal.S"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/stat.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/stime.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/sync.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/time.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/times.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/umask.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/umount.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/unlink.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/utime.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/wait.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/sys/write.s",
+      "native": [
+        "libc/syscalls.c"
+      ],
+      "note": "Native implementation; public records and widths use the Nexix ABI."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/v6/access.c",
+      "native": [
+        "docs/runtime-equivalents.md",
+        "libc/syscalls.c"
+      ],
+      "note": "V6 wrapper intent maps to native V7 API; no V6 binary/syscall-record compatibility."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/v6/chown.c",
+      "native": [
+        "docs/runtime-equivalents.md",
+        "libc/syscalls.c"
+      ],
+      "note": "V6 wrapper intent maps to native V7 API; no V6 binary/syscall-record compatibility."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/v6/execl.c",
+      "native": [
+        "docs/runtime-equivalents.md",
+        "libc/exec.c"
+      ],
+      "note": "V6 wrapper intent maps to native V7 API; no V6 binary/syscall-record compatibility."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/v6/ftime.c",
+      "native": [
+        "docs/runtime-equivalents.md",
+        "libc/time.c"
+      ],
+      "note": "V6 wrapper intent maps to native V7 API; no V6 binary/syscall-record compatibility."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/v6/gtty.c",
+      "native": [
+        "docs/runtime-equivalents.md",
+        "libc/syscalls.c"
+      ],
+      "note": "V6 wrapper intent maps to native V7 API; no V6 binary/syscall-record compatibility."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/v6/lseek.c",
+      "native": [
+        "docs/runtime-equivalents.md",
+        "libc/syscalls.c"
+      ],
+      "note": "V6 wrapper intent maps to native V7 API; no V6 binary/syscall-record compatibility."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/v6/stat.c",
+      "native": [
+        "docs/runtime-equivalents.md",
+        "libc/syscalls.c"
+      ],
+      "note": "V6 wrapper intent maps to native V7 API; no V6 binary/syscall-record compatibility."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/v6/syscall.s",
+      "native": [
+        "docs/runtime-equivalents.md",
+        "libc/arch/x86_64/syscall.S"
+      ],
+      "note": "V6 wrapper intent maps to native V7 API; no V6 binary/syscall-record compatibility."
+    },
+    {
+      "source": "reference/v7/usr/src/libc/v6/time.s",
+      "native": [
+        "docs/runtime-equivalents.md",
+        "libc/syscalls.c"
+      ],
+      "note": "V6 wrapper intent maps to native V7 API; no V6 binary/syscall-record compatibility."
+    }
+  ]
+}

@@ -6,7 +6,6 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #define CHECK(c) do { if (!(c)) {fprintf(stderr,"root-exec line %d errno %d\n",__LINE__,errno);return __LINE__;} } while (0)
-static char buffer[4096];
 extern int setid_test(void);
 extern int text_test(void);
 extern int core_test(void);
@@ -34,6 +33,7 @@ extern int tty_controller_test(void);
 extern int modem_test(void);
 static int child_exec(const char *path, int unprivileged)
 {
+    char buffer[64];
     int pair[2]; CHECK(pipe(pair)==0);
     pid_t pid=fork();CHECK(pid>=0);
     if(!pid){close(pair[0]);dup2(pair[1],1);close(pair[1]);
@@ -47,6 +47,9 @@ static int child_exec(const char *path, int unprivileged)
 }
 int main(void)
 {
+    /* Keep transient copy storage off the combined fixture data segment: its
+     * core must fit the deliberately small mounted-volume regression image. */
+    char buffer[512];
     CHECK(open("/dev/tty",O_RDWR)==-1 && errno==ENXIO);
     CHECK(open("/dev/console",O_RDWR)==0 && dup(0)==1 && dup(0)==2);
     int null=open("/dev/null",O_RDWR);CHECK(null>=0);

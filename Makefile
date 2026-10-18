@@ -14,7 +14,7 @@ INSTALL_STAGE ?= build/stage
 FULL_ROOT_IMAGE ?= build/distribution.img
 CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-stack-protector -fno-pie -m64 -mno-red-zone -mgeneral-regs-only -fno-asynchronous-unwind-tables -Ikernel/include -Iinclude -MMD -MP
 OBJECTS = build/packet.o build/packet_tty.o build/packet_image.o build/boot.o build/main.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o build/elf.o build/exec.o build/exec_test.o build/exec_image.o build/libc_test.o build/libc_image.o build/block.o build/v7fs.o build/fs_test.o build/root_image.o build/files.o build/files_test.o build/files_image.o build/tty.o build/tty_test.o build/tty_image.o build/signals.o build/signals_test.o build/signals_image.o build/catalog.o build/v7_userland_test.o build/v7_test_image.o
--include build/native-config.mk
+include build/native-config.mk
 OBJECTS += $(NATIVE_CONFIG_OBJECTS)
 
 build/native-config.mk: config/kernel.json tools/mkconf.py
@@ -1512,3 +1512,46 @@ test-math-coverage: build/nexix.iso build/math-coverage.elf stage
 test-supplemental-inputs:
 	$(PYTHON) tests/supplemental_inputs.py
 test-unit: test-supplemental-inputs
+
+build/exec-search-unit.o: libc/exec.c | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Dexecv=nx_test_execv -Dexecvp=nx_test_execvp -Dgetenv=nx_test_getenv -Dsleep=nx_test_sleep -Dexecl=nx_test_execl -Dexecle=nx_test_execle -Dexeclp=nx_test_execlp -c $< -o $@
+build/exec-search-unit-test: tests/exec-search-unit.c build/exec-search-unit.o
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror $^ -o $@
+.PHONY: test-exec-search-unit
+test-exec-search-unit: build/exec-search-unit-test
+	./build/exec-search-unit-test
+test-unit: test-exec-search-unit
+
+# Native development interfaces are staged only in the full IDE distribution.
+build/fcrt0.o: libc/arch/x86_64/fcrt0.S libc/arch/x86_64/crt0.S | build/.dir
+	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
+build/dev-include/nexix/%: include/nexix/% | build/.dir
+	mkdir -p $(@D)
+	cp $< $@
+build/dev-include/%: libc/include/% | build/.dir
+	mkdir -p $(@D)
+	cp $< $@
+
+# Compile/link from the verified installed tree, with no compiler/host headers.
+DEVKIT_CFLAGS = $(filter-out -Ilibc/include -Iinclude -isystem $(shell $(CC) -print-file-name=include),$(USER_CFLAGS)) -I$(INSTALL_STAGE)/root/usr/include
+build/devkit-consumer.o: tests/development-consumer.c $(INSTALL_STAGE)/receipt.json
+	$(CC) $(DEVKIT_CFLAGS) -pg -fno-optimize-sibling-calls -c $< -o $@
+build/devkit-%.elf: build/devkit-consumer.o $(INSTALL_STAGE)/receipt.json user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(INSTALL_STAGE)/root/lib/$*.o $< $(INSTALL_STAGE)/root/lib/libm.a $(INSTALL_STAGE)/root/lib/libc.a -o $@
+build/devkit-cat.o: user/v7/cmd/cat.c user/v7/compat.h $(INSTALL_STAGE)/receipt.json
+	$(CC) $(filter-out -std=c11 -Werror,$(DEVKIT_CFLAGS)) -std=gnu89 -Wno-implicit-int -Wno-implicit-function-declaration -Wno-return-type -include user/v7/compat.h -c $< -o $@
+build/devkit-cat.elf: build/devkit-cat.o $(INSTALL_STAGE)/receipt.json user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(INSTALL_STAGE)/root/lib/crt0.o $< $(INSTALL_STAGE)/root/lib/libc.a -o $@
+build/exec-consumer.o: tests/exec-consumer.c $(INSTALL_STAGE)/receipt.json
+	$(CC) $(DEVKIT_CFLAGS) -c $< -o $@
+build/exec-consumer.elf: build/exec-consumer.o $(INSTALL_STAGE)/receipt.json user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(INSTALL_STAGE)/root/lib/crt0.o $< $(INSTALL_STAGE)/root/lib/libc.a -o $@
+.PHONY: test-development
+test-development: build/nexix.iso build/devkit-crt0.elf build/devkit-fcrt0.elf build/devkit-mcrt0.elf build/devkit-fmcrt0.elf build/devkit-cat.elf build/exec-consumer.elf stage test-exec-search-unit
+	$(PYTHON) tools/development_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/development_smoke.py $(QEMU) build/nexix.iso 128M
+
+.PHONY: test-libc-source-coverage
+test-libc-source-coverage:
+	$(PYTHON) tests/libc_source_coverage.py
+test-inventory: test-libc-source-coverage

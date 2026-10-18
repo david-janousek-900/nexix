@@ -109,8 +109,10 @@ class Builder(unittest.TestCase):
             for flags in (['--inodes','1'],['--blocks','256'],['--blocks',str(MAX_BLOCKS+1)]):
                 result=subprocess.run([sys.executable,'tools/mk_rootfs.py','--output',str(path),*flags],capture_output=True)
                 self.assertNotEqual(result.returncode,0);self.assertEqual(path.read_bytes(),b'keep')
-            subprocess.run([sys.executable,'tools/mk_rootfs.py','--blocks','auto','--inodes','128','--output',str(path)],check=True,capture_output=True)
-            raw=path.read_bytes();self.assertEqual(u16(raw,512),18);audit(raw)
+            from install_manifest import load
+            requested=8*((len(load())+31)//8)
+            subprocess.run([sys.executable,'tools/mk_rootfs.py','--blocks','auto','--inodes',str(requested),'--output',str(path)],check=True,capture_output=True)
+            raw=path.read_bytes();self.assertEqual(u16(raw,512),2+requested//8);audit(raw)
 
     def test_failed_atomic_publication_and_symlinks(self):
         with tempfile.TemporaryDirectory() as temp:

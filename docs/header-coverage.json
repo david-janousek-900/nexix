@@ -34,9 +34,10 @@
     },
     {
       "source": "reference/v7/usr/include/dk.h",
-      "status": "deferred_consumer",
-      "native": null,
-      "task": 62
+      "status": "native_contract",
+      "native": "libc/include/sys/kinfo.h",
+      "task": 62,
+      "note": "Native ABI replacement; historical private layouts/stack-varargs are adapted at consumers, not installed as overlays."
     },
     {
       "source": "reference/v7/usr/include/dumprestor.h",
@@ -52,9 +53,10 @@
     },
     {
       "source": "reference/v7/usr/include/execargs.h",
-      "status": "deferred_consumer",
-      "native": null,
-      "task": 79
+      "status": "native_contract",
+      "native": "libc/include/unistd.h",
+      "task": 79,
+      "note": "Native ABI replacement; historical private layouts/stack-varargs are adapted at consumers, not installed as overlays."
     },
     {
       "source": "reference/v7/usr/include/grp.h",
@@ -88,9 +90,10 @@
     },
     {
       "source": "reference/v7/usr/include/pack.h",
-      "status": "deferred_consumer",
-      "native": null,
-      "task": 68
+      "status": "native_contract",
+      "native": "libc/include/sys/pk.h",
+      "task": 68,
+      "note": "Native ABI replacement; historical private layouts/stack-varargs are adapted at consumers, not installed as overlays."
     },
     {
       "source": "reference/v7/usr/include/pwd.h",
@@ -130,9 +133,10 @@
     },
     {
       "source": "reference/v7/usr/include/symbol.h",
-      "status": "deferred_consumer",
-      "native": null,
-      "task": 61
+      "status": "native_contract",
+      "native": "libc/include/nlist.h",
+      "task": 61,
+      "note": "Native ABI replacement; historical private layouts/stack-varargs are adapted at consumers, not installed as overlays."
     },
     {
       "source": "reference/v7/usr/include/sys/acct.h",
@@ -310,9 +314,10 @@
     },
     {
       "source": "reference/v7/usr/include/sys.s",
-      "status": "deferred_consumer",
-      "native": null,
-      "task": 79
+      "status": "native_contract",
+      "native": "include/nexix/syscall.h",
+      "task": 79,
+      "note": "Native ABI replacement; historical private layouts/stack-varargs are adapted at consumers, not installed as overlays."
     },
     {
       "source": "reference/v7/usr/include/time.h",
@@ -334,15 +339,17 @@
     },
     {
       "source": "reference/v7/usr/include/varargs.h",
-      "status": "deferred_consumer",
-      "native": null,
-      "task": 41
+      "status": "native_contract",
+      "native": "libc/include/stdarg.h",
+      "task": 41,
+      "note": "Native ABI replacement; historical private layouts/stack-varargs are adapted at consumers, not installed as overlays."
     },
     {
       "source": "reference/v7/usr/include/whoami.h",
-      "status": "deferred_consumer",
-      "native": null,
-      "task": 78
+      "status": "native_contract",
+      "native": "libc/include/whoami.h",
+      "task": 78,
+      "note": "Native ABI replacement; historical private layouts/stack-varargs are adapted at consumers, not installed as overlays."
     }
   ]
 }
