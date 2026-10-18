@@ -1,16 +1,21 @@
 # Packaged root filesystem (task 17)
 
-`make TOOLCHAIN_PREFIX= rootfs` creates `build/root.img`, a deterministic
+`make bootstrap-rootfs` creates `build/root.img`, a deterministic
 1024-sector (512 KiB) V7 filesystem volume. It uses the retained PDP-11 disk
 encodings and native x86_64 ELF64 user programs. The kernel/GRUB boot loader
 lives on the ISO; this volume supplies userland and has no independent boot
 sector. `make TOOLCHAIN_PREFIX= iso` embeds the root image in the kernel.
 
-The image includes:
+This describes the fixed embedded recovery image. `make rootfs` now builds the
+separate full `build/distribution.img`, with COM2 and owned user homes/account
+configuration; see [installation staging](install-staging.md) and
+[multi-user configuration](multi-user.md). Existing working disks are preserved.
+
+The bootstrap image includes:
 
 - `/etc/init` and `/bin/sh`.
 - `/bin/echo`, `cat`, `ls`, `pwd`, `cp`, `ln`, `rm`, `date`, and `touch`.
-- `/etc/rc`, `/etc/ttys`, `/etc/passwd`, and `/.profile` from `rootfs/`.
+- `/etc/rc`, `/etc/ttys`, `/etc/passwd`, and `/.profile` from `rootfs/bootstrap/`.
 - Empty `/etc/utmp` and `/usr/adm/wtmp` accounting files.
 - `/dev/console` and `/dev/ttyS0`, two names for the same COM1 device inode,
   plus `/dev/tty` for the controlling terminal and `/dev/null` for EOF/discard I/O.

@@ -1293,3 +1293,13 @@ build/terminal-shells.elf: build/crt0.o build/terminal-shells.o build/libc.a use
 test-two-terminals: test-serial-secondary test-terminal-sessions test-terminal-config build/terminal-shells.elf
 	$(PYTHON) tools/terminal_shells_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/terminal_shells_smoke.py $(QEMU) build/nexix.iso 128M
+
+# Task 94: native account and startup configuration.
+build/account-config.o: tests/account-config.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/account-config.elf: build/crt0.o build/account-config.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+.PHONY: test-account-config
+test-account-config: rootfs iso build/account-config.elf test-install-unit test-root-separation-unit
+	$(PYTHON) tools/account_config_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/account_config_smoke.py $(QEMU) build/nexix.iso 128M

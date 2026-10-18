@@ -1,0 +1,3 @@
+PATH=/bin
+TZ=GMT0
+export PATH TZ

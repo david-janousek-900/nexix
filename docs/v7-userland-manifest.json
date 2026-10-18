@@ -121,12 +121,16 @@
       "id": "accounts",
       "category": "configuration",
       "status": "partial",
-      "description": "Historical passwd/group fixtures are supplied; native account services and authentication remain partial. Do not deploy historical passwords as Nexix defaults.",
+      "description": "Native passwd/group databases, locked service identities, development users, owned homes and profiles are installed and tested. Getty/login authentication and account commands are being integrated.",
       "evidence": [
         "rootfs/etc/passwd",
         "docs/userland.md",
         "reference/v7/etc/passwd",
-        "reference/v7/etc/group"
+        "reference/v7/etc/group",
+        "rootfs/etc/group",
+        "rootfs/user-profile",
+        "docs/multi-user.md",
+        "tests/account-config.c"
       ],
       "locations": [
         "/etc/passwd",
@@ -136,11 +140,14 @@
     {
       "id": "multi-tty",
       "category": "kernel",
-      "status": "partial",
-      "description": "Current UART and line discipline provide one shared COM1 console; independent COM2 and login terminals are pending.",
+      "status": "supplied",
+      "description": "Independent COM1/COM2 UARTs, per-line queues/settings, controlling terminals, process groups, signals and flow control pass two-shell acceptance with repeated resource recovery. Getty/login supervision is tracked separately.",
       "evidence": [
         "kernel/serial.c",
-        "kernel/v7/tty.c"
+        "kernel/v7/tty.c",
+        "kernel/serial_secondary.c",
+        "docs/multi-terminal.md",
+        "tests/terminal-shells.c"
       ],
       "locations": []
     },
@@ -18784,11 +18791,11 @@
       "source_availability": "not_applicable",
       "outputs": [],
       "priority": 2,
-      "status": "not_ported",
+      "status": "partial",
       "dependencies": [],
       "reference_includes": [],
       "blockers": [
-        "Not installed in Nexix; native integration and functional acceptance remain pending."
+        "Native passwd/group/ttys/rc, profiles, homes and utmp/wtmp placeholders are packaged; remaining historical configuration assets and consuming services still require integration."
       ],
       "unresolved": [
         "Audit native API/format compatibility and remaining transitive dependencies."
@@ -18809,11 +18816,11 @@
       "source_availability": "not_applicable",
       "outputs": [],
       "priority": 15,
-      "status": "not_ported",
+      "status": "partial",
       "dependencies": [],
       "reference_includes": [],
       "blockers": [
-        "Not installed in Nexix; native integration and functional acceptance remain pending."
+        "Native console, ttyS0/ttyS1, controlling terminal and implemented storage/device nodes are packaged; remaining historical device-directory coverage requires audit and integration."
       ],
       "unresolved": [
         "Audit native API/format compatibility and remaining transitive dependencies."

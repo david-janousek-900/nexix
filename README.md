@@ -56,7 +56,8 @@ Host GCC/binutils are used by default. `make build` creates the kernel, boot ISO
 and working disk without starting QEMU; existing working disks are preserved.
 `make run` builds as needed and starts QEMU. Neither command needs variable overrides.
 COM1 is attached to that terminal; run `make terminal` in another host terminal
-to connect to COM2. Ctrl-] disconnects the second terminal. Fresh full disks
+to connect to COM2. Ctrl-] disconnects the second terminal. See
+[account configuration](docs/multi-user.md) for the prepared development users. Fresh full disks
 include `/dev/ttyS1`; getty/login startup is still being integrated. See
 [independent terminals](docs/multi-terminal.md).
 To use an installed cross-toolchain, run `make TOOLCHAIN_PREFIX=x86_64-elf- run`
@@ -128,11 +129,11 @@ single-user V7 shell with persistent IDE storage. Eleven native programs are
 installed: **init, sh, echo, cat, ls, pwd, cp, ln, rm, date and touch**.
 The inventory accounts for **217 components, 2,144 distribution files and
 35 supporting/platform requirements**. Its component statuses are 11 implemented,
-2 partial, 1 prototype and 203 not ported; importing reference inputs does not
+4 partial, 1 prototype and 201 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 84 done, 2 in progress
-and 280 to do** after task 93. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 85 done, 2 in progress
+and 279 to do** after task 94. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -329,7 +330,7 @@ coverage and installation remain subject to later acceptance tasks.
 
 | Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
-| 94 | Install native passwd/group/ttys/rc configuration | To do | Old 27; explicit account fixtures, homes, modes and ownership |
+| 94 | Install native passwd/group/ttys/rc configuration | Done | Native passwd/group/ttys/rc/motd, locked service identities, development DES passwords and private owned homes/profiles; `make test-account-config` at 16/128 MiB; bootstrap unchanged; [accounts](docs/multi-user.md); Git history |
 | 95 | Port stty | To do | Query/change each terminal independently |
 | 96 | Port tty | To do | Controlling-terminal identification and no-TTY errors |
 | 97 | Port mesg | To do | Terminal write-permission toggles |

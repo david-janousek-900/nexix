@@ -646,6 +646,82 @@
       "gid": 0,
       "component": "distribution.devices",
       "device": 7424
+    },
+    {
+      "path": "/etc/group",
+      "type": "file",
+      "mode": "0644",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "etc/group"
+      },
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config"
+    },
+    {
+      "path": "/etc/motd",
+      "type": "file",
+      "mode": "0644",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "etc/motd"
+      },
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config"
+    },
+    {
+      "path": "/home",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config"
+    },
+    {
+      "path": "/home/alice",
+      "type": "directory",
+      "mode": "0700",
+      "uid": 100,
+      "gid": 100,
+      "component": "distribution.config"
+    },
+    {
+      "path": "/home/alice/.profile",
+      "type": "file",
+      "mode": "0644",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "user-profile"
+      },
+      "uid": 100,
+      "gid": 100,
+      "component": "distribution.config"
+    },
+    {
+      "path": "/home/bob",
+      "type": "directory",
+      "mode": "0700",
+      "uid": 101,
+      "gid": 100,
+      "component": "distribution.config"
+    },
+    {
+      "path": "/home/bob/.profile",
+      "type": "file",
+      "mode": "0644",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "user-profile"
+      },
+      "uid": 101,
+      "gid": 100,
+      "component": "distribution.config"
     }
   ]
 }

@@ -1,0 +1,6 @@
+root::0:root
+other::1:
+sys::2:root
+bin::3:root
+uucp::4:uucp
+staff::100:root,alice,bob
