@@ -140,8 +140,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 4 partial, 1 prototype and 189 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 101 done, 2 in progress
-and 263 to do** after task 81. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 102 done, 2 in progress
+and 262 to do** after task 79. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -313,7 +313,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 76 | Typesetter device equivalent | To do | cat driver output protocol captured on native endpoint |
 | 77 | Printer/plotter device equivalents | To do | vp/vs output/control with captured protocol fixtures |
 | 78 | Native kernel configuration/build tooling | To do | mkconf and kernel recipes; existing bootstrap remains |
-| 79 | Resolve V6 wrappers and PDP-11 runtime assembly replacements | To do | Explicit native mappings, including compiler arithmetic/prologues |
+| 79 | Resolve V6 wrappers and PDP-11 runtime assembly replacements | Done | Every V6 wrapper and libc compiler helper mapped to native ABI; signed/compound arithmetic, stack/varargs and API guest tests at 16/128 MiB; docs/runtime-equivalents.md; Git history |
 | 80 | Complete native libm coverage and source-gap resolution | In progress | libm built; header-only gamma and missing inputs cannot be silently claimed |
 | 81 | Document/test native replacement for libfpsim/fakfp | Done | Native x87/SSE2 mapping for every libfpsim/fakfp input; arithmetic/conversion/SIGILL guest acceptance; make test-fpsim-equivalent test-fpu; docs/fpsim-equivalent.md; Git history |
 | 82 | Final libc consumer acceptance and installed development interfaces | In progress | libc remains partial; complete crt0/fcrt0/profiling headers/archives |

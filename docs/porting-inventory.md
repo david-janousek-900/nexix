@@ -226,8 +226,8 @@ their sources alone does not provide a working native equivalent.
 | `fortune-data` | supplied | `/usr/games/lib/fortunes` |
 | `quiz-data` | supplied | `/usr/games/quiz.k/index` |
 | `v7-source-archives` | supplied | libplot backends contain source in historical .c.a archives; bootstrap extraction must support the historical archive format. |
-| `v6-compatibility` | pending_assessment | V6 syscall wrappers are supplied for historical compatibility; determine whether native variants are appropriate. |
-| `pdp11-assembly` | pending_assessment | Rewrite or retarget PDP-11 assembly; do not treat successful host compilation as native compatibility. |
+| `v6-compatibility` | supplied | Every V6 wrapper maps to native V7 APIs; see [runtime equivalents](runtime-equivalents.md). V6 binary compatibility is not an ABI. |
+| `pdp11-assembly` | partial | Native compiler helpers, machine code and FP equivalents are mapped/tested; later assembly application/toolchain ports retain their tasks. |
 | `man-command` | supplied | Original inputs are supplied in the full archive. The original bin/man shell script is inventoried as script.man and remains unported. |
 | `manual-pages` | supplied | Original inputs are supplied in the full archive. Install manual sections 0–8 with native-port annotations and formatting support. |
 

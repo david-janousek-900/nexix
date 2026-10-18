@@ -523,22 +523,27 @@
     {
       "id": "v6-compatibility",
       "category": "abi",
-      "status": "pending_assessment",
-      "description": "V6 syscall wrappers are supplied for historical compatibility; determine whether native variants are appropriate.",
+      "status": "supplied",
+      "description": "V6-on-V7 application wrapper needs are fulfilled by native V7 interfaces; V6 binary/syscall compatibility is not an application ABI. Every wrapper is mapped in docs/runtime-equivalents.md.",
       "evidence": [
-        "reference/v7/usr/src/libc/v6",
-        "reference/v7/usr/src/cmd/tar/makefile"
+        "docs/runtime-equivalents.md",
+        "tests/runtime-equivalent.c",
+        "libc/syscalls.c",
+        "libc/exec.c"
       ],
       "locations": []
     },
     {
       "id": "pdp11-assembly",
       "category": "architecture",
-      "status": "pending_assessment",
-      "description": "Rewrite or retarget PDP-11 assembly; do not treat successful host compilation as native compatibility.",
+      "status": "partial",
+      "description": "Native compiler arithmetic/prologues, syscall stubs, kernel machine code and FP/runtime replacements are mapped and tested. Assembly consumers in later application/compiler/standalone tasks still require their own native ports.",
       "evidence": [
         "reference/v7/usr/src/cmd/factor.s",
-        "reference/v7/usr/src/libc/crt"
+        "reference/v7/usr/src/libc/crt",
+        "docs/runtime-equivalents.md",
+        "docs/fpsim-equivalent.md",
+        "tests/runtime-equivalent.c"
       ],
       "locations": []
     },

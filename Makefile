@@ -1446,3 +1446,12 @@ build/fpsim-equivalent.elf: build/crt0.o build/fpsim-equivalent.o build/libm.a b
 test-fpsim-equivalent: build/nexix.iso build/fpsim-equivalent.elf stage
 	$(PYTHON) tools/fpsim_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/fpsim_smoke.py $(QEMU) build/nexix.iso 128M
+
+build/runtime-equivalent.o: tests/runtime-equivalent.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/runtime-equivalent.elf: build/crt0.o build/runtime-equivalent.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o,$^) $(filter %.a,$^) -o $@
+.PHONY: test-runtime-equivalent
+test-runtime-equivalent: build/nexix.iso build/runtime-equivalent.elf stage
+	$(PYTHON) tools/runtime_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/runtime_smoke.py $(QEMU) build/nexix.iso 128M
