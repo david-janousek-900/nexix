@@ -1437,3 +1437,12 @@ test-unit: test-v7-archives
 extract-v7-archives:
 	$(PYTHON) tools/v7_archive.py --output $(ARCHIVE_OUTPUT)
 ARCHIVE_OUTPUT ?= build/v7-archives
+
+build/fpsim-equivalent.o: tests/fpsim-equivalent.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/fpsim-equivalent.elf: build/crt0.o build/fpsim-equivalent.o build/libm.a build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o,$^) $(filter %.a,$^) -o $@
+.PHONY: test-fpsim-equivalent
+test-fpsim-equivalent: build/nexix.iso build/fpsim-equivalent.elf stage
+	$(PYTHON) tools/fpsim_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/fpsim_smoke.py $(QEMU) build/nexix.iso 128M

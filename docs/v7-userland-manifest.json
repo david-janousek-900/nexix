@@ -22605,32 +22605,41 @@
           "name": "fpsim.o",
           "install": null,
           "role": "runtime_object",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/libfpsim/mklib"
+            "docs/fpsim-equivalent.md",
+            "Makefile",
+            "kernel/arch/x86_64/fpu.c",
+            "tests/fpsim-equivalent.c"
           ]
         },
         {
           "name": "compall",
           "install": null,
           "role": "build_helper",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/libfpsim/compall"
+            "docs/fpsim-equivalent.md",
+            "Makefile",
+            "kernel/arch/x86_64/fpu.c",
+            "tests/fpsim-equivalent.c"
           ]
         },
         {
           "name": "mklib",
           "install": null,
           "role": "build_helper",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/libfpsim/mklib"
+            "docs/fpsim-equivalent.md",
+            "Makefile",
+            "kernel/arch/x86_64/fpu.c",
+            "tests/fpsim-equivalent.c"
           ]
         }
       ],
       "priority": 15,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -22662,16 +22671,12 @@
         }
       ],
       "reference_includes": [],
-      "blockers": [
-        "Audit widths, representations, assembly and required native APIs.",
-        "compall assembles fpsim.o; mklib inserts it into libc.a. This directory does not produce a separate libfpsim.a."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
-        "Decide native applicability explicitly; if retained, verify its chosen equivalent against floating-point fixtures.",
-        "Test exported routines with native callers, boundary/error cases and consuming programs."
+        "make test-fpsim-equivalent: native arithmetic/conversions and SIGILL at 16/128 MiB.",
+        "make test-fpu: process/fork/exec/signal FP register and control isolation.",
+        "docs/fpsim-equivalent.md maps every original input to the native hardware equivalent; PDP-11 instruction interpretation is not part of the native ABI."
       ],
       "source_files": [
         "reference/v7/usr/src/libfpsim/compall",

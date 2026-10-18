@@ -130,7 +130,10 @@ def validate(manifest, root=ROOT):
             if output.get('status') == 'implemented':
                 need(bool(output.get('evidence')), f'{owner}: implemented output needs evidence')
                 need(entry.get('status') == 'implemented', f'{owner}: output/entry implementation status differs')
-                installed.add(output.get('name'))
+                if output.get('role') == 'installed':
+                    need(location is not None, f'{owner}: installed output requires a destination')
+                if location is not None and output.get('role') in {'installed', 'optional', 'helper'}:
+                    installed.add(output.get('name'))
             if entry.get('status') == 'implemented':
                 need(output.get('status') == 'implemented', f'{owner}: implemented component has unimplemented output')
         dependencies = entry.get('dependencies')
@@ -218,7 +221,8 @@ def main():
         sys.exit('FAIL: inventory validation\n' + '\n'.join(errors))
     count = len({source for entry in manifest['entries'] for source in entry['sources']})
     installed = {output['name'] for entry in manifest['entries'] for output in entry['outputs']
-                 if output['status'] == 'implemented'}
+                 if output['status'] == 'implemented' and output.get('install') is not None
+                 and output.get('role') in {'installed', 'optional', 'helper'}}
     print(f'PASS: V7 inventory: {len(manifest["entries"])} components, {count} reference files, '
           f'{len(manifest["requirements"])} external/platform requirements, {len(installed)} installed programs')
     coverage = json.loads((ROOT / 'docs/roadmap-coverage.json').read_text())

@@ -65,6 +65,14 @@ class Inventory(unittest.TestCase):
         self.entry('cmd.echo')['outputs'][0]['name'] = 'inventory-unpackaged-command'
         self.reject('implemented output drift')
 
+    def test_installed_command_requires_destination(self):
+        self.entry('cmd.echo')['outputs'][0]['install'] = None
+        self.reject('installed output requires a destination')
+
+    def test_native_runtime_equivalent_is_not_an_installed_command(self):
+        self.assertEqual(self.entry('lib.libfpsim')['status'], 'implemented')
+        self.assertEqual(validate(self.manifest), [])
+
     def test_missing_external_requirement_is_visible(self):
         self.manifest['requirements'] = [r for r in self.manifest['requirements'] if r['id'] != 'yacc-skeleton']
         self.reject('unknown dependency yacc-skeleton')
