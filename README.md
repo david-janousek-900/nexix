@@ -126,8 +126,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 2 partial, 1 prototype and 203 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 76 done, 2 in progress
-and 288 to do** after task 83. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 77 done, 2 in progress
+and 287 to do** after task 84. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -149,9 +149,9 @@ Release scope and agreed native adaptations:
 - Restore V7 serial communications and UUCP in 0.1.0. TCP/IP belongs to 0.2.0.
 
 Known gaps include complete TTY modes, additional devices, the native toolchain,
-multi-user startup and the remaining userland ports. Packaging
-currently uses a 96-inode root image and a fixed 512 KiB embedded RAM root;
-tasks 83–86 address these limits before full-distribution installation.
+multi-user startup and the remaining userland ports. The default embedded RAM
+root remains 512 KiB with 96 inode slots; task 84 supports larger external images.
+Tasks 85–86 complete full-distribution root separation and guest test staging.
 
 See the [porting inventory](docs/porting-inventory.md) and its
 [component manifest](docs/v7-userland-manifest.json) for original inputs,
@@ -309,7 +309,7 @@ coverage and installation remain subject to later acceptance tasks.
 | Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 83 | Manifest-driven build/install staging | Done | [Native installation manifest and staging](docs/install-staging.md); shared build/catalog/root plan, modes/UID/GID, verified payload hashes and safe stage replacement; `make test-install`; Git history |
-| 84 | Scalable V7 image builder | To do | Root uses 96 inodes; scalable configuration and adequate full-release capacity |
+| 84 | Scalable V7 image builder | Done | [Image sizing and limits](docs/image-builder.md); automatic volume/inode sizing, free-space budgets, mapped large images and atomic output; 64 MiB/4096-inode host and 16/128 MiB QEMU acceptance; `make test-image-builder`; Git history |
 | 85 | Separate full IDE root from embedded bootstrap/test root | To do | Keep 512 KiB RAM baseline; full distribution must not inflate the kernel image |
 | 86 | Per-component guest acceptance harness | To do | Disposable staged roots, serial fixtures and manifests; keep existing user disk intact |
 | 87 | Historical source/data archive extraction | To do | Validate all six source archives and six lesson archives; no host-format assumptions |

@@ -1190,3 +1190,16 @@ test-install-unit: v7-userland
 	$(PYTHON) tests/install_manifest.py
 test-install: test-install-unit stage test-rootfs test-inventory test-libc-interfaces
 test-unit: test-install-unit
+
+# Task 84: release-scale V7 image sizing and native filesystem acceptance.
+build/image-scale-test: tests/image-scale.c kernel/v7/fs.c kernel/block.c kernel/include/v7/fs.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude $(filter %.c,$^) -o $@
+build/image-scale.img: tools/mk_large_image_fixture.py tools/mk_rootfs.py tools/mk_v7fs.py tools/install_manifest.py docs/native-install.json $(INSTALL_INPUTS) | build/.dir
+	$(PYTHON) tools/mk_large_image_fixture.py $@
+.PHONY: test-image-builder-unit test-image-builder
+test-image-builder-unit: v7-userland build/image-scale-test
+	$(PYTHON) tests/image_builder.py
+test-unit: test-image-builder-unit
+test-image-builder: test-image-builder-unit test-rootfs test-inventory test-libc-interfaces iso
+	$(PYTHON) tools/image_scale_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/image_scale_smoke.py $(QEMU) build/nexix.iso 128M

@@ -56,7 +56,7 @@ construction must match, and the default image remains byte-identical to its
 pre-task layout. QEMU root acceptance runs at 16/128 MiB; shell and persistent
 storage regressions protect boot behavior and user data.
 
-Task 84 still owns full-release image capacity; task 85 owns separating the full
+[Task 84](image-builder.md) supplies scalable image capacity; task 85 owns separating the full
 IDE distribution from the fixed embedded bootstrap root. Independent terminal
 and multi-user implementation tasks follow those prerequisites. Task 83 alone
 does not install getty/login or enable multi-user boot.
