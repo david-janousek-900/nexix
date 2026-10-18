@@ -1489,3 +1489,12 @@ test-output-unit: build/output-unit-test
 	./build/output-unit-test
 test-unit: test-output-unit
 test-typesetter: test-output-unit
+
+build/printer.o: tests/printer.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/printer.elf: build/crt0.o build/printer.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o,$^) $(filter %.a,$^) -o $@
+.PHONY: test-printer
+test-printer: build/nexix.iso build/printer.elf stage test-output-unit
+	$(PYTHON) tools/printer_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/printer_smoke.py $(QEMU) build/nexix.iso 128M

@@ -1,0 +1,9 @@
+"""Printer/plotter acceptance on a private full root."""
+import sys
+from private_guest import private_guest
+
+qemu,iso,ram=sys.argv[1:4]
+with private_guest(qemu,iso,ram,'printer',{'/tmp/printer':'printer.elf'}) as guest:
+    guest.expect(r'(?s)NEXIX_BOOT_OK\r\n# ')
+    guest.command('/tmp/printer',stdout='PRINTER_OK\n')
+print(f'PASS: {ram} VP command/mode framing and PPLOT transition; VS burst/input protocol')

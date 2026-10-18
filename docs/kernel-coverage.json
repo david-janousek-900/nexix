@@ -485,13 +485,15 @@
         "reference/v7/usr/sys/dev/vs.c"
       ],
       "native": [
-        "kernel/block.c",
-        "kernel/ide.c"
+        "kernel/v7/output.c",
+        "kernel/include/output.h",
+        "include/nexix/output.h",
+        "kernel/v7/files.c"
       ],
       "tasks": [
         77
       ],
-      "note": "Native device equivalent and its protocol/error/lifetime tests remain required; referenced files are integration points, not completed replacements."
+      "note": "Task 77 implements native VP print/plot modes, ordered command capture and PPLOT transition, and VS GO burst markers, nibble input translation and bounded peer injection. File captures replace unavailable PDP-11 handshakes/DMA; guest protocol fixtures and host error/close/interrupt tests cover ownership and cleanup. See docs/output-devices.md."
     },
     {
       "id": "headers",

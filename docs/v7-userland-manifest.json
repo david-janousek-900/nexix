@@ -18837,10 +18837,10 @@
       "dependencies": [],
       "reference_includes": [],
       "blockers": [
-        "Native console, ttyS0/ttyS1, controlling terminal and implemented storage/device nodes are packaged; remaining historical device-directory coverage requires audit and integration."
+        "Native implemented device nodes, including cat/vp/vs, are packaged. Task 359 must close the historical device-directory node/consumer audit after remaining administration and device-using command ports."
       ],
       "unresolved": [
-        "Audit native API/format compatibility and remaining transitive dependencies."
+        "Final historical makefile/mt1 disposition and consumer coverage audit is task 359; kernel device implementations retain their completed task evidence."
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."

@@ -140,8 +140,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 4 partial, 1 prototype and 189 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 104 done, 2 in progress
-and 260 to do** after task 76. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 105 done, 2 in progress
+and 259 to do** after task 77. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -311,7 +311,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 74 | Historical terminal-controller equivalents | Done | DC/DH/DZ/KL profiles, parity/errors, TANDEM, LCASE and timed output; `make test-tty-controllers`; [contracts and limits](docs/tty-controllers.md); Git history |
 | 75 | Modem and dial-control equivalents | Done | [Native modem/dial contracts](docs/modems.md); local/UART/virtual carrier, SIGHUP, B0, DN dialing and DU synchronous records; `make test-modem`; forked peers at 16/128 MiB, host handshake/error/timeout tests; Git history |
 | 76 | Typesetter device equivalent | Done | C/A/T exact binary capture endpoint with exclusive open, pinned backing/lifetime and checked storage errors; make test-typesetter test-output-unit; docs/output-devices.md; Git history |
-| 77 | Printer/plotter device equivalents | To do | vp/vs output/control with captured protocol fixtures |
+| 77 | Printer/plotter device equivalents | Done | VP mode/control framing and PPLOT transition; VS GO burst/input protocols with bounded peer; make test-printer test-typesetter test-output-unit; docs/output-devices.md; Git history |
 | 78 | Native kernel configuration/build tooling | Done | Validated native configuration generates actual kernel driver link inputs; native build recipes and every historical configuration responsibility mapped; make test-mkconf build test-boot test-multiuser-acceptance; Git history |
 | 79 | Resolve V6 wrappers and PDP-11 runtime assembly replacements | Done | Every V6 wrapper and libc compiler helper mapped to native ABI; signed/compound arithmetic, stack/varargs and API guest tests at 16/128 MiB; docs/runtime-equivalents.md; Git history |
 | 80 | Complete native libm coverage and source-gap resolution | In progress | libm built; header-only gamma and missing inputs cannot be silently claimed |
@@ -691,7 +691,7 @@ required before native-port acceptance.
 | 356 | Package complete 0.1.0 distribution | To do | Programs, scripts, libraries, headers, source/build inputs, manuals/data and permissions |
 | 357 | Persistent disk upgrade/install tooling | To do | Back up first; preserve accounts/data/TZ and timestamp disk formats |
 | 358 | Full multi-user/time/storage/userland acceptance | To do | 16/128 MiB baseline; full IDE release at 128 MiB and two terminals |
-| 359 | Close all component/source/device blockers | To do | All 217 entries/35 requirements traceable; no hidden omissions |
+| 359 | Close all component/source/device blockers | To do | All 217 entries/35 requirements traceable; close historical device-directory node/consumer audit; no hidden omissions |
 | 360 | Reproducible host-bootstrap build and release provenance | To do | Pin SDK inputs, artifact hashes, licensing and validation evidence |
 | 361 | Finalize 0.1.0 release documentation and tag | To do | Only after all required leaves are implemented, tested and committed |
 
