@@ -75,3 +75,7 @@ covered-file restoration and exact root page/block/inode cleanup. The native
 fixture builds directories with V7 mknod plus privileged dot/dotdot links.
 Full smoke runs have a 45-second bound because they execute all cumulative
 kernel/libc/root fixtures; fault-only smoke runs retain the shorter bound.
+
+Task 70 adds [native V7 disk-controller equivalents](disk-controllers.md),
+including partition-aware mounted-alias protection and auxiliary ATA media.
+Run `make test-disk` for host models and 16/128 MiB cold-boot persistence.

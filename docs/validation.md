@@ -422,3 +422,7 @@ protocol/ownership/UART/libc checks and real QEMU COM1 exchanges at 16/128 MiB.
 Task 69 implements [native memory/special devices](memory-devices.md), including
 privileged mem/kmem byte access, null aliases and controlling-TTY acceptance.
 Run `make test-memdev` for host and 16/128 MiB syscall tests.
+
+Task 70 adds [native V7 disk-controller equivalents](disk-controllers.md),
+including partition-aware mounted-alias protection and auxiliary ATA media.
+Run `make test-disk` for host models and 16/128 MiB cold-boot persistence.

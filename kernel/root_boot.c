@@ -28,6 +28,7 @@ static void mount_root(void)
 }
 _Noreturn void rootfs_start(void)
 {
+    disk_native_init();
     int error=ide_init(&ide_device);
     if(error==-NX_ENODEV) {
         mount_root();
@@ -94,16 +95,25 @@ static void namespace_fixture_device(unsigned i)
     namespace_writes[i]=namespace_devices[i].device.write;
     namespace_devices[i].device.write=namespace_fault_write;
 }
+static uint8_t disk_sector[512];
+static uint32_t disk_saved=UINT32_MAX;
+static int disk_fixture_read(struct block_device *d,uint32_t b,void *p)
+{(void)d;for(unsigned i=0;i<512;++i)((uint8_t *)p)[i]=b==disk_saved?disk_sector[i]:(uint8_t)(b+i);return 0;}
+static int disk_fixture_write(struct block_device *d,uint32_t b,const void *p)
+{(void)d;for(unsigned i=0;i<512;++i)disk_sector[i]=((const uint8_t *)p)[i];disk_saved=b;return 0;}
+static struct block_device disk_fixture={.blocks=340670,.read=disk_fixture_read,.write=disk_fixture_write};
 static bool exec_testing;
 static uint64_t memdev_probe=UINT64_C(0x123456789abcdef0);
 extern const uint8_t kernel_rodata_start[];
-static uintptr_t held_pages[32768];
+/* Test-held physical addresses are below the 1 GiB allocator limit. */
+_Static_assert(PHYSICAL_LIMIT<=UINT32_MAX,"test frame address width");
+static uint32_t held_pages[32768];
 static unsigned held_count;
 static v7_pid_t held_owner;
 static v7_pid_t trace_orphan;
 bool root_exec_test_gate(struct interrupt_frame *frame)
 {
-    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x91b)return false;
+    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x91c)return false;
     struct proc *p=proc_current();
     if(frame->rax==0x900){
         frame->rax=(uint64_t)-NX_ENOSYS;return true; /* Retired tracing test hook. */
@@ -242,6 +252,25 @@ bool root_exec_test_gate(struct interrupt_frame *frame)
         if(p->p_user->u_uid)panic("unprivileged memory fixture");
         frame->rax=(uintptr_t)&memdev_probe;frame->rdx=(uintptr_t)kernel_rodata_start;
         frame->rcx=memdev_probe;return true;
+    }
+    else if(frame->rax==0x91c){
+        if(p->p_user->u_uid)panic("unprivileged disk fixture");
+        if(frame->rdi==3){
+            disk_native_init();struct disk_view view;
+            int error=disk_acquire(NX_DISK_DEV(NX_DISK_RP,0,false),false,&view);
+            if(!error)disk_release(&view);
+            frame->rax=error;return true;
+        }
+        if(frame->rdi==0){
+            disk_saved=UINT32_MAX;disk_fixture.read_only=false;
+            for(unsigned kind=0;kind<5;++kind)if(disk_bind(kind,0,&disk_fixture))panic("disk fixture bind");
+        }else if(frame->rdi==1){
+            for(unsigned kind=0;kind<5;++kind)for(unsigned unit=0;unit<8;++unit){
+                int error=disk_bind(kind,unit,NULL);
+                if(error && error!=-NX_ENODEV)panic("disk fixture leaked handles");
+            }
+        }else if(frame->rdi==2)disk_fixture.read_only=!!frame->rsi;
+        else panic("invalid disk fixture operation");
     }
     else return false;
     frame->rax=0;return true;

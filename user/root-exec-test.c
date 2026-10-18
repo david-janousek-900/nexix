@@ -23,6 +23,7 @@ extern int kinfo_test(void);
 extern int lock_test(void);
 extern int phys_test(void);
 extern int memdev_test(void);
+extern int disk_test(void);
 extern int mpx_test(void);
 extern int mpx_data_test(void);
 extern int mpx_tty_test(void);
@@ -94,6 +95,7 @@ int main(void)
     error=lock_test();if(error)return error;
     error=phys_test();if(error)return error;
     error=memdev_test();if(error)return error;
+    error=disk_test();if(error)return error;
     error=mpx_test();if(error)return error;
     error=mpx_data_test();if(error)return error;
     error=mpx_tty_test();if(error)return error;

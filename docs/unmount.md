@@ -82,3 +82,7 @@ through raw backing changes, mount-point preflight failure retention, all-volume
 sync attempts and graph teardown after slot reuse. Exact root inode/block/page
 counts and storage handles are checked after native cleanup. Test disks are
 disposable; build/nexix.img is preserved.
+
+Task 70 adds [native V7 disk-controller equivalents](disk-controllers.md),
+including partition-aware mounted-alias protection and auxiliary ATA media.
+Run `make test-disk` for host models and 16/128 MiB cold-boot persistence.

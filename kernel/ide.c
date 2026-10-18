@@ -1,21 +1,20 @@
 #include "ide.h"
 #include "io.h"
 #include <nexix/errno.h>
-#define DATA 0x1f0
-#define STATUS 0x1f7
-#define CONTROL 0x3f6
+struct ata {uint16_t io,control;unsigned slave;};
+static const struct ata ports[]={{0x1f0,0x3f6,0},{0x1f0,0x3f6,1},{0x170,0x376,0},{0x170,0x376,1}};
 #define BUSY 0x80
 #define DRQ 0x08
 #define FAULT 0x21
 #define POLLS 1000000U
-static void delay(void)
+static void delay(const struct ata *a)
 {
-    for (unsigned i=0;i<4;++i) (void)inb(CONTROL);
+    for (unsigned i=0;i<4;++i) (void)inb(a->control);
 }
-static int ready(bool data, bool check_errors)
+static int ready(const struct ata *a,bool data, bool check_errors)
 {
     for (unsigned i=0;i<POLLS;++i) {
-        uint8_t status=inb(CONTROL);
+        uint8_t status=inb(a->control);
         if (!status || status==0xff) return -NX_EIO;
         if (status&BUSY) continue;
         if (check_errors && (status&FAULT)) return -NX_EIO;
@@ -25,58 +24,72 @@ static int ready(bool data, bool check_errors)
 }
 static int transfer(struct block_device *device,uint32_t sector,void *buffer,bool write)
 {
-    (void)device;
-    outb(0x1f6,0xe0 | ((sector>>24)&15));
-    delay();
+    const struct ata *a=device->context;
+    if(sector>=device->blocks || !buffer)return -NX_EIO;
+    outb(a->io+6,0xe0 | (a->slave<<4) | ((sector>>24)&15));
+    delay(a);
     /* A previous command error is cleared by issuing the next command. */
-    if (ready(false,false)) return -NX_EIO;
-    outb(0x1f2,1);
-    outb(0x1f3,sector);
-    outb(0x1f4,sector>>8);
-    outb(0x1f5,sector>>16);
-    outb(STATUS,write ? 0x30 : 0x20);
-    delay();
-    if (ready(true,true)) return -NX_EIO;
+    if (ready(a,false,false)) return -NX_EIO;
+    outb(a->io+2,1);
+    outb(a->io+3,sector);
+    outb(a->io+4,sector>>8);
+    outb(a->io+5,sector>>16);
+    outb(a->io+7,write ? 0x30 : 0x20);
+    delay(a);
+    if (ready(a,true,true)) return -NX_EIO;
     uint8_t *bytes=buffer;
     for (unsigned i=0;i<256;++i) {
-        if (write) outw(DATA,(uint16_t)bytes[2*i] | ((uint16_t)bytes[2*i+1]<<8));
+        if (write) outw(a->io,(uint16_t)bytes[2*i] | ((uint16_t)bytes[2*i+1]<<8));
         else {
-            uint16_t word=inw(DATA);
+            uint16_t word=inw(a->io);
             bytes[2*i]=word;bytes[2*i+1]=word>>8;
         }
     }
-    delay();
-    if (ready(false,true)) return -NX_EIO;
+    delay(a);
+    if (ready(a,false,true)) return -NX_EIO;
     if (write) {
         /* Flush the device cache before acknowledging each filesystem write. */
-        outb(STATUS,0xe7);
-        delay();
-        if (ready(false,true)) return -NX_EIO;
+        outb(a->io+7,0xe7);
+        delay(a);
+        if (ready(a,false,true)) return -NX_EIO;
     }
     return 0;
 }
-static int read_sector(struct block_device *device,uint32_t sector,void *buffer)
-{ return transfer(device,sector,buffer,false); }
-static int write_sector(struct block_device *device,uint32_t sector,const void *buffer)
-{ return transfer(device,sector,(void *)buffer,true); }
-int ide_init(struct block_device *device)
+static int command(struct block_device *device,uint32_t sector,void *buffer,bool write)
 {
-    if (!device) return -NX_EINVAL;
+    int error=transfer(device,sector,buffer,write);
+    if(error){
+        const struct ata *a=device->context;
+        outb(a->control,6);
+        for(unsigned i=0;i<16;++i)delay(a); /* Hold reset beyond the select delay. */
+        outb(a->control,2);delay(a);
+        (void)ready(a,false,false); /* Bounded channel reset before a retry. */
+    }
+    return error;
+}
+static int read_sector(struct block_device *device,uint32_t sector,void *buffer)
+{ return command(device,sector,buffer,false); }
+static int write_sector(struct block_device *device,uint32_t sector,const void *buffer)
+{ return command(device,sector,(void *)buffer,true); }
+int ide_init_unit(struct block_device *device,unsigned index)
+{
+    if (!device || index>=4) return -NX_EINVAL;
+    const struct ata *a=&ports[index];
     *device=(struct block_device){0};
-    outb(CONTROL,2); /* nIEN: disable device interrupts for polling. */
-    outb(0x1f6,0xa0);
-    delay();
-    uint8_t status=inb(STATUS);
+    outb(a->control,2); /* nIEN: disable device interrupts for polling. */
+    outb(a->io+6,0xa0 | (a->slave<<4));
+    delay(a);
+    uint8_t status=inb(a->io+7);
     if (!status || status==0xff) return -NX_ENODEV;
-    outb(0x1f2,0);outb(0x1f3,0);outb(0x1f4,0);outb(0x1f5,0);
-    outb(STATUS,0xec);
-    delay();
-    if (ready(true,true)) return -NX_EIO;
-    if (inb(0x1f4) || inb(0x1f5)) return -NX_EIO;
+    outb(a->io+2,0);outb(a->io+3,0);outb(a->io+4,0);outb(a->io+5,0);
+    outb(a->io+7,0xec);
+    delay(a);
+    if (ready(a,true,true)) return -NX_EIO;
+    if (inb(a->io+4) || inb(a->io+5)) return -NX_EIO;
     uint16_t words[256];
-    for (unsigned i=0;i<256;++i) words[i]=inw(DATA);
-    delay();
-    if (ready(false,true)) return -NX_EIO;
+    for (unsigned i=0;i<256;++i) words[i]=inw(a->io);
+    delay(a);
+    if (ready(a,false,true)) return -NX_EIO;
     uint32_t blocks=(uint32_t)words[60] | ((uint32_t)words[61]<<16);
     if (!(words[49]&(1U<<9)) || !blocks || blocks>(1U<<28) ||
         (words[83]&0xc000)!=0x4000 || !(words[83]&(1U<<12))) return -NX_EIO;
@@ -84,6 +97,8 @@ int ide_init(struct block_device *device)
         uint32_t size=(uint32_t)words[117] | ((uint32_t)words[118]<<16);
         if (size!=256) return -NX_EIO;
     }
-    *device=(struct block_device){.blocks=blocks,.read=read_sector,.write=write_sector};
+    *device=(struct block_device){.blocks=blocks,.context=(void *)a,.read=read_sector,.write=write_sector};
     return 0;
 }
+
+int ide_init(struct block_device *device){return ide_init_unit(device,0);}

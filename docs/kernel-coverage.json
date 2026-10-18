@@ -373,6 +373,10 @@
         "reference/v7/usr/sys/dev/rp.c"
       ],
       "native": [
+        "kernel/v7/disk.c",
+        "kernel/include/disk.h",
+        "kernel/disk_native.c",
+        "kernel/v7/storage.c",
         "kernel/block.c",
         "kernel/ide.c"
       ],
@@ -380,7 +384,7 @@
         53,
         70
       ],
-      "note": "Native device equivalent and its protocol/error/lifetime tests remain required; referenced files are integration points, not completed replacements."
+      "note": "Tasks 53 and 70 implement block/raw access and the five HP/RF/RK/RL/RP native disk-family equivalents: source partition/unit/capacity contracts, bounded retries, ATA auxiliary media, alias/mount overlap protection and pinned view lifetime. Host models and real auxiliary ATA mount/cold-boot persistence tests run at 16/128 MiB. Hardware ECC/seeks remain backing-controller responsibilities; HP interleaving and queue ordering retain task 73. See docs/disk-controllers.md."
     },
     {
       "id": "ordering",

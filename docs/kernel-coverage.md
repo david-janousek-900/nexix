@@ -30,7 +30,7 @@ contracts; task 355 and task 359 close whole-distribution integration.
 | tty/dc/dh/dz/kl/partab | COM1 cooked/raw/cbreak, process groups and supported parity/tab flags | Terminal equivalents and TANDEM/LCASE/delay/parity contracts 74; independent ports 89–93 |
 | pk0–pk3 | Native framing/checksums, negotiation, windows/retries, EOF/CLOSE, pinned ownership and IRQ UART/TTY/mpx integration | Task 68 complete; [packet contract](serial-packets.md); UUCP and additional serial hardware retain their own acceptance tasks |
 | dn/dhdm/dhfdm/du | Serial integration point only | Modem/dial control 75 |
-| hp/rf/rk/rl/rp | Native IDE/block integration | Historical controller capabilities 70; raw device dispatch 53 |
+| hp/rf/rk/rl/rp | Native disk views, source partitions/units, bounded recovery, ATA media and overlapping mount protection | Tasks 53/70 complete; [controller contracts](disk-controllers.md); queue/interleave acceptance remains 73 |
 | ht/tm, tc | Block integration points only | Sequential tape 71; DECtape 72 |
 | dsort/dkleave | Block integration point only | Queue ordering/interleave 73 |
 | mem/sys | Byte-addressed memory/null devices and controlling-TTY forwarding | Task 69 complete; [native access rules](memory-devices.md), host and 16/128 MiB syscall acceptance; independent TTYs remain 89–93 |

@@ -84,6 +84,13 @@ class RootImage(unittest.TestCase):
             self.assertEqual(inode(lookup('/dev/'+name))[3][0],dev)
             self.assertEqual(contents(lookup('/dev/'+name)),b'')
 
+    def test_controller_nodes(self):
+        for kind,name in enumerate(('hp','rf','rk','rl','rp')):
+            for raw in (False,True):
+                record=inode(lookup('/dev/'+('r' if raw else '')+name+'0'))
+                self.assertEqual(record[0],(0o20000 if raw else 0o60000)|0o600)
+                self.assertEqual(record[3][0],((12 if raw else 7)+kind)*256)
+
     def test_storage_devices(self):
         self.assertEqual(inode(lookup('/dev/root'))[0], 0o60600)
         self.assertEqual(inode(lookup('/dev/root'))[3][0], 0)

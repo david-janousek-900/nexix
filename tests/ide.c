@@ -15,7 +15,7 @@ uint8_t inb(uint16_t port)
 }
 void outb(uint16_t port,uint8_t value)
 {
-    if (port==0x3f6) { assert(value==2);return; }
+    if (port==0x3f6) { assert(value==2 || value==6);if(value==6)status=0x40;return; }
     assert(port>=0x1f0 && port<=0x1f7);
     registers[port-0x1f0]=value;
     if (port!=0x1f7) return;

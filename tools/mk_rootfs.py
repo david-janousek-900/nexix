@@ -46,6 +46,10 @@ def build(blocks, programs, config):
     for path,dev in (('/dev/mem',0x600),('/dev/kmem',0x601)):
         number+=1;entries[path]=number
         image.inode(number,CHR|0o600,device=dev)
+    for kind,name in enumerate(('hp','rf','rk','rl','rp')):
+        for raw in (False,True):
+            number+=1;path='/dev/'+('r' if raw else '')+name+'0';entries[path]=number
+            image.inode(number,(CHR if raw else BLK)|0o600,device=((12 if raw else 7)+kind)*256)
     # Children before parents: directory link counts depend on inode types.
     for path in ('/bin', '/etc', '/dev', '/tmp', '/usr/adm', '/usr', '/'):
         parent = path.rsplit('/', 1)[0] or '/'

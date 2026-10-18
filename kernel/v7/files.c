@@ -320,7 +320,7 @@ static int open_path(struct user *u, uintptr_t address, uint64_t flags, uint64_t
         if (!f->f_inode) error = -NX_ENFILE;
     }
     if (!error && (flags & NX_O_TRUNC) && type == V7_IFREG) error = v7fs_truncate(node_volume(ino), ino.ino);
-    bool storage = type == V7_IFBLK || (type == V7_IFCHR && (disk.addr[0] >> 8) == NX_RAW_DISK_MAJOR);
+    bool storage = type == V7_IFBLK || (type == V7_IFCHR && storage_raw_device(disk.addr[0]));
     if(!error && storage){
         struct storage_handle *handle;
         error=storage_open(disk.addr[0],type==V7_IFCHR,access!=0,&handle);
@@ -499,7 +499,7 @@ static int device_path(struct user *u,uintptr_t address,v7_dev_t *dev)
     struct v7fs_inode disk;error=node_inode_get(node,&disk);if(error)return error;
     if((disk.mode&V7_IFMT)!=V7_IFBLK)return -NX_ENOTBLK;
     *dev=disk.addr[0];
-    return v7_major(*dev)!=NX_BLOCK_DISK_MAJOR || v7_minor(*dev)>=STORAGE_SLOTS?-NX_ENXIO:0;
+    return storage_block_device(*dev)?0:-NX_ENXIO;
 }
 static int mount_path(struct user *u,const uintptr_t args[6])
 {

@@ -47,3 +47,7 @@ filesystem/syscall tests at 16 and 128 MiB, followed by disposable IDE
 persistence checks at both memory sizes. Native fixtures use separate
 three-sector writable/read-only devices; production persistent storage is
 never modified by these tests.
+
+Task 70 adds [native V7 disk-controller equivalents](disk-controllers.md),
+including partition-aware mounted-alias protection and auxiliary ATA media.
+Run `make test-disk` for host models and 16/128 MiB cold-boot persistence.

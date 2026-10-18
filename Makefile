@@ -376,8 +376,8 @@ build/nexix.elf: build/root_boot.o
 
 build/root_exec_program.o: user/root-exec-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
-build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/memdev_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/mpx_tty_program.o build/libc.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/memdev_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/mpx_tty_program.o build/libc.a -o $@
+build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/memdev_program.o build/disk_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/mpx_tty_program.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/memdev_program.o build/disk_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/mpx_tty_program.o build/libc.a -o $@
 build/root_exec_image.o: build/root-exec-test.elf tools/embed_test_elf.py
 	$(PYTHON) tools/embed_test_elf.py $< $@ --ld $(LD) --objcopy $(OBJCOPY)
 OBJECTS += build/root_exec_image.o
@@ -727,7 +727,7 @@ build/storage.o: kernel/v7/storage.c | build/.dir
 
 build/storage_program.o: user/storage-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
-build/storage-unit-test: tests/storage.c kernel/v7/storage.c kernel/block.c | build/.dir
+build/storage-unit-test: tests/storage.c kernel/v7/storage.c kernel/v7/disk.c kernel/block.c | build/.dir
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude $^ -o $@
 .PHONY: test-storage test-storage-unit
 test-storage-unit: build/storage-unit-test
@@ -753,7 +753,7 @@ build/namespace_program.o: user/namespace-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 -include build/namespace_program.d
 
-build/namespace-unit-test: tests/namespace.c kernel/v7/namespace.c kernel/v7/storage.c kernel/block.c kernel/v7/fs.c | build/.dir
+build/namespace-unit-test: tests/namespace.c kernel/v7/namespace.c kernel/v7/storage.c kernel/v7/disk.c kernel/block.c kernel/v7/fs.c | build/.dir
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude $^ -o $@
 .PHONY: test-mount test-namespace-unit
 test-namespace-unit: build/namespace-unit-test build/namespace.img
@@ -761,7 +761,7 @@ test-namespace-unit: build/namespace-unit-test build/namespace.img
 test-mount: test-namespace-unit test-rootfs test-inventory test-libc-interfaces
 test-unit: test-namespace-unit
 
-build/umount-unit-test: tests/umount.c kernel/v7/namespace.c kernel/v7/storage.c kernel/block.c kernel/v7/fs.c | build/.dir
+build/umount-unit-test: tests/umount.c kernel/v7/namespace.c kernel/v7/storage.c kernel/v7/disk.c kernel/block.c kernel/v7/fs.c | build/.dir
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude $^ -o $@
 .PHONY: test-umount test-umount-unit
 test-umount-unit: build/umount-unit-test build/namespace.img test-text-unit
@@ -1042,3 +1042,31 @@ test-memdev: test-memdev-unit test-rootfs test-inventory test-libc-interfaces
 build/memdev_program.o: user/memdev-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 -include build/memdev_program.d
+
+# Task 70: V7 disk families mapped to native media.
+build/disk.o: kernel/v7/disk.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+OBJECTS += build/disk.o
+build/nexix.elf: build/disk.o
+-include build/disk.d
+build/disk_native.o: kernel/disk_native.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+OBJECTS += build/disk_native.o
+build/nexix.elf: build/disk_native.o
+-include build/disk_native.d
+build/disk-unit-test: tests/disk.c kernel/v7/disk.c kernel/v7/storage.c kernel/block.c | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude $^ -o $@
+.PHONY: test-disk-unit test-disk
+test-disk-unit: build/disk-unit-test build/ide-test build/ide-bus-test
+	./build/disk-unit-test
+	./build/ide-test
+	./build/ide-bus-test
+test-unit: test-disk-unit
+build/disk_program.o: user/disk-test.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+-include build/disk_program.d
+build/ide-bus-test: tests/ide-bus.c kernel/ide.c kernel/block.c | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Itests/ide -Ikernel/include -Iinclude $^ -o $@
+test-disk: test-disk-unit test-rootfs test-inventory test-libc-interfaces
+	$(PYTHON) tools/disk_smoke.py $(QEMU) build/test-selftest.iso 16M
+	$(PYTHON) tools/disk_smoke.py $(QEMU) build/test-selftest.iso 128M
