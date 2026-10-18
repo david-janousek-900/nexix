@@ -334,7 +334,11 @@ build/v7-%.o: user/v7/cmd/%.c user/v7/compat.h | build/.dir
 build/v7-sh.elf: build/crt0.o $(V7_SH_OBJECTS) build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o $(V7_SH_OBJECTS) build/libc.a -o $@
 build/v7-%.elf: build/crt0.o build/v7-%.o build/libc.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/v7-$*.o build/libc.a -o $@
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o,$^) $(filter %.a,$^) -o $@
+build/v7-init.elf build/v7-login.elf: build/v7-session.o
+-include build/v7-session.d
+build/v7-session.o: user/v7/session.c user/v7/session.h | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
 .PHONY: v7-userland
 v7-userland: $(V7_ELFS)
 userland: v7-userland
@@ -1345,3 +1349,12 @@ build/login-identity.elf: build/crt0.o build/login-identity.o build/libc.a user/
 test-login: rootfs iso build/login-identity.elf test-libc-interfaces
 	$(PYTHON) tools/login_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/login_smoke.py $(QEMU) build/nexix.iso 128M
+
+build/session-records.o: tests/session-records.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/session-records.elf: build/crt0.o build/session-records.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+.PHONY: test-session-accounting
+test-session-accounting: rootfs iso build/session-records.elf
+	$(PYTHON) tools/session_accounting_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/session_accounting_smoke.py $(QEMU) build/nexix.iso 128M

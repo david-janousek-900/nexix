@@ -155,12 +155,15 @@
       "id": "accounting",
       "category": "kernel",
       "status": "partial",
-      "description": "Kernel exit accounting, native records and privileged acct control exist; utmp/wtmp are packaged, login integration and accton/sa command ports remain pending.",
+      "description": "Kernel exit accounting and privileged acct control exist. Login/init integrate native per-line utmp and append-only wtmp with concurrent authenticated-session acceptance; accton/sa command ports remain pending.",
       "evidence": [
         "tools/mk_rootfs.py",
         "kernel/v7/accounting.c",
         "libc/include/sys/acct.h",
-        "docs/accounting.md"
+        "docs/accounting.md",
+        "user/v7/session.c",
+        "docs/multi-user.md",
+        "tests/session-records.c"
       ],
       "locations": [
         "/etc/utmp",

@@ -2,6 +2,7 @@
  * login [ name ]
  */
 
+#include "../session.h"
 #include <sys/types.h>
 #include <sgtty.h>
 #include <utmp.h>
@@ -34,7 +35,7 @@ main(argc, argv)
 char **argv;
 {
 	register char *namep;
-	int t, f, c;
+	int t, c;
 	char *ttyn;
 
 	alarm(60);
@@ -91,19 +92,7 @@ char **argv;
 		printf("No directory\n");
 		goto loop;
 	}
-	time(&utmp.ut_time);
-	t = ttyslot();
-	if (t>0 && (f = open("/etc/utmp", 1)) >= 0) {
-		lseek(f, (long)(t*sizeof(utmp)), 0);
-		SCPYN(utmp.ut_line, index(ttyn+1, '/')+1);
-		write(f, (char *)&utmp, sizeof(utmp));
-		close(f);
-	}
-	if (t>0 && (f = open("/usr/adm/wtmp", 1)) >= 0) {
-		lseek(f, 0L, 2);
-		write(f, (char *)&utmp, sizeof(utmp));
-		close(f);
-	}
+	(void)v7_login_record(utmp.ut_name, ttyn, ttyslot());
 	if (chown(ttyn, pwd->pw_uid, pwd->pw_gid) < 0 ||
 	    setgid(pwd->pw_gid) < 0 || setuid(pwd->pw_uid) < 0) {
 		printf("Cannot set credentials\n");

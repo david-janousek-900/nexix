@@ -1,3 +1,4 @@
+#include "../session.h"
 #include <signal.h>
 #include <sys/types.h>
 #include <utmp.h>
@@ -21,7 +22,6 @@ char	wtmpf[]	= "/usr/adm/wtmp";
 char	ctty[]	= "/dev/console";
 char	dev[]	= "/dev/";
 
-struct utmp wtmp;
 struct
 {
 	char	line[8];
@@ -43,6 +43,7 @@ main()
 {
 
 
+	(void)v7_accounting_reset();
 	setjmp(sjbuf);
 	signal(SIGHUP, reset);
 	for(EVER) {
@@ -205,7 +206,6 @@ merge()
 	register struct tab *p, *q;
 	register i;
 
-	close(creat(utmp, 0644));
 	signal(SIGINT, merge_signal);
 	fi = open(ifile, 0);
 	if(fi < 0)
@@ -270,34 +270,7 @@ struct tab *p;
 rmut(p)
 register struct tab *p;
 {
-	register i, f;
-
-	f = open(utmp, 2);
-	if(f >= 0) {
-		while(read(f, (char *)&wtmp, sizeof(wtmp)) == sizeof(wtmp)) {
-			for(i=0; i<8; i++)
-				if(wtmp.ut_line[i] != p->line[i])
-					goto contin;
-			lseek(f, -(long)sizeof(wtmp), 1);
-			for(i=0; i<8; i++)
-				wtmp.ut_name[i] = 0;
-			time(&wtmp.ut_time);
-			write(f, (char *)&wtmp, sizeof(wtmp));
-		contin:;
-		}
-		close(f);
-	}
-	f = open(wtmpf, 1);
-	if (f >= 0) {
-		for(i=0; i<8; i++) {
-			wtmp.ut_name[i] = 0;
-			wtmp.ut_line[i] = p->line[i];
-		}
-		time(&wtmp.ut_time);
-		lseek(f, (long)0, 2);
-		write(f, (char *)&wtmp, sizeof(wtmp));
-		close(f);
-	}
+	(void)v7_logout_record(p->line);
 }
 
 static void merge_signal(int n) { (void)n; merge(); }

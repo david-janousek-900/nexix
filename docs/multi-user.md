@@ -92,3 +92,25 @@ umask. It then starts the real V7 user shell in Alice's home and checks clean
 logout and username EOF. Runs use disposable IDE volumes at 16/128 MiB. Source
 login record writes are present; concurrent accounting and logout integration
 are accepted in task 100. Automatic getty supervision remains task 101.
+
+Task 100 shares native record-I/O adapters between login and init's source-based
+`rmut` path. `/etc/utmp` uses one-based tty slots (slot zero is empty), while
+`/usr/adm/wtmp` retains an append-only sequence of login records and empty-name
+logout records. Each record is 24 bytes: line[8], name[8], and a signed 64-bit UTC
+epoch time. Fields are padded/truncated to eight bytes; there is no byte-for-byte
+PDP-11 accounting compatibility. History is preserved across init startup; active
+utmp is cleared once at boot, rather than on every ttys merge. Logout only clears
+matching line records, preserving other active users.
+
+Record I/O handles short/interrupted reads and writes. Wtmp uses O_APPEND to avoid
+the source's separate seek/write race between line processes. Missing/unwritable
+accounting files retain V7's best-effort login behavior; this is not a transactional
+database or a guarantee against partial records after an I/O failure. Init still
+records line-process exits even if no user logged in, as the source does.
+
+`make test-session-accounting` enables two gettys through the existing manual
+single-user transition, authenticates Alice and Bob, and checks the actual native
+utmp slots, wtmp sequence, RTC times and file mtimes. Alice's logout must preserve
+Bob's session; root then logs in and Bob logs out. Both lines respawn getty. Runs
+use disposable roots at 16/128 MiB. Automatic startup and reload/recovery acceptance
+follow in task 101.

@@ -203,7 +203,7 @@ their sources alone does not provide a working native equivalent.
 | `timezone` | supplied | Native time conversion and configurable TZ support fixed offsets, one-hour DST, explicit M rules and historical V7 US defaults; see time.md for the supported grammar. |
 | `accounts` | partial | Native passwd/group, owned homes/profiles and development hashes installed; getty/login and account commands being integrated; [configuration](multi-user.md) |
 | `multi-tty` | supplied | Independent COM1/COM2, controlling terminals, signals/flow isolation and repeated two-shell resource recovery; production login supervision tracked separately. |
-| `accounting` | partial | Kernel exit accounting, native records and privileged acct control exist; utmp/wtmp are packaged, login integration and accton/sa command ports remain pending. |
+| `accounting` | partial | Kernel exit accounting and privileged acct control exist; native login/logout utmp/wtmp integration is tested with concurrent sessions. Accton/sa command ports remain pending. |
 | `kernel-information` | supplied | Versioned privileged native process/file/inode/text/mount/memory/I/O snapshots replace historical kernel-memory layouts. Diagnostic command ports remain pending. |
 | `tracing-profiling` | partial | Native tracing, debugger writes/single-step, profil sampling and monitor/mcount with profiling startup/records exist. ELF64 nlist and shared symbol contracts exist. Symbol consumers and the adb/prof command ports remain pending. |
 | `raw-storage` | partial | Block/raw device files and multi-volume mount/umount routing exist; mounted-device writes are guarded, storage-administration command ports remain pending. |
