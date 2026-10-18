@@ -1224,3 +1224,12 @@ test-unit: test-root-separation-unit
 test-root-separation: test-root-separation-unit rootfs test-rootfs test-inventory test-libc-interfaces iso
 	$(PYTHON) tools/root_separation_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/root_separation_smoke.py $(QEMU) build/nexix.iso 128M
+
+# Task 86: manifest-driven disposable guest acceptance.
+.PHONY: test-guest-harness test-guest-harness-unit
+test-guest-harness-unit:
+	$(PYTHON) tests/guest_harness.py
+test-unit: test-guest-harness-unit
+test-guest-harness: rootfs iso test-guest-harness-unit
+	$(PYTHON) tools/guest_acceptance.py tests/guest/foundation.json --qemu $(QEMU) --ram 16M --report build/guest-16M.json
+	$(PYTHON) tools/guest_acceptance.py tests/guest/foundation.json --qemu $(QEMU) --ram 128M --report build/guest-128M.json
