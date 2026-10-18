@@ -162,3 +162,12 @@ operations around real isolated host files. Guest runs at 16/128 MiB exercise
 non-owner denial, wrong old passwords, confirmation mismatch, lock/backup
 conflicts, ordinary updates, root reset, final metadata and authentication with
 the changed password. Plaintext input remains behind getpass's echo suppression.
+
+Task 103 installs V7 `/bin/su` set-ID root. It preserves the source's optional
+username (default root), DES prompt, real-root bypass, target UID/GID and shell,
+and inherited HOME/environment/cwd. V7 has no `su -` login-environment mode; the
+roadmap's environment acceptance checks that original preservation behavior.
+The port checks password-input and credential failures and uses a native null
+vararg terminator. `make test-su` checks wrong/unknown credentials, hidden input,
+root bypass, real/effective IDs, inherited HOME/cwd, nested shells and failed exec
+at 16/128 MiB.

@@ -1387,3 +1387,12 @@ test-unit: test-passwd-command-unit
 test-passwd-command: test-passwd-command-unit rootfs iso build/password-state.elf
 	$(PYTHON) tools/passwd_command_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/passwd_command_smoke.py $(QEMU) build/nexix.iso 128M
+
+build/credentials.o: tests/credentials.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/credentials.elf: build/crt0.o build/credentials.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+.PHONY: test-su
+test-su: rootfs iso build/credentials.elf
+	$(PYTHON) tools/su_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/su_smoke.py $(QEMU) build/nexix.iso 128M

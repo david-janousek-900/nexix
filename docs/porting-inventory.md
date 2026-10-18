@@ -12,7 +12,7 @@ contains 1,121 files and its original 174 component records. The full audit adds
 installed scripts, additional games, the root diagnostic source, kernel/boot
 references, and supporting-data groups. All archive contents are preserved.
 
-**init, sh, echo, cat, ls, pwd, cp, ln, rm, date, touch, stty, tty, mesg, getty, login and passwd** are installed native ports.
+**init, sh, echo, cat, ls, pwd, cp, ln, rm, date, touch, stty, tty, mesg, getty, login, passwd and su** are installed native ports.
 Native libc is partial. The archive's **213 installed program paths** are listed
 separately; scripts and old executables in reference/v7 are not installed Nexix
 ports. **13 binary-only program components** are blocked pending source recovery
