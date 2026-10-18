@@ -5,7 +5,20 @@
 #include <nexix/tty.h>
 #define TTY_INPUT_CAPACITY 1024
 #define TTY_LINE_CAPACITY 256
-/* Single COM1 terminal. All entry points run with IRQs disabled. UART receive
+#define TTY_LINES 2
+struct tty_driver {
+    void *context;
+    bool (*enqueue)(void *,const uint8_t *,size_t);
+    bool (*idle)(void *);
+    void (*flush)(void *);
+    void (*format)(void *,unsigned,uint8_t);
+    void (*outputs)(void *,bool,bool);
+    unsigned (*status)(void *);
+};
+int tty_attach(unsigned,const struct tty_driver *);
+void tty_receive_line(unsigned,uint8_t,unsigned);
+void tty_modem_line(unsigned,unsigned);
+/* Independent bounded terminals. All entry points run with IRQs disabled. UART receive
  * never sleeps; readers/writers use process sleep/wakeup on private channels. */
 void tty_init(void);
 void tty_set_group(struct tty *, v7_pid_t);

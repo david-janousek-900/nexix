@@ -127,8 +127,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 2 partial, 1 prototype and 203 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 79 done, 2 in progress
-and 285 to do** after task 86. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 80 done, 2 in progress
+and 284 to do** after task 89. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -315,7 +315,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 86 | Per-component guest acceptance harness | Done | [Guest acceptance](docs/guest-acceptance.md); component suites, disposable staged IDE roots, serial fixtures, output/status assertions and JSON/log reports; `make test-guest-harness`; Git history |
 | 87 | Historical source/data archive extraction | To do | Validate all six source archives and six lesson archives; no host-format assumptions |
 | 88 | Resolve missing referenced support inputs | To do | Track bc lib.b and optional lex nrform/ebcform individually; recover or obtain explicit disposition |
-| 89 | Separate per-terminal queues, settings and ownership | To do | Old 26; preserve COM1 regressions |
+| 89 | Separate per-terminal queues, settings and ownership | Done | Independent TTY queues/settings/ownership with bound transports; `make test-tty-lines-unit`; COM1 controller/modem/mpx regressions and QEMU TTY/packet acceptance; Git history |
 | 90 | COM2 hardware initialization and interrupt routing | To do | Old 26; second QEMU serial endpoint |
 | 91 | Independent controlling terminals and per-TTY signals | To do | Old 26; cooked/raw, EOF, flow control and groups |
 | 92 | Package ttyS1 and terminal configuration | To do | Old 26; console alias and /dev/tty routing |

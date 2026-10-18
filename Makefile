@@ -1233,3 +1233,11 @@ test-unit: test-guest-harness-unit
 test-guest-harness: rootfs iso test-guest-harness-unit
 	$(PYTHON) tools/guest_acceptance.py tests/guest/foundation.json --qemu $(QEMU) --ram 16M --report build/guest-16M.json
 	$(PYTHON) tools/guest_acceptance.py tests/guest/foundation.json --qemu $(QEMU) --ram 128M --report build/guest-128M.json
+
+# Task 89: per-line TTY state and transport ownership.
+build/tty-lines-test: tests/tty-lines.c tests/tty-controller.c tests/packet-inactive.c kernel/v7/tty.c kernel/v7/tty_controller.c kernel/include/tty.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/tty-lines.c tests/packet-inactive.c kernel/v7/tty.c kernel/v7/tty_controller.c -o $@
+.PHONY: test-tty-lines-unit
+test-tty-lines-unit: build/tty-lines-test
+	./build/tty-lines-test
+test-unit: test-tty-lines-unit
