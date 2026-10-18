@@ -376,8 +376,8 @@ build/nexix.elf: build/root_boot.o
 
 build/root_exec_program.o: user/root-exec-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
-build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/mpx_tty_program.o build/libc.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/mpx_tty_program.o build/libc.a -o $@
+build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/memdev_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/mpx_tty_program.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/memdev_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/mpx_tty_program.o build/libc.a -o $@
 build/root_exec_image.o: build/root-exec-test.elf tools/embed_test_elf.py
 	$(PYTHON) tools/embed_test_elf.py $< $@ --ld $(LD) --objcopy $(OBJCOPY)
 OBJECTS += build/root_exec_image.o
@@ -1025,3 +1025,20 @@ build/packet-libc-unit.o: libc/packet.c libc/include/sys/pk.h libc/include/sys/i
 	$(CC) $(USER_CFLAGS) -Derrno=nx_packet_errno -Dioctl=nx_packet_ioctl -Dclose=nx_packet_close -Dwrite=nx_packet_write -c $< -o $@
 build/packet-libc-test: tests/packet-libc.c build/packet-libc-unit.o | build/.dir
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -no-pie -Iinclude $^ -o $@
+
+# Task 69: native memory/special devices.
+build/memdev.o: kernel/v7/memdev.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+OBJECTS += build/memdev.o
+build/nexix.elf: build/memdev.o
+-include build/memdev.d
+build/memdev-unit-test: tests/memdev.c kernel/v7/memdev.c kernel/include/memdev.h include/nexix/memdev.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -no-pie -Ikernel/include -Iinclude tests/memdev.c kernel/v7/memdev.c -o $@
+.PHONY: test-memdev-unit test-memdev
+test-memdev-unit: build/memdev-unit-test
+	./build/memdev-unit-test
+test-unit: test-memdev-unit
+test-memdev: test-memdev-unit test-rootfs test-inventory test-libc-interfaces
+build/memdev_program.o: user/memdev-test.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+-include build/memdev_program.d

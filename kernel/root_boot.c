@@ -95,13 +95,15 @@ static void namespace_fixture_device(unsigned i)
     namespace_devices[i].device.write=namespace_fault_write;
 }
 static bool exec_testing;
+static uint64_t memdev_probe=UINT64_C(0x123456789abcdef0);
+extern const uint8_t kernel_rodata_start[];
 static uintptr_t held_pages[32768];
 static unsigned held_count;
 static v7_pid_t held_owner;
 static v7_pid_t trace_orphan;
 bool root_exec_test_gate(struct interrupt_frame *frame)
 {
-    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x91a)return false;
+    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x91b)return false;
     struct proc *p=proc_current();
     if(frame->rax==0x900){
         frame->rax=(uint64_t)-NX_ENOSYS;return true; /* Retired tracing test hook. */
@@ -236,6 +238,11 @@ bool root_exec_test_gate(struct interrupt_frame *frame)
         if(error){frame->rax=error;return true;}
         for(unsigned i=0;i<frame->rsi;++i)tty_receive(input[i]);
     }else if(frame->rax==0x91a){frame->rax=tty_open_count();return true;}
+    else if(frame->rax==0x91b){
+        if(p->p_user->u_uid)panic("unprivileged memory fixture");
+        frame->rax=(uintptr_t)&memdev_probe;frame->rdx=(uintptr_t)kernel_rodata_start;
+        frame->rcx=memdev_probe;return true;
+    }
     else return false;
     frame->rax=0;return true;
 }

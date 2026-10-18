@@ -418,3 +418,7 @@ _exit behavior. Existing root resource checks remain active. See
 Task 68 adds [V7 serial packets](serial-packets.md), TIOCSETD/DIOCGETP
 negotiation and libc pkon/pkoff/turnon. Run `make test-packet` for host
 protocol/ownership/UART/libc checks and real QEMU COM1 exchanges at 16/128 MiB.
+
+Task 69 implements [native memory/special devices](memory-devices.md), including
+privileged mem/kmem byte access, null aliases and controlling-TTY acceptance.
+Run `make test-memdev` for host and 16/128 MiB syscall tests.

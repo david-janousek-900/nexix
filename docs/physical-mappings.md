@@ -113,3 +113,7 @@ the existing page-exhaustion gate supplies OOM. They are inactive during normal
 boot. Production syscall 52 has no allocation-address discovery or test-control
 arguments. `make test-unit` includes the host baseline; `make test-paging`,
 `make test-shell` and `make test-storage` check protection and normal RAM/IDE use.
+
+Task 69 supplies a separate [privileged memory-device interface](memory-devices.md)
+for mem/kmem examination and patching. It does not change phys frame ownership
+or permit phys mappings of kernel/ordinary process frames.

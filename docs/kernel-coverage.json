@@ -433,13 +433,16 @@
         "reference/v7/usr/sys/dev/sys.c"
       ],
       "native": [
-        "kernel/block.c",
-        "kernel/ide.c"
+        "kernel/v7/memdev.c",
+        "kernel/include/memdev.h",
+        "kernel/v7/files.c",
+        "kernel/v7/tty.c",
+        "include/nexix/memdev.h"
       ],
       "tasks": [
         69
       ],
-      "note": "Native device equivalent and its protocol/error/lifetime tests remain required; referenced files are integration points, not completed replacements."
+      "note": "Task 69 implements byte-addressed native /dev/mem and /dev/kmem, both null encodings and controlling-TTY forwarding. Memory access requires effective root at open and I/O, validated RAM/kernel/VGA backing and supervisor page permissions; ranges are preflighted atomically. Native device numbers and restrictions are documented in docs/memory-devices.md. Host range/permission tests and real syscall/TTY acceptance run at 16/128 MiB; independent terminals retain tasks 89\u201393."
     },
     {
       "id": "typesetter",

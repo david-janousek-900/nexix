@@ -7,6 +7,7 @@
 #include "exec.h"
 #include "text.h"
 #include "storage.h"
+#include "memdev.h"
 #include "namespace.h"
 #include "accounting.h"
 #include <nexix/syscall.h>
@@ -327,7 +328,9 @@ static int open_path(struct user *u, uintptr_t address, uint64_t flags, uint64_t
     }
     bool multiplexor=type==V7_IFCHR && (disk.addr[0]>>8)==NX_MX_MAJOR;
     if(!error && multiplexor)error=mpx_open(f,path,u);
-    if (!error && !storage && !multiplexor && type == V7_IFCHR && disk.addr[0] != NX_NULL_DEV) {
+    bool memory=type==V7_IFCHR && memdev_matches(disk.addr[0]);
+    if(!error && memory)error=memdev_open(disk.addr[0],u);
+    if (!error && !storage && !multiplexor && !memory && type == V7_IFCHR) {
         struct tty *tty;
         error = tty_open(disk.addr[0], u, &tty);
         if (!error) f->f_private = tty;
@@ -439,12 +442,18 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
     struct v7fs_inode inode;
     int error = node_inode_get(inode_node(f->f_inode), &inode);
     if (error) return error;
-    if ((inode.mode & V7_IFMT) == V7_IFCHR && inode.addr[0] == NX_NULL_DEV) {
+    if ((inode.mode & V7_IFMT) == V7_IFCHR && memdev_matches(inode.addr[0])) {
+        error=memdev_open(inode.addr[0],u);if(error)return error;
         if (write || count) {
             error = v7fs_touch(node_volume(inode_node(f->f_inode)), inode.number, write ? V7FS_MTIME | V7FS_CTIME : V7FS_ATIME);
             if (error) return error;
         }
-        return write ? (int64_t)count : 0;
+        int64_t moved=memdev_io(inode.addr[0],u,vm,f->f_offset,address,count,write);
+        if(moved>0){
+            if(f->f_offset>INT64_MAX-moved)return -NX_EINVAL;
+            f->f_offset+=moved;
+        }
+        return moved;
     }
     if (write && (f->f_open_flags & NX_O_APPEND)) f->f_offset = inode.size;
     size_t done = 0; uint8_t bytes[512];
@@ -691,7 +700,9 @@ bool files_info(unsigned i,struct nx_kinfo_file *r)
     r->kind=(f->f_flag&V7_FPIPE)?NX_KINFO_FILE_PIPE:
         (f->f_flag&FILE_STORAGE)?NX_KINFO_FILE_STORAGE:
         (f->f_flag&V7_FMP)?NX_KINFO_FILE_MPX:
-        f->f_private?NX_KINFO_FILE_TTY:NX_KINFO_FILE_REGULAR;
+        f->f_private?NX_KINFO_FILE_TTY:
+        f->f_inode && (f->f_inode->i_mode&V7_IFMT)==V7_IFCHR && memdev_matches(f->f_inode->i_un.i_rdev)?
+        NX_KINFO_FILE_MEMORY:NX_KINFO_FILE_REGULAR;
     return true;
 }
 bool inodes_info(unsigned i,struct nx_kinfo_inode *r)

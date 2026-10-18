@@ -33,7 +33,7 @@ contracts; task 355 and task 359 close whole-distribution integration.
 | hp/rf/rk/rl/rp | Native IDE/block integration | Historical controller capabilities 70; raw device dispatch 53 |
 | ht/tm, tc | Block integration points only | Sequential tape 71; DECtape 72 |
 | dsort/dkleave | Block integration point only | Queue ordering/interleave 73 |
-| mem/sys | Native memory/block foundations only | Controlled special-device access 69 |
+| mem/sys | Byte-addressed memory/null devices and controlling-TTY forwarding | Task 69 complete; [native access rules](memory-devices.md), host and 16/128 MiB syscall acceptance; independent TTYs remain 89–93 |
 | cat, vp/vs | Future native endpoints | Typesetter 76; printer/plotter protocols 77 |
 | prf/subr | Serial diagnostics and native memory/user-copy helpers | Helper/consumer contracts 39/79; memory device consumers 69 |
 | h/* | Native runtime types and explicit historical disk encoders | All header/field/consumer contracts 39 plus their feature owners |

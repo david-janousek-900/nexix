@@ -118,3 +118,6 @@ reference counts include group joins and shared extractions. Live group inode
 records expose IFMPC even though backing storage retains IFCHR; after group
 closure, any retained endpoint inode reports the inactive character-device mode.
 See [multiplexor ownership](multiplexor.md).
+
+Task 69 adds `NX_KINFO_FILE_MEMORY` (6) for memory/null character devices,
+without changing snapshot version or record layouts. See [memory devices](memory-devices.md).

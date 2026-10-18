@@ -22,6 +22,7 @@ extern int nlist_test(void);
 extern int kinfo_test(void);
 extern int lock_test(void);
 extern int phys_test(void);
+extern int memdev_test(void);
 extern int mpx_test(void);
 extern int mpx_data_test(void);
 extern int mpx_tty_test(void);
@@ -40,6 +41,7 @@ static int child_exec(const char *path, int unprivileged)
 }
 int main(void)
 {
+    CHECK(open("/dev/tty",O_RDWR)==-1 && errno==ENXIO);
     CHECK(open("/dev/console",O_RDWR)==0 && dup(0)==1 && dup(0)==2);
     int null=open("/dev/null",O_RDWR);CHECK(null>=0);
     CHECK(write(null,"discard",7)==7 && read(null,buffer,sizeof(buffer))==0);
@@ -91,6 +93,7 @@ int main(void)
     error=kinfo_test();if(error)return error;
     error=lock_test();if(error)return error;
     error=phys_test();if(error)return error;
+    error=memdev_test();if(error)return error;
     error=mpx_test();if(error)return error;
     error=mpx_data_test();if(error)return error;
     error=mpx_tty_test();if(error)return error;

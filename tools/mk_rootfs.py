@@ -35,7 +35,7 @@ def build(blocks, programs, config):
     image.inode(number, CHR | 0o600, device=0x100, nlink=2)
     number += 1
     entries['/dev/tty'] = number
-    image.inode(number, CHR | 0o600, device=0x200)
+    image.inode(number, CHR | 0o666, device=0x200)
     number += 1
     entries['/dev/null'] = number
     image.inode(number, CHR | 0o666, device=0x300)
@@ -43,6 +43,9 @@ def build(blocks, programs, config):
         number += 1
         entries[path] = number
         image.inode(number, kind | 0o600, device=dev)
+    for path,dev in (('/dev/mem',0x600),('/dev/kmem',0x601)):
+        number+=1;entries[path]=number
+        image.inode(number,CHR|0o600,device=dev)
     # Children before parents: directory link counts depend on inode types.
     for path in ('/bin', '/etc', '/dev', '/tmp', '/usr/adm', '/usr', '/'):
         parent = path.rsplit('/', 1)[0] or '/'

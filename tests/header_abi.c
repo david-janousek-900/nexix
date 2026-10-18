@@ -18,6 +18,7 @@
 #include <grp.h>
 #include <setjmp.h>
 #include <nexix/file.h>
+#include <nexix/memdev.h>
 #include <nexix/tty.h>
 #include "v7/types.h"
 #define SIZE(t,n) _Static_assert(sizeof(t)==(n), #t " size")
@@ -93,6 +94,7 @@ _Static_assert(SIGINS==4 && SIGTRC==5 && SIGCLK==14,"V7 signal aliases");
 SIZE(struct piocb,12);FIELD(struct piocb,t,0);FIELD(struct piocb,psize,4);
 FIELD(struct piocb,mode,6);FIELD(struct piocb,state,8);FIELD(struct piocb,window,10);
 _Static_assert(DIOCGETP==0x6408 && NX_PK_WINDOW==2 && NX_PK_MAX_SIZE==512,"packet contract");
+_Static_assert(NX_MEM_DEV==0x600 && NX_KMEM_DEV==0x601 && NX_MEMORY_NULL_DEV==0x602 && NX_NULL_DEV==0x300,"memory devices");
 int main(void)
 {
     for (unsigned a=0; a<256; a++)

@@ -160,3 +160,7 @@ read-only mounts and verify owner/group/other search permissions. These compleme
 the existing malformed metadata and injected device-I/O failure tests.
 
 Task 14 implements serial TTY and terminal handling; see [tty.md](tty.md).
+
+Task 69 implements [native memory/special devices](memory-devices.md), including
+privileged mem/kmem byte access, null aliases and controlling-TTY acceptance.
+Run `make test-memdev` for host and 16/128 MiB syscall tests.
