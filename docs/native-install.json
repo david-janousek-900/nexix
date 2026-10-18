@@ -288,6 +288,15 @@
       "component": "distribution.devices"
     },
     {
+      "path": "/dev/ttyS1",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 257
+    },
+    {
       "path": "/dev/tty",
       "type": "character",
       "mode": "0666",

@@ -57,3 +57,27 @@ group isolation. Stopping COM1 with Ctrl-S must leave COM2 running and finishing
 Ctrl-Q resumes COM1 and both sessions close/reap successfully. This fixture tests
 the native lifecycle without depending on the forthcoming getty/login ports.
 Production init's startup policy and respawn acceptance remain task 101.
+
+Task 92 installs `/dev/ttyS1` as major 1/minor 1, root:root, mode 0600 in the full
+IDE seed. `/dev/ttyS0` remains a hard link to `/dev/console`; `/dev/tty` is the
+controlling-terminal alias, not a third UART. The fixed RAM bootstrap is unchanged.
+Full `/etc/ttys` lists `09console` and `09ttyS1`: disabled lines (`0`) with the
+reserved native 115200 profile (`9`). Multi-user startup enables them after the
+getty/login ports are available. These are V7's flag/profile/name records, not a
+modern termios or inittab format.
+
+`make run` prepares mode-0600 FIFOs `build/ttyS1.in` and `.out`, and attaches COM2
+to that pipe. In a second host terminal, `make terminal` connects the keyboard and
+display. Ctrl-] disconnects without stopping QEMU; Ctrl-C is sent to the guest.
+The connector restores host terminal settings on exit. Pipe preparation is
+idempotent and rejects existing ordinary files and symlinks. Use one COM2 client
+at a time. QEMU still exits through Ctrl-A, release, X on COM1.
+
+Existing working disks are preserved and do not acquire newly packaged device or
+configuration files automatically. To test the current seed while retaining your
+old disk, run `make DISK_IMAGE=build/fresh.img run` with an unused image path.
+The login prompt is a later multi-user milestone, not claimed by this task.
+
+`make test-terminal-config` verifies the packaged node's type, mode, owner and
+device number plus actual binary I/O at 16/128 MiB. Host connector tests verify
+that non-FIFO paths survive errors and that disconnect leaves QEMU's pipe intact.

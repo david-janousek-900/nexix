@@ -106,7 +106,12 @@ build/nexix.iso: build/nexix.elf boot/grub.cfg
 iso: check build/nexix.iso
 build: iso disk
 run: build
-	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -rtc base=utc -boot d -drive "file=$(DISK_IMAGE),format=raw,if=ide,index=0" -cdrom build/nexix.iso -display none -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -mon chardev=console,mode=readline -no-reboot
+	$(PYTHON) tools/serial_terminal.py --prepare build/ttyS1
+	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -rtc base=utc -boot d -drive "file=$(DISK_IMAGE),format=raw,if=ide,index=0" -cdrom build/nexix.iso -display none -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -serial pipe:build/ttyS1 -mon chardev=console,mode=readline -no-reboot
+
+.PHONY: terminal
+terminal:
+	$(PYTHON) tools/serial_terminal.py build/ttyS1
 
 smoke: check build/test-selftest.iso
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso
@@ -1269,3 +1274,12 @@ build/terminal-sessions.elf: build/crt0.o build/terminal-sessions.o build/libc.a
 test-terminal-sessions: rootfs iso build/terminal-sessions.elf
 	$(PYTHON) tools/terminal_sessions_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/terminal_sessions_smoke.py $(QEMU) build/nexix.iso 128M
+
+# Task 92: installed COM2 device and the default host endpoint.
+.PHONY: test-terminal-config-unit test-terminal-config
+test-terminal-config-unit:
+	$(PYTHON) tests/serial_terminal.py
+test-unit: test-terminal-config-unit
+test-terminal-config: test-terminal-config-unit rootfs iso build/serial-secondary-guest.elf
+	$(PYTHON) tools/serial_secondary_smoke.py $(QEMU) build/nexix.iso 16M --packaged
+	$(PYTHON) tools/serial_secondary_smoke.py $(QEMU) build/nexix.iso 128M --packaged

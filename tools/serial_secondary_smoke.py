@@ -12,6 +12,7 @@ from mk_v7fs import write_image
 
 def main():
     qemu,iso,ram=sys.argv[1:4]
+    packaged='--packaged' in sys.argv[4:]
     log=ROOT/'build'/f'serial-secondary-{ram}'
     with tempfile.TemporaryDirectory(prefix='nx-com2-') as temp:
         manifest=json.loads(MANIFEST.read_text())
@@ -26,7 +27,7 @@ def main():
         guest=Guest(qemu,iso,disk,ram,2)
         try:
             guest.expect(r'(?s)NEXIX_BOOT_OK\r\n# ')
-            guest.send('/tmp/uartcheck; echo COM2_STATUS_$?\n')
+            guest.send('/tmp/uartcheck'+(' packaged' if packaged else '')+'; echo COM2_STATUS_$?\n')
             guest.expect(r'COM1_READY\r\n')
             guest.expect(b'COM2_READY\n',1)
             guest.send(bytes((i*37)&255 for i in range(512)),1)
@@ -41,7 +42,7 @@ def main():
             for n,output in enumerate(guest.buffers):log.with_suffix(f'.tty{n}.log').write_bytes(output)
             guest.diagnostics.seek(0);log.with_suffix('.qemu.log').write_bytes(guest.diagnostics.read())
             guest.close()
-    print(f'PASS: {ram} COM2 IRQ3, binary RX/TX, queue drain and independent COM1 output')
+    print(f'PASS: {ram} COM2 IRQ3, binary RX/TX, queue drain and independent COM1 output'+('; packaged ttyS1 metadata' if packaged else ''))
 
 
 if __name__=='__main__':main()

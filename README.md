@@ -55,6 +55,10 @@ make run-tty
 Host GCC/binutils are used by default. `make build` creates the kernel, boot ISO
 and working disk without starting QEMU; existing working disks are preserved.
 `make run` builds as needed and starts QEMU. Neither command needs variable overrides.
+COM1 is attached to that terminal; run `make terminal` in another host terminal
+to connect to COM2. Ctrl-] disconnects the second terminal. Fresh full disks
+include `/dev/ttyS1`; getty/login startup is still being integrated. See
+[independent terminals](docs/multi-terminal.md).
 To use an installed cross-toolchain, run `make TOOLCHAIN_PREFIX=x86_64-elf- run`
 (or the same override for other targets). A pinned cross-toolchain remains planned.
 The kernel does not link host libc. Build artifacts go into `build/`.
@@ -127,8 +131,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 2 partial, 1 prototype and 203 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 82 done, 2 in progress
-and 282 to do** after task 91. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 83 done, 2 in progress
+and 281 to do** after task 92. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -318,7 +322,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 89 | Separate per-terminal queues, settings and ownership | Done | Independent TTY queues/settings/ownership with bound transports; `make test-tty-lines-unit`; COM1 controller/modem/mpx regressions and QEMU TTY/packet acceptance; Git history |
 | 90 | COM2 hardware initialization and interrupt routing | Done | Detected COM2 16550 transport at 0x2f8, IRQ3/vector 35, independent TX ring, RX errors and modem routing; `make test-serial-secondary` at 16/128 MiB; COM1 TTY/rootfs/packet regressions; Git history |
 | 91 | Independent controlling terminals and per-TTY signals | Done | Per-line controlling terminals/groups and V7 fork/exec/close lifecycle validated on both UARTs; `make test-terminal-sessions` at 16/128 MiB; cooked editing, empty lines, EOF, SIGINT and XOFF/XON isolation; [contract](docs/multi-terminal.md); Git history |
-| 92 | Package ttyS1 and terminal configuration | To do | Old 26; console alias and /dev/tty routing |
+| 92 | Package ttyS1 and terminal configuration | Done | Full-root ttyS1 node and disabled V7 ttys records; default COM2 pipe and `make terminal` connector; `make test-terminal-config` at 16/128 MiB, staging and bootstrap separation checks; [usage](docs/multi-terminal.md); Git history |
 | 93 | Two-terminal end-to-end acceptance | To do | Old 26; concurrent input/output and resource recovery |
 
 ### Multi-user startup and accounts
