@@ -159,6 +159,7 @@ static void dispatch(struct interrupt_frame *frame)
             else if(owner->p_nice>20)++cpu_nice;
             else ++cpu_user;
         }
+        if (frame->vector == 35) serial_secondary_interrupt();
         if (frame->vector == 36) serial_interrupt();
         if (frame->vector >= 40)
             outb(0xa0, 0x20);

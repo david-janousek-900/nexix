@@ -15,6 +15,8 @@ unsigned serial_modem_status(void);
 void serial_modem_outputs(bool dtr,bool rts);
 void serial_receive_enable(void);
 void serial_interrupt(void);
+bool serial_secondary_init(void);
+void serial_secondary_interrupt(void);
 void serial_puts(const char *s);
 void serial_hex(uint64_t value);
 #endif

@@ -13,7 +13,7 @@ INSTALL_CONFIG ?= rootfs
 INSTALL_STAGE ?= build/stage
 FULL_ROOT_IMAGE ?= build/distribution.img
 CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-stack-protector -fno-pie -m64 -mno-red-zone -mgeneral-regs-only -fno-asynchronous-unwind-tables -Ikernel/include -Iinclude -MMD -MP
-OBJECTS = build/packet.o build/packet_tty.o build/packet_image.o build/boot.o build/main.o build/serial.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o build/elf.o build/exec.o build/exec_test.o build/exec_image.o build/libc_test.o build/libc_image.o build/block.o build/v7fs.o build/fs_test.o build/root_image.o build/files.o build/files_test.o build/files_image.o build/tty.o build/tty_test.o build/tty_image.o build/signals.o build/signals_test.o build/signals_image.o build/catalog.o build/v7_userland_test.o build/v7_test_image.o
+OBJECTS = build/packet.o build/packet_tty.o build/packet_image.o build/boot.o build/main.o build/serial_secondary.o build/serial.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o build/elf.o build/exec.o build/exec_test.o build/exec_image.o build/libc_test.o build/libc_image.o build/block.o build/v7fs.o build/fs_test.o build/root_image.o build/files.o build/files_test.o build/files_image.o build/tty.o build/tty_test.o build/tty_image.o build/signals.o build/signals_test.o build/signals_image.o build/catalog.o build/v7_userland_test.o build/v7_test_image.o
 HOST_CC ?= cc
 .DEFAULT_GOAL := all
 -include $(OBJECTS:.o=.d)
@@ -29,6 +29,9 @@ build/boot.o: kernel/arch/x86_64/boot.S | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
 
 build/main.o: kernel/main.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/serial_secondary.o: kernel/serial_secondary.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/serial.o: kernel/serial.c | build/.dir
@@ -1241,3 +1244,18 @@ build/tty-lines-test: tests/tty-lines.c tests/tty-controller.c tests/packet-inac
 test-tty-lines-unit: build/tty-lines-test
 	./build/tty-lines-test
 test-unit: test-tty-lines-unit
+
+# Task 90: second PC UART and IRQ3 routing.
+build/serial-secondary-test: tests/serial-secondary.c tests/uart/io.h kernel/serial_secondary.c kernel/include/serial.h kernel/include/tty.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Itests/uart -Ikernel/include -Iinclude tests/serial-secondary.c kernel/serial_secondary.c -o $@
+build/serial-secondary-guest.o: tests/serial-secondary-guest.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/serial-secondary-guest.elf: build/crt0.o build/serial-secondary-guest.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+.PHONY: test-serial-secondary-unit test-serial-secondary
+test-serial-secondary-unit: build/serial-secondary-test
+	./build/serial-secondary-test
+test-unit: test-serial-secondary-unit
+test-serial-secondary: test-serial-secondary-unit rootfs iso build/serial-secondary-guest.elf
+	$(PYTHON) tools/serial_secondary_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/serial_secondary_smoke.py $(QEMU) build/nexix.iso 128M

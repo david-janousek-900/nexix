@@ -169,6 +169,7 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
     fpu_init();
     timer_init();
     tty_init();
+    serial_secondary_init();
     /* Check and sleep atomically against IRQ delivery. */
     for (;;) {
         __asm__ volatile ("cli" : : : "memory");
