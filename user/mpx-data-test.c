@@ -81,7 +81,7 @@ static int framing(void)
     CHECK(write(g,bad,sizeof(bad[0]))==-1 && errno==EINVAL);
     CHECK(send(g,0xffff,"r",1)==-1 && errno==ENXIO);
     struct nx_mx_control unknown={NX_M_IOCTL,0};bad[0]=(struct nx_mx_write){.index=id,.ccount=4,.data=&unknown};
-    CHECK(write(g,bad,sizeof(bad[0]))==-1 && errno==ENXIO);
+    CHECK(write(g,bad,sizeof(bad[0]))==-1 && errno==EINVAL);
     int d=dup(e);CHECK(d>=0 && close(e)==0 && write(d,"end",3)==3 && close(d)==0);
     CHECK(event(g,NX_M_CLOSE,id) && read(g,b,12)==10 && !memcmp(b+6,"end",3));
     CHECK(mx(NX_MX_DETACH,id,g)==0 && close(g)==0);

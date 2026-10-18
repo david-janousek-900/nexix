@@ -67,8 +67,10 @@ not pointer arithmetic over PDP-11 call stacks. `assert.h` is implemented by tas
 kernel feature is implemented.
 
 Original kernel-private headers under `usr/include/sys` remain private. Their
-runtime counterparts live under `kernel/include`; mpx, mount, text, packet,
-profiling and accounting data follow their feature tasks. The kernel's byte-array
+runtime counterparts live under `kernel/include`; mount, text, packet,
+profiling and accounting data follow their feature tasks. Task 67 publishes
+`<sys/mx.h>` as a native user interface with record layouts and V7 wrappers;
+private channel/group/TTY structures are not exported. The kernel's byte-array
 inode/superblock records replace `sys/ino.h`, `sys/filsys.h` and `sys/fblk.h`
 layout assumptions. Disk format testing remains in `tests/v7_types.c` and
 filesystem tests. Userland programs needing raw filesystem formats will acquire

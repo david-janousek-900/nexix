@@ -18,6 +18,13 @@ struct mx_queue {
 struct mx_event { unsigned size; uint8_t bytes[4+NX_MX_NAME]; };
 struct mx_channel {
     bool active, closing, pending, close_event, unblock_event, block_event;
+    bool port, tty_blocked, ioctl_pending, ioctl_abandoned, ioctl_busy;
+    unsigned generation, ioctl_command;
+    uint8_t ioctl_data[8];
+    v7_pid_t process_group;
+    struct tty *input_tty,*output_tty;
+    struct file *input_file,*output_file,*port_file;
+    uint32_t signals;
     unsigned users, event_head, event_count;
     struct mx_queue x, y;
     struct mx_event events[NX_MX_EVENTS];
@@ -26,7 +33,7 @@ struct mx_channel {
     struct file *endpoint;
 };
 static struct mx_group mx_groups[NX_MX_GROUPS];
-static struct mx_channel mx_channels[NX_MX_CHANNELS];
+static struct mx_channel mx_channels[NX_MX_CHANNELS],mx_ports[NX_MX_PORTS];
 static struct mx_group *mx_listener;
 static bool mx_used(struct mx_entry e) { return e.group || e.channel; }
 static struct mx_group *mx_fd(struct user *u,int fd)
@@ -94,6 +101,7 @@ static struct mx_channel *mx_allocate(struct mx_group *g)
     }
     return NULL;
 }
+#include "mpx_tty.inc"
 #include "mpx_io.inc"
 static void mx_detach(struct mx_entry e,bool orphan)
 {
@@ -105,7 +113,7 @@ static void mx_detach(struct mx_entry e,bool orphan)
     }else{
         struct mx_channel *c=e.channel;
         /* Keep a detached endpoint alive without retaining the parent group. */
-        c->closing=true;mx_notify(c);
+        c->closing=true;mx_notify(c);mx_bridge_clear(c,0);
         if(orphan || !c->endpoint){
             c->parent->entry[c->index]=(struct mx_entry){0};c->parent=NULL;
             mx_reap(c);
@@ -122,7 +130,7 @@ static void mpx_close(struct file *f)
         if(mx_listener==g)mx_listener=NULL;
         zero(g,sizeof(*g));
     }else{
-        struct mx_channel *c=f->f_private;c->endpoint=NULL;
+        struct mx_channel *c=f->f_private;c->endpoint=NULL;mx_bridge_clear(c,0);
         if(c->parent && c->closing){
             mx_notify(c);c->parent->entry[c->index]=(struct mx_entry){0};c->parent=NULL;
         }else if(c->parent){c->closing=true;c->close_event=true;mx_notify(c);}
@@ -161,11 +169,23 @@ static int mpx_call(struct user *u,uint64_t command,uintptr_t address)
     struct nx_mx_args a;
     int error=copyin(&proc_current()->p_vm,address,&a,sizeof(a));if(error)return error;
     if(command==NX_MX_MPX || command==NX_MX_MPXN)return mx_create(u,&a,command==NX_MX_MPX);
+    if(command==NX_MX_CONNECT || command==NX_MX_DISCON)return mx_connect(u,&a,command==NX_MX_DISCON);
+    if(command==NX_MX_DEBUG){
+        static volatile int values[30];int index=a.arg[0];if(index<0 || index>=30)return -NX_EINVAL;
+        if(index==27)for(unsigned i=0;i<30;++i)values[i]=a.arg[1];
+        else values[index]=a.arg[1];
+        (void)values[index];return 0; /* Source diagnostics knobs, no transport effect. */
+    }
+    if(command==NX_MX_NPGRP && a.arg[1]<0){
+        if(a.arg[2]<0)return -NX_EINVAL;
+        return u->u_procp->p_pgrp=a.arg[2]?a.arg[2]:u->u_procp->p_pid;
+    }
     if(command!=NX_MX_CHAN && command!=NX_MX_JOIN && command!=NX_MX_EXTR &&
-       command!=NX_MX_ATTACH && command!=NX_MX_DETACH)return -NX_EINVAL;
+       command!=NX_MX_ATTACH && command!=NX_MX_DETACH && command!=NX_MX_NPGRP && command!=NX_MX_CSIG)return -NX_EINVAL;
     struct mx_group *g=mx_fd(u,a.arg[1]);if(!g)return -NX_ENXIO;
     if(command==NX_MX_JOIN){
-        struct mx_group *child=mx_fd(u,a.arg[0]);if(!child || child->parent)return -NX_ENXIO;
+        struct mx_group *child=mx_fd(u,a.arg[0]);if(!child)return mx_join_tty(u,g,a.arg[0]);
+        if(child->parent)return -NX_ENXIO;
         unsigned depth=1;
         for(struct mx_group *p=g;p;p=p->parent){if(p==child)return -NX_EINVAL;if(p->parent)++depth;}
         if(depth+mx_height(child)>NX_MX_LEVELS)return -NX_EINVAL;
@@ -176,6 +196,17 @@ static int mpx_call(struct user *u,uint64_t command,uintptr_t address)
         struct mx_channel *c=mx_allocate(g);return c?(int)mx_index(c):-NX_ENXIO;
     }
     struct mx_entry e=mx_lookup(g,a.arg[0]);if(!mx_used(e))return -NX_ENXIO;
+    if(command==NX_MX_NPGRP || command==NX_MX_CSIG){
+        if(!e.channel || e.channel->closing || e.channel->pending)return -NX_ENXIO;
+        if(command==NX_MX_NPGRP){
+            if(a.arg[2]<0)return -NX_EINVAL;
+            u->u_procp->p_pgrp=a.arg[2]?a.arg[2]:u->u_procp->p_pid;
+            e.channel->process_group=u->u_procp->p_pgrp;return u->u_procp->p_pgrp;
+        }
+        if(a.arg[2]<=0 || a.arg[2]>=NX_NSIG)return -NX_EINVAL;
+        if(!e.channel->port)signal_group(e.channel->process_group,a.arg[2]);
+        return a.arg[2];
+    }
     if(command==NX_MX_DETACH){mx_detach(e,false);return 0;}
     if(command==NX_MX_ATTACH){
         if(!e.channel || e.channel->closing)return -NX_ENXIO;
@@ -183,6 +214,7 @@ static int mpx_call(struct user *u,uint64_t command,uintptr_t address)
     }
     if(e.group)return mx_duplicate(u,e.group->file);
     struct mx_channel *c=e.channel;
+    if(c->port)return mx_duplicate(u,c->port_file);
     if(c->closing || c->pending)return -NX_ENXIO;
     if(c->endpoint)return mx_duplicate(u,c->endpoint);
     int fd=fd_slot(u,0);if(fd<0)return fd;

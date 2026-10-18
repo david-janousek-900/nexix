@@ -9,6 +9,11 @@ static struct proc process;
 static unsigned wakes,sleeps;
 static int (*on_sleep)(void *);
 static uintptr_t readonly_start,readonly_end;
+static uint8_t output[256];static unsigned output_count;
+void serial_putc(uint8_t c){assert(output_count<sizeof(output));output[output_count++]=c;}
+void serial_configure(unsigned rate,unsigned mode){(void)rate;(void)mode;}
+void serial_receive_enable(void){}
+void signal_group(v7_pid_t group,unsigned sig){(void)group;(void)sig;}
 struct proc *proc_current(void){return &process;}
 _Noreturn void panic(const char *message){fprintf(stderr,"panic: %s\n",message);abort();}
 unsigned proc_wakeup(void *channel){assert(channel);++wakes;return 1;}
@@ -94,5 +99,38 @@ int main(void)
     on_sleep=orphan_waiter;h=(struct nx_mx_write){.index=0xfff0,.count=401,.data=payload};
     assert(mx_group_write(g,(uintptr_t)&h,sizeof(h))==15 && h.count==201 && !c->active);
     assert(mx_allocate(g)==c && c->y.size==0 && c->event_count==0);
-    puts("PASS: mpx record validation, queue bounds/wrap, low-water wakeups, control retention, nonblocking retry, interrupted writes and pinned detach lifetime");return 0;
+    reset_mx();tty_init();struct user user={.u_procp=&process};struct tty *t;
+    process.p_pid=17;assert(tty_open(NX_CONSOLE_DEV,&user,&t)==0);
+    g=&mx_groups[0];c=mx_allocate(g);assert(c);
+    c->input_tty=c->output_tty=t;assert(tty_mpx_bind(t,c)==0);
+    struct nx_sgttyb settings;assert(tty_control(t,NX_TIOCGETP,&settings)==0);
+    settings.flags=NX_CRMOD;assert(tty_control(t,NX_TIOCSETP,&settings)==0);
+    tty_receive('a');tty_receive('\n');
+    assert(mx_group_read(g,(uintptr_t)buffer,sizeof(buffer))==8 && !memcmp(buffer+6,"a\n",2));
+    tty_receive(4);assert(mx_group_read(g,(uintptr_t)buffer,12)==10);
+    assert(((struct nx_mx_control *)(buffer+6))->code==NX_M_EOT);
+    for(unsigned i=0;i<NX_MX_EVENTS;++i)assert(mx_event(c,NX_M_EOT,0,NULL));
+    tty_receive(3);assert(c->signals&(1U<<NX_SIGINT));
+    for(unsigned i=0;i<NX_MX_EVENTS;++i)assert(mx_group_read(g,(uintptr_t)buffer,12)==10);
+    assert(mx_group_read(g,(uintptr_t)buffer,12)==10);
+    assert(((struct nx_mx_control *)(buffer+6))->code==NX_M_SIG && !c->signals);
+    g->nonblocking=true;tty_receive(19);
+    h=(struct nx_mx_write){.index=0xfff0,.count=3,.data="OUT"};
+    assert(mx_group_write(g,(uintptr_t)&h,sizeof(h))==15 && c->tty_blocked && output_count==0);
+    tty_receive(17);assert(!c->tty_blocked && c->unblock_event);
+    assert(mx_group_read(g,(uintptr_t)buffer,12)==10);
+    h.ccount=0;assert(mx_group_write(g,(uintptr_t)&h,sizeof(h))==16 && output_count==3 && !memcmp(output,"OUT",3));
+    struct nx_mx_ioctl request={.code=NX_M_IOCTL,.command=NX_TIOCGETP};
+    h=(struct nx_mx_write){.index=0xfff0,.ccount=sizeof(request),.data=&request};
+    assert(mx_group_write(g,(uintptr_t)&h,sizeof(h))==16);
+    assert(mx_group_read(g,(uintptr_t)buffer,sizeof(buffer))==18 && ((struct nx_mx_ioctl *)(buffer+6))->command==NX_TIOCGETP);
+    tty_mpx_unbind(t,c);c->input_tty=c->output_tty=NULL;tty_close(t);
+    /* A reply remains owned by its sleeping caller until it consumes data. */
+    c->ioctl_busy=c->ioctl_pending=true;c->ioctl_command=NX_TIOCGETP;
+    assert(mx_ioctl_control(c,&request)==0 && !c->ioctl_pending && c->ioctl_busy);
+    c->ioctl_pending=c->ioctl_abandoned=true;
+    assert(mx_ioctl_control(c,&request)==-NX_EINTR && !c->ioctl_pending && !c->ioctl_busy);
+    c->closing=true;struct file endpoint={.f_private=c,.f_flag=V7_FMPY};
+    assert(mx_endpoint_ioctl(&endpoint,&process.p_vm,NX_TIOCGETP,(uintptr_t)&settings)==-NX_ENXIO);
+    puts("PASS: mpx record validation, queue bounds/wrap, low-water wakeups, control retention, nonblocking retry, interrupted writes and pinned detach lifetime, TTY data/EOF/signals/flow and ioctl replies");return 0;
 }

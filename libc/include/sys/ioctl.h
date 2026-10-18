@@ -1,6 +1,9 @@
 #ifndef NEXIX_LIBC_SYS_IOCTL_H
 #define NEXIX_LIBC_SYS_IOCTL_H
 #include <nexix/tty.h>
+#include <nexix/mpx.h>
+#define MXLSTN NX_MXLSTN
+#define MXNBLK NX_MXNBLK
 #define TIOCGETD NX_TIOCGETD
 #define TIOCSETD NX_TIOCSETD
 #define TIOCGETP NX_TIOCGETP

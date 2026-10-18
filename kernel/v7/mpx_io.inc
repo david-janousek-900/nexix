@@ -8,6 +8,13 @@ static void mx_reap(struct mx_channel *c)
 { if(!c->parent && !c->endpoint && !c->users)zero(c,sizeof(*c)); }
 static void mx_release(struct mx_channel *c)
 { if(!c->users)panic("mpx channel pin underflow");--c->users;mx_reap(c); }
+static bool mx_event_payload(struct mx_channel *c,const void *payload,unsigned size)
+{
+    if(c->event_count==NX_MX_EVENTS || size>sizeof(c->events[0].bytes))return false;
+    struct mx_event *e=&c->events[(c->event_head+c->event_count)%NX_MX_EVENTS];
+    e->size=size;for(unsigned i=0;i<size;++i)e->bytes[i]=((const uint8_t *)payload)[i];
+    ++c->event_count;mx_notify(c);return true;
+}
 static bool mx_event(struct mx_channel *c,uint16_t code,uint16_t value,const char *name)
 {
     if(c->event_count==NX_MX_EVENTS)return false;
@@ -22,7 +29,8 @@ static bool mx_event(struct mx_channel *c,uint16_t code,uint16_t value,const cha
     ++c->event_count;mx_notify(c);return true;
 }
 static bool mx_ready(struct mx_channel *c)
-{ return c->event_count || c->close_event || c->block_event || c->unblock_event || c->x.size; }
+{ return c->event_count || c->close_event || c->block_event || c->unblock_event || c->signals || c->x.size ||
+    (c->input_tty && tty_mpx_ready(c->input_tty)); }
 /* Bounded scan replaces the historical readiness bitmap. Rotate at every
  * group level so a busy subtree cannot starve another branch. */
 static struct mx_channel *mx_next(struct mx_group *g)
@@ -61,14 +69,14 @@ static int64_t mx_endpoint_read(struct file *f,uintptr_t address,size_t count)
 }
 static int64_t mx_put(struct mx_channel *c,struct mx_queue *q,uintptr_t address,size_t count,bool nonblocking)
 {
-    size_t done=0;uint8_t bytes[NX_MX_HIQ];
+    size_t done=0;uint8_t bytes[NX_MX_HIQ];unsigned generation=c->generation;
     while(done<count){
         while(q->size>NX_MX_HIQ || q->eot){
-            if(c->closing)return done?(int64_t)done:-NX_ENXIO;
+            if(c->closing || generation!=c->generation)return done?(int64_t)done:-NX_ENXIO;
             if(nonblocking){q->blocked_notice=true;return done;}
             if(proc_sleep_interruptible(c,40))return done?(int64_t)done:-NX_EINTR;
         }
-        if(c->closing)return done?(int64_t)done:-NX_ENXIO;
+        if(c->closing || generation!=c->generation)return done?(int64_t)done:-NX_ENXIO;
         unsigned n=count-done<NX_MX_HIQ?count-done:NX_MX_HIQ;
         if(n>NX_MX_QSIZE-q->size)n=NX_MX_QSIZE-q->size;
         int error=copyin(&proc_current()->p_vm,address+done,bytes,n);
@@ -78,20 +86,38 @@ static int64_t mx_put(struct mx_channel *c,struct mx_queue *q,uintptr_t address,
     }
     return done;
 }
+static int64_t mx_output(struct mx_channel *c,uintptr_t address,size_t count,bool nonblocking)
+{
+    if(!c->output_tty)return mx_put(c,&c->y,address,count,nonblocking);
+    unsigned generation=c->generation;size_t done=0;
+    while(done<count){
+        if(c->closing || generation!=c->generation)return done?(int64_t)done:-NX_ENXIO;
+        uint8_t bytes[NX_MX_HIQ];unsigned n=count-done<NX_MX_HIQ?count-done:NX_MX_HIQ;
+        int error=copyin(&proc_current()->p_vm,address+done,bytes,n);if(error)return done?(int64_t)done:error;
+        size_t moved=tty_mpx_write(c->output_tty,bytes,n);done+=moved;
+        if(!moved){
+            if(nonblocking){c->tty_blocked=true;return done;}
+            if(proc_sleep_interruptible(c,40))return done?(int64_t)done:-NX_EINTR;
+        }
+    }
+    return done;
+}
+static void mx_pipe_signal(struct mx_channel *c)
+{if(c->process_group)signal_group(c->process_group,NX_SIGPIPE);else signal_post(proc_current(),NX_SIGPIPE);}
 static int64_t mx_endpoint_write(struct file *f,uintptr_t address,size_t count)
 {
     struct mx_channel *c=f->f_private;
-    if(c->closing){signal_post(proc_current(),NX_SIGPIPE);return -NX_EPIPE;}
+    if(c->closing){mx_pipe_signal(c);return -NX_EPIPE;}
     if(!count){
         while(!mx_event(c,NX_M_EOT,0,NULL)){
             if(proc_sleep_interruptible(c,40))return -NX_EINTR;
-            if(c->closing){signal_post(proc_current(),NX_SIGPIPE);return -NX_EPIPE;}
+            if(c->closing){mx_pipe_signal(c);return -NX_EPIPE;}
         }
         return 0;
     }
     struct mx_queue *q=(f->f_flag&V7_FMPX)?&c->y:&c->x;
     int64_t result=mx_put(c,q,address,count,false);
-    if(c->closing){signal_post(proc_current(),NX_SIGPIPE);if(result<=0)result=-NX_EPIPE;}
+    if(c->closing){mx_pipe_signal(c);if(result<=0)result=-NX_EPIPE;}
     return result;
 }
 static int64_t mx_group_read(struct mx_group *g,uintptr_t address,size_t count)
@@ -116,6 +142,16 @@ static int64_t mx_group_read(struct mx_group *g,uintptr_t address,size_t count)
             kind=c->close_event?NX_M_CLOSE:c->block_event?NX_M_BLK:NX_M_UBLK;
             struct nx_mx_control event={kind,0};n=sizeof(event);
             for(unsigned i=0;i<n;++i)bytes[sizeof(h)+i]=((uint8_t *)&event)[i];
+        }else if(c->signals){
+            unsigned sig=1;while(!(c->signals&(1U<<sig)))++sig;
+            struct nx_mx_control event={NX_M_SIG,sig};kind=NX_M_SIG;n=sizeof(event);
+            for(unsigned i=0;i<n;++i)bytes[sizeof(h)+i]=((uint8_t *)&event)[i];
+        }else if(!c->x.size && c->input_tty){
+            bool eof=false;unsigned room=count-done-sizeof(h);if(room>NX_MX_HIQ)room=NX_MX_HIQ;
+            n=tty_mpx_read(c->input_tty,bytes+sizeof(h),room,&eof);kind=100;
+            if(eof){struct nx_mx_control event={NX_M_EOT,0};n=sizeof(event);
+                for(unsigned i=0;i<n;++i)bytes[sizeof(h)+i]=((uint8_t *)&event)[i];}
+            else control=false;
         }else{
             control=false;n=c->x.size;if(n>NX_MX_HIQ)n=NX_MX_HIQ;
             if(n>count-done-sizeof(h))n=count-done-sizeof(h);
@@ -128,7 +164,12 @@ static int64_t mx_group_read(struct mx_group *g,uintptr_t address,size_t count)
         for(unsigned i=0;i<sizeof(h);++i)bytes[i]=((uint8_t *)&h)[i];
         int error=copyout(&proc_current()->p_vm,address+done,bytes,total);
         if(error)return done?(int64_t)done:error;
-        if(!control)mx_drop(c,&c->x,n);
+        if(!control){if(kind!=100)mx_drop(c,&c->x,n);}
+        else if(kind==100){}
+        else if(kind==NX_M_SIG){struct nx_mx_control event;
+            for(unsigned i=0;i<sizeof(event);++i)((uint8_t *)&event)[i]=bytes[sizeof(h)+i];
+            c->signals&=~(1U<<event.value);
+        }
         else if(!kind){c->event_head=(c->event_head+1)%NX_MX_EVENTS;--c->event_count;proc_wakeup(c);}
         else if(kind==NX_M_CLOSE)c->close_event=false;
         else if(kind==NX_M_BLK)c->block_event=false;
@@ -145,18 +186,24 @@ static int mx_eot(struct mx_group *g,struct mx_channel *c)
         if(proc_sleep_interruptible(c,40))return -NX_EINTR;
     }
     if(c->closing)return -NX_ENXIO;
+    if(c->output_tty)return -NX_ENOTTY;
     c->y.eot=true;mx_notify(c);return 0;
 }
 static int mx_validate_record(struct mx_group *g,struct address_space *vm,const struct nx_mx_write *h)
 {
     if(h->reserved || h->count>INT16_MAX || h->ccount<0 ||
-       (h->count && h->ccount) || (!h->count && h->ccount!=4))return -NX_EINVAL;
+       (h->count && h->ccount) || (!h->count && h->ccount!=4 && h->ccount!=sizeof(struct nx_mx_ioctl)))return -NX_EINVAL;
     unsigned n=h->count?h->count:h->ccount;
     if(!user_access_ok(vm,(uintptr_t)h->data,n,false))return -NX_EFAULT;
     if(!h->count){
         struct nx_mx_control event;int error=copyin(vm,(uintptr_t)h->data,&event,sizeof(event));
         if(error)return error;
-        if(event.code!=NX_M_EOT)return -NX_ENXIO; /* TTY ioctl controls: task 67. */
+        if(event.code==NX_M_EOT){if(h->ccount!=4)return -NX_EINVAL;}
+        else if(event.code==NX_M_IOCTL){
+            if(h->ccount!=sizeof(struct nx_mx_ioctl))return -NX_EINVAL;
+            struct nx_mx_ioctl control;error=copyin(vm,(uintptr_t)h->data,&control,sizeof(control));if(error)return error;
+            bool get;if(tty_control_size(control.command,&get)<0)return -NX_ENOTTY;
+        }else return -NX_ENXIO;
     }
     struct mx_entry e=mx_lookup(g,h->index);if(!e.channel || e.channel->pending)return -NX_ENXIO;
     return 0;
@@ -182,7 +229,17 @@ static int64_t mx_group_write(struct mx_group *g,uintptr_t address,size_t count)
         if(error)return consumed?(int64_t)(consumed-truncated):error;
         struct mx_entry e=mx_lookup(g,h.index);if(!e.channel || e.channel->pending)return consumed?(int64_t)(consumed-truncated):-NX_ENXIO;
         struct mx_channel *c=e.channel;++c->users;
-        int64_t moved=h.count?mx_put(c,&c->y,(uintptr_t)h.data,h.count,nonblocking):mx_eot(g,c);
+        int64_t moved;
+        if(h.count)moved=mx_output(c,(uintptr_t)h.data,h.count,nonblocking);
+        else{
+            struct nx_mx_control control;error=copyin(vm,(uintptr_t)h.data,&control,sizeof(control));
+            if(error)moved=error;
+            else if(control.code==NX_M_EOT && h.ccount==4)moved=mx_eot(g,c);
+            else if(control.code==NX_M_IOCTL && h.ccount==sizeof(struct nx_mx_ioctl)){
+                struct nx_mx_ioctl message;error=copyin(vm,(uintptr_t)h.data,&message,sizeof(message));
+                moved=error?error:mx_ioctl_control(c,&message);
+            }else moved=-NX_ENXIO;
+        }
         bool partial=moved>=0 && h.count && moved<h.count;
         if(partial){
             h.count-=moved;h.data=(const uint8_t *)h.data+moved;h.ccount=-1;
@@ -204,9 +261,9 @@ static int64_t mpx_io(struct file *f,uintptr_t address,size_t count,bool write)
         return write?mx_group_write(f->f_private,address,count):mx_group_read(f->f_private,address,count);
     return write?mx_endpoint_write(f,address,count):mx_endpoint_read(f,address,count);
 }
-static int mpx_ioctl(struct file *f,uint64_t request)
+static int mpx_ioctl(struct file *f,struct address_space *vm,uint64_t request,uintptr_t address)
 {
-    if((f->f_flag&V7_FMP)!=V7_FMP)return -NX_ENOTTY;
+    if((f->f_flag&V7_FMP)!=V7_FMP)return mx_endpoint_ioctl(f,vm,request,address);
     struct mx_group *g=f->f_private;
     if(request==NX_MXNBLK){g->nonblocking=true;return 0;}
     if(request==NX_MXLSTN){if(mx_listener)return -NX_ENXIO;mx_listener=g;return 0;}
@@ -228,6 +285,6 @@ static int mpx_open(struct file *f,const char *path,struct user *u)
         mx_notify(c);
         if(c->parent){c->parent->entry[c->index]=(struct mx_entry){0};c->parent=NULL;}
         c->closing=true; /* fio's failed-open file_put owns final release. */
-    }
+    }else c->process_group=u->u_procp->p_pgrp;
     return error;
 }

@@ -176,9 +176,8 @@ build/exec_program.o: user/exec-test.S include/nexix/syscall.h include/nexix/err
 	$(CC) -m64 -ffreestanding -fno-pie -Iinclude -c $< -o $@
 build/exec-test.elf: build/exec_program.o user/exec-test.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/exec-test.ld $< -o $@
-build/exec_image.o: build/exec-test.elf
-	$(LD) -r -b binary $< -o build/exec_raw.o
-	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/exec_raw.o $@
+build/exec_image.o: build/exec-test.elf tools/embed_test_elf.py
+	$(PYTHON) tools/embed_test_elf.py $< $@ --ld $(LD) --objcopy $(OBJCOPY)
 build/elf.o: kernel/elf.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 build/exec.o: kernel/v7/exec.c | build/.dir
@@ -191,7 +190,7 @@ test-exec: check build/test-selftest.iso
 
 # Native userland: compiler freestanding headers plus Nexix headers only.
 USER_CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-builtin -fno-stack-protector -fno-pie -m64 -mno-red-zone -mno-avx -fno-asynchronous-unwind-tables -nostdinc -isystem $(shell $(CC) -print-file-name=include) -Ilibc/include -Iinclude -MMD -MP
-LIBC_OBJECTS = build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o build/libc_float.o build/libc_convert.o build/libc_scan.o build/libc_ctype.o build/libc_numbers.o build/libc_bytes.o build/libc_gcvt.o build/libc_abort.o build/libc_mktemp.o build/libc_errors.o build/libc_perror.o build/libc_passwd.o build/libc_group.o build/libc_crypt.o build/libc_terminal.o build/libc_getpass.o build/libc_system.o build/libc_popen.o build/libc_ptrace.o build/libc_profil.o build/libc_monitor.o build/libc_mcount.o build/libc_nlist.o build/libc_kinfo.o build/libc_lock.o build/libc_phys.o
+LIBC_OBJECTS = build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o build/libc_float.o build/libc_convert.o build/libc_scan.o build/libc_ctype.o build/libc_numbers.o build/libc_bytes.o build/libc_gcvt.o build/libc_abort.o build/libc_mktemp.o build/libc_errors.o build/libc_perror.o build/libc_passwd.o build/libc_group.o build/libc_crypt.o build/libc_terminal.o build/libc_getpass.o build/libc_system.o build/libc_popen.o build/libc_ptrace.o build/libc_profil.o build/libc_monitor.o build/libc_mcount.o build/libc_nlist.o build/libc_kinfo.o build/libc_lock.o build/libc_phys.o build/libc_mpx.o
 -include $(LIBC_OBJECTS:.o=.d) build/libc_program.d
 build/crt0.o: libc/arch/x86_64/crt0.S | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
@@ -207,9 +206,8 @@ build/libc_abi.o: user/libc-test-abi.S include/nexix/syscall.h | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -Iinclude -c $< -o $@
 build/libc-test.elf: build/crt0.o build/libc_program.o build/libc_scan_program.o build/libc_helpers_program.o build/crypt_program.o build/libc_abi.o build/fpu_program.o build/libc.a build/libm.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/libc_program.o build/libc_scan_program.o build/libc_helpers_program.o build/crypt_program.o build/libc_abi.o build/fpu_program.o build/libc.a build/libm.a build/libc.a -o $@
-build/libc_image.o: build/libc-test.elf
-	$(LD) -r -b binary $< -o build/libc_raw.o
-	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/libc_raw.o $@
+build/libc_image.o: build/libc-test.elf tools/embed_test_elf.py
+	$(PYTHON) tools/embed_test_elf.py $< $@ --ld $(LD) --objcopy $(OBJCOPY)
 build/libc_test.o: kernel/libc_test.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 .PHONY: userland test-libc
@@ -246,9 +244,8 @@ build/files_program.o: user/files-test.c | build/.dir
 -include build/files_program.d
 build/files-test.elf: build/crt0.o build/files_program.o build/stdio_program.o build/stdio_compat_program.o build/mktemp_program.o build/perror_program.o build/passwd_program.o build/group_program.o build/terminal_account_program.o build/v7_stdio_fragments.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/files_program.o build/stdio_program.o build/stdio_compat_program.o build/mktemp_program.o build/perror_program.o build/passwd_program.o build/group_program.o build/terminal_account_program.o build/v7_stdio_fragments.o build/libc.a -o $@
-build/files_image.o: build/files-test.elf
-	$(LD) -r -b binary $< -o build/files_raw.o
-	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/files_raw.o $@
+build/files_image.o: build/files-test.elf tools/embed_test_elf.py
+	$(PYTHON) tools/embed_test_elf.py $< $@ --ld $(LD) --objcopy $(OBJCOPY)
 .PHONY: test-files
 test-files: check build/test-selftest.iso
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso files 16M
@@ -264,9 +261,8 @@ build/tty_program.o: user/tty-test.c | build/.dir
 -include build/tty_program.d
 build/tty-test.elf: build/crt0.o build/tty_program.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/tty_program.o build/libc.a -o $@
-build/tty_image.o: build/tty-test.elf
-	$(LD) -r -b binary $< -o build/tty_raw.o
-	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/tty_raw.o $@
+build/tty_image.o: build/tty-test.elf tools/embed_test_elf.py
+	$(PYTHON) tools/embed_test_elf.py $< $@ --ld $(LD) --objcopy $(OBJCOPY)
 userland: build/tty-test.elf
 
 .PHONY: test-tty run-tty
@@ -292,9 +288,8 @@ build/signals_program.o: user/signals-test.c | build/.dir
 -include build/signals_program.d
 build/signals-test.elf: build/crt0.o build/signals_program.o build/signals_abi.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/signals_program.o build/signals_abi.o build/libc.a -o $@
-build/signals_image.o: build/signals-test.elf
-	$(LD) -r -b binary $< -o build/signals_raw.o
-	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/signals_raw.o $@
+build/signals_image.o: build/signals-test.elf tools/embed_test_elf.py
+	$(PYTHON) tools/embed_test_elf.py $< $@ --ld $(LD) --objcopy $(OBJCOPY)
 userland: build/signals-test.elf
 .PHONY: test-signals
 test-signals: check build/test-selftest.iso
@@ -340,9 +335,8 @@ build/v7_test_program.o: user/v7-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 build/v7-test.elf: build/crt0.o build/v7_test_program.o build/system_program.o build/popen_program.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/v7_test_program.o build/system_program.o build/popen_program.o build/libc.a -o $@
-build/v7_test_image.o: build/v7-test.elf
-	$(LD) -r -b binary $< -o build/v7_test_raw.o
-	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/v7_test_raw.o $@
+build/v7_test_image.o: build/v7-test.elf tools/embed_test_elf.py
+	$(PYTHON) tools/embed_test_elf.py $< $@ --ld $(LD) --objcopy $(OBJCOPY)
 .PHONY: test-v7
 test-v7: check build/test-selftest.iso
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso v7 16M
@@ -382,11 +376,10 @@ build/nexix.elf: build/root_boot.o
 
 build/root_exec_program.o: user/root-exec-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
-build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/libc.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/libc.a -o $@
-build/root_exec_image.o: build/root-exec-test.elf
-	$(LD) -r -b binary $< -o build/root_exec_raw.o
-	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/root_exec_raw.o $@
+build/root-exec-test.elf: build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/mpx_tty_program.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/root_exec_program.o build/setid_program.o build/text_program.o build/core_program.o build/core_fault.o build/storage_program.o build/namespace_program.o build/umount_program.o build/accounting_program.o build/ptrace_program.o build/ptrace_probe.o build/debugger_program.o build/profile_program.o build/profile_work.o build/monitor_program.o build/monitor_abi.o build/nlist_program.o build/kinfo_program.o build/lock_program.o build/phys_program.o build/mpx_program.o build/mpx_data_program.o build/mpx_tty_program.o build/libc.a -o $@
+build/root_exec_image.o: build/root-exec-test.elf tools/embed_test_elf.py
+	$(PYTHON) tools/embed_test_elf.py $< $@ --ld $(LD) --objcopy $(OBJCOPY)
 OBJECTS += build/root_exec_image.o
 build/nexix.elf: build/root_exec_image.o
 -include build/root_exec_program.d
@@ -984,10 +977,17 @@ build/mpx_data_program.o: user/mpx-data-test.c | build/.dir
 .PHONY: test-mpx-data
 test-mpx-data: test-rootfs test-inventory test-libc-interfaces
 
-build/mpx-unit-test: tests/mpx.c kernel/v7/files.c kernel/v7/mpx.inc kernel/v7/mpx_io.inc include/nexix/mpx.h | build/.dir
-	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -ffunction-sections -fdata-sections -Wl,--gc-sections -Ikernel/include -Iinclude tests/mpx.c -o $@
+build/mpx-unit-test: tests/mpx.c kernel/v7/tty.c kernel/v7/mpx_tty.inc kernel/v7/files.c kernel/v7/mpx.inc kernel/v7/mpx_io.inc include/nexix/mpx.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -ffunction-sections -fdata-sections -Wl,--gc-sections -Ikernel/include -Iinclude tests/mpx.c kernel/v7/tty.c -o $@
 .PHONY: test-mpx-unit
 test-mpx-unit: build/mpx-unit-test
 	./build/mpx-unit-test
 test-unit: test-mpx-unit
 test-mpx-data: test-mpx-unit
+
+# Task 67: TTY multiplexor bridging and V7 libc wrappers.
+build/mpx_tty_program.o: user/mpx-tty-test.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+-include build/mpx_tty_program.d
+.PHONY: test-mpx-tty
+test-mpx-tty: test-mpx-unit test-rootfs test-inventory test-libc-interfaces

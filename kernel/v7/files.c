@@ -634,7 +634,7 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
             u->u_pofile[fd] = request == NX_FIOCLEX ? V7_EXCLOSE : 0;
             return 0;
         }
-        if(f->f_flag&V7_FMP)return mpx_ioctl(f,request);
+        if(f->f_flag&V7_FMP)return mpx_ioctl(f,&p->p_vm,request,argument);
         if (!f->f_private || (f->f_flag & (V7_FPIPE|V7_FMP)) || (f->f_flag & FILE_STORAGE)) return -NX_ENOTTY;
         return tty_ioctl(f->f_private, &p->p_vm, request, argument);
     }

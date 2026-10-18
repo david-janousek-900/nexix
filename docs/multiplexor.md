@@ -1,4 +1,4 @@
-# Multiplexor ownership and data/control (tasks 65–66)
+# Multiplexor ownership and data/control (tasks 65–67)
 
 Nexix ports group/channel ownership and record data/control I/O from
 V7 `usr/sys/dev/mx1.c` and `mx2.c`, with limits from `usr/sys/h/mx.h` and the
@@ -10,7 +10,7 @@ directly. Queue operations use the same IRQ serialization as pipes.
 The native raw interface is syscall 56, `(command, &arguments)`. Include
 `<nexix/mpx.h>` for command numbers and `struct nx_mx_args`: an eight-byte name
 pointer, a four-byte historical command field (unused), and three signed
-four-byte arguments. High-level libc wrappers belong to task 67.
+four-byte arguments. High-level libc wrappers are declared in `<sys/mx.h>` (task 67).
 
 | Command | Inputs | Result |
 |---|---|---|
@@ -87,8 +87,8 @@ uint16 count, int16 ccount, a zero uint16 reserved field, and an eight-byte nati
 payload pointer. There is no extra record-count limit. A data record has count
 1–32767 and ccount zero. A control record has count zero and ccount four, with a
 `nx_mx_control` payload containing uint16 code/value. Group writes currently
-accept M_EOT controls. TTY M_IOCTL routing remains task 67; the reference's
-mxwcontrol M_IOCTL branch only prints a diagnostic.
+accept M_EOT and native M_IOCTL controls. Task 67 completes the reference's
+mxwcontrol M_IOCTL branch, which only prints a diagnostic in V7.
 
 Headers must be writable, including for blocking calls, so an interrupted
 partial record can report exactly which bytes remain. The complete header
@@ -155,16 +155,110 @@ M_WATCH, with the UID followed by the actual supplied pathname, truncated to
 49 bytes plus NUL. Each channel owns its name, replacing V7's global name buffer
 and its boundary overflow. Control headers and payloads retain sixteen-bit
 fields; the native write pointer, validation and retry rules above are explicit
-x86_64 adaptations. TTY ports, connect/disconnect, process-group/signal controls,
-TTY ioctl forwarding and libc wrappers remain task 67.
+x86_64 adaptations. Task 67 supplies the TTY bridges and libc interface described below.
+
+## TTY bridging and libc (task 67)
+
+`libc/mpx.c` ports `usr/src/libc/gen/mpx.c` and replaces PDP-11 `mpxcall.s`.
+`<sys/mx.h>` declares mpxcall, mpx, chan, join, connect, disconnect, attach,
+detach, extract, debug, npgrp and ckill. Each call uses its own argument record;
+there is no shared static vector. Errors return -1 and set errno. `mpx("", mode)`
+creates an anonymous group; a null name returns EFAULT. `mpxcall(MPXN, NULL)`
+supplies an empty native argument record. Other null argument records fail.
+The actual two-argument mpxcall source interface is used; the snapshot's
+mpxcall(2) page describes a different older calling convention.
+
+`join(ttyfd, group)` creates a TTY port and retains the canonical TTY open file.
+The thirty-entry port table is separate from the twenty ordinary channels.
+COM1 and its controlling-terminal alias are currently the available TTYs;
+independent hardware/terminal ports remain tasks 89–93. Port extraction duplicates
+the original TTY descriptor. Terminal ioctls and writes on that descriptor still
+work; direct reads return ENXIO while its input belongs to a bridge. Group reads
+consume the normal cooked/raw/cbreak line discipline, including one M_EOT event
+for an empty cooked EOF. Group writes use normal terminal output processing.
+Input can belong to only one channel/port; competing joins/connections fail with
+EBUSY. Already queued ordinary channel data is drained before newly routed TTY
+input. Joining a TTY does not reopen or reset it.
+
+`connect(ttyfd, channel_fd, side)` requires an ordinary Y endpoint. Negative
+side connects terminal input to group reads; positive side connects group writes
+to terminal output; zero connects both. Each direction retains its TTY file,
+so closing the original descriptor cannot invalidate the bridge. Multiple channels
+can share output; input remains exclusive. Connect and disconnect increment a
+connection generation and wake sleepers. A writer blocked on an old connection
+returns ENXIO, or the existing partial-record retry feedback if a prefix moved,
+instead of silently switching destinations. Detach, group closure and final
+endpoint close unbind input and release every bridge reference before reuse.
+
+`disconnect(ttyfd, channel_fd, side)` is an explicit native addition using the
+same directional convention. Although V7 defines DISCON=9, it has no switch
+handler or libc wrapper; mpx(2) expressly says the inverse is not provided.
+Nexix implements that inverse rather than claiming it was original V7 behavior.
+Ordinary channel queues remain usable after disconnection.
+
+TTY interrupt/quit characters produce reserved M_SIG notifications containing
+SIGINT/SIGQUIT instead of directly signalling the terminal foreground group.
+Repeated equal signals coalesce, and a full ordinary event ring cannot lose
+the pending signal state. XOFF stops bridged output; XON and terminal mode/flow
+changes wake blocked writers. Message-based nonblocking writes use the existing
+header feedback and M_UBLK event when output resumes. COM1 writes synchronously
+to the UART, so software XOFF is its output backpressure; ordinary channel rings
+retain task 66's high/low-water limits. A physical serial stream has no zero-byte
+EOF operation: a group M_EOT directed at a TTY returns ENOTTY, while ordinary
+process channels retain logical EOF markers.
+
+`npgrp(index, group, pgrp)` follows the supplied mx1.c implementation: it changes
+the **calling** process's group and records that group on the selected channel.
+A negative group descriptor affects only the caller; zero pgrp selects its PID.
+It returns the selected group. This differs from the manual's claim that it
+changes a remote endpoint process. Negative process groups are rejected.
+`ckill` validates the signal and returns its number, delivering through the
+recorded channel process group; a TTY port has no process target and is a no-op.
+As in V7, possession of the channel/group descriptor supplies authority for this
+channel-specific group control. Named opens capture the opener's process group.
+Broken endpoint writes use that group for SIGPIPE, falling back to the current
+process for a channel with no assigned group. `debug` stores the reference's
+thirty diagnostic settings (ALL sets all), without a data-transport effect;
+the source itself has no readers of those settings. Out-of-range indices fail
+with EINVAL instead of the reference's array-boundary overwrite. PACK is an
+unused reference opcode without a handler or wrapper and remains invalid.
+
+## Native M_IOCTL completion
+
+The reference manual describes M_IOCTL transfers, but mxwcontrol only prints
+`M_IOCTL`. Nexix defines a working native twelve-byte `nx_mx_ioctl`: uint16 code,
+uint16 terminal command, and eight payload bytes. It is sent as a control record
+with ccount twelve. GETP/SETP/SETN use native eight-byte sgtty settings; GETC/SETC
+use six bytes; GETD/SETD use four; FLUSH has no argument. Unused payload bytes are not interpreted. Unknown commands return ENOTTY. TTY setting validation
+and unsupported terminal modes remain those of the existing driver (task 74
+owns further historical modes). Malformed M_IOCTL lengths return EINVAL.
+
+A group M_IOCTL directed at a TTY applies a SET/FLUSH immediately; a GET queues
+an M_IOCTL reply for the group. Endpoint ioctls on connected channels apply to
+the output TTY, falling back to the input TTY, and notify the group with the resulting payload. Notification capacity
+is reserved before changing terminal state. An unconnected endpoint instead
+queues the request and waits interruptibly for the owner to write a matching
+M_IOCTL response. A GET then copies the returned payload to its caller; SET and
+FLUSH return after acknowledgement. Calls are serialized per channel. Copy and
+range checks happen before queue/state changes; detach and closure wake pending
+operations with ENXIO. A signal cancels a waiting call with EINTR. If its request
+is already outstanding, new requests wait until the owner acknowledges that
+cancelled request (the acknowledgement returns EINTR) or detaches the channel.
+This avoids assigning a stale reply to a newer call without adding sequence
+fields to the V7-shaped payload. Replies are ordered, one per request.
+
+The snapshot supplies the wrapper source but no separate multiplexor application
+under usr/src that consumes it. Acceptance therefore calls these original wrapper
+interfaces from native fixtures and exercises their original kernel/TTY consumers;
+it does not introduce or claim additional installed userland programs.
 
 ## Validation
 
-Run `make test-mpx-data test-unit test-shell test-storage`.
+Run `make test-mpx-tty test-unit test-tty test-shell test-storage`.
 `tests/mpx.c` exercises production queue/record code, ring wrap, low-water
 boundaries, control retention, payload preflight, nonblocking write-back,
 interrupted partial records, large descriptor arrays and pinned detach lifetime.
-The QEMU root-image fixtures require both NEXIX_MPX_OK and NEXIX_MPX_DATA_OK
+The QEMU root-image fixtures require NEXIX_MPX_OK, NEXIX_MPX_DATA_OK and NEXIX_MPX_TTY_OK
 at 16 and 128 MiB. They cover task 65 ownership plus framed duplex data,
 streaming through full queues, EOF ordering, close events, nonblocking retries,
 interrupts, event-ring exhaustion, tree routing/fairness, sleeping-writer detach,
@@ -172,3 +266,21 @@ WATCH/OPEN acceptance/rejection/cancellation, effective UIDs, aliases, listener
 release, stale named inodes and leak-free file/inode cleanup. Existing shell,
 filesystem and cold-boot storage checks cover surrounding paths. Reference files
 and installed userland program counts remain unchanged.
+
+Task 67 adds captured-UART host checks and native wrapper/TTY tests for joins,
+canonical/raw input, EOF/signal events, directional connect/disconnect, retained
+files, XOFF/XON blocking and nonblocking wakeups, generation-safe disconnection,
+terminal and virtual ioctl exchanges, concurrent callers, interrupted/cancelled requests, closure,
+process-group delivery and reference cleanup. The private test-only input gate
+is enabled only during the root-image acceptance fixture; production boot gains
+no injection API.
+
+The expanded private acceptance image reached GRUB's loader-memory limit at
+16 MiB before entering the kernel. `tools/embed_test_elf.py` removes symbol
+and section-name metadata from the seven embedded acceptance executables,
+while preserving their full `build/*-test.elf` artifacts. Each embedding checks
+that entry point and every PT_LOAD address, size, memory size, alignment,
+permission and payload byte are unchanged. Kernel symbols, installed programs,
+and nlist/tracing/profiling fixtures retain their original symbols. This reduces
+loaded test payload by about 44 KiB and restores the 16 MiB boot; no code/data
+segment or reference source is removed.

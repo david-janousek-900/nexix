@@ -24,6 +24,7 @@ extern int lock_test(void);
 extern int phys_test(void);
 extern int mpx_test(void);
 extern int mpx_data_test(void);
+extern int mpx_tty_test(void);
 static int child_exec(const char *path, int unprivileged)
 {
     int pair[2]; CHECK(pipe(pair)==0);
@@ -92,6 +93,7 @@ int main(void)
     error=phys_test();if(error)return error;
     error=mpx_test();if(error)return error;
     error=mpx_data_test();if(error)return error;
+    error=mpx_tty_test();if(error)return error;
     const char marker[]="NEXIX_ROOT_EXEC_USER_OK\n";
     CHECK(write(1,marker,sizeof(marker)-1)==sizeof(marker)-1);
     return 0;

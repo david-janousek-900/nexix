@@ -1,3 +1,4 @@
+#include "uaccess.h"
 #include "userland.h"
 #include "files.h"
 #include "serial.h"
@@ -100,7 +101,7 @@ static v7_pid_t held_owner;
 static v7_pid_t trace_orphan;
 bool root_exec_test_gate(struct interrupt_frame *frame)
 {
-    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x918)return false;
+    if(!exec_testing||!proc_current()||frame->rax<0x900||frame->rax>0x91a)return false;
     struct proc *p=proc_current();
     if(frame->rax==0x900){
         frame->rax=(uint64_t)-NX_ENOSYS;return true; /* Retired tracing test hook. */
@@ -228,7 +229,14 @@ bool root_exec_test_gate(struct interrupt_frame *frame)
         uintptr_t pa;unsigned flags;
         if(p->p_user->u_uid||!vm_translate(&p->p_vm,frame->rdi,&pa,&flags))panic("invalid physical lookup fixture");
         frame->rax=pa;frame->rdx=flags;return true;
-    }else return false;
+    }else if(frame->rax==0x919){
+        uint8_t input[128];
+        if(p->p_user->u_uid || frame->rsi>sizeof(input))panic("invalid mpx TTY fixture");
+        int error=copyin(&p->p_vm,frame->rdi,input,frame->rsi);
+        if(error){frame->rax=error;return true;}
+        for(unsigned i=0;i<frame->rsi;++i)tty_receive(input[i]);
+    }else if(frame->rax==0x91a){frame->rax=tty_open_count();return true;}
+    else return false;
     frame->rax=0;return true;
 }
 static uint8_t storage_bytes[1536];

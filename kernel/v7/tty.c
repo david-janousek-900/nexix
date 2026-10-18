@@ -19,6 +19,7 @@ struct tty {
     uint64_t dropped;
     v7_pid_t group;
     bool stopped;
+    void *mpx_owner;
     char input_channel, output_channel;
 };
 static struct tty console;
@@ -28,7 +29,7 @@ static bool immediate(const struct tty *t) { return t->settings.flags & (NX_RAW 
 static void flush(struct tty *t)
 { t->head = t->count = t->length = 0; }
 static void resume(struct tty *t)
-{ t->stopped = false; proc_wakeup(&t->output_channel); }
+{ t->stopped = false; proc_wakeup(&t->output_channel);mpx_tty_resume(t); }
 static void defaults(struct tty *t)
 {
     t->settings = (struct nx_sgttyb){NX_B115200, NX_B115200, 0177, 025, NX_ECHO | NX_CRMOD};
@@ -101,6 +102,7 @@ static void commit(struct tty *t)
     }
     t->length = 0;
     proc_wakeup(&t->input_channel);
+    if(t->mpx_owner)mpx_tty_notify(t->mpx_owner,0);
 }
 void tty_receive(uint8_t c)
 {
@@ -111,7 +113,8 @@ void tty_receive(uint8_t c)
         c &= 0177;
         if ((c == t->chars.intr || c == t->chars.quit) && c != 0377) {
             flush(t); resume(t);
-            signal_group(t->group, c == t->chars.intr ? NX_SIGINT : NX_SIGQUIT);
+            unsigned sig=c==t->chars.intr?NX_SIGINT:NX_SIGQUIT;
+            if(t->mpx_owner)mpx_tty_notify(t->mpx_owner,sig);else signal_group(t->group,sig);
             proc_wakeup(&t->input_channel); return;
         }
         if (c == t->chars.start && c != 0377) { resume(t); return; }
@@ -120,7 +123,9 @@ void tty_receive(uint8_t c)
     }
     if (immediate(t)) {
         if (t->count == TTY_INPUT_CAPACITY) { ++t->dropped; return; }
-        enqueue(t, c); echo(t, c); proc_wakeup(&t->input_channel); return;
+        enqueue(t, c); echo(t, c); proc_wakeup(&t->input_channel);
+        if(t->mpx_owner)mpx_tty_notify(t->mpx_owner,0);
+        return;
     }
     if (c == t->settings.erase || (t->settings.erase == 0177 && c == '\b')) {
         if (t->length) {
@@ -155,7 +160,11 @@ int64_t tty_io(struct tty *t, struct address_space *vm, uintptr_t address, size_
         }
         return done;
     }
-    while (!t->count) if (proc_sleep_interruptible(&t->input_channel, 28)) return -NX_EINTR;
+    if(t->mpx_owner)return -NX_ENXIO;
+    while (!t->count){
+        if(proc_sleep_interruptible(&t->input_channel,28))return -NX_EINTR;
+        if(t->mpx_owner)return -NX_ENXIO;
+    }
     while (done < count && t->count) {
         uint16_t value = t->input[t->head];
         t->head = (t->head + 1) % TTY_INPUT_CAPACITY; --t->count;
@@ -168,14 +177,15 @@ int64_t tty_io(struct tty *t, struct address_space *vm, uintptr_t address, size_
     }
     return done;
 }
-int tty_ioctl(struct tty *t, struct address_space *vm, uint64_t request, uintptr_t address)
+static void tcopy(void *destination,const void *source,size_t n)
+{uint8_t *d=destination;const uint8_t *s=source;for(size_t i=0;i<n;++i)d[i]=s[i];}
+int tty_control(struct tty *t,uint64_t request,void *argument)
 {
     switch (request) {
-    case NX_TIOCGETP: return copyout(vm, address, &t->settings, sizeof(t->settings));
+    case NX_TIOCGETP: tcopy(argument,&t->settings,sizeof(t->settings));return 0;
     case NX_TIOCSETP: case NX_TIOCSETN: {
         struct nx_sgttyb settings;
-        int error = copyin(vm, address, &settings, sizeof(settings));
-        if (error) return error;
+        tcopy(&settings,argument,sizeof(settings));
         uint32_t allowed = NX_CBREAK | NX_ECHO | NX_CRMOD | NX_RAW | NX_ODDP | NX_EVENP | NX_XTABS;
         if (settings.flags & ~allowed || !settings.ospeed || settings.ospeed >= sizeof(rates) / sizeof(rates[0]) ||
             settings.ispeed != settings.ospeed ||
@@ -189,11 +199,10 @@ int tty_ioctl(struct tty *t, struct address_space *vm, uint64_t request, uintptr
         if (request == NX_TIOCSETP || (settings.flags & NX_RAW)) resume(t);
         return 0;
     }
-    case NX_TIOCGETC: return copyout(vm, address, &t->chars, sizeof(t->chars));
+    case NX_TIOCGETC: tcopy(argument,&t->chars,sizeof(t->chars));return 0;
     case NX_TIOCSETC: {
         struct nx_tchars chars;
-        int error = copyin(vm, address, &chars, sizeof(chars));
-        if (error) return error;
+        tcopy(&chars,argument,sizeof(chars));
         t->chars = chars;
         /* Changing flow-control bytes must not strand a stopped writer. */
         resume(t); return 0;
@@ -201,13 +210,64 @@ int tty_ioctl(struct tty *t, struct address_space *vm, uint64_t request, uintptr
     case NX_TIOCFLUSH: flush(t); resume(t); return 0;
     case NX_TIOCGETD: {
         int32_t discipline = 0;
-        return copyout(vm, address, &discipline, sizeof(discipline));
+        tcopy(argument,&discipline,sizeof(discipline));return 0;
     }
     case NX_TIOCSETD: {
         int32_t discipline;
-        int error = copyin(vm, address, &discipline, sizeof(discipline));
-        return error ? error : discipline ? -NX_ENXIO : 0;
+        tcopy(&discipline,argument,sizeof(discipline));
+        return discipline ? -NX_ENXIO : 0;
     }
     default: return -NX_ENOTTY;
     }
+}
+
+int tty_control_size(uint64_t request,bool *get)
+{
+    *get=false;
+    switch(request){
+    case NX_TIOCGETP:*get=true;return sizeof(struct nx_sgttyb);
+    case NX_TIOCSETP:case NX_TIOCSETN:return sizeof(struct nx_sgttyb);
+    case NX_TIOCGETC:*get=true;return sizeof(struct nx_tchars);
+    case NX_TIOCSETC:return sizeof(struct nx_tchars);
+    case NX_TIOCGETD:*get=true;return sizeof(int32_t);
+    case NX_TIOCSETD:return sizeof(int32_t);
+    case NX_TIOCFLUSH:return 0;
+    default:return -NX_ENOTTY;
+    }
+}
+int tty_ioctl(struct tty *t,struct address_space *vm,uint64_t request,uintptr_t address)
+{
+    bool get;int size=tty_control_size(request,&get);if(size<0)return size;
+    uint64_t data=0;int error=0;
+    if(!get && size)error=copyin(vm,address,&data,size);
+    if(!error)error=tty_control(t,request,&data);
+    if(!error && get)error=copyout(vm,address,&data,size);
+    return error;
+}
+int tty_mpx_bind(struct tty *t,void *owner)
+{
+    if(t!=&console || !t->opens)return -NX_ENXIO;
+    if(t->mpx_owner && t->mpx_owner!=owner)return -NX_EBUSY;
+    t->mpx_owner=owner;proc_wakeup(&t->input_channel);return 0;
+}
+void tty_mpx_unbind(struct tty *t,void *owner)
+{
+    if(t->mpx_owner==owner){t->mpx_owner=NULL;proc_wakeup(&t->input_channel);}
+}
+bool tty_mpx_ready(struct tty *t){return t->count!=0;}
+size_t tty_mpx_read(struct tty *t,uint8_t *bytes,size_t count,bool *eof)
+{
+    size_t done=0;*eof=false;
+    while(done<count && t->count){
+        uint16_t value=t->input[t->head];t->head=(t->head+1)%TTY_INPUT_CAPACITY;--t->count;
+        if(value&EMPTY_EOF)*eof=true;else bytes[done++]=value;
+        if(!immediate(t) && (value&RECORD_END))break;
+    }
+    return done;
+}
+size_t tty_mpx_write(struct tty *t,const uint8_t *bytes,size_t count)
+{
+    if(t->stopped)return 0;
+    for(size_t i=0;i<count;++i)output(t,bytes[i]);
+    return count;
 }

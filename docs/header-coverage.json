@@ -214,9 +214,9 @@
     },
     {
       "source": "reference/v7/usr/include/sys/mx.h",
-      "status": "private_kernel",
-      "native": null,
-      "task": 65
+      "status": "native_contract",
+      "native": "libc/include/sys/mx.h",
+      "task": 67
     },
     {
       "source": "reference/v7/usr/include/sys/param.h",

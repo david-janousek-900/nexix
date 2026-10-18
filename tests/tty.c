@@ -25,6 +25,8 @@ int copyin(const struct address_space *space, uintptr_t source, void *dest, size
 { (void)space; if (source < 4096) return -NX_EFAULT; memcpy(dest, (const void *)source, size); return 0; }
 int copyout(const struct address_space *space, uintptr_t dest, const void *source, size_t size)
 { (void)space; if (dest < 4096) return -NX_EFAULT; memcpy((void *)dest, source, size); return 0; }
+void mpx_tty_notify(void *owner,unsigned signal){(void)owner;(void)signal;}
+void mpx_tty_resume(struct tty *t){(void)t;}
 static void feed(const void *bytes, size_t n)
 { const uint8_t *b = bytes; for (size_t i = 0; i < n; ++i) tty_receive(b[i]); }
 static void expect(struct tty *t, const void *bytes, size_t n)

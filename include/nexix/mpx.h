@@ -17,6 +17,7 @@
 #define NX_MX_PACK 13
 #define NX_MX_GROUPS 10
 #define NX_MX_CHANNELS 20
+#define NX_MX_PORTS 30
 #define NX_MX_INDEX 15
 #define NX_MX_LEVELS 4
 #define NX_MX_MAJOR 5
@@ -32,6 +33,7 @@
 #define NX_M_BLK 5
 #define NX_M_UBLK 6
 #define NX_M_IOCTL 12
+#define NX_M_SIG 14
 #define NX_MXLSTN 0x7801
 #define NX_MXNBLK 0x7802
 /* Read records have a six-byte header, inline payload, and two-byte alignment.
@@ -40,11 +42,13 @@
 struct nx_mx_read { uint16_t index, count, ccount; };
 struct nx_mx_write { uint16_t index, count; int16_t ccount; uint16_t reserved; const void *data; };
 struct nx_mx_control { uint16_t code, value; };
+struct nx_mx_ioctl { uint16_t code, command; uint8_t data[8]; };
+_Static_assert(sizeof(struct nx_mx_ioctl)==12,"mpx ioctl ABI");
 _Static_assert(sizeof(struct nx_mx_read)==6,"mpx read ABI");
 _Static_assert(sizeof(struct nx_mx_write)==16,"mpx write ABI");
 _Static_assert(sizeof(struct nx_mx_control)==4,"mpx control ABI");
 struct nx_mx_args { const char *name; int32_t command; int32_t arg[3]; };
 _Static_assert(sizeof(struct nx_mx_args)==24,"mpx argument ABI");
 /* Syscall 56(command, &args). Indices are zero-extended 16-bit values:
- * negative long results remain reserved for native errno. Wrappers: task 67. */
+ * negative long results remain reserved for native errno. V7 C wrappers are in <sys/mx.h>. */
 #endif

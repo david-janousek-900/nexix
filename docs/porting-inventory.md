@@ -286,5 +286,6 @@ join/extract/detach and descriptor/inode lifecycle from `usr/sys/dev/mx1.c`,
 `mx2.c`, `usr/sys/h/mx.h` and `usr/man/man2/mpx.2`.
 See the [native contract and tests](multiplexor.md). Task 66 implements
 data/control records, bounded queues, flow control,
-wakeups and named-open/listener/attach handshakes. TTY integration and libc
-wrappers remain 67. This does not complete the kernel or libc inventory components.
+wakeups and named-open/listener/attach handshakes. Task 67 adds COM1 TTY
+bridging, process-group/signal controls, ioctl request/reply and twelve libc
+exports through `<sys/mx.h>`. This does not complete the kernel or libc inventory components.

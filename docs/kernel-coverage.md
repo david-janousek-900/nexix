@@ -26,7 +26,7 @@ contracts; task 355 and task 359 close whole-distribution integration.
 | sig | V7 signals, saved registers/FP frames and native ELF core dumps | Core policy/format implemented by 52; stop/wait/register access implemented by 57; memory changes and stepping implemented by 58 |
 | pipe | Native bounded pipes, sleep/wakeup, SIGPIPE and descriptor lifetime | Existing files tests; consumer acceptance remains distribution-wide |
 | acct | Process exit integration point | Accounting records, privileges, storage errors 56 |
-| prim/mx1/mx2/fakemx | Native group/channel ownership, record I/O, bounded queues, flow control and open notifications | Ownership/data implemented by 65–66; TTY/libc 67 remain; historical optional stub does not satisfy functionality |
+| prim/mx1/mx2/fakemx | Native group/channel ownership, record I/O, bounded queues, flow control and open notifications | Ownership/data/TTY bridging and libc implemented by 65–67; independent terminals remain 89–93; historical optional stub does not satisfy functionality |
 | tty/dc/dh/dz/kl/partab | COM1 cooked/raw/cbreak, process groups and supported parity/tab flags | Terminal equivalents and TANDEM/LCASE/delay/parity contracts 74; independent ports 89–93 |
 | pk0–pk3 | Serial/TTY integration points only | V7 serial packet discipline 68 |
 | dn/dhdm/dhfdm/du | Serial integration point only | Modem/dial control 75 |
@@ -59,7 +59,7 @@ not be treated as missing required features merely because they were stubs.
 | 51 | acct | 56 |
 | 52 | phys implemented | 64; native page windows, ownership and rollback |
 | 53 | lock implemented | 63; resident memory, V7 privilege and lifecycle rules |
-| 56 | mpx ownership and data/control implemented; TTY/libc pending | 65–66; remaining 67 |
+| 56 | mpx ownership, data/control, TTY bridging and libc implemented | 65–67; independent terminal hardware 89–93 |
 
 `ftime` currently uses libc's `time` path and returns zero milliseconds. A native
 clock snapshot is required; merely having a library symbol does not finish it.
