@@ -468,13 +468,15 @@
         "reference/v7/usr/sys/dev/cat.c"
       ],
       "native": [
-        "kernel/block.c",
-        "kernel/ide.c"
+        "kernel/v7/output.c",
+        "kernel/include/output.h",
+        "include/nexix/output.h",
+        "kernel/v7/files.c"
       ],
       "tasks": [
         76
       ],
-      "note": "Native device equivalent and its protocol/error/lifetime tests remain required; referenced files are integration points, not completed replacements."
+      "note": "Task 76 preserves exclusive C/A/T open and exact byte output through a synchronous pinned capture-file transport. Descriptor duplication/fork retain open ownership until final close; writes propagate storage errors and poison failed captures. Host fault injection and 16/128 MiB guest binary capture/lifetime/error acceptance replace PDP-11 ready/interrupt MMIO."
     },
     {
       "id": "printer",

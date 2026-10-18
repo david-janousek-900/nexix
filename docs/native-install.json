@@ -865,6 +865,15 @@
         "root": "programs",
         "path": "v7-wall.elf"
       }
+    },
+    {
+      "path": "/dev/cat",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 7680
     }
   ]
 }

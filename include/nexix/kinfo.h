@@ -21,6 +21,7 @@
 #define NX_KINFO_FILE_TAPE 7
 #define NX_KINFO_FILE_MEMORY 6U
 #define NX_KINFO_FILE_MODEM 8U
+#define NX_KINFO_FILE_OUTPUT 9U
 /* Process states and flags preserve V7's meanings, independent of private layouts. */
 #define NX_KPROC_SLEEP 1U
 #define NX_KPROC_WAIT 2U

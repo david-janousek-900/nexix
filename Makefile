@@ -1466,3 +1466,26 @@ test-runtime-equivalent: build/nexix.iso build/runtime-equivalent.elf stage
 test-mkconf:
 	$(PYTHON) tests/test_mkconf.py
 test-unit: test-mkconf
+
+build/output.o: kernel/v7/output.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+OBJECTS += build/output.o
+build/nexix.elf: build/output.o
+-include build/output.d
+
+build/typesetter.o: tests/typesetter.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/typesetter.elf: build/crt0.o build/typesetter.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o,$^) $(filter %.a,$^) -o $@
+.PHONY: test-typesetter
+test-typesetter: build/nexix.iso build/typesetter.elf stage
+	$(PYTHON) tools/typesetter_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/typesetter_smoke.py $(QEMU) build/nexix.iso 128M
+
+build/output-unit-test: tests/output-unit.c kernel/v7/output.c | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude $^ -o $@
+.PHONY: test-output-unit
+test-output-unit: build/output-unit-test
+	./build/output-unit-test
+test-unit: test-output-unit
+test-typesetter: test-output-unit

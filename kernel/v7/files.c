@@ -9,6 +9,7 @@
 #include "storage.h"
 #include "tape.h"
 #include "memdev.h"
+#include "output.h"
 #include "modem.h"
 #include "namespace.h"
 #include "accounting.h"
@@ -22,6 +23,8 @@ struct pipe_buffer { bool active; unsigned readers, writers, head, size; uint8_t
 static struct pipe_buffer pipes[NPIPE];
 static bool modem_file(const struct file *f)
 {return f->f_inode && (f->f_inode->i_mode&V7_IFMT)==V7_IFCHR && modem_matches(f->f_inode->i_un.i_rdev);}
+static bool output_file(const struct file *f)
+{return f->f_inode && (f->f_inode->i_mode&V7_IFMT)==V7_IFCHR && output_matches(f->f_inode->i_un.i_rdev);}
 static struct file table[V7_NFILE];
 static struct inode inodes[V7_NINODE];
 static struct v7fs *root;
@@ -126,6 +129,7 @@ static int file_put(struct file *f)
     else if (f->f_private && !(f->f_flag & V7_FPIPE)) {
         if(f->f_flag & FILE_STORAGE) storage_close(f->f_private);
         else if(f->f_flag & FILE_TAPE) error=tape_close(f->f_private);
+        else if(output_file(f)) error=output_close(f->f_private);
         else if(modem_file(f))modem_close(f->f_private);
         else tty_close(f->f_private);
     }
@@ -187,7 +191,7 @@ static struct inode *cached_inode(struct fs_node ino)
 static int text_write_check(struct fs_node ino)
 {
     struct inode *inode=cached_inode(ino);
-    if(inode && tape_image_busy(inode))return -NX_EBUSY;
+    if(inode && (tape_image_busy(inode)||output_image_busy(inode)))return -NX_EBUSY;
     if(!inode||!(inode->i_flag&V7_ITEXT))return 0;
     int error=text_evict(inode);if(error)return error;
     return inode->i_count&&(inode->i_flag&V7_ITEXT)?-NX_ETXTBSY:0;
@@ -316,7 +320,7 @@ int files_core_begin(struct inode **result)
 int files_core_write(struct inode *inode,uint64_t offset,const void *bytes,size_t size)
 {
     if(!valid_inode(inode)||offset>INT64_MAX)return -NX_EINVAL;
-    if(tape_image_busy(inode))return -NX_EBUSY;
+    if((tape_image_busy(inode)||output_image_busy(inode)))return -NX_EBUSY;
     size_t done=0;int error=v7fs_write(node_volume(inode_node(inode)),inode->i_number,(int64_t)offset,bytes,size,&done);
     return error?error:done!=size?-NX_EIO:0;
 }
@@ -372,11 +376,15 @@ static int open_path(struct user *u, uintptr_t address, uint64_t flags, uint64_t
     }
     bool multiplexor=type==V7_IFCHR && (disk.addr[0]>>8)==NX_MX_MAJOR;
     if(!error && multiplexor)error=mpx_open(f,path,u);
+    bool output=type==V7_IFCHR && output_matches(disk.addr[0]);
+    if(!error && output){
+        error=output_open(disk.addr[0],access,&f->f_private);
+    }
     bool memory=type==V7_IFCHR && memdev_matches(disk.addr[0]);
     if(!error && memory)error=memdev_open(disk.addr[0],u);
     bool modem=type==V7_IFCHR && modem_matches(disk.addr[0]);
     if(!error && modem)error=modem_open(disk.addr[0],u,&f->f_private);
-    if (!error && !storage && !tape && !multiplexor && !memory && !modem && type == V7_IFCHR) {
+    if (!error && !storage && !tape && !multiplexor && !memory && !modem && !output && type == V7_IFCHR) {
         struct tty *tty;
         error = tty_open(disk.addr[0], u, &tty);
         if (!error) f->f_private = tty;
@@ -492,6 +500,7 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
                 write ? V7FS_MTIME | V7FS_CTIME : V7FS_ATIME);
             if (error) return error;
         }
+        if(output_file(f))return output_io(f->f_private,vm,address,count,write);
         if(modem_file(f))return modem_io(f->f_private,vm,address,count,write);
         return tty_io(f->f_private, vm, address, count, write);
     }
@@ -703,6 +712,7 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
             return tape_ioctl(f->f_private,&p->p_vm,request,argument,&f->f_offset);
         }
         if(f->f_flag&V7_FMP)return mpx_ioctl(f,&p->p_vm,request,argument);
+        if(output_file(f))return output_ioctl(f->f_private,&p->p_vm,request,argument);
         if(modem_file(f))return modem_ioctl(f->f_private,&p->p_vm,request,argument);
         if (!f->f_private || (f->f_flag & (V7_FPIPE|V7_FMP)) || (f->f_flag & FILE_STORAGE)) return -NX_ENOTTY;
         return tty_ioctl(f->f_private, &p->p_vm, request, argument);
@@ -762,6 +772,7 @@ bool files_info(unsigned i,struct nx_kinfo_file *r)
         (f->f_flag&FILE_TAPE)?NX_KINFO_FILE_TAPE:
         (f->f_flag&V7_FMP)?NX_KINFO_FILE_MPX:
         modem_file(f)?NX_KINFO_FILE_MODEM:
+        output_file(f)?NX_KINFO_FILE_OUTPUT:
         f->f_private?NX_KINFO_FILE_TTY:
         f->f_inode && (f->f_inode->i_mode&V7_IFMT)==V7_IFCHR && memdev_matches(f->f_inode->i_un.i_rdev)?
         NX_KINFO_FILE_MEMORY:NX_KINFO_FILE_REGULAR;
