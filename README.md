@@ -127,8 +127,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 2 partial, 1 prototype and 203 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **366 tracking tasks: 81 done, 2 in progress
-and 283 to do** after task 90. These counts are a work breakdown, not an
+The expanded roadmap below has **366 tracking tasks: 82 done, 2 in progress
+and 282 to do** after task 91. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -317,7 +317,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 88 | Resolve missing referenced support inputs | To do | Track bc lib.b and optional lex nrform/ebcform individually; recover or obtain explicit disposition |
 | 89 | Separate per-terminal queues, settings and ownership | Done | Independent TTY queues/settings/ownership with bound transports; `make test-tty-lines-unit`; COM1 controller/modem/mpx regressions and QEMU TTY/packet acceptance; Git history |
 | 90 | COM2 hardware initialization and interrupt routing | Done | Detected COM2 16550 transport at 0x2f8, IRQ3/vector 35, independent TX ring, RX errors and modem routing; `make test-serial-secondary` at 16/128 MiB; COM1 TTY/rootfs/packet regressions; Git history |
-| 91 | Independent controlling terminals and per-TTY signals | To do | Old 26; cooked/raw, EOF, flow control and groups |
+| 91 | Independent controlling terminals and per-TTY signals | Done | Per-line controlling terminals/groups and V7 fork/exec/close lifecycle validated on both UARTs; `make test-terminal-sessions` at 16/128 MiB; cooked editing, empty lines, EOF, SIGINT and XOFF/XON isolation; [contract](docs/multi-terminal.md); Git history |
 | 92 | Package ttyS1 and terminal configuration | To do | Old 26; console alias and /dev/tty routing |
 | 93 | Two-terminal end-to-end acceptance | To do | Old 26; concurrent input/output and resource recovery |
 

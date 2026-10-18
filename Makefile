@@ -1259,3 +1259,13 @@ test-unit: test-serial-secondary-unit
 test-serial-secondary: test-serial-secondary-unit rootfs iso build/serial-secondary-guest.elf
 	$(PYTHON) tools/serial_secondary_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/serial_secondary_smoke.py $(QEMU) build/nexix.iso 128M
+
+# Task 91: controlling-terminal and signal/flow isolation on both real UARTs.
+build/terminal-sessions.o: tests/terminal-sessions.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/terminal-sessions.elf: build/crt0.o build/terminal-sessions.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+.PHONY: test-terminal-sessions
+test-terminal-sessions: rootfs iso build/terminal-sessions.elf
+	$(PYTHON) tools/terminal_sessions_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/terminal_sessions_smoke.py $(QEMU) build/nexix.iso 128M
