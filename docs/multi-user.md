@@ -192,3 +192,12 @@ and empty-record behavior, bounds fixed-width field comparisons/copies and check
 time/stream errors. `make test-who` checks two live sessions, each terminal's
 identity, no-TTY fallback, explicit utmp and nonterminated eight-byte records,
 missing files and logout at 16/128 MiB.
+
+Task 106 installs V7 `/bin/write`, retaining utmp lookup, explicit tty selection,
+source headers/bells, message permission checks, local `!` shell escapes and the
+`EOF` termination marker. Native handlers use the signal ABI; fixed-width records
+and tty basenames are bounded, device type/mode is checked before opening, format
+strings are explicit, and a 128-byte escape reserves its terminator. Native write
+errors are checked. `make test-write` exchanges real messages between Alice and
+Bob at 16/128 MiB, checks mesg denial/enable, invalid names/usage, explicit tty,
+the full escape-buffer boundary, EOF and Ctrl-C, then verifies both shells live.
