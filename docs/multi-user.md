@@ -48,3 +48,10 @@ fail through the existing TTY contract.
 16/128 MiB. It checks 115200/9600 reporting, erase/kill, raw and echo changes on
 COM2 while COM1 settings remain unchanged, plus missing operands, unknown modes
 and a regular-file descriptor. Both stderr and exit status are checked.
+
+Task 96 installs `/bin/tty` from the preserved V7 `usr/src/cmd/tty.c`. Its behavior
+is unchanged: identify fd 0, print `not a tty` and exit 1 when identification
+fails, and suppress output with `-s` while retaining that status. The native
+stdio declaration is included explicitly. `make test-tty-command` uses the
+component guest harness at 16/128 MiB to check COM1 (`/dev/console`), COM2
+(`/dev/ttyS1`), output through a pipe, regular-file/pipe input, and silent mode.

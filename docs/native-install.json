@@ -735,6 +735,19 @@
         "root": "programs",
         "path": "v7-stty.elf"
       }
+    },
+    {
+      "path": "/bin/tty",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.tty",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-tty.elf"
+      }
     }
   ]
 }

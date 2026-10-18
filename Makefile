@@ -1313,3 +1313,8 @@ build/stty-command.elf: build/crt0.o build/stty-command.o build/libc.a user/user
 test-stty: rootfs iso build/stty-command.elf
 	$(PYTHON) tools/stty_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/stty_smoke.py $(QEMU) build/nexix.iso 128M
+
+.PHONY: test-tty-command
+test-tty-command: rootfs iso
+	$(PYTHON) tools/guest_acceptance.py tests/guest/tty.json --qemu $(QEMU) --ram 16M --report build/tty-command-16M.json
+	$(PYTHON) tools/guest_acceptance.py tests/guest/tty.json --qemu $(QEMU) --ram 128M --report build/tty-command-128M.json
