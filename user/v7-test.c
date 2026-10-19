@@ -53,7 +53,7 @@ int main(int argc,char **argv)
                 "data\nmore\n/tmp/v7-link /tmp/v7-one /tmp/v7-two\npipe\na\nb\nyes\nsub\n/tmp\n",0);
     if(error)return error;
     error=shell("ln /hello /hello 2>&1", "ln: File exists\n",1);if(error)return error;
-    error=shell("ls /bin; echo short-name", "exec-test\nlibc-test\nshort-name\n",0);if(error)return error;
+    error=shell("ls -1 /bin; echo short-name", "exec-test\nlibc-test\nshort-name\n",0);if(error)return error;
     CHECK(printf("NEXIX_V7_USER_PROGRAM_OK\n")>0);
     return 0;
 }
