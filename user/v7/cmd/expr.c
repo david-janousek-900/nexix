@@ -73,7 +73,7 @@ int main(int argc,char **argv)
 #define GETC()		(*sp++)
 #define PEEKC()		(*sp)
 #define UNGETC(c)	(--sp)
-#define RETURN(c)	return
+#define RETURN(c)	return(c)
 #define ERROR(c)	errxx(c)
 
 
@@ -95,9 +95,9 @@ register char *p;
 		if(nbra == 1) {
 			p = braslist[0];
 			num = braelist[0] - p;
-			if(num >= (int)sizeof(Mstring[0])) yyerror("RE error");
+			if(num < 0 || num >= (int)sizeof(Mstring[0])) yyerror("RE error");
             strncpy(Mstring[0], p, num);
-			if(num >= (int)sizeof(Mstring[0])) yyerror("RE error");
+			if(num < 0 || num >= (int)sizeof(Mstring[0])) yyerror("RE error");
             Mstring[0][num] = '\0';
 		}
 		return(loc2-s);
@@ -172,11 +172,12 @@ char *instring, *endbuf;
 	else
 		UNGETC(c);
 	for (;;) {
-		if (ep >= endbuf)
+		if (ep > endbuf - 2)
 			ERROR(50);
 		if((c = GETC()) != '*' && ((c != '\\') || (PEEKC() != '{')))
 			lastep = ep;
 		if (c == eof) {
+            if(bracketp != bracket)ERROR(42);
 			*ep++ = CEOF;
 			RETURN(ep);
 		}

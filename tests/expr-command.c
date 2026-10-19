@@ -19,5 +19,10 @@ int main(void)
  command(CMD("/bin/expr","1","+"),2,"","syntax error\n");
  command(CMD("/bin/expr","abc",":","["),2,"","RE error\n");
  command(CMD("/bin/expr","9223372036854775807","+","1"),2,"","arithmetic overflow\n");
+ command(CMD("/bin/expr","abc",":","\\("),2,"","RE error\n");
+ char pattern[257];memset(pattern,'.',255);pattern[255]='a';pattern[256]=0;
+ command(CMD("/bin/expr","abc",":",pattern),2,"","RE error\n");
+ char subject[201];memset(subject,'a',200);subject[200]=0;
+ command(CMD("/bin/expr",subject,":","\\(a*\\)"),2,"","RE error\n");
  puts("EXPR_OK");return 0;
 }
