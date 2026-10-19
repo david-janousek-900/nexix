@@ -6,7 +6,7 @@ Nexix ports UNIX Seventh Edition (V7) to x86_64 and adds features including TCP/
 It preserves V7 source and behavior where practical, with native ELF64 programs
 rebuilt from source rather than PDP-11 binary compatibility.
 
-Fresh Nexix installations boot to `login:` on COM1 and COM2. The kernel mounts a
+Fresh Nexix installations boot to `login:` on VGA/PS/2, COM1 and COM2. The kernel mounts a
 persistent IDE-backed V7 filesystem and launches `/etc/init` as PID 1. Init runs
 rc and supervises the rebuilt V7 getty/login and Bourne shell; native ELF64
 programs execute from filesystem paths. See [booting Nexix](docs/booting.md).
@@ -56,7 +56,8 @@ make run-tty
 Host GCC/binutils are used by default. `make build` creates the kernel, boot ISO
 and working disk without starting QEMU; existing working disks are preserved.
 `make run` builds as needed and starts QEMU. Neither command needs variable overrides.
-COM1 is attached to that terminal; run `make terminal` in another host terminal
+For a graphical VGA/keyboard login, run `make run-vga`; see
+[virt-manager and VGA setup](docs/vga-console.md). COM1 is attached to that terminal; run `make terminal` in another host terminal
 to connect to COM2. Ctrl-] disconnects the second terminal. See
 [account configuration](docs/multi-user.md) for the prepared development users. Fresh full disks
 include `/dev/ttyS1` and enable login on both lines. See
@@ -142,8 +143,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 3 partial, 1 prototype and 188 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **371 tracking tasks: 111 done, 0 in progress
-and 260 to do** after task 88. Tasks **1–108 are complete**. These counts are a work breakdown, not an
+The expanded roadmap below has **371 tracking tasks: 112 done, 0 in progress
+and 259 to do** after task 88. Tasks **1–108 are complete**. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -726,7 +727,7 @@ virtual-console switching and scrollback are outside this work.
 | 367 | Implement BIOS VGA text output | Done | Git history; `make test-vga-unit`; 80×25 display, scrolling, hardware cursor, wrapping and control characters; GRUB text mode and protected kernel mapping; host display tests |
 | 368 | Implement PS/2 keyboard input | Done | Git history; `make test-keyboard-unit`; IRQ1, bounded controller initialization, US layout, modifiers and control keys; safely consume release/extended scan codes; host decoding/timeout tests; initialization failure preserves serial access |
 | 369 | Integrate independent VGA terminal | Done | Git history; `make test-tty-lines-unit` and 128 MiB QEMU VGA/three-session acceptance; Third TTY, /dev/tty0 (major 1, minor 2), getty/login and session accounting; reuse line discipline and controlling-terminal behavior; preserve COM1, COM2 and /dev/console |
-| 370 | Package and document graphical console | To do | Fresh-image device/getty configuration, kernel driver build integration, make run-vga, virt-manager BIOS/standard VGA/PS/2 settings and existing-disk setup instructions; preserve make run and working disks |
+| 370 | Package and document graphical console | Done | Git history; `make test-mkconf test-install-unit`; deterministic gzip round trip and packaged 16 MiB VGA login acceptance; [setup](docs/vga-console.md); Fresh-image device/getty configuration, kernel driver build integration, make run-vga, virt-manager BIOS/standard VGA/PS/2 settings and existing-disk setup instructions; preserve make run and working disks |
 | 371 | Validate graphical console management | To do | Automated injected-keyboard and VGA-display login/shell tests at 16/128 MiB; hidden passwords, editing, Ctrl-C/Ctrl-D and getty restart; concurrent serial isolation and terminal identity; affected regressions and manual virt-manager acceptance |
 
 ### Execution priorities and release acceptance

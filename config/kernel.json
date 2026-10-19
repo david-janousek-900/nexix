@@ -3,5 +3,14 @@
   "architecture": "x86_64",
   "root": "ide-with-bootstrap-fallback",
   "memory": "resident",
-  "drivers": ["console", "terminal2", "ide", "rtc", "fpu"]
+  "drivers": [
+    "console",
+    "terminal2",
+    "vga",
+    "keyboard",
+    "local-console",
+    "ide",
+    "rtc",
+    "fpu"
+  ]
 }

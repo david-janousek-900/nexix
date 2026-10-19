@@ -7,8 +7,8 @@ list in the actual kernel link. The generated file is rebuilt when the input
 or generator changes and is recreated after `make clean`. Driver source files
 and normal object prerequisites retain dependency-file tracking.
 
-The supported profile is x86_64 with COM1, COM2, IDE, RTC and x87/SSE2, IDE root
-with the fixed bootstrap fallback, and resident memory. All five drivers are
+The supported profile is x86_64 with COM1, COM2, VGA, PS/2 keyboard, local TTY, IDE, RTC and x87/SSE2, IDE root
+with the fixed bootstrap fallback, and resident memory. All eight drivers are
 required by this profile: silently dropping a driver would leave configuration
 claims inconsistent with kernel callers and the distribution. Unknown keys,
 architectures, drivers, duplicates, omitted drivers and unsupported root/swap

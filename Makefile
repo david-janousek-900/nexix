@@ -103,9 +103,9 @@ build/nexix.elf: $(OBJECTS) kernel/arch/x86_64/linker.ld
 check: build/nexix.elf
 	$(PYTHON) tools/check_kernel.py $<
 
-build/nexix.iso: build/nexix.elf boot/grub.cfg
+build/nexix.iso: build/nexix.elf boot/grub.cfg tools/pack_kernel.py
 	mkdir -p build/iso/boot/grub
-	cp build/nexix.elf build/iso/boot/nexix.elf
+	$(PYTHON) tools/pack_kernel.py build/nexix.elf build/iso/boot/nexix.elf
 	cp boot/grub.cfg build/iso/boot/grub/grub.cfg
 	grub-mkrescue -o $@ build/iso
 
@@ -122,15 +122,15 @@ terminal:
 smoke: check build/test-selftest.iso
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso
 
-build/test-%.iso: build/nexix.elf boot/grub.cfg
+build/test-%.iso: build/nexix.elf boot/grub.cfg tools/pack_kernel.py
 	mkdir -p build/iso-$*/boot/grub
-	cp build/nexix.elf build/iso-$*/boot/nexix.elf
+	$(PYTHON) tools/pack_kernel.py build/nexix.elf build/iso-$*/boot/nexix.elf
 	sed 's|/boot/nexix.elf|/boot/nexix.elf test=$*|' boot/grub.cfg > build/iso-$*/boot/grub/grub.cfg
 	grub-mkrescue -o $@ build/iso-$*
 
-build/test-memory.iso: build/nexix.elf boot/grub.cfg
+build/test-memory.iso: build/nexix.elf boot/grub.cfg tools/pack_kernel.py
 	mkdir -p build/iso-memory/boot/grub
-	cp build/nexix.elf build/iso-memory/boot/nexix.elf
+	$(PYTHON) tools/pack_kernel.py build/nexix.elf build/iso-memory/boot/nexix.elf
 	$(PYTHON) -c 'from pathlib import Path; Path("build/iso-memory/boot/reservation.bin").write_bytes(bytes([0xa5]) * 8193)'
 	sed 's|/boot/nexix.elf|/boot/nexix.elf test=memory|' boot/grub.cfg | sed '/multiboot2/a\    module2 /boot/reservation.bin allocator-test' > build/iso-memory/boot/grub/grub.cfg
 	grub-mkrescue -o $@ build/iso-memory
@@ -1579,10 +1579,11 @@ test-keyboard-unit: build/keyboard-test
 	./build/keyboard-test
 test-unit: test-keyboard-unit
 
-OBJECTS += build/keyboard.o
-build/nexix.elf: build/keyboard.o
 
 build/local_console.o: kernel/local_console.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
-OBJECTS += build/vga.o build/local_console.o
-build/nexix.elf: build/vga.o build/local_console.o
+
+.PHONY: run-vga
+run-vga: build
+	$(PYTHON) tools/serial_terminal.py --prepare build/ttyS1
+	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -rtc base=utc -boot d -drive "file=$(DISK_IMAGE),format=raw,if=ide,index=0" -cdrom build/nexix.iso -vga std -display gtk -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -serial pipe:build/ttyS1 -mon chardev=console,mode=readline -no-reboot
