@@ -1592,3 +1592,8 @@ run-vga: build
 test-vga: test-vga-unit test-keyboard-unit test-tty-lines-unit iso rootfs
 	$(PYTHON) tools/vga_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/vga_smoke.py $(QEMU) build/nexix.iso 128M
+
+.PHONY: test-basename
+test-basename: iso rootfs
+	$(PYTHON) tools/guest_acceptance.py tests/guest/basename.json --qemu $(QEMU) --ram 16M --report build/basename-16M.json
+	$(PYTHON) tools/guest_acceptance.py tests/guest/basename.json --qemu $(QEMU) --ram 128M --report build/basename-128M.json

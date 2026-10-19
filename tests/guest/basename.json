@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "single_user": true,
+  "cases": [
+    {
+      "id": "basename",
+      "component": "cmd.basename",
+      "steps": [
+        {
+          "command": "basename /usr/bin/echo",
+          "stdout": "echo\n",
+          "status": 0
+        },
+        {
+          "command": "basename /a/name.c .c",
+          "stdout": "name\n",
+          "status": 0
+        },
+        {
+          "command": "basename name.x .c",
+          "stdout": "name.x\n",
+          "status": 0
+        },
+        {
+          "command": "basename /a/",
+          "stdout": "\n",
+          "status": 0
+        },
+        {
+          "command": "basename /",
+          "stdout": "\n",
+          "status": 0
+        },
+        {
+          "command": "basename name name",
+          "stdout": "\n",
+          "status": 0
+        },
+        {
+          "command": "basename ''",
+          "stdout": "\n",
+          "status": 0
+        },
+        {
+          "command": "basename",
+          "stdout": "\n",
+          "status": 1
+        }
+      ]
+    }
+  ]
+}

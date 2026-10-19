@@ -134,17 +134,17 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 22 native programs are
-installed: **init, sh, echo, cat, ls, pwd, cp, ln, rm, date, touch, stty, tty, mesg, getty, login, passwd, su, newgrp, who, write and wall**.
+to multi-user V7 login with persistent IDE storage. 23 native ELF programs are
+installed; the complete list and destinations are in [the installation manifest](docs/native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](docs/development-interfaces.md).
 The inventory accounts for **217 components, 2,144 distribution files and
-35 supporting/platform requirements**. Its component statuses are 25 implemented,
-3 partial, 1 prototype and 188 not ported; importing reference inputs does not
+35 supporting/platform requirements**. Its component statuses are 26 implemented,
+3 partial, 1 prototype and 187 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **371 tracking tasks: 113 done, 0 in progress
-and 258 to do** after task 88. Tasks **1–108 and 367–371 are complete**. These counts are a work breakdown, not an
+The expanded roadmap below has **371 tracking tasks: 114 done, 0 in progress
+and 257 to do** after task 88. Tasks **1–108 and 367–371 are complete**. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -376,7 +376,7 @@ coverage and installation remain subject to later acceptance tasks.
 
 | Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
-| 119 | Port basename | To do | Native command fixtures, failure statuses and installation |
+| 119 | Port basename | Done | Retained source; native build/install, error/status and guest fixtures; `make test-basename` at 16/128 MiB; [contract](docs/essential-commands.md); Git history |
 | 120 | Port cal | To do | Native command fixtures, failure statuses and installation |
 | 121 | Port chgrp | To do | Native command fixtures, failure statuses and installation |
 | 122 | Port chmod | To do | Native command fixtures, failure statuses and installation |
