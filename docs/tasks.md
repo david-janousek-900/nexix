@@ -10,17 +10,17 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 43 native ELF programs are
+to multi-user V7 login with persistent IDE storage. 44 native ELF programs are
 installed; the complete list and destinations are in [the installation manifest](native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
 The inventory accounts for **217 components, 2,144 distribution files and
-35 supporting/platform requirements**. Its component statuses are 49 implemented,
-3 partial, 1 prototype and 164 not ported; importing reference inputs does not
+35 supporting/platform requirements**. Its component statuses are 50 implemented,
+3 partial, 1 prototype and 163 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **371 tracking tasks: 138 done, 0 in progress
-and 233 to do**. Tasks **1–108, 119–138, 145–146, 160, 251, 357, 367–371 are complete**. These counts are a work breakdown, not an
+The expanded roadmap below has **371 tracking tasks: 139 done, 0 in progress
+and 232 to do**. Tasks **1–108, 119–139, 145–146, 160, 251, 357, 367–371 are complete**. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -277,7 +277,7 @@ coverage and installation remain subject to later acceptance tasks.
 
 | Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
-| 139 | Port cmp | To do | Source-defined behavior, byte fixtures and error cases |
+| 139 | Port cmp | Done | Git history; [native command contract](text-commands.md); retained binary comparison and V7 output, checked skip counts and native read errors; ASan/UBSan plus binary/pipe/status acceptance at 16/128 MiB |
 | 140 | Port col | To do | Source-defined behavior, byte fixtures and error cases |
 | 141 | Port comm | To do | Source-defined behavior, byte fixtures and error cases |
 | 142 | Port diffh | To do | Source-defined behavior, byte fixtures and error cases |

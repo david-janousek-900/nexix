@@ -1797,3 +1797,12 @@ test-tail: test-tail-unit multi-iso rootfs
 	python3 tools/tail_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	python3 tools/tail_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-tail
+
+.PHONY: test-cmp-unit test-cmp
+test-cmp-unit:
+	python3 tests/cmp.py
+test-unit: test-cmp-unit
+test-cmp: test-cmp-unit multi-iso rootfs
+	python3 tools/cmp_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	python3 tools/cmp_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-cmp

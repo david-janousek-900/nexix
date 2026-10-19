@@ -2214,6 +2214,19 @@
         "path": "v7-tail.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/cmp",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.cmp",
+      "source": {
+        "root": "programs",
+        "path": "v7-cmp.elf"
+      },
+      "format": "elf"
     }
   ]
 }

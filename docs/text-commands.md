@@ -100,3 +100,18 @@ detection after opening a file, and empty reverse output.
 `make test-tail` checks files and pipes, byte/block positions, reverse output,
 partial lines, overflow and ring boundaries with ASan/UBSan, then boots the
 installed utility at 16 and 128 MiB.
+
+## cmp (task 139)
+
+`/bin/cmp [-s] [-l] file1 file2 [skip1 [skip2]]` compares binary bytes.
+`-` as the first filename reads standard input. Default output identifies the
+first differing one-based byte and line; `-l` lists every difference as a byte
+position followed by both octal byte values. `-s` suppresses diagnostics.
+Status is 0 for equality, 1 for different contents or premature EOF and 2 for
+an argument, open or read error. Diagnostics retain their V7 stdout destination.
+
+Skips are decimal, or octal when starting with zero. Invalid digits, negative
+counts and native-long overflow are rejected with status 2 rather than wrapped
+or silently ignored. Native byte and line counters are 64-bit. `make test-cmp`
+checks binary data, EOF, stdin, skips and statuses with sanitizers and in
+16/128 MiB guests.
