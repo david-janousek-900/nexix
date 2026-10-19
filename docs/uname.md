@@ -7,7 +7,7 @@ option order; duplicates print a field once. `-a` selects all five fields.
 | Flag | Field | Current value |
 | --- | --- | --- |
 | `-s` | Kernel name | `Nexix` |
-| `-n` | Node name | `nexix` |
+| `-n` | Node name | `nexix.localdomain` on fresh installations |
 | `-r` | Kernel release | `0.1.0` |
 | `-v` | Kernel version | `development` |
 | `-m` | Machine architecture | `x86_64` |
@@ -23,11 +23,11 @@ in `<sys/utsname.h>`. Native syscall 74 copies five fixed, NUL-terminated
 errors to -1/errno. Invalid, unmapped or read-only destinations fail with
 EFAULT. The query requires no privilege and does not read the host system.
 
-`kernel/include/version.h` owns the reproducible kernel identity. The node
-name is fixed until a separate hostname configuration facility is implemented;
-no Linux compatibility or networking is implied. Compile timestamps are not
-included. Both the public header and shared record layout are installed in the
-full distribution's development headers.
+`kernel/include/version.h` owns the reproducible kernel identity and fallback
+node name. Init loads the full configured node name from `/etc/hostname` before
+starting sessions; root can change it with [`hostname`](hostname.md). Compile
+timestamps are not included. Both the public header and shared record layout
+are installed in the full distribution's development headers.
 
 `make test-uname` runs sanitizer tests for flags and failures, then boots the
 installed command and API fixture at 16 and 128 MiB as root and Alice. The API

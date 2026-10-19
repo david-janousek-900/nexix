@@ -15,7 +15,7 @@ The bootstrap image includes:
 
 - `/etc/init` and `/bin/sh`.
 - `/bin/echo`, `cat`, `ls`, `pwd`, `cp`, `ln`, `rm`, `date`, and `touch`.
-- `/etc/rc`, `/etc/ttys`, `/etc/passwd`, and `/.profile` from `rootfs/bootstrap/`.
+- `/etc/rc`, `/etc/ttys`, `/etc/passwd`, `/etc/hostname`, `/etc/profile`, and `/.profile` from `rootfs/bootstrap/`.
 - Empty `/etc/utmp` and `/usr/adm/wtmp` accounting files.
 - `/dev/console` and `/dev/ttyS0`, two names for the same COM1 device inode,
   plus `/dev/tty` for the controlling terminal and `/dev/null` for EOF/discard I/O.
@@ -28,8 +28,9 @@ All files belong to root. Directories/programs have mode 0755, configuration
 and accounting files 0644, terminal devices 0600, and `/dev/null` 0666. Directory link counts,
 hard links, free blocks and free inodes are initialized. File timestamps are
 zero so identical source binaries and configuration produce identical bytes.
-The root profile exports PATH=/bin and HOME=/. The passwd file describes root;
-login and getty are not implemented. `/etc/ttys` is empty to disable getty
+The root profile exports PATH=/bin and HOME=/root and sets the
+[identity prompt](hostname.md). The passwd file describes root;
+login and getty are excluded from this recovery image. `/etc/ttys` is empty to disable getty
 entries; initial operation will use init's single-user shell.
 
 `tools/mk_rootfs.py` reuses the disk encoder from `tools/mk_v7fs.py` while
@@ -54,3 +55,6 @@ Normal boot mounts an IDE working copy of the volume, or a RAM copy when
 no primary master is attached, and launches init and
 the single-user shell; see [booting.md](booting.md).
 Interactive acceptance and persistent IDE storage complete tasks 19 and 20.
+
+Init loads `/etc/hostname` before recovery starts. The `hostname` command itself
+is installed in the full IDE distribution, alongside other non-bootstrap tools.

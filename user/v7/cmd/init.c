@@ -1,4 +1,5 @@
 #include "../session.h"
+#include "../hostname-file.h"
 #include <signal.h>
 #include <sys/types.h>
 #include <utmp.h>
@@ -8,6 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+extern char **environ;
+static char *recovery_environment[]={"HOME=/root","PATH=/bin",0};
 static void reset(int);
 static void merge_signal(int);
 int merge(void);
@@ -51,6 +54,12 @@ main()
 	if (getpid() != 1) {
 		fprintf(stderr, "init: must be pid 1\n");
 		exit(1);
+	}
+	/* Load before the first recovery shell or supervised login. */
+	{
+		char name[NX_UTS_FIELD_SIZE];
+		if(read_hostname_file("/etc/hostname",name)==0)
+			(void)sethostname(name,strlen(name));
 	}
 	(void)v7_accounting_reset();
 	setjmp(sjbuf);
@@ -103,6 +112,7 @@ single()
 		dup(0);
 		if (!initial_boot)
 			write(1, "init: single-user recovery\n", 27);
+		environ=recovery_environment;
 		execl(shell, minus, (char *)0);
 		exit(0);
 	}

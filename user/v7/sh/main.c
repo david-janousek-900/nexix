@@ -34,6 +34,7 @@ main(c, v)
 	REG INT		rflag=ttyflg;
 
 	/* initialise storage allocation */
+	nexix_prompt_init();
 	stdsigs();
 	bloktop = heapbase = BLK(setbrk(0));
 	setbrk(BRKINCR);
@@ -71,6 +72,10 @@ main(c, v)
 
 	IF (beenhere++)==FALSE
 	THEN	/* ? profile */
+		IF *cmdadr=='-'
+		    ANDF (input=pathopen(nullstr, "/etc/profile"))>=0
+		THEN	exfile(rflag); flags &= ~ttyflg;
+		FI
 		IF *cmdadr=='-'
 		    ANDF (input=pathopen(nullstr, profile))>=0
 		THEN	exfile(rflag); flags &= ~ttyflg;
@@ -139,7 +144,7 @@ BOOL		prof;
 			THEN	prs(mailmsg)
 			FI
 			mailtime=statb.st_mtime;
-			prs(ps1nod.namval); alarm(TIMEOUT); flags |= waiting;
+			nexix_prompt(ps1nod.namval,output); alarm(TIMEOUT); flags |= waiting;
 		FI
 
 		trapnote=0; peekc=readc();

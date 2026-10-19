@@ -26,7 +26,7 @@ and original metadata to the recorded archive. See [source provenance](../refere
 ## Manifest contract
 
 The reference inventory still covers 217 historical components. Native-only
-additions are recorded separately: `cmd.uname` brings the total to 218.
+additions are recorded separately: `cmd.uname` and `cmd.hostname` bring the total to 219.
 `source_availability: native` requires nonempty `native_sources` outside
 `reference/`, and empty reference `sources`/`source_files`. Native additions
 also require installation outputs, tests and an explicit roadmap mapping.
@@ -63,7 +63,7 @@ also require installation outputs, tests and an explicit roadmap mapping.
 ## Implementation priorities
 
 Priorities guide implementation order, not release exclusions. The expanded
-372-task roadmap is in [tasks.md](tasks.md). RTC/timestamps/TZ are
+373-task roadmap is in [tasks.md](tasks.md). RTC/timestamps/TZ are
 tasks 22–24; kernel/libc work spans 25–82, terminals 89–93, and multi-user
 integration 94–108. Individual component ports have their own IDs in the
 [coverage map](roadmap-coverage.json); shared support is developed as needed.

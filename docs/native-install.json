@@ -2159,7 +2159,7 @@
       "component": "distribution.config",
       "source": {
         "root": "config",
-        "path": "profile"
+        "path": "user-profile"
       },
       "format": "data"
     },
@@ -2303,6 +2303,58 @@
       "source": {
         "root": "programs",
         "path": "dev-include/nexix/utsname.h"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/bin/hostname",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.hostname",
+      "source": {
+        "root": "programs",
+        "path": "v7-hostname.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/etc/hostname",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config",
+      "source": {
+        "root": "config",
+        "path": "etc/hostname"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/etc/profile",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config",
+      "source": {
+        "root": "config",
+        "path": "etc/profile"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/usr/include/nexix/hostname.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.headers",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/hostname.h"
       },
       "format": "data"
     }

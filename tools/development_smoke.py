@@ -6,7 +6,7 @@ qemu,iso,ram=sys.argv[1:4]
 artifacts={f'/tmp/devkit-{n}':f'devkit-{n}.elf' for n in ['crt0','fcrt0','mcrt0','fmcrt0']}
 artifacts.update({'/tmp/devkit-cat':'devkit-cat.elf','/tmp/exec-consumer':'exec-consumer.elf'})
 with private_guest(qemu,iso,ram,'development',artifacts) as guest:
-    guest.expect(r'(?s)BOOT OK\r\n# ')
+    guest.expect(r'(?s)BOOT OK\r\nroot@[A-Za-z0-9.-]+ # ')
     guest.command('cd /tmp')
     for startup in ['crt0','fcrt0','mcrt0','fmcrt0']:
         guest.command(f'DEVKIT_TEST=ok /tmp/devkit-{startup} native',stdout='DEVKIT_MAIN\nDEVKIT_EXIT\n')

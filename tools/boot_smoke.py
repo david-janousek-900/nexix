@@ -42,15 +42,15 @@ def exchange(line, expected, raw=False):
     raise RuntimeError('timeout waiting for shell response')
 
 try:
-    exchange(None, re.compile(rb'INIT PID1\r\nBOOT OK\r\n# '))
+    exchange(None, re.compile(rb'INIT PID1\r\n(?:\[[^\]\r\n]+\] )?BOOT OK\r\nroot@[A-Za-z0-9.-]+ # '))
     reply = exchange(b'echo NEXIX_INIT_CHILD_$$; pwd; ls -1 /bin',
-                     re.compile(rb'\r\nNEXIX_INIT_CHILD_2\r\n/\r\ncat\r\ncp\r\ndate\r\necho\r\nln\r\nls\r\npwd\r\nrm\r\nsh\r\ntouch\r\n# '))
+                     re.compile(rb'\r\nNEXIX_INIT_CHILD_2\r\n/\r\ncat\r\ncp\r\ndate\r\necho\r\nln\r\nls\r\npwd\r\nrm\r\nsh\r\ntouch\r\nroot@[A-Za-z0-9.-]+ # '))
     # A copied executable has no embedded-catalog entry: it must be read from disk.
     exchange(b'echo disk > /tmp/boot-file; cat /tmp/boot-file; cp /bin/echo /tmp/disk-echo; /tmp/disk-echo NEXIX_DISK_EXEC; rm /tmp/boot-file /tmp/disk-echo; echo NEXIX_BOOT_WRITE_OK',
-             re.compile(rb'\r\ndisk\r\nNEXIX_DISK_EXEC\r\nNEXIX_BOOT_WRITE_OK\r\n# '))
-    exchange(b'\x04', re.compile(rb'Nexix 0\.1\.0\r\ninit: single-user recovery\r\n# '), raw=True)
+             re.compile(rb'\r\ndisk\r\nNEXIX_DISK_EXEC\r\nNEXIX_BOOT_WRITE_OK\r\nroot@[A-Za-z0-9.-]+ # '))
+    exchange(b'\x04', re.compile(rb'Nexix 0\.1\.0\r\ninit: single-user recovery\r\nroot@[A-Za-z0-9.-]+ # '), raw=True)
     reply = exchange(b'echo NEXIX_RESTART_CHILD_$$',
-                     re.compile(rb'\r\nNEXIX_RESTART_CHILD_([0-9]+)\r\n# '))
+                     re.compile(rb'\r\nNEXIX_RESTART_CHILD_([0-9]+)\r\nroot@[A-Za-z0-9.-]+ # '))
     pid = int(re.search(rb'\r\nNEXIX_RESTART_CHILD_([0-9]+)\r\n', reply)[1])
     if pid <= 2:
         raise RuntimeError('init did not create a replacement shell')

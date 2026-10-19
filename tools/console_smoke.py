@@ -36,7 +36,7 @@ def check(qemu, ram, mode):
                 screen.type('OK\n');screen.expect('\nSECOND_OK\n')
                 screen.type('echo VGA_SELECTED\n');screen.expect('\nVGA_SELECTED\n')
                 screen.type('echo CONSOLE_DEVICE > /dev/console\n');screen.expect('\nCONSOLE_DEVICE\n')
-                screen.type('dmesg\n');screen.expect('] BOOT OK\n# ')
+                screen.type('dmesg\n');screen.expect('] BOOT OK\nroot@nexix.localdomain # ')
                 screen.type('\x04');screen.expect('login: ')
                 # Neither UART may get boot messages, prompts, echo or shell output.
                 guest.send('root\nnexix\necho WRONG_UART\n',0)
@@ -48,8 +48,8 @@ def check(qemu, ram, mode):
                 assert re.search(rb'\[ *[0-9]+\.[0-9]{6}\] x86_64 kernel entered',guest.buffers[0])
                 guest.command('pwd',stdout='/root\n')
                 guest.command('echo $HOME',stdout='/root\n')
-                guest.send('echo BAD\x7f\x7f\x7fOK\n');guest.expect('\r\nOK\r\n# ')
-                guest.send('echo BAD\x08\x08\x08OK\n');guest.expect('\r\nOK\r\n# ')
+                guest.send('echo BAD\x7f\x7f\x7fOK\n');guest.expect('\r\nOK\r\nroot@[A-Za-z0-9.-]+ # ')
+                guest.send('echo BAD\x08\x08\x08OK\n');guest.expect('\r\nOK\r\nroot@[A-Za-z0-9.-]+ # ')
                 assert b'Nexix 0.1.0' in guest.buffers[0]
                 guest.command('echo SERIAL_SELECTED',stdout='SERIAL_SELECTED\n')
                 guest.command('echo CONSOLE_DEVICE > /dev/console',stdout='CONSOLE_DEVICE\n')

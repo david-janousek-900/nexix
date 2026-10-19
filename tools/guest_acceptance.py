@@ -108,7 +108,7 @@ def run_suite(suite_path,report,qemu='qemu-system-x86_64',iso='build/nexix-multi
             if hasattr(data,'close'):data.close()
             guest=Guest(qemu,iso,disk,ram,suite.get('terminals',1))
             try:
-                guest.expect(suite.get('startup',r'(?s)BOOT OK\r\n# '))
+                guest.expect(suite.get('startup',r'(?s)BOOT OK\r\nroot@[A-Za-z0-9.-]+ # '))
                 for case in cases:
                     record={'id':case['id'],'component':case['component'],'status':'failed'};results['cases'].append(record)
                     try:

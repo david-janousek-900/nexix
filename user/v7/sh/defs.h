@@ -287,3 +287,7 @@ extern DOLPTR freeargs();
 
 #include	"ctype.h"
 
+
+/* Native prompt identity, initialized before the shell heap allocator. */
+extern void nexix_prompt_init(void);
+extern void nexix_prompt(const char *, int);

@@ -66,7 +66,9 @@ def main():
             console.expect('login: ')
             console.type('roox\x7ft\n');console.expect('login: root\nPassword:')
             console.type('nexix\n');console.expect('# ')
-            assert 'nexix' not in console.screen(), 'VGA password echoed'
+            assert not re.search(r'(?:Password:\s*|\n)nexix(?:\s*\n|$)',console.screen()), 'VGA password echoed'
+            console.type('hostname gui.example.test\n');console.expect('root@gui.example.test # ')
+            console.type('uname -n\n');console.expect('\ngui.example.test\n')
             console.type('tty\n');console.expect('/dev/tty0')
             console.type('echo VGA_WORKS\n');console.expect('\nVGA_WORKS\n')
             login(guest,'alice','alice',prompt='$ ')
@@ -84,7 +86,7 @@ def main():
             console.type('alice\n');console.expect('Password:')
             console.type('alice\n');console.expect('$ ')
             console.type('echo RELOGIN_OK\n');console.expect('\nRELOGIN_OK\n')
-            print(f'PASS: {ram} VGA login, hidden password, tty identity, editing, signals, logout/relogin and three-session isolation')
+            print(f'PASS: {ram} VGA hostname/prompt, login, hidden password, tty identity, editing, signals, logout/relogin and three-session isolation')
         finally:
             try:
                 if console:Path(f'build/vga-{ram}.screen.txt').write_text(console.screen())

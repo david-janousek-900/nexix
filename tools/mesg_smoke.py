@@ -6,7 +6,7 @@ from private_guest import private_guest
 def main():
     qemu,iso,ram=sys.argv[1:4]
     with private_guest(qemu,iso,ram,'mesg',{'/tmp/mesgcheck':'mesg-command.elf'},2) as guest:
-        guest.expect(r'(?s)BOOT OK\r\n# ')
+        guest.expect(r'(?s)BOOT OK\r\nroot@[A-Za-z0-9.-]+ # ')
         guest.command('mesg',stdout='is n\n',status=1)
         guest.command('mesg y');guest.command('mesg',stdout='is y\n')
         guest.command('mesg n',status=1);guest.command('mesg',stdout='is n\n',status=1)

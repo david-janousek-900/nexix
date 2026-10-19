@@ -6994,7 +6994,11 @@
           "evidence": [
             "reference/v7/usr/src/cmd/cmake",
             "docs/multi-user.md",
-            "tools/multiuser_init_smoke.py"
+            "tools/multiuser_init_smoke.py",
+            "user/v7/cmd/init.c",
+            "user/v7/session.c",
+            "user/v7/hostname-file.h",
+            "docs/hostname.md"
           ]
         }
       ],
@@ -7070,6 +7074,11 @@
           "path": "/etc/init",
           "artifact": "historical_binary"
         }
+      ],
+      "native_sources": [
+        "user/v7/cmd/init.c",
+        "user/v7/hostname-file.h",
+        "user/v7/session.c"
       ]
     },
     {
@@ -13136,7 +13145,30 @@
           "role": "installed",
           "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/sh/makefile"
+            "reference/v7/usr/src/cmd/sh/makefile",
+            "user/v7/sh/ctype.c",
+            "user/v7/sh/string.c",
+            "user/v7/sh/xec.c",
+            "user/v7/sh/error.c",
+            "user/v7/sh/prompt.c",
+            "user/v7/sh/main.c",
+            "user/v7/sh/args.c",
+            "user/v7/sh/name.c",
+            "user/v7/sh/stak.c",
+            "user/v7/sh/expand.c",
+            "user/v7/sh/blok.c",
+            "user/v7/sh/io.c",
+            "user/v7/sh/setbrk.c",
+            "user/v7/sh/print.c",
+            "user/v7/sh/msg.c",
+            "user/v7/sh/word.c",
+            "user/v7/sh/cmd.c",
+            "user/v7/sh/globals.c",
+            "user/v7/sh/fault.c",
+            "user/v7/sh/builtin.c",
+            "user/v7/sh/macro.c",
+            "user/v7/sh/service.c",
+            "docs/hostname.md"
           ]
         }
       ],
@@ -13337,6 +13369,30 @@
           "path": "/bin/sh",
           "artifact": "historical_binary"
         }
+      ],
+      "native_sources": [
+        "user/v7/sh/args.c",
+        "user/v7/sh/blok.c",
+        "user/v7/sh/builtin.c",
+        "user/v7/sh/cmd.c",
+        "user/v7/sh/ctype.c",
+        "user/v7/sh/error.c",
+        "user/v7/sh/expand.c",
+        "user/v7/sh/fault.c",
+        "user/v7/sh/globals.c",
+        "user/v7/sh/io.c",
+        "user/v7/sh/macro.c",
+        "user/v7/sh/main.c",
+        "user/v7/sh/msg.c",
+        "user/v7/sh/name.c",
+        "user/v7/sh/print.c",
+        "user/v7/sh/prompt.c",
+        "user/v7/sh/service.c",
+        "user/v7/sh/setbrk.c",
+        "user/v7/sh/stak.c",
+        "user/v7/sh/string.c",
+        "user/v7/sh/word.c",
+        "user/v7/sh/xec.c"
       ]
     },
     {
@@ -14872,7 +14928,8 @@
           "evidence": [
             "user/v7/cmd/su.c",
             "Makefile",
-            "docs/multi-user.md"
+            "docs/multi-user.md",
+            "docs/hostname.md"
           ]
         }
       ],
@@ -14941,6 +14998,9 @@
           "path": "/bin/su",
           "artifact": "historical_binary"
         }
+      ],
+      "native_sources": [
+        "user/v7/cmd/su.c"
       ]
     },
     {
@@ -24451,10 +24511,10 @@
       "native_sources": [
         "user/v7/cmd/uname.c",
         "libc/uname.c",
-        "kernel/v7/syscall.c",
         "include/nexix/utsname.h",
         "libc/include/sys/utsname.h",
-        "kernel/include/version.h"
+        "kernel/include/version.h",
+        "kernel/v7/utsname.c"
       ],
       "outputs": [
         {
@@ -24497,6 +24557,53 @@
       "reference_includes": [],
       "acceptance": [
         "Verify every field and combined flags against the native syscall at 16/128 MiB, including unprivileged use, bad addresses and argument/output errors."
+      ]
+    },
+    {
+      "id": "cmd.hostname",
+      "kind": "command",
+      "summary": "Native persistent full hostname management and kernel node identity",
+      "sources": [],
+      "source_files": [],
+      "source_availability": "native",
+      "native_sources": [
+        "user/v7/cmd/hostname.c",
+        "user/v7/hostname-file.h",
+        "kernel/v7/utsname.c",
+        "libc/uname.c",
+        "include/nexix/hostname.h"
+      ],
+      "outputs": [
+        {
+          "name": "hostname",
+          "install": "/bin/hostname",
+          "role": "installed",
+          "status": "implemented",
+          "evidence": [
+            "user/v7/cmd/hostname.c",
+            "docs/hostname.md",
+            "Makefile"
+          ]
+        }
+      ],
+      "priority": 3,
+      "status": "implemented",
+      "dependencies": [
+        {
+          "target": "lib.libc",
+          "phase": "runtime",
+          "certainty": "confirmed",
+          "evidence": [
+            "libc/uname.c"
+          ],
+          "note": "Native gethostname/sethostname wrappers and bounded configuration I/O."
+        }
+      ],
+      "blockers": [],
+      "unresolved": [],
+      "reference_includes": [],
+      "acceptance": [
+        "Test FQDN persistence across cold boots, root-only setters, live username/host prompts and unchanged configuration on invalid input."
       ]
     }
   ],

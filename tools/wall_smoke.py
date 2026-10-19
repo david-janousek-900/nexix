@@ -21,7 +21,7 @@ def main():
             start=len(guest.buffers[0]);wire=command+'; echo WALL_STATUS_$?'
             guest.send(wire+'\n');guest.expect(re.escape(wire+'\r\n'))
             for peer in peers:guest.expect(re.escape(header+body.replace(b'\n',b'\r\n')),peer)
-            guest.expect('WALL_STATUS_0\r\n'+re.escape(prompt))
+            guest.expect('WALL_STATUS_0\r\n'+r'[A-Za-z0-9_.-]+@[A-Za-z0-9.-]+ '+re.escape(prompt))
             if error:
                 guest.positions[0]=start;guest.expect(re.escape(error+'\r\n'))
         guest.command('echo WALL_TEXT > /tmp/message',prompt=re.escape('$ '))

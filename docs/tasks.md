@@ -10,17 +10,17 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 48 native ELF programs are
+to multi-user V7 login with persistent IDE storage. 49 native ELF programs are
 installed; the complete list and destinations are in [the installation manifest](native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
-The inventory accounts for **218 components, 2,144 distribution files and
-35 supporting/platform requirements**. Its component statuses are 54 implemented,
+The inventory accounts for **219 components, 2,144 distribution files and
+35 supporting/platform requirements**. Its component statuses are 55 implemented,
 3 partial, 1 prototype and 160 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **372 tracking tasks: 143 done, 0 in progress
-and 229 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 357, 367–372 are complete**. These counts are a work breakdown, not an
+The expanded roadmap below has **373 tracking tasks: 144 done, 0 in progress
+and 229 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 357, 367–373 are complete**. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -570,7 +570,7 @@ required before native-port acceptance.
 | 356 | Package complete 0.1.0 distribution | To do | Programs, scripts, libraries, headers, source/build inputs, manuals/data and permissions |
 | 357 | Persistent disk upgrade/install tooling | Done | Git history; [offline upgrade contract](disk-upgrades.md); verified staging, exclusive offline locks, mandatory non-overwritten backup, candidate validation and atomic publication; account/config/TZ/data/hard-link/sparse-file/timestamp preservation; failure tests and two cold boots at 16/128 MiB |
 | 358 | Full multi-user/time/storage/userland acceptance | To do | 16/128 MiB baseline; full IDE release at 128 MiB and two terminals; current full boot self-test fails user/phys-test.c:102 core-dump assertion, reproduced with uname syscall disabled |
-| 359 | Close all component/source/device blockers | To do | All 218 entries/35 requirements traceable; close historical device-directory node/consumer audit; no hidden omissions |
+| 359 | Close all component/source/device blockers | To do | All 219 entries/35 requirements traceable; close historical device-directory node/consumer audit; no hidden omissions |
 | 360 | Reproducible host-bootstrap build and release provenance | To do | Pin SDK inputs, artifact hashes, licensing and validation evidence |
 | 361 | Finalize 0.1.0 release documentation and tag | To do | Only after all required leaves are implemented, tested and committed |
 
@@ -641,7 +641,7 @@ two terminals.
 
 Release acceptance requires multi-user startup, RTC-derived time and persistent
 V7 timestamps, complete component coverage, native V7 development tools,
-installed manuals/data and resolution of explicit release blockers. All 218
+installed manuals/data and resolution of explicit release blockers. All 219
 components and 35 requirements must be traceable to tested native implementations,
 assets or documented native equivalents. No required feature is silently removed
 to declare the release complete.
@@ -664,3 +664,4 @@ the first release. See [architecture notes](architecture.md) and
 | Task | Description | Status | Evidence |
 | --- | --- | --- | --- |
 | 372 | Add native uname command and system identity API | Done | Git history; [uname contract](uname.md); kernel-owned identity, checked native syscall, public libc header, command flags and unprivileged/error acceptance at 16/128 MiB |
+| 373 | Add persistent hostname and identity prompts | Done | Git history; [hostname contract](hostname.md); boot configuration, root-only native setter, full domain preservation, hostname command and live credential/hostname prompts; host and 16/128 MiB guest tests |

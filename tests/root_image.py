@@ -67,9 +67,10 @@ class RootImage(unittest.TestCase):
             number = lookup(path)
             self.assertEqual(inode(number)[0], 0o100755)
             self.assertEqual(contents(number), Path(f'build/v7-{name}.elf').read_bytes())
-        for name in ('rc','ttys','passwd'):
+        for name in ('rc','ttys','passwd','profile'):
             self.assertEqual(contents(lookup('/etc/'+name)), (BOOTSTRAP_CONFIG / 'etc' / name).read_bytes())
-        self.assertEqual(contents(lookup('/.profile')), (BOOTSTRAP_CONFIG / 'profile').read_bytes())
+        self.assertEqual(contents(lookup('/.profile')), (BOOTSTRAP_CONFIG / 'user-profile').read_bytes())
+        self.assertEqual(contents(lookup('/etc/hostname')), (BOOTSTRAP_CONFIG / 'hostname').read_bytes())
         for path in ('/etc/utmp','/usr/adm/wtmp'):
             self.assertEqual(contents(lookup(path)), b'')
         for profile, name in enumerate(('dc0', 'dh0', 'dz0', 'kl0'), 23):

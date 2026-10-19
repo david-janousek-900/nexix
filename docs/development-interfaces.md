@@ -57,3 +57,6 @@ the remaining distribution.headers integration status.
 The native [`uname`](uname.md) extension exports `uname(struct utsname *)` in
 `<sys/utsname.h>`; its shared syscall record is installed as
 `<nexix/utsname.h>`. It queries the running kernel without privilege.
+
+`gethostname` and root-only `sethostname` are declared in `<unistd.h>`;
+see [hostname configuration and prompt behavior](hostname.md).

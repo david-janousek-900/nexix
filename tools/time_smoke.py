@@ -38,10 +38,10 @@ with tempfile.TemporaryDirectory(prefix='nexix-time-') as directory:
         global stage
         stage = line
         p.stdin.write(line.encode() + b'\n'); p.stdin.flush()
-        expect(rb'\r\n' + pattern + rb'\r\n# ')
+        expect(rb'\r\n' + pattern + rb'\r\nroot@[A-Za-z0-9.-]+ # ')
     error = None
     try:
-        expect(rb'BOOT OK\r\n# ')
+        expect(rb'BOOT OK\r\nroot@[A-Za-z0-9.-]+ # ')
         command('date -u', rb'Thu Feb 29 12:34:[0-9]{2} GMT 2024')
         command('TZ=CET-1CEST,M3.5.0,M10.5.0/3; export TZ; date', rb'Thu Feb 29 13:34:[0-9]{2} CET 2024')
         command('date -u 2403310100.00', rb'Sun Mar 31 01:00:[0-9]{2} GMT 2024')

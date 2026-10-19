@@ -22,6 +22,7 @@ def main():
         replace('/bin/echo',source.contents(source.paths['/bin/sync']))
         passwd=source.contents(source.paths['/etc/passwd']).replace(b':Root:',b':Preserved owner:')
         replace('/etc/passwd',passwd)
+        replace('/etc/hostname',b'upgrade.example.test\n')
         profile=b'PATH=/bin\nHOME=/root\nTZ=CET-1\nexport PATH HOME TZ\n'
         replace('/root/.profile',profile)
         saved=replace('/root/keep',b'PRESERVED_DATA\n',REG|0o640);paths['/root/alias']=saved
@@ -32,7 +33,7 @@ def main():
         report=upgrade(disk,Path('build/stage'),backup_path=backup,apply=True,epoch=1700000001)
         assert report['applied'] and digest(backup.read_bytes())==digest(before)
         after=Volume(disk.read_bytes())
-        for name in ['/etc/passwd','/root/.profile','/root/keep','/root/alias']:
+        for name in ['/etc/passwd','/etc/hostname','/root/.profile','/root/keep','/root/alias']:
             a,b=old.paths[name],after.paths[name]
             assert (a.ino,a.mode,a.uid,a.gid,a.times)==(b.ino,b.mode,b.uid,b.gid,b.times),name
             assert old.hash(a)==after.hash(b),name
@@ -44,6 +45,7 @@ def main():
                 login(guest,'root','nexix')
                 guest.command('echo UPGRADED_OK',stdout='UPGRADED_OK\n')
                 guest.command('echo $TZ',stdout='CET-1\n')
+                guest.command('hostname',stdout='upgrade.example.test\n')
                 guest.command('cat /root/keep /root/alias',stdout='PRESERVED_DATA\n'*2)
                 if not boot:guest.command('echo PERSISTENT_AFTER_UPGRADE > /root/newfile')
                 guest.command('cat /root/newfile',stdout='PERSISTENT_AFTER_UPGRADE\n')
@@ -51,7 +53,7 @@ def main():
             finally:
                 Path(f'build/upgrade-{ram}-boot{boot}.log').write_bytes(guest.buffers[0]);guest.close()
         Path(f'build/upgrade-{ram}.json').write_text(json.dumps(report,indent=2)+'\n')
-    print(f'PASS: {ram} offline upgrade, exact backup, binary replacement, accounts/TZ/data/link/timestamp preservation and two cold boots')
+    print(f'PASS: {ram} offline upgrade, exact backup, binary replacement, accounts/hostname/TZ/data/link/timestamp preservation and two cold boots')
 
 
 if __name__=='__main__':main()

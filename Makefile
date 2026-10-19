@@ -1873,3 +1873,30 @@ test-uname: test-uname-unit multi-iso rootfs build/uname-api.elf
 	python3 tools/uname_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	python3 tools/uname_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-uname
+
+build/utsname.o: kernel/v7/utsname.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+OBJECTS += build/utsname.o
+build/nexix.elf: build/utsname.o
+-include build/utsname.d
+build/v7-hostname.o: user/v7/cmd/hostname.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/v7-sh-prompt.o: user/v7/sh/prompt.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+
+build/hostname-unit-test: tests/hostname.c kernel/v7/utsname.c include/nexix/hostname.h kernel/include/utsname.h kernel/include/version.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/hostname.c kernel/v7/utsname.c -o $@
+.PHONY: test-hostname-unit test-hostname
+test-hostname-unit: build/hostname-unit-test
+	./build/hostname-unit-test
+test-unit: test-hostname-unit
+
+build/hostname-api.o: tests/hostname-api.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/hostname-api.elf: build/hostname-api.o build/crt0.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/hostname-api.o build/libc.a -o $@
+-include build/hostname-api.d
+test-hostname: test-hostname-unit multi-iso rootfs build/hostname-api.elf
+	python3 tools/hostname_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	python3 tools/hostname_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-hostname

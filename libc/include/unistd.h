@@ -48,6 +48,8 @@ void sync(void);
 #define STDOUT_FILENO 1
 #define STDERR_FILENO 2
 int isatty(int fd);
+int gethostname(char *, size_t);
+int sethostname(const char *, size_t);
 char *getpass(const char *prompt);
 char *ttyname(int fd);
 int ttyslot(void);

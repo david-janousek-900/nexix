@@ -15,7 +15,7 @@ int main(void)
     CHECK(uname(&record.value)==0);
     CHECK(record.before==UINT64_C(0xa5a5a5a5a5a5a5a5) && record.after==record.before);
     CHECK(!strcmp(record.value.sysname,"Nexix"));
-    CHECK(!strcmp(record.value.nodename,"nexix"));
+    CHECK(!strcmp(record.value.nodename,"nexix.localdomain"));
     CHECK(!strcmp(record.value.release,"0.1.0"));
     CHECK(!strcmp(record.value.version,"development"));
     CHECK(!strcmp(record.value.machine,"x86_64"));

@@ -13,11 +13,11 @@ def main():
         def state(uid,gid,home,extra=''):
             guest.command('/bin/credentials'+extra,stdout=f'UID={uid} EUID={uid} GID={gid} EGID={gid} HOME={home} CWD_ROOT=1\n',prompt=re.escape('$ '))
         wire='/bin/credentials launch; echo LAUNCH_STATUS_$?'
-        guest.send(wire+'\n');guest.expect(re.escape(wire+'\r\n$ '))
-        state(100,100,'/home/alice',' closed');guest.send('\x04');guest.expect('LAUNCH_STATUS_0\r\n'+re.escape('$ '));guest.command('rm /tmp/newgrp-fd',prompt=re.escape('$ '))
+        guest.send(wire+'\n');guest.expect(re.escape(wire+'\r\nalice@nexix.localdomain $ '))
+        state(100,100,'/home/alice',' closed');guest.send('\x04');guest.expect('LAUNCH_STATUS_0\r\n'+re.escape('alice@nexix.localdomain $ '));guest.command('rm /tmp/newgrp-fd',prompt=re.escape('$ '))
         def group(name,message=''):
             wire='newgrp'+(' '+name if name else '')
-            guest.send(wire+'\n');guest.expect(re.escape(wire+'\r\n'+(message+'\r\n' if message else '')+'$ '))
+            guest.send(wire+'\n');guest.expect(re.escape(wire+'\r\n'+(message+'\r\n' if message else '')+'alice@nexix.localdomain $ '))
         group('staff');state(100,100,'/home/alice')
         group('other');state(100,1,'/home/alice')
         group('bin','Sorry');state(100,1,'/home/alice')
@@ -26,7 +26,7 @@ def main():
         guest.command("echo 'plain::102:100:Plain:/:/bin/sh' >> /etc/passwd",1)
         guest.command("echo 'guarded:gp04XG.2NhSMM:105:plain' >> /etc/group",1)
         guest.send('\x04');guest.expect('login: ');guest.send('plain\n');guest.expect(re.escape('$ '))
-        guest.send('newgrp guarded\n');guest.expect('Password:');guest.send('wrong\n');guest.expect('Sorry\r\n'+re.escape('$ '));state(102,100,'/')
+        guest.send('newgrp guarded\n');guest.expect('Password:');guest.send('wrong\n');guest.expect('Sorry\r\n'+re.escape('plain@nexix.localdomain $ '));state(102,100,'/')
         guest.send('newgrp guarded\n');guest.expect('Password:');start=len(guest.buffers[0]);guest.send('Group123\n');guest.expect(re.escape('$ '))
         if b'Group123' in guest.buffers[0][start:]:raise AssertionError('group password echoed')
         state(102,105,'/')

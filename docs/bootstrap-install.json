@@ -666,7 +666,33 @@
       "component": "distribution.config",
       "source": {
         "root": "config",
-        "path": "profile"
+        "path": "user-profile"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/etc/hostname",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config",
+      "source": {
+        "root": "config",
+        "path": "hostname"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/etc/profile",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config",
+      "source": {
+        "root": "config",
+        "path": "etc/profile"
       },
       "format": "data"
     }
