@@ -10,17 +10,17 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 45 native ELF programs are
+to multi-user V7 login with persistent IDE storage. 46 native ELF programs are
 installed; the complete list and destinations are in [the installation manifest](native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
 The inventory accounts for **217 components, 2,144 distribution files and
-35 supporting/platform requirements**. Its component statuses are 51 implemented,
-3 partial, 1 prototype and 162 not ported; importing reference inputs does not
+35 supporting/platform requirements**. Its component statuses are 52 implemented,
+3 partial, 1 prototype and 161 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **371 tracking tasks: 140 done, 0 in progress
-and 231 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 251, 357, 367–371 are complete**. These counts are a work breakdown, not an
+The expanded roadmap below has **371 tracking tasks: 141 done, 0 in progress
+and 230 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 251, 357, 367–371 are complete**. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -303,7 +303,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 162 | Port tr | To do | Source-defined behavior, byte fixtures and error cases |
 | 163 | Port tsort | To do | Source-defined behavior, byte fixtures and error cases |
 | 164 | Port uniq | To do | Source-defined behavior, byte fixtures and error cases |
-| 165 | Port wc | To do | Source-defined behavior, byte fixtures and error cases |
+| 165 | Port wc | Done | Git history; [native command contract](text-commands.md); retained V7 word classification, option order and totals; native read/open/write errors, ASan/UBSan and 16/128 MiB installed command acceptance |
 
 ### Build generators and awk
 

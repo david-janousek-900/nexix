@@ -133,3 +133,18 @@ failed opens/seeks and input/output errors return 1; success returns 0.
 `make test-od` compares every format and combined formats against an
 independent Python byte oracle, including all 256 byte values, duplicate rows,
 odd lengths and offset bases, with sanitizers and 16/128 MiB guest boots.
+
+## wc (task 165)
+
+`/bin/wc [-lwc] [file ...]` counts lines, words and bytes, reading stdin
+when no files are given. The default order is `lwc`; requested fields appear
+in the specified order, including V7's seven-column fields and extra space
+after the word count. Multiple files produce a total.
+
+Word classification deliberately follows V7: printable ASCII starts a word;
+space, tab and newline end it. Other controls and high bytes count as bytes
+but do not independently start or end words. A final incomplete line counts
+as bytes/words but not a newline. Counters are native 64-bit longs. Success
+returns 0; unknown options and open/read/write errors return 1. Missing files
+are reported while remaining files are processed. `make test-wc` verifies
+these rules, field order and totals with sanitizers and 16/128 MiB guest boots.

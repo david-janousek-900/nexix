@@ -1815,3 +1815,12 @@ test-od: test-od-unit multi-iso rootfs
 	python3 tools/od_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	python3 tools/od_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-od
+
+.PHONY: test-wc-unit test-wc
+test-wc-unit:
+	python3 tests/wc.py
+test-unit: test-wc-unit
+test-wc: test-wc-unit multi-iso rootfs
+	python3 tools/wc_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	python3 tools/wc_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-wc
