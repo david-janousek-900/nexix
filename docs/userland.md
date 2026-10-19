@@ -1,6 +1,6 @@
 # Native V7 userland (task 16)
 
-Nexix builds the installed V7 commands listed in [README](../README.md)
+Nexix builds the installed V7 commands listed in [installation manifest](native-install.json)
 as static x86_64 ELF executables using Nexix startup code and libc. Active
 sources are in `user/v7`; the original `reference/v7` tree is unchanged.
 

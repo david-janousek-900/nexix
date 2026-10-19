@@ -8,7 +8,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def audit_errors(audit, root, readme):
+def audit_errors(audit, root, roadmap_text):
     errors=[]
     if audit.get('schema_version') != 2:
         return ['unsupported header schema']
@@ -17,7 +17,7 @@ def audit_errors(audit, root, readme):
     actual={str(p.relative_to(root)) for p in (root/'reference/v7/usr/include').rglob('*') if p.is_file()}
     if len(sources)!=len(set(sources)) or set(sources)!=actual:
         errors.append('header coverage omission/duplicate/unknown input')
-    tasks={int(n) for n in re.findall(r'^\| (\d+) \|',readme,re.M)}
+    tasks={int(n) for n in re.findall(r'^\| (\d+) \|',roadmap_text,re.M)}
     for record in records:
         if type(record.get('task')) is not int or record['task'] not in tasks:
             errors.append('invalid header owner')
@@ -38,8 +38,8 @@ def main():
     args.add_argument('--cc',default='gcc')
     cc=args.parse_args().cc
     audit=json.loads((ROOT/'docs/header-coverage.json').read_text())
-    readme=(ROOT/'README.md').read_text()
-    assert not audit_errors(audit,ROOT,readme),audit_errors(audit,ROOT,readme)
+    roadmap_text=(ROOT/'docs/tasks.md').read_text()
+    assert not audit_errors(audit,ROOT,roadmap_text),audit_errors(audit,ROOT,roadmap_text)
     # Deliberately corrupt coverage rather than testing only a valid fixture.
     import copy
     for mutation in ('omit','duplicate','owner','path','status','legacy_schema','legacy_owner'):
@@ -51,7 +51,7 @@ def main():
         elif mutation=='legacy_schema': bad['schema_version']=1
         elif mutation=='legacy_owner': bad['headers'][0]['step']=bad['headers'][0].pop('task')
         else: bad['headers'][0].update(status='native_contract',native='/etc/passwd')
-        assert audit_errors(bad,ROOT,readme),mutation
+        assert audit_errors(bad,ROOT,roadmap_text),mutation
     compiler_headers=subprocess.check_output([cc,'-print-file-name=include'],text=True).strip()
     headers=sorted(p.relative_to(ROOT/'libc/include') for p in (ROOT/'libc/include').rglob('*.h'))
     with tempfile.TemporaryDirectory(prefix='nexix-headers-') as folder:

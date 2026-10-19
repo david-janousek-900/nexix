@@ -12,10 +12,10 @@ class Coverage(unittest.TestCase):
     def setUp(self):
         self.audit = json.loads((ROOT / 'docs/kernel-coverage.json').read_text())
         self.manifest = json.loads((ROOT / 'docs/v7-userland-manifest.json').read_text())
-        self.readme = (ROOT / 'README.md').read_text()
+        self.roadmap_text = (ROOT / 'docs/tasks.md').read_text()
 
     def check(self, diagnostic=None):
-        errors = validate(ROOT, self.audit, self.manifest, self.readme)
+        errors = validate(ROOT, self.audit, self.manifest, self.roadmap_text)
         if diagnostic is None:
             self.assertEqual(errors, [])
         else:

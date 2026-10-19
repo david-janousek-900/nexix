@@ -29,7 +29,7 @@ def main():
             or not contract['policy'] or not isinstance(contract.get('deferred'), dict)):
         raise SystemExit('FAIL: unsupported or incomplete interface contract')
     deferred = contract['deferred']
-    roadmap = (ROOT / 'README.md').read_text()
+    roadmap = (ROOT / 'docs/tasks.md').read_text()
     unfinished = {int(n) for n in re.findall(r'^\| (\d+) \| .*? \| (?:To do|In progress) \|', roadmap, re.M)}
     if not all(type(owner) is int and owner in unfinished for owner in deferred.values()):
         raise SystemExit('FAIL: deferred interface needs an unfinished roadmap owner')

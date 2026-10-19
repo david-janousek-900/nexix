@@ -1,6 +1,6 @@
 # Roadmap coverage and status contract (task 37)
 
-[README.md](../README.md#roadmap) is the authoritative numbered 0.1.0 roadmap.
+[tasks.md](tasks.md) is the authoritative numbered 0.1.0 roadmap.
 [roadmap-coverage.json](roadmap-coverage.json) maps every inventory component
 and platform/supporting requirement to its owning or supporting task IDs.
 The [inventory](v7-userland-manifest.json) points to that map through
@@ -8,7 +8,7 @@ The [inventory](v7-userland-manifest.json) points to that map through
 
 ## Coverage format
 
-Coverage schema version 2 contains the release version, README/inventory paths,
+Coverage schema version 2 contains the release version, task-list/inventory paths,
 task count, policy and two mappings: `components` and `requirements`. Mapping
 keys are inventory IDs; values are nonempty, sorted, unique arrays of task IDs.
 All 217 components, all 35 requirements and all 371 tasks must be accounted for.
@@ -33,7 +33,7 @@ dependency audits during the corresponding implementation tasks.
 
 ## Separate status meanings
 
-README tasks use `Done`, `In progress` and `To do`. Done requires implementation,
+Roadmap tasks use `Done`, `In progress` and `To do`. Done requires implementation,
 acceptance tests and a commit. Existing rows pin historical commit hashes.
 For the commit creating or completing its own row, the notes point to Git
 history: a commit cannot include its own final hash. Record actual test evidence
@@ -59,17 +59,17 @@ make TOOLCHAIN_PREFIX= test-inventory
 
 The read-only checker validates archive fidelity and inventory consistency,
 then rejects missing/unknown component or requirement mappings, invalid or
-duplicate references, unowned tasks, malformed README rows, missing/reordered
+duplicate references, unowned tasks, malformed task-list rows, missing/reordered
 IDs, status-total drift and misleading completion mappings. Negative regression
-tests exercise these failures without editing the real README or inventory.
+tests exercise these failures without editing the real task list or inventory.
 
-When completing a task, update its README status, notes and summary totals,
+When completing a task, update its task-list status, notes and summary totals,
 record tests and commit the change with its implementation. When adding work,
-append a stable sequential ID, update `task_count`, README totals and explicit
+append a stable sequential ID, update `task_count`, task-list totals and explicit
 coverage mappings. Preserve existing IDs. Component implementation statuses
 change only when their own output/consumer acceptance is satisfied.
 
-The previous 29-task roadmap is mapped in the README. Detailed documents now
+The previous 29-task roadmap is mapped in [tasks.md](tasks.md). Detailed documents now
 use expanded IDs where milestones above 24 changed. Old Git commit descriptions
 retain their historical numbering. No reference sources or current native
 program implementation claims are changed by task 37.

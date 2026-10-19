@@ -27,7 +27,7 @@ and original metadata to the recorded archive. See [source provenance](../refere
 
 - Schema version 2 covers reference/v7, with usr/src separately identified.
 - The required roadmap_coverage path selects [roadmap-coverage.json](roadmap-coverage.json).
-  All components and requirements map to explicit README task IDs; see the
+  All components and requirements map to explicit roadmap task IDs; see the
   [coverage/status contract](roadmap-coverage.md). Task mappings describe planned
   responsibility and do not change native implementation status.
 - Each entry has an identifier, kind, explicit reference files, outputs and
@@ -57,7 +57,7 @@ and original metadata to the recorded archive. See [source provenance](../refere
 ## Implementation priorities
 
 Priorities guide implementation order, not release exclusions. The expanded
-366-task roadmap is in [README.md](../README.md#roadmap). RTC/timestamps/TZ are
+371-task roadmap is in [tasks.md](tasks.md). RTC/timestamps/TZ are
 tasks 22–24; kernel/libc work spans 25–82, terminals 89–93, and multi-user
 integration 94–108. Individual component ports have their own IDs in the
 [coverage map](roadmap-coverage.json); shared support is developed as needed.

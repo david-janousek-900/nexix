@@ -236,4 +236,4 @@ Terminal and QEMU logs use `build/multiuser-*`; the private observer logs use
 `make test-multiuser` runs all terminal, account, command, init, messaging and final
 multi-user acceptance targets. This completes tasks 86 and 89–108; it does not
 declare the complete V7 distribution port or version 0.1.0 finished. Remaining
-ports and release work stay on the README roadmap.
+ports and release work stay on the [task list](tasks.md).

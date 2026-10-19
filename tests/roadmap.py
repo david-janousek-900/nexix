@@ -15,19 +15,19 @@ class Roadmap(unittest.TestCase):
     def setUpClass(cls):
         cls.original_manifest = json.loads((ROOT / 'docs/v7-userland-manifest.json').read_text())
         cls.original_coverage = json.loads((ROOT / 'docs/roadmap-coverage.json').read_text())
-        cls.original_readme = (ROOT / 'README.md').read_text()
+        cls.original_roadmap_text = (ROOT / 'docs/tasks.md').read_text()
 
     def setUp(self):
         self.manifest = copy.deepcopy(self.original_manifest)
         self.coverage = copy.deepcopy(self.original_coverage)
-        self.readme = self.original_readme
+        self.roadmap_text = self.original_roadmap_text
 
     def reject(self, diagnostic):
-        errors = validate_roadmap(self.manifest, self.coverage, self.readme)
+        errors = validate_roadmap(self.manifest, self.coverage, self.roadmap_text)
         self.assertTrue(any(diagnostic in error for error in errors), errors)
 
     def test_current_coverage(self):
-        self.assertEqual(validate_roadmap(self.manifest, self.coverage, self.readme), [])
+        self.assertEqual(validate_roadmap(self.manifest, self.coverage, self.roadmap_text), [])
 
     def test_missing_component_mapping(self):
         del self.coverage['components']['script.man']
@@ -70,21 +70,21 @@ class Roadmap(unittest.TestCase):
                     tasks.remove(145)
         self.reject('unowned roadmap task: 145')
 
-    def test_missing_readme_row(self):
-        self.readme = '\n'.join(line for line in self.readme.splitlines() if not line.startswith('| 145 |'))
+    def test_missing_roadmap_row(self):
+        self.roadmap_text = '\n'.join(line for line in self.roadmap_text.splitlines() if not line.startswith('| 145 |'))
         self.reject('IDs must be unique, ordered and contiguous')
 
-    def test_duplicate_readme_row(self):
-        row = next(line for line in self.readme.splitlines() if line.startswith('| 145 |'))
-        self.readme += '\n' + row
+    def test_duplicate_roadmap_row(self):
+        row = next(line for line in self.roadmap_text.splitlines() if line.startswith('| 145 |'))
+        self.roadmap_text += '\n' + row
         self.reject('IDs must be unique, ordered and contiguous')
 
-    def test_malformed_readme_status(self):
-        self.readme = self.readme.replace('| 145 | Port ed | To do |', '| 145 | Port ed | Complete |')
+    def test_malformed_roadmap_status(self):
+        self.roadmap_text = self.roadmap_text.replace('| 145 | Port ed | To do |', '| 145 | Port ed | Complete |')
         self.reject('malformed roadmap row:')
 
     def test_status_summary_drift(self):
-        self.readme = self.readme.replace('| 145 | Port ed | To do |', '| 145 | Port ed | In progress |')
+        self.roadmap_text = self.roadmap_text.replace('| 145 | Port ed | To do |', '| 145 | Port ed | In progress |')
         self.reject('roadmap status summary drift')
 
     def test_unfinished_component_cannot_hide_behind_done_task(self):
@@ -96,13 +96,13 @@ class Roadmap(unittest.TestCase):
         self.reject('cmd.cat: implemented component needs a completed roadmap task')
 
     def test_done_task_needs_commit_evidence(self):
-        self.readme = self.readme.replace('`09ce60d`', 'no commit recorded')
+        self.roadmap_text = self.roadmap_text.replace('`09ce60d`', 'no commit recorded')
         self.reject('roadmap task 5: completed task needs commit evidence')
 
     def test_requirement_supply_is_not_native_completion(self):
         requirement = next(r for r in self.manifest['requirements'] if r['id'] == 'manual-pages')
         requirement['status'] = 'supplied'
-        self.assertEqual(validate_roadmap(self.manifest, self.coverage, self.readme), [])
+        self.assertEqual(validate_roadmap(self.manifest, self.coverage, self.roadmap_text), [])
 
     def test_bad_coverage_shape(self):
         self.coverage['components'] = []
@@ -137,7 +137,7 @@ class Roadmap(unittest.TestCase):
         self.reject('unexpected roadmap inventory path')
 
     def test_missing_summary(self):
-        self.readme = self.readme.replace('tracking tasks:', 'untracked tasks:')
+        self.roadmap_text = self.roadmap_text.replace('tracking tasks:', 'untracked tasks:')
         self.reject('missing roadmap status summary')
 
 

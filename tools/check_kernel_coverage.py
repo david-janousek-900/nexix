@@ -6,7 +6,7 @@ import re
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def validate(root, audit, manifest, readme):
+def validate(root, audit, manifest, roadmap_text):
     errors = []
     def need(condition, message):
         if not condition:
@@ -19,7 +19,7 @@ def validate(root, audit, manifest, readme):
     expected = set(entry['sources'])
     actual = {str(p.relative_to(root)) for p in (root / 'reference/v7/usr/sys').rglob('*') if p.is_file()}
     need(expected == actual, 'kernel inventory differs from reference tree')
-    tasks = {int(m[0]): m[1] for m in re.findall(r'^\| (\d+) \| .*? \| (Done|In progress|To do) \|', readme, re.M)}
+    tasks = {int(m[0]): m[1] for m in re.findall(r'^\| (\d+) \| .*? \| (Done|In progress|To do) \|', roadmap_text, re.M)}
     seen = []
     identifiers = []
     for group in audit.get('groups', []):
@@ -60,7 +60,7 @@ def validate(root, audit, manifest, readme):
 def main():
     audit = json.loads((ROOT / 'docs/kernel-coverage.json').read_text())
     manifest = json.loads((ROOT / 'docs/v7-userland-manifest.json').read_text())
-    errors = validate(ROOT, audit, manifest, (ROOT / 'README.md').read_text())
+    errors = validate(ROOT, audit, manifest, (ROOT / 'docs/tasks.md').read_text())
     if errors:
         raise SystemExit('\n'.join('FAIL: ' + error for error in errors))
     count = sum(len(g['sources']) for g in audit['groups'])

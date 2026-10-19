@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
   "version": "0.1.0",
-  "roadmap": "README.md",
+  "roadmap": "docs/tasks.md",
   "inventory": "docs/v7-userland-manifest.json",
-  "policy": "Every component and requirement has explicit owning/supporting roadmap tasks; mappings establish planned coverage, not implementation or symbol-level compatibility. README task statuses and manifest implementation/input statuses are distinct.",
+  "policy": "Every component and requirement has explicit owning/supporting roadmap tasks; mappings establish planned coverage, not implementation or symbol-level compatibility. Task-list statuses and manifest implementation/input statuses are distinct.",
   "components": {
     "build.cmake": [
       353

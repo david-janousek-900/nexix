@@ -207,7 +207,7 @@ def validate(manifest, root=ROOT):
     need(manifest.get('roadmap_coverage') == 'docs/roadmap-coverage.json', 'missing or invalid roadmap coverage path')
     try:
         coverage = json.loads((root / 'docs/roadmap-coverage.json').read_text())
-        errors.extend(validate_roadmap(manifest, coverage, (root / 'README.md').read_text()))
+        errors.extend(validate_roadmap(manifest, coverage, (root / 'docs/tasks.md').read_text()))
     except (OSError, ValueError) as error:
         errors.append(f'invalid roadmap coverage: {error}')
     return errors

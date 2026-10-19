@@ -1,4 +1,4 @@
-"""Validate README roadmap IDs, status totals and explicit inventory coverage."""
+"""Validate task roadmap IDs, status totals and explicit inventory coverage."""
 from collections import Counter
 import re
 
@@ -7,7 +7,7 @@ ROW = re.compile(r'^\| (\d+) \| (.*?) \| (Done|In progress|To do) \| (.*?) \|$')
 TOTALS = re.compile(r'\*\*(\d+) tracking tasks: (\d+) done, (\d+) in progress\s+and (\d+) to do\*\*')
 
 
-def validate_roadmap(manifest, coverage, readme):
+def validate_roadmap(manifest, coverage, roadmap_text):
     """Pure checker; mappings describe planned coverage, not completed ports."""
     errors = []
 
@@ -19,17 +19,17 @@ def validate_roadmap(manifest, coverage, readme):
         return ['roadmap coverage must be an object']
     need(coverage.get('schema_version') == 2, 'unsupported roadmap coverage schema')
     need(coverage.get('version') == manifest.get('version') == '0.1.0', 'roadmap version drift')
-    need(coverage.get('roadmap') == 'README.md', 'unexpected roadmap path')
+    need(coverage.get('roadmap') == 'docs/tasks.md', 'unexpected roadmap path')
     need(coverage.get('inventory') == 'docs/v7-userland-manifest.json', 'unexpected roadmap inventory path')
     need(isinstance(coverage.get('policy'), str) and bool(coverage['policy']), 'missing roadmap coverage policy')
     count = coverage.get('task_count')
     if type(count) is not int or count < 1:
         errors.append('invalid roadmap task count')
         return errors
-    if not isinstance(readme, str):
-        return errors + ['roadmap README must be text']
+    if not isinstance(roadmap_text, str):
+        return errors + ['roadmap must be text']
     rows = []
-    for line in readme.splitlines():
+    for line in roadmap_text.splitlines():
         if re.match(r'^\|\s*\d+\s*\|', line):
             match = ROW.fullmatch(line)
             if not match:
@@ -48,7 +48,7 @@ def validate_roadmap(manifest, coverage, readme):
     need(len(rows) == count and identifiers == list(range(1, len(rows) + 1)),
          'roadmap IDs must be unique, ordered and contiguous through task_count')
     states = {row[0]: row[2] for row in rows}
-    totals = TOTALS.search(readme)
+    totals = TOTALS.search(roadmap_text)
     need(totals is not None, 'missing roadmap status summary')
     if totals:
         total, done, progressing, todo = map(int, totals.groups())
