@@ -18,3 +18,10 @@ bool clock_init(void)
     int64_t epoch;
     return rtc_read_epoch(&epoch) && clock_set(epoch);
 }
+
+struct nx_timeb clock_snapshot(void)
+{
+    uint64_t ticks=timer_ticks();
+    return (struct nx_timeb){.time=offset+(int64_t)(ticks/NX_CLK_TCK),
+        .millitm=(ticks%NX_CLK_TCK)*(1000/NX_CLK_TCK)};
+}

@@ -53,5 +53,10 @@ int main(void)
     assert(clock_set(123)); assert(clock_now() == 123);
     assert(!clock_set(-1)); assert(!clock_set(INT64_MAX)); assert(clock_now() == 123);
     ticks += NX_CLK_TCK; assert(clock_now() == 124);
+    ticks=399;struct nx_timeb snap=clock_snapshot();
+    assert(snap.time==123 && snap.millitm==990 && !snap.timezone && !snap.dstflag && !snap.reserved);
+    ticks=400;snap=clock_snapshot();assert(snap.time==124 && snap.millitm==0);
+    ticks=401;snap=clock_snapshot();assert(snap.time==124 && snap.millitm==10);
+    assert(clock_set(500));snap=clock_snapshot();assert(snap.time==500 && snap.millitm==10);
     puts("PASS: RTC formats, UTC calendar, century fallback, invalid/stuck/unstable RTC, clock ticks and stime");
 }

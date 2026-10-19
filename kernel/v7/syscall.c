@@ -77,6 +77,12 @@ static int64_t invoke(uint64_t number, struct interrupt_frame *frame)
     case NX_SYS_PAUSE:
         while (!proc_sleep_interruptible(u, 40)) {}
         return -NX_EINTR;
+    case NX_SYS_FTIME: {
+        uintptr_t flags=proc_irq_save();
+        struct nx_timeb value=clock_snapshot();
+        int error=copyout(&p->p_vm,u->u_arg[0],&value,sizeof value);
+        proc_irq_restore(flags);return error;
+    }
     case NX_SYS_TIME: {
         int64_t now = clock_now();
         if (u->u_arg[0]) {

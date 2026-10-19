@@ -1920,3 +1920,17 @@ build/scheduler-unit-test: tests/scheduler.c kernel/v7/scheduler.c kernel/includ
 test-scheduler-unit: build/scheduler-unit-test
 	./build/scheduler-unit-test
 test-unit: test-scheduler-unit
+
+# Task 363: atomic native ftime.
+build/ftime-api.o: tests/ftime-api.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/ftime-api.elf: build/ftime-api.o build/crt0.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/ftime-api.o build/libc.a -o $@
+-include build/ftime-api.d
+.PHONY: test-ftime
+test-ftime: build/rtc-test build/time-test multi-iso rootfs build/ftime-api.elf
+	./build/rtc-test
+	./build/time-test
+	$(PYTHON) tools/timing_api_smoke.py $(QEMU) build/nexix-multi.iso 16M ftime-api FTIME_API_OK
+	$(PYTHON) tools/timing_api_smoke.py $(QEMU) build/nexix-multi.iso 128M ftime-api FTIME_API_OK
+test: test-ftime

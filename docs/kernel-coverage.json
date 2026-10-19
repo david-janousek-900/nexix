@@ -132,7 +132,8 @@
         "include/nexix/kinfo.h",
         "kernel/v7/phys.c",
         "kernel/include/phys.h",
-        "include/nexix/phys.h"
+        "include/nexix/phys.h",
+        "kernel/v7/scheduler.c"
       ],
       "tasks": [
         4,
@@ -150,7 +151,7 @@
         362,
         364
       ],
-      "note": "Resident memory and eager fork replace segmentation/swap. CPU usage priority decay remains pending; no disk swap is required. General timeout callback queue also remains pending; alarms alone do not cover device callouts. Task 59 implements native user-PC profiling samples and own-system-time charging with safe user counters. Task 62 exports versioned pointer-free kernel-information snapshots with serialized capture. Task 63 implements the user-settable SULOCK interface while retaining resident pages and existing fork/exec/exit rules. Task 64 implements privileged native physical windows, owned RAM/VGA, transactional replacement and shared fork/exec lifetime."
+      "note": "Resident memory and eager fork replace segmentation/swap. V7 CPU usage priority decay is implemented by task 362; no disk swap is required. General timeout callback queue also remains pending; alarms alone do not cover device callouts. Task 59 implements native user-PC profiling samples and own-system-time charging with safe user counters. Task 62 exports versioned pointer-free kernel-information snapshots with serialized capture. Task 63 implements the user-settable SULOCK interface while retaining resident pages and existing fork/exec/exit rules. Task 64 implements privileged native physical windows, owned RAM/VGA, transactional replacement and shared fork/exec lifetime."
     },
     {
       "id": "signals",
@@ -842,9 +843,9 @@
       "number": 35,
       "routine": "ftime",
       "label": "ftime; formerly sleep",
-      "status": "pending",
+      "status": "native_path",
       "task": 363,
-      "native": "libc/time.c"
+      "native": "kernel/v7/syscall.c"
     },
     {
       "number": 36,

@@ -4,6 +4,9 @@
  * Reference sources remain unchanged under reference/v7. */
 #include <time.h>
 #include <sys/timeb.h>
+#include <nexix/libc.h>
+#include <nexix/syscall.h>
+#include <nexix/timeb.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -175,10 +178,10 @@ char *timezone(int west, int dst)
 }
 int ftime(struct timeb *out)
 {
-    if (!out) { errno = EFAULT; return -1; }
-    time_t now = time(NULL);
-    if (now == -1) return -1;
+    _Static_assert(sizeof(struct timeb)==sizeof(struct nx_timeb),"ftime layout");
+    long result=nx_syscall6(NX_SYS_FTIME,(long)(uintptr_t)out,0,0,0,0,0);
+    if(result<0){errno=(int)-result;return -1;}
     tzset();
-    *out = (struct timeb){now, 0, zone.west, zone.dst};
-    return 0; /* Current clock ABI exposes whole seconds only. */
+    out->timezone=zone.west;out->dstflag=zone.dst;
+    return 0;
 }

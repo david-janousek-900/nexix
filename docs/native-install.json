@@ -2357,6 +2357,19 @@
         "path": "dev-include/nexix/hostname.h"
       },
       "format": "data"
+    },
+    {
+      "path": "/usr/include/nexix/timeb.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.headers",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/timeb.h"
+      },
+      "format": "data"
     }
   ]
 }

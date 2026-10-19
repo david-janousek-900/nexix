@@ -105,7 +105,9 @@
         "kernel/arch/x86_64/rtc.c",
         "kernel/v7/syscall.c",
         "kernel/v7/files.c",
-        "kernel/v7/fs.c"
+        "kernel/v7/fs.c",
+        "include/nexix/timeb.h",
+        "tests/ftime-api.c"
       ],
       "locations": []
     },

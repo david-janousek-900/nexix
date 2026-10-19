@@ -28,6 +28,7 @@
 #define NX_SYS_UTIME 30
 #define NX_SYS_ACCESS 33
 #define NX_SYS_NICE 34
+#define NX_SYS_FTIME 35
 #define NX_SYS_SYNC 36
 #define NX_SYS_KILL 37
 #define NX_SYS_SETPGRP 39

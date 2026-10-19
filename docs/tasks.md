@@ -19,8 +19,8 @@ The inventory accounts for **219 components, 2,144 distribution files and
 3 partial, 1 prototype and 160 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **373 tracking tasks: 145 done, 0 in progress
-and 228 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 357, 362, 367–373 are complete**. These counts are a work breakdown, not an
+The expanded roadmap below has **373 tracking tasks: 146 done, 0 in progress
+and 227 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 357, 362–363, 367–373 are complete**. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -579,7 +579,7 @@ required before native-port acceptance.
 | Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 362 | Complete V7 CPU usage and scheduler priority decay | Done | Git history; `make test-scheduler-unit test-process`; [policy](kernel-timing.md); usage saturation, per-second decay, nice/wakeup priorities and rotating selection |
-| 363 | Complete subsecond ftime clock interface | To do | Atomic seconds/milliseconds snapshot and native ABI; V7 timezone fields, rollover and invalid-user-pointer tests |
+| 363 | Complete subsecond ftime clock interface | Done | Git history; `make test-ftime`; atomic syscall 35, 10 ms resolution, V7 timezone fields, rollover, readonly and invalid-user-pointer acceptance at 16/128 MiB |
 | 364 | Implement native V7 kernel callout queue | To do | timeout callbacks, tick deadlines, ordering, bounded capacity and interrupt serialization; device consumers in tasks 68–77 |
 
 ### Additional libc and syscall gaps identified by the reference review

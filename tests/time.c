@@ -4,8 +4,18 @@
 #include <time.h>
 #include <sys/timeb.h>
 #include <errno.h>
+#include <nexix/libc.h>
+#include <nexix/syscall.h>
+#include <nexix/timeb.h>
 int errno;
 static char *setting;
+long nx_syscall6(long n,long p,long a,long b,long c,long d,long e)
+{
+    assert(n==NX_SYS_FTIME && !a && !b && !c && !d && !e);
+    if(!p)return -EFAULT;
+    *(struct nx_timeb *)p=(struct nx_timeb){.time=1709210096,.millitm=570};
+    return 0;
+}
 char *getenv(const char *name) { assert(!strcmp(name, "TZ")); return setting; }
 time_t time(time_t *out) { if(out) *out=1709210096; return 1709210096; }
 static void check(time_t epoch, char *tz, const char *expected, int dst)
@@ -41,7 +51,7 @@ int main(void)
     assert(dysize(200)==365 && dysize(100)==366);
     assert(!strcmp(timezone(300,1),"EDT"));
     setting=prague; assert(!strcmp(timezone(-60,1),"CEST"));
-    struct timeb b; assert(ftime(&b)==0 && b.time==1709210096 && b.timezone==-60 && b.dstflag==1 && b.millitm==0);
+    struct timeb b; assert(ftime(&b)==0 && b.time==1709210096 && b.timezone==-60 && b.dstflag==1 && b.millitm==570);
     assert(ftime(NULL)==-1 && errno==EFAULT);
     time_t huge=INT64_MAX; assert(!gmtime(&huge) && errno==EINVAL);
     assert(!asctime(NULL) && errno==EINVAL);

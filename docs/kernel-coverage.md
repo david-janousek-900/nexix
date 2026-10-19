@@ -62,13 +62,11 @@ not be treated as missing required features merely because they were stubs.
 | 53 | lock implemented | 63; resident memory, V7 privilege and lifecycle rules |
 | 56 | mpx ownership, data/control, TTY bridging and libc implemented | 65–67; independent terminal hardware 89–93 |
 
-`ftime` currently uses libc's `time` path and returns zero milliseconds. A native
-clock snapshot is required; merely having a library symbol does not finish it.
-V7's clock increments a saturating CPU counter and applies `SCHMAG` decay every
-second before recalculating user priority. Nexix currently selects runnable
-processes by priority but derives user priority from nice alone. The general
-V7 `timeout` callback queue is also absent: alarm deadlines do not replace it.
-These findings add tasks 362–364 without renumbering existing tracking IDs.
+Task 363 implements syscall 35 with an atomic seconds/milliseconds snapshot.
+Task 362 implements V7's saturating CPU counter, per-second `SCHMAG` decay and
+user priority recalculation. The general `timeout` callback queue remains
+tracked by task 364; alarm deadlines alone do not replace device callouts.
+These audit findings retain their original tracking IDs.
 They are prerequisites to final acceptance, despite their higher IDs.
 
 ## Validation and limits

@@ -48,9 +48,9 @@ non-leap year 2100; negative epochs are supported down to year 1. Upper bound
 is year 9999. Invalid arguments return NULL/EINVAL where applicable. Results
 use shared static storage, as in V7.
 
-`ftime` returns current whole seconds, minutes west of UTC and a flag indicating
-whether the selected zone allows DST. `millitm` is zero because the current
-native clock interface has second precision. The native timeb contains a
+`ftime` returns an atomic seconds/milliseconds snapshot, minutes west of UTC
+and a flag indicating whether the selected zone allows DST. `millitm` has
+10 ms resolution from the 100 Hz PIT. The native timeb contains a
 64-bit time field; it is not a PDP-11 binary ABI. Kernel `stime` remains root
 only and does not write the RTC. Timers and alarms remain monotonic.
 
