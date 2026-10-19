@@ -1560,3 +1560,12 @@ test-inventory: test-libc-source-coverage
 test-support-inputs: test-supplemental-inputs
 	$(PYTHON) tests/support_inputs.py --cc $(HOST_CC)
 test-unit: test-support-inputs
+
+build/vga.o: kernel/vga.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+build/vga-test: tests/vga.c kernel/vga.c kernel/include/vga.h tests/vga/io.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Itests/vga -Ikernel/include tests/vga.c kernel/vga.c -o $@
+.PHONY: test-vga-unit
+test-vga-unit: build/vga-test
+	./build/vga-test
+test-unit: test-vga-unit
