@@ -12,3 +12,10 @@ Each task has its own implementation/test commit in Git history.
 Retains final-component extraction, optional suffix removal, empty results for
 trailing slashes and status 1 plus a newline for missing arguments. Adapted
 historical two-argument puts to native puts. No modern option parser is added.
+
+## cal (120)
+
+Retains month/year output, Julian/Gregorian rules and Britain's missing eleven
+days in September 1752. Native fixes bound numeric parsing and trim calendar
+rows without reading outside the buffer. Invalid dates return 1; usage retains
+status 0. Fixtures independently construct modern month/year calendars.

@@ -1597,3 +1597,8 @@ test-vga: test-vga-unit test-keyboard-unit test-tty-lines-unit iso rootfs
 test-basename: iso rootfs
 	$(PYTHON) tools/guest_acceptance.py tests/guest/basename.json --qemu $(QEMU) --ram 16M --report build/basename-16M.json
 	$(PYTHON) tools/guest_acceptance.py tests/guest/basename.json --qemu $(QEMU) --ram 128M --report build/basename-128M.json
+
+.PHONY: test-cal
+test-cal: iso rootfs
+	$(PYTHON) tools/guest_acceptance.py tests/guest/cal.json --qemu $(QEMU) --ram 16M --report build/cal-16M.json
+	$(PYTHON) tools/guest_acceptance.py tests/guest/cal.json --qemu $(QEMU) --ram 128M --report build/cal-128M.json

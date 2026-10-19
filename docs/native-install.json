@@ -1869,6 +1869,19 @@
         "path": "v7-basename.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/cal",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.cal",
+      "source": {
+        "root": "programs",
+        "path": "v7-cal.elf"
+      },
+      "format": "elf"
     }
   ]
 }
