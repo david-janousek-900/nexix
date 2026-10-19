@@ -195,7 +195,8 @@ def validate(manifest, root=ROOT):
     try:
         plan = load(root / 'docs/native-install.json')
         validate_profiles(plan,load(root / 'docs/bootstrap-install.json'))
-        executable_paths = {e['path'] for e in plan if e.get('format') == 'elf'}
+        executable_paths = {e['path'] for e in plan if e.get('format') == 'elf' or
+                            (e.get('format')=='data' and entry_map[e['component']]['kind']=='installed_script')}
         for e in plan:
             if e['type']=='link' and e['target'] in executable_paths:
                 executable_paths.add(e['path'])

@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "single_user": true,
+  "cases": [
+    {
+      "id": "false",
+      "component": "script.false",
+      "steps": [
+        {
+          "command": "/bin/false",
+          "stdout": "",
+          "status": 1
+        },
+        {
+          "command": "/bin/false ignored",
+          "stdout": "",
+          "status": 1
+        },
+        {
+          "command": "/bin/sh /bin/false",
+          "stdout": "",
+          "status": 1
+        },
+        {
+          "command": "/bin/false && echo WRONG",
+          "stdout": "",
+          "status": 1
+        },
+        {
+          "command": "/bin/false || echo FALSE_BRANCH",
+          "stdout": "FALSE_BRANCH\n",
+          "status": 0
+        }
+      ]
+    }
+  ]
+}

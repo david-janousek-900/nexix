@@ -144,3 +144,10 @@ Retains unlimited repetition of y or the first argument, including empty strings
 and the historical ignoring of additional operands. Native guest pipe fixtures
 check exact repeated bytes, close the reader, and require SIGPIPE termination
 and child cleanup rather than leaving an infinite writer running.
+
+## false (136)
+
+Installs the original executable script byte-for-byte. Shell fallback and explicit
+/bin/sh invocation both return 1; extra arguments and boolean list behavior are
+checked in guests. Installation/inventory checks now account for executable
+scripts as well as ELF commands and aliases, and verify reference-byte fidelity.

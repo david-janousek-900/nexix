@@ -2083,6 +2083,19 @@
         "path": "v7-yes.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/false",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "script.false",
+      "source": {
+        "root": "config",
+        "path": "bin/false"
+      },
+      "format": "data"
     }
   ]
 }

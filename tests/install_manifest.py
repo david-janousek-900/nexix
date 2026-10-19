@@ -44,6 +44,22 @@ class Installation(unittest.TestCase):
         self.assertEqual(bootstrap, Path('build/root.img').read_bytes())
         self.assertFalse((self.stage / 'root/dev/console').exists())
 
+    def test_installed_scripts_preserve_reference_bytes(self):
+        self.stage_it()
+        entries,payloads=install.read_stage(self.stage,self.manifest)
+        owners={e['id']:e for e in json.loads(install.INVENTORY.read_text())['entries']}
+        for e in entries:
+            owner=owners[e['component']]
+            if owner['kind']=='installed_script':
+                self.assertEqual(payloads[e['path']],(install.ROOT/owner['source_files'][0]).read_bytes())
+                self.assertTrue(int(e['mode'],8)&0o111)
+
+    def test_nonexecutable_script_is_rejected(self):
+        next(e for e in self.plan['entries'] if e['path']=='/bin/false')['mode']='0644'
+        self.save()
+        with self.assertRaisesRegex(ValueError,'invalid executable script'):
+            install.load(self.manifest)
+
     def test_metadata_and_hardlinks_reach_disk(self):
         config = self.base / 'config'; config.mkdir(); (config / 'payload').write_bytes(b'guest data')
         common = dict(mode='0755', uid=123, gid=456, component='distribution.config')

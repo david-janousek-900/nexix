@@ -92,6 +92,11 @@ def load(path=MANIFEST):
             raise ValueError(f'unknown component: {e["component"]}')
         if 'bootstrap' in e and (e.get('format') != 'elf' or type(e['bootstrap']) is not bool):
             raise ValueError(f'invalid bootstrap selection: {e["path"]}')
+        if owners[e['component']]['kind']=='installed_script':
+            if e.get('format')!='data' or e.get('source',{}).get('root')!='config' or not int(e.get('mode','0'),8)&0o111:
+                raise ValueError(f'invalid executable script: {e["path"]}')
+            if not any(o['install']==e['path'] and o['status']=='implemented' for o in owners[e['component']]['outputs']):
+                raise ValueError(f'unimplemented or mismatched script: {e["path"]}')
         if e.get('format') == 'elf':
             name = PurePosixPath(e['path']).name
             if not re.fullmatch(r'[A-Za-z0-9_-]+', name) or e['source'] != {'root': 'programs', 'path': 'v7-'+name+'.elf'}:

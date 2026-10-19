@@ -1682,3 +1682,8 @@ test-test: iso rootfs build/test-command.elf
 test-yes: iso rootfs build/yes-command.elf
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M yes
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M yes
+
+.PHONY: test-false
+test-false: iso rootfs
+	$(PYTHON) tools/guest_acceptance.py tests/guest/false.json --qemu $(QEMU) --ram 16M --report build/false-16M.json
+	$(PYTHON) tools/guest_acceptance.py tests/guest/false.json --qemu $(QEMU) --ram 128M --report build/false-128M.json
