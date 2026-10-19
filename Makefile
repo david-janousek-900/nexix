@@ -1687,3 +1687,8 @@ test-yes: iso rootfs build/yes-command.elf
 test-false: iso rootfs
 	$(PYTHON) tools/guest_acceptance.py tests/guest/false.json --qemu $(QEMU) --ram 16M --report build/false-16M.json
 	$(PYTHON) tools/guest_acceptance.py tests/guest/false.json --qemu $(QEMU) --ram 128M --report build/false-128M.json
+
+.PHONY: test-true
+test-true: iso rootfs
+	$(PYTHON) tools/guest_acceptance.py tests/guest/true.json --qemu $(QEMU) --ram 16M --report build/true-16M.json
+	$(PYTHON) tools/guest_acceptance.py tests/guest/true.json --qemu $(QEMU) --ram 128M --report build/true-128M.json

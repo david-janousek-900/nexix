@@ -139,12 +139,12 @@ installed; the complete list and destinations are in [the installation manifest]
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](docs/development-interfaces.md).
 The inventory accounts for **217 components, 2,144 distribution files and
-35 supporting/platform requirements**. Its component statuses are 43 implemented,
-3 partial, 1 prototype and 170 not ported; importing reference inputs does not
+35 supporting/platform requirements**. Its component statuses are 44 implemented,
+3 partial, 1 prototype and 169 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **371 tracking tasks: 131 done, 0 in progress
-and 240 to do** after task 88. Tasks **1–108 and 367–371 are complete**. These counts are a work breakdown, not an
+The expanded roadmap below has **371 tracking tasks: 132 done, 0 in progress
+and 239 to do** after task 88. Tasks **1–108 and 367–371 are complete**. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -394,7 +394,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 134 | Port test | Done | Retained source; native build/install, error/status and guest fixtures; `make test-test` at 16/128 MiB; [contract](docs/essential-commands.md); Git history |
 | 135 | Port yes | Done | Retained source; native build/install, error/status and guest fixtures; `make test-yes` at 16/128 MiB; [contract](docs/essential-commands.md); Git history |
 | 136 | Install/test false script | Done | Retained source; native build/install, error/status and guest fixtures; `make test-false` at 16/128 MiB; [contract](docs/essential-commands.md); Git history |
-| 137 | Install/test true script | To do | Original script behavior and dependencies |
+| 137 | Install/test true script | Done | Retained source; native build/install, error/status and guest fixtures; `make test-true` at 16/128 MiB; [contract](docs/essential-commands.md); Git history |
 | 138 | Install/test nohup script | To do | Original script behavior and dependencies |
 
 ### Text processing and editing

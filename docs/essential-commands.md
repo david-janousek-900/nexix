@@ -151,3 +151,10 @@ Installs the original executable script byte-for-byte. Shell fallback and explic
 /bin/sh invocation both return 1; extra arguments and boolean list behavior are
 checked in guests. Installation/inventory checks now account for executable
 scripts as well as ELF commands and aliases, and verify reference-byte fidelity.
+
+## true (137)
+
+Installs the original zero-byte executable script, without inventing a body or
+shebang. Guest fixtures verify status 0 through shell fallback and explicit
+interpretation, extra arguments and boolean lists, including reset of a prior
+failure. Staging tests preserve its empty payload exactly.

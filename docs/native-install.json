@@ -2096,6 +2096,19 @@
         "path": "bin/false"
       },
       "format": "data"
+    },
+    {
+      "path": "/bin/true",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "script.true",
+      "source": {
+        "root": "config",
+        "path": "bin/true"
+      },
+      "format": "data"
     }
   ]
 }

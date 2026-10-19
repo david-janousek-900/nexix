@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "single_user": true,
+  "cases": [
+    {
+      "id": "true",
+      "component": "script.true",
+      "steps": [
+        {
+          "command": "/bin/true",
+          "stdout": "",
+          "status": 0
+        },
+        {
+          "command": "/bin/true ignored",
+          "stdout": "",
+          "status": 0
+        },
+        {
+          "command": "/bin/sh /bin/true",
+          "stdout": "",
+          "status": 0
+        },
+        {
+          "command": "/bin/true && echo TRUE_BRANCH",
+          "stdout": "TRUE_BRANCH\n",
+          "status": 0
+        },
+        {
+          "command": "/bin/true || echo WRONG",
+          "stdout": "",
+          "status": 0
+        },
+        {
+          "command": "/bin/false; /bin/true",
+          "stdout": "",
+          "status": 0
+        },
+        {
+          "command": "/bin/true && /bin/false",
+          "stdout": "",
+          "status": 1
+        }
+      ]
+    }
+  ]
+}
