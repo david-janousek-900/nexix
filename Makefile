@@ -1748,3 +1748,19 @@ test-dmesg: test-klog-unit multi-iso rootfs
 	$(PYTHON) tools/dmesg_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/dmesg_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-dmesg
+
+# Task 357: explicit offline upgrades never overwrite an existing backup.
+UPGRADE_BACKUP ?= $(DISK_IMAGE).bak
+.PHONY: install-disk upgrade-preview upgrade-disk test-upgrade-unit test-upgrade
+install-disk: disk
+upgrade-preview: stage
+	$(PYTHON) tools/upgrade_disk.py --image "$(DISK_IMAGE)" --stage "$(INSTALL_STAGE)" --manifest "$(INSTALL_MANIFEST)"
+upgrade-disk: stage
+	$(PYTHON) tools/upgrade_disk.py --image "$(DISK_IMAGE)" --stage "$(INSTALL_STAGE)" --manifest "$(INSTALL_MANIFEST)" --apply --backup "$(UPGRADE_BACKUP)"
+test-upgrade-unit:
+	$(PYTHON) tests/upgrade_disk.py
+test-unit: test-upgrade-unit
+test-upgrade: test-upgrade-unit serial-iso rootfs
+	$(PYTHON) tools/upgrade_smoke.py $(QEMU) build/nexix-serial.iso 16M
+	$(PYTHON) tools/upgrade_smoke.py $(QEMU) build/nexix-serial.iso 128M
+test: test-upgrade

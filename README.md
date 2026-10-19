@@ -158,7 +158,11 @@ Ctrl-C interrupts a foreground command. To stop serial QEMU, press Ctrl-A,
 release it, then press X. For VGA QEMU, close its window after flushing updates.
 
 The working disk persists between boots. Rebuilding does **not** install new
-programs or configuration into an existing disk. To try a fresh installation
+programs or configuration into an existing disk. For an offline upgrade, stop
+QEMU, run `make upgrade-preview`, then `make UPGRADE_BACKUP=build/before-upgrade.img upgrade-disk`.
+This backs up the old image, updates managed programs, and preserves accounts,
+existing configuration and user files. See [disk upgrades](docs/disk-upgrades.md).
+To try a fresh installation
 while preserving the old one, choose an unused image filename:
 
 ```sh

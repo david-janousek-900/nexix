@@ -63,15 +63,15 @@ and the guest is booted in multi mode.
 ## Existing installations
 
 Rebuilding the ISO updates the kernel but does not update init or configuration
-on an existing disk. Use a freshly seeded disk for the exclusive console policy,
-or install the rebuilt `/etc/init` yourself. Keep an enabled `19console` entry in
+on an existing disk. Use the [offline upgrader](disk-upgrades.md) to install
+rebuilt programs while retaining accounts and configuration, or seed a fresh disk. Keep an enabled `19console` entry in
 `/etc/ttys`. The kernel passes the console mode to init; the same disk can then
 boot either ISO without editing `/etc/ttys`.
 
 For the optional multi profile, local login requires a root-owned mode-0600
 `/dev/tty0` character node (major 1/minor 2) and a `19tty0` entry alongside the
 serial entries. The currently installed utilities cannot create missing device
-nodes; automatic disk upgrades remain task 357.
+nodes; the host-side offline upgrader adds missing packaged nodes.
 
 For an immediately usable graphical login without changing the old image,
 stop the VM and run `make DISK_IMAGE=build/vga-fresh.img run-vga` with an unused

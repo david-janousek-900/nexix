@@ -35,7 +35,8 @@ program to the full installation requires no bootstrap manifest change.
 `make run` continues to need no variable overrides. It attaches `build/nexix.img`
 and boots the ISO. A new working disk receives the full distribution seed;
 an existing path is never replaced or resized. Existing installations are not
-silently upgraded. To use a fresh installation while preserving the old disk:
+silently upgraded. Use [explicit offline upgrades](disk-upgrades.md) to update an
+existing working disk with a backup. To use a fresh installation while preserving the old disk:
 
 ```
 make DISK_IMAGE=build/fresh.img run

@@ -34,5 +34,7 @@ root's `/root` login and native Backspace editing.
 
 Fresh installations give root a private mode-0700 `/root` and `/root/.profile`.
 The recovery startup profile remains at `/.profile` as well. Existing persistent
-disks are preserved by builds: install the updated passwd/profile/getty/dmesg
-files and create `/root` yourself, or use an unused `DISK_IMAGE` for a fresh root.
+disks are preserved by builds. The [offline upgrader](disk-upgrades.md) installs
+new programs and missing directories while retaining existing accounts and TZ;
+review preserved configuration when migrating an older root home. A fresh root
+can instead be created with an unused `DISK_IMAGE`.

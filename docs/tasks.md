@@ -19,8 +19,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 3 partial, 1 prototype and 167 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **371 tracking tasks: 134 done, 0 in progress
-and 237 to do** after tasks 119–138 and 251. Tasks **1–108, 119–138, 251 and 367–371 are complete**. These counts are a work breakdown, not an
+The expanded roadmap below has **371 tracking tasks: 135 done, 0 in progress
+and 236 to do** after tasks 119–138, 251 and 357. Tasks **1–108, 119–138, 251, 357 and 367–371 are complete**. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -568,7 +568,7 @@ required before native-port acceptance.
 | 354 | Adapt/test makeall historical build script | To do | Use native paths/tools; all supported component recipes |
 | 355 | Full native V7 source-tree build acceptance | To do | All supplied source components, helpers, libraries and explicit native equivalents |
 | 356 | Package complete 0.1.0 distribution | To do | Programs, scripts, libraries, headers, source/build inputs, manuals/data and permissions |
-| 357 | Persistent disk upgrade/install tooling | To do | Back up first; preserve accounts/data/TZ and timestamp disk formats |
+| 357 | Persistent disk upgrade/install tooling | Done | Git history; [offline upgrade contract](disk-upgrades.md); verified staging, exclusive offline locks, mandatory non-overwritten backup, candidate validation and atomic publication; account/config/TZ/data/hard-link/sparse-file/timestamp preservation; failure tests and two cold boots at 16/128 MiB |
 | 358 | Full multi-user/time/storage/userland acceptance | To do | 16/128 MiB baseline; full IDE release at 128 MiB and two terminals |
 | 359 | Close all component/source/device blockers | To do | All 217 entries/35 requirements traceable; close historical device-directory node/consumer audit; no hidden omissions |
 | 360 | Reproducible host-bootstrap build and release provenance | To do | Pin SDK inputs, artifact hashes, licensing and validation evidence |
