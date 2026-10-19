@@ -1,3 +1,4 @@
+#include "console.h"
 #include "uaccess.h"
 #include "userland.h"
 #include "files.h"
@@ -24,7 +25,7 @@ static void mount_root(void)
     if(ramdisk_init(&root_device,root_bytes,length,false) ||
        v7fs_mount(&root_volume,&root_device.device,false) || files_mount_root(&root_volume))
         panic("cannot mount root");
-    serial_puts("NEXIX_ROOT_MOUNTED\r\n");
+    console_puts("NEXIX_ROOT_MOUNTED\r\n");
 }
 _Noreturn void rootfs_start(void)
 {
@@ -32,17 +33,21 @@ _Noreturn void rootfs_start(void)
     int error=ide_init(&ide_device);
     if(error==-NX_ENODEV) {
         mount_root();
-        serial_puts("NEXIX_ROOT_RAM\r\n");
+        console_puts("NEXIX_ROOT_RAM\r\n");
     } else {
         if(error || v7fs_mount(&root_volume,&ide_device,false) ||
            files_mount_root(&root_volume)) panic("cannot mount IDE root");
-        serial_puts("NEXIX_ROOT_IDE\r\nNEXIX_ROOT_MOUNTED\r\n");
+        console_puts("NEXIX_ROOT_IDE\r\nNEXIX_ROOT_MOUNTED\r\n");
     }
     v7_ino_t ino;
     if(v7fs_lookup(&root_volume,V7_ROOTINO,"/etc/init",&ino))panic("missing init");
     const char name[]="/etc/init";
     for(size_t i=0;i<sizeof(name);++i)init_args.bytes[i]=name[i];
     init_args.used=sizeof(name);init_args.argc=1;
+    const char *environment = console_mode() == BOOT_CONSOLE_VGA ? "NEXIX_CONSOLE=vga" :
+        console_mode() == BOOT_CONSOLE_SERIAL ? "NEXIX_CONSOLE=serial" : "NEXIX_CONSOLE=multi";
+    init_args.envc=1;init_args.envp[0]=init_args.used;
+    do { init_args.bytes[init_args.used++]=*environment; } while (*environment++);
     struct exec_image image={0};
     if(elf_load_inode(&root_volume,ino,&init_args,&image)||files_image_text(ino,&image))panic("cannot load init");
     struct proc *p=proc_alloc();
@@ -58,7 +63,7 @@ _Noreturn void rootfs_start(void)
     p->p_user->u_comm[0]='i';p->p_user->u_comm[1]='n';p->p_user->u_comm[2]='i';p->p_user->u_comm[3]='t';
     exec_image_release(&empty);
     if(!proc_start_init(p,image.entry,image.stack))panic("cannot start init");
-    serial_puts("NEXIX_INIT_PID1\r\nNEXIX_BOOT_OK\r\n");
+    console_puts("NEXIX_INIT_PID1\r\nNEXIX_BOOT_OK\r\n");
     proc_run();
     panic("init scheduler returned");
 }
@@ -376,18 +381,18 @@ void root_exec_selftest(void)
     v7_pid_t pid=p->p_pid;exec_testing=true;proc_run();exec_testing=false;int32_t status;
     if(held_count)panic("exec fault fixture leaked pages");
     if(proc_collect(&status)!=pid || status) {
-        serial_puts("Nexix: root exec failure status=");serial_hex(status);serial_puts("\r\n");
+        console_puts("Nexix: root exec failure status=");console_hex(status);console_puts("\r\n");
         panic("root exec test failed");
     }
     if(!trace_orphan||proc_collect(&status)!=trace_orphan||status!=NX_SIGINT||proc_collect(NULL)!=-NX_ECHILD)
         panic("trace orphan release/reap failed");
     trace_orphan=0;
-    serial_puts("NEXIX_PTRACE_ORPHAN_OK\r\n");
+    console_puts("NEXIX_PTRACE_ORPHAN_OK\r\n");
     if(files_live() || tty_open_count() || page_free_count()!=pages ||
         v7_disk_u32(root_volume.super.tfree)!=blocks ||
         v7_disk_u16(root_volume.super.tinode)!=inodes)
         panic("root exec cleanup failed");
     for(unsigned i=1;i<STORAGE_SLOTS;++i)if(storage_bind(i,NULL,false))panic("storage handles leaked");
     if(files_mount(NULL) || v7fs_unmount(&root_volume))panic("cannot detach test root");
-    serial_puts("NEXIX_ROOT_EXEC_OK\r\nNEXIX_ROOT_EXEC_CLEANUP_OK\r\n");
+    console_puts("NEXIX_ROOT_EXEC_OK\r\nNEXIX_ROOT_EXEC_CLEANUP_OK\r\n");
 }

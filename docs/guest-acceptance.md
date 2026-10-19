@@ -2,6 +2,9 @@
 
 `tools/guest_acceptance.py` creates a disposable IDE root from verified staging,
 starts QEMU and executes a component suite. It never attaches the working disk.
+The default test ISO is `build/nexix-multi.iso` (`make multi-iso`), which explicitly
+enables independent terminals. The production ISO defaults to exclusive VGA;
+use `make test-console` to validate production console routing.
 Cases identify inventory component IDs; each command checks merged serial output
 and the shell's actual exit status using an unpredictable marker. Raw send/expect
 steps support interactive programs, control characters and alternate prompts.

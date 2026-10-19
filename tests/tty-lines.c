@@ -40,6 +40,12 @@ int main(void)
     tty_receive_line(2,0x80,0);tty_receive_line(2,0,0);
     const uint8_t raw_local[]={0x80,0};expect(z,raw_local,2);
     tty_close(z);assert(!tty_open_count());
+    tty_console_line=2;
+    struct proc d={.p_pid=40};struct user ud={.u_procp=&d};
+    assert(!tty_open(NX_CONSOLE_DEV,&ud,&alias) && alias==z);
+    assert(ud.u_ttyd==NX_CONSOLE_DEV);
+    tty_close(alias);tty_console_line=0;
+    assert(!tty_open_count());
     assert(tty_open(0x103,&uc,&alias)==-NX_ENXIO);
     puts("PASS: independent TTY queues, settings, transports, ownership, ctty alias, exclusivity and close lifetime");
 }

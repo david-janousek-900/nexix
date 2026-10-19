@@ -1,3 +1,4 @@
+#include "console.h"
 #include "packet.h"
 #include "keyboard.h"
 #include "modem.h"
@@ -39,9 +40,9 @@ static volatile uint64_t ticks;
 _Noreturn void panic(const char *message)
 {
     __asm__ volatile ("cli" : : : "memory");
-    serial_puts("Nexix PANIC: ");
-    serial_puts(message);
-    serial_puts("\r\n");
+    console_puts("Nexix PANIC: ");
+    console_puts(message);
+    console_puts("\r\n");
     for (;;)
         __asm__ volatile ("hlt");
 }
@@ -92,7 +93,7 @@ static void dispatch(struct interrupt_frame *frame)
         if (!interrupt_stack_valid(frame))
             panic("invalid IST entry stack");
         if (frame->vector == 8)
-            serial_puts("NEXIX_DOUBLE_FAULT_STACK_OK\r\n");
+            console_puts("NEXIX_DOUBLE_FAULT_STACK_OK\r\n");
     } else if ((frame->cs & 3) == 3) {
         if (proc_current()) proc_user_interrupt(frame);
         else user_mode_interrupt(frame);
@@ -125,20 +126,20 @@ static void dispatch(struct interrupt_frame *frame)
         signal_post(proc_current(), n); signal_deliver(frame); return;
     }
     if (frame->vector < 32) {
-        serial_puts("Nexix: trap cs="); serial_hex(frame->cs);
-        serial_puts(" ss="); serial_hex(frame->ss);
-        serial_puts(" rsp="); serial_hex(frame->rsp);
-        serial_puts(" frame="); serial_hex((uintptr_t)frame);
-        serial_puts("\r\n");
-        serial_puts("Nexix: exception vector="); serial_hex(frame->vector);
-        serial_puts(" error="); serial_hex(frame->error);
-        serial_puts(" rip="); serial_hex(frame->rip);
+        console_puts("Nexix: trap cs="); console_hex(frame->cs);
+        console_puts(" ss="); console_hex(frame->ss);
+        console_puts(" rsp="); console_hex(frame->rsp);
+        console_puts(" frame="); console_hex((uintptr_t)frame);
+        console_puts("\r\n");
+        console_puts("Nexix: exception vector="); console_hex(frame->vector);
+        console_puts(" error="); console_hex(frame->error);
+        console_puts(" rip="); console_hex(frame->rip);
         if (frame->vector == 14) {
             uintptr_t cr2;
             __asm__ volatile ("mov %%cr2, %0" : "=r"(cr2));
-            serial_puts(" cr2="); serial_hex(cr2);
+            console_puts(" cr2="); console_hex(cr2);
         }
-        serial_puts("\r\n");
+        console_puts("\r\n");
         panic("unhandled CPU exception");
     }
     if (frame->vector >= 32 && frame->vector < 48) {

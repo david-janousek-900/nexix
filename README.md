@@ -7,8 +7,8 @@ historical source and behavior where practical. Programs are rebuilt as native
 ELF64 executables; Nexix does not emulate PDP-11 binaries.
 
 The current development version is **0.1.0**. It boots in QEMU to multi-user login
-on a VGA/PS/2 console and two serial terminals, with persistent IDE storage,
-the V7 Bourne shell and 39 native programs. The kernel provides protected process
+on a VGA/PS/2 console by default, with optional serial mode. It provides persistent
+IDE storage, the V7 Bourne shell and 39 native programs. The kernel provides protected process
 address spaces, scheduling, fork/exec, signals, pipes, permissions and filesystem
 operations. Native libc, libm, startup objects and headers support the ported
 programs. The complete V7 port and guest self-hosting are still unfinished.
@@ -115,7 +115,7 @@ seed and boot ISO separately. See [image construction](docs/root-images.md) and
 For the VGA console, run:
 
 ```sh
-make run-vga
+make run
 ```
 
 This builds any missing artifacts and opens QEMU's GTK window with standard VGA
@@ -127,12 +127,15 @@ The local keyboard layout is US.
 For a host-terminal serial console, including on a headless host, run:
 
 ```sh
-make run
+make run-serial
 ```
 
 This connects COM1 (`/dev/console`, also `/dev/ttyS0`) to the launching terminal.
-The VGA login uses `/dev/tty0`. In a second host terminal, `make terminal` attaches
-to the independent COM2 login (`/dev/ttyS1`); Ctrl-] disconnects that attachment.
+In both modes `/dev/console` follows the selected device, including kernel boot
+and panic messages, startup scripts and login. The inactive console stays silent.
+`make run-vga` explicitly selects VGA; `make CONSOLE=serial run` is equivalent
+to `make run-serial`, which builds and boots `build/nexix-serial.iso` for COM1. Both modes use the same persistent disk.
+An optional multi-terminal profile is described in the [console guide](docs/vga-console.md).
 
 After logging in, try:
 
@@ -178,13 +181,15 @@ make test-inventory
 make test-unit
 make test-essential
 make test-vga
+make test-console
 ```
 
 `test-inventory` checks historical file hashes, source coverage and task mappings.
 `test-unit` runs host-side checks, including compiler sanitizer tests.
 `test-essential` exercises the essential command ports in guests at 16 and
 128 MiB. `test-vga` drives real emulated VGA/PS/2 login and shell sessions at
-both memory sizes. Guest tests use disposable images rather than the working
+both memory sizes. `test-console` checks exclusive VGA/serial routing, including
+boot, login, `/dev/console` writes and panic output. Guest tests use disposable images rather than the working
 disk; VGA tests require local QMP sockets. Run `make test` for the broader
 regression suite. Some tests intentionally provoke kernel faults and accept
 only the expected diagnostic. See [validation](docs/validation.md) for details.

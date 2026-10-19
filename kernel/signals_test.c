@@ -1,3 +1,4 @@
+#include "console.h"
 #include "signals.h"
 #include "exec.h"
 #include "files.h"
@@ -45,10 +46,10 @@ void signals_selftest(void)
         proc_run();
         int32_t status;
         REQUIRE(proc_collect(&status) == pid);
-        if (status) { serial_puts("Nexix: signal test failure status="); serial_hex(status); serial_puts("\r\n"); }
+        if (status) { console_puts("Nexix: signal test failure status="); console_hex(status); console_puts("\r\n"); }
         REQUIRE(status == 0 && proc_collect(NULL) == -NX_ECHILD);
         REQUIRE(files_live() == 0 && tty_open_count() == 0 && page_free_count() == before);
         REQUIRE(files_mount(NULL) == 0 && v7fs_unmount(&fs) == 0);
     }
-    serial_puts("NEXIX_SIGNALS_OK\r\nNEXIX_HEAP_OK\r\nNEXIX_INIT_SYSCALLS_OK\r\nNEXIX_SIGNALS_CLEANUP_OK\r\n");
+    console_puts("NEXIX_SIGNALS_OK\r\nNEXIX_HEAP_OK\r\nNEXIX_INIT_SYSCALLS_OK\r\nNEXIX_SIGNALS_CLEANUP_OK\r\n");
 }

@@ -95,7 +95,7 @@ class Guest:
         self.sockets=[];self.diagnostics.close();self.temp.cleanup()
 
 
-def run_suite(suite_path,report,qemu='qemu-system-x86_64',iso='build/nexix.iso',ram='128M',stage='build/stage',manifest=MANIFEST,components=None):
+def run_suite(suite_path,report,qemu='qemu-system-x86_64',iso='build/nexix-multi.iso',ram='128M',stage='build/stage',manifest=MANIFEST,components=None):
     suite=load_suite(suite_path);cases=[c for c in suite['cases'] if not components or c['component'] in components]
     if not cases:raise ValueError('no selected cases')
     report=Path(report);report.parent.mkdir(parents=True,exist_ok=True)
@@ -133,7 +133,7 @@ def run_suite(suite_path,report,qemu='qemu-system-x86_64',iso='build/nexix.iso',
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('suite',type=Path);parser.add_argument('--report',type=Path,required=True)
-    parser.add_argument('--qemu',default='qemu-system-x86_64');parser.add_argument('--iso',default='build/nexix.iso');parser.add_argument('--ram',default='128M')
+    parser.add_argument('--qemu',default='qemu-system-x86_64');parser.add_argument('--iso',default='build/nexix-multi.iso');parser.add_argument('--ram',default='128M')
     parser.add_argument('--stage',default='build/stage');parser.add_argument('--manifest',type=Path,default=MANIFEST);parser.add_argument('--component',action='append')
     args=parser.parse_args()
     try:result=run_suite(args.suite,args.report,args.qemu,args.iso,args.ram,args.stage,args.manifest,args.component)

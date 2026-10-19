@@ -312,7 +312,7 @@ insert a newline or permanently close the terminal.
 `make TOOLCHAIN_PREFIX= test-shell` exercises RAM and disposable IDE roots at
 16M/128M. IDE logs are `build/interactive-16M-ide.log` and
 `build/interactive-128M-ide.log`; the working `build/nexix.img` is never changed.
-If input becomes unresponsive under `make run`, QEMU's monitor can be reached
+If serial input becomes unresponsive under `make run-serial`, QEMU's monitor can be reached
 with Ctrl-A then C. Capture `info registers` and `info pic` before rebooting to
 help distinguish guest interrupt/scheduler failures from host terminal input
 problems. Ctrl-A then C returns to the guest terminal.
@@ -431,3 +431,14 @@ Run `make test-memdev` for host and 16/128 MiB syscall tests.
 Task 70 adds [native V7 disk-controller equivalents](disk-controllers.md),
 including partition-aware mounted-alias protection and auxiliary ATA media.
 Run `make test-disk` for host models and 16/128 MiB cold-boot persistence.
+
+## Selected console routing
+
+`make test-console` exercises the production VGA and serial ISOs at 16/128 MiB:
+boot diagnostics, startup script, login, shell output, explicit `/dev/console`
+writes, logout and an injected-NMI panic. Inactive UARTs remain silent in VGA
+mode, and VGA receives no Nexix output in serial mode. `make test-console-unit`
+also verifies bounded command-line parsing, output dispatch and TTY alias mapping.
+Existing multi-terminal tests explicitly boot `build/nexix-multi.iso`; this keeps
+the production default independent of serial test observation. See
+[console modes](vga-console.md) for run commands and existing-disk requirements.

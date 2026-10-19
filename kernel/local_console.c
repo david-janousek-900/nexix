@@ -1,3 +1,4 @@
+#include "console.h"
 /* Independent local terminal: synchronous VGA output and IRQ-driven PS/2 input. */
 #include "local_console.h"
 #include "vga.h"
@@ -16,11 +17,9 @@ static const struct tty_driver driver={NULL,enqueue,idle,flush,format,outputs,st
 static void receive(uint8_t c){tty_receive_line(2,c,0);}
 void local_console_init(void)
 {
-    vga_init((volatile uint16_t *)0xb8000);
     if(tty_attach(2,&driver))return;
     if(!keyboard_init(receive)){
         static const uint8_t message[]="Nexix: PS/2 keyboard unavailable\r\n";
-        vga_write(message,sizeof(message)-1);
-        serial_puts((const char *)message);
+        console_puts((const char *)message);
     }
 }

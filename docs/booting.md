@@ -1,6 +1,8 @@
 # Root and PID 1 startup (task 18)
 
-Fresh full IDE installations now boot to `login:` on both serial lines. See
+Fresh full IDE installations boot to `login:` on VGA by default;
+`make run-serial` selects COM1 instead. Boot/panic messages and `/dev/console`
+follow that selection. See [console modes](vga-console.md) and
 [multi-user startup and credentials](multi-user.md). The single-user startup
 described below remains the fixed RAM recovery path and its `test-boot` fixture.
 
@@ -8,9 +10,9 @@ Run `make build` to create boot artifacts without launching QEMU, or `make run`
 to build and boot, on an x86_64 Linux host with GCC/binutils. Host tools are the
 default; an installed cross-toolchain can be selected with
 `make TOOLCHAIN_PREFIX=x86_64-elf- run`.
-GRUB loads Nexix, the kernel initializes memory, interrupts and the serial TTY,
+GRUB loads Nexix, the kernel initializes memory, interrupts and the selected console,
 then mounts the primary IDE master as the root. `make run` attaches
-`build/nexix.img`, initially copied from the packaged `build/root.img`.
+`build/nexix.img`, initially copied from the full `build/distribution.img`.
 Without that device, the kernel uses a writable RAM copy of the packaged root.
 It reads `/etc/init` through the V7 filesystem and builds a native ELF64 user
 address space. The first process receives PID 1; init forks the initial shell,
@@ -38,7 +40,8 @@ QEMU's multiplexed console so terminal control bytes can reach Nexix.
 
 IDE root changes survive QEMU restarts. See [storage.md](storage.md) for disk
 creation, preservation and resetting. Diskless boots use a fresh RAM root.
-Getty/login and multi-user startup are not implemented.
+Fresh full roots run getty/login; the preceding shell lifecycle describes the
+embedded recovery fixture.
 The mounted root has the current working directory fallback `/`; a chdir
 acquires a managed inode reference normally.
 

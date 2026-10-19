@@ -594,6 +594,10 @@ and remaining source-input blockers.
 
 ### VGA console and keyboard
 
+The default console now selects exclusive VGA output; serial is an explicit
+alternative. The independent three-terminal configuration remains available as
+`console=multi`. See [console selection and acceptance](vga-console.md).
+
 Add an independent BIOS VGA/PS/2 login on `/dev/tty0`, preserving COM1,
 COM2 and `/dev/console`. UEFI/framebuffer graphics, USB keyboard drivers,
 virtual-console switching and scrollback are outside this work.
@@ -650,7 +654,7 @@ completion of the ports.
 Version **0.2.0** adds PCI/e1000, lwIP IPv4/TCP/IP integration, sockets and
 basic network utilities.
 
-Start with single-core QEMU i440fx, serial console, and IDE storage. SMP,
+Start with single-core QEMU i440fx, VGA/PS/2 (or selected serial console), and IDE storage. SMP,
 physical hardware, UEFI, IPv6, secure remote access, and complete Nexix self-hosting follow
 the first release. See [architecture notes](architecture.md) and
 [source provenance](../reference/README.md).

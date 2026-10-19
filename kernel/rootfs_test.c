@@ -1,3 +1,4 @@
+#include "console.h"
 #include "exec.h"
 #include "v7/fs.h"
 #include "serial.h"
@@ -55,5 +56,5 @@ void rootfs_selftest(void)
         if(i==1||i>=4)REQUIRE(node.size==0);
     }
     REQUIRE(v7fs_unmount(&root_fs)==0 && page_free_count()==pages);
-    serial_puts("NEXIX_ROOT_IMAGE_OK\r\nNEXIX_ROOT_ELF_OK\r\n");
+    console_puts("NEXIX_ROOT_IMAGE_OK\r\nNEXIX_ROOT_ELF_OK\r\n");
 }

@@ -1,3 +1,4 @@
+#include "console.h"
 #include "tty.h"
 #include "files.h"
 #include "exec.h"
@@ -38,11 +39,11 @@ bool tty_test_gate(struct interrupt_frame *frame)
         ++sleeps;
         if (frame->rax == 0x504 || frame->rax == 0x505) {
             REQUIRE(uart);
-            serial_puts(frame->rax == 0x504 ? "NEXIX_TTY_UART_INTR_READY\r\n" : "NEXIX_TTY_UART_QUIT_READY\r\n");
+            console_puts(frame->rax == 0x504 ? "NEXIX_TTY_UART_INTR_READY\r\n" : "NEXIX_TTY_UART_QUIT_READY\r\n");
         }
         if (frame->rax == 0x503) {
             REQUIRE(uart);
-            serial_puts("NEXIX_TTY_UART_START_READY\r\n");
+            console_puts("NEXIX_TTY_UART_START_READY\r\n");
         }
     }
     frame->rax = 0; return true;
@@ -77,14 +78,14 @@ void tty_selftest(enum boot_test test)
         proc_run(); active = false;
         int32_t status;
         REQUIRE(proc_collect(&status) == root_pid);
-        if (status) { serial_puts("Nexix: tty test failure status="); serial_hex(status); serial_puts("\r\n"); }
+        if (status) { console_puts("Nexix: tty test failure status="); console_hex(status); console_puts("\r\n"); }
         REQUIRE(status == 0 && proc_collect(NULL) == -NX_ECHILD);
         REQUIRE(files_live() == 0 && tty_open_count() == 0 && page_free_count() == before);
         REQUIRE(files_mount(NULL) == 0 && v7fs_unmount(&fs) == 0);
     }
-    if(test==BOOT_TEST_PACKET)serial_puts("NEXIX_PACKET_CLEANUP_OK\r\n");
+    if(test==BOOT_TEST_PACKET)console_puts("NEXIX_PACKET_CLEANUP_OK\r\n");
     REQUIRE(sleeps == (test == BOOT_TEST_TTY ? 5U : 2U));
-    serial_puts("NEXIX_TTY_OK\r\nNEXIX_TTY_CLEANUP_OK\r\n");
-    if (test == BOOT_TEST_TTY) serial_puts("NEXIX_TTY_UART_OK\r\n");
-    if (test == BOOT_TEST_TTY_DEMO) serial_puts("NEXIX_TTY_DEMO_OK\r\n");
+    console_puts("NEXIX_TTY_OK\r\nNEXIX_TTY_CLEANUP_OK\r\n");
+    if (test == BOOT_TEST_TTY) console_puts("NEXIX_TTY_UART_OK\r\n");
+    if (test == BOOT_TEST_TTY_DEMO) console_puts("NEXIX_TTY_DEMO_OK\r\n");
 }

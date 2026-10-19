@@ -1,3 +1,4 @@
+#include "console.h"
 #include "fpu.h"
 #include "serial.h"
 #include "interrupts.h"
@@ -40,5 +41,5 @@ void fpu_init(void)
     initial.bytes[0] = 0x7f; initial.bytes[1] = 3;
     initial.bytes[24] = 0x80; initial.bytes[25] = 0x1f;
     fpu_restore(&initial);
-    serial_puts("NEXIX_FPU_OK\r\n");
+    console_puts("NEXIX_FPU_OK\r\n");
 }

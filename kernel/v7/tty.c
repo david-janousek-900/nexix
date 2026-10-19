@@ -37,6 +37,7 @@ struct tty {
     char input_channel, output_channel;
 };
 static struct tty terminals[TTY_LINES];
+unsigned tty_console_line;
 #define console terminals[0]
 static bool valid_tty(struct tty *t){for(unsigned i=0;i<TTY_LINES;++i)if(t==&terminals[i])return t->driver!=NULL;return false;}
 static void receive(struct tty *,uint8_t);
@@ -109,6 +110,7 @@ int tty_open(v7_dev_t dev,struct user *u,struct tty **out)
 {
     struct tty *t=&console;
     if((dev>>8)==1){if((dev&255)>=TTY_LINES)return -NX_ENXIO;t=&terminals[dev&255];}
+    if(dev==NX_CONSOLE_DEV)t=&terminals[tty_console_line];
     if(dev==NX_CTTY_DEV){if(!valid_tty(u->u_ttyp))return -NX_ENXIO;t=u->u_ttyp;}
     if(!t->driver)return -NX_ENODEV;
     unsigned profile=dev==NX_CTTY_DEV?t->profile:t->opens?t->profile:NX_TTY_NATIVE,line;

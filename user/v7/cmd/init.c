@@ -5,6 +5,8 @@
 #include <setjmp.h>
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 static void reset(int);
 static void merge_signal(int);
@@ -186,6 +188,13 @@ rline()
 	}
 	while(c > 0)
 		c = get();
+	/* The kernel selects one console; multi is the explicit legacy test profile.
+	 * Keep inactive configured lines from starting duplicate or failed gettys. */
+	{
+		char *mode = getenv("NEXIX_CONSOLE");
+		if (mode && strcmp(mode, "multi") && strcmp(line.line, "console"))
+			goto bad;
+	}
 	maktty(line.line);
 	if(access(tty, 06) < 0)
 		goto bad;

@@ -24,11 +24,13 @@ enum boot_test {
     BOOT_TEST_USER_PRIV, BOOT_TEST_USER_IO, BOOT_TEST_USER_INT,
     BOOT_TEST_USER_BAD_STACK, BOOT_TEST_USER_DF, BOOT_TEST_TTY, BOOT_TEST_TTY_DEMO, BOOT_TEST_PACKET, BOOT_TEST_SELFTEST
 };
+enum boot_console { BOOT_CONSOLE_VGA, BOOT_CONSOLE_SERIAL, BOOT_CONSOLE_MULTI };
 struct boot_info {
     uintptr_t address;
     uint32_t size;
     const struct boot_mmap *mmap;
     enum boot_test test;
+    enum boot_console console;
 };
 /* Validate the complete handoff within accessible_bytes before using its tags. */
 bool boot_parse(uintptr_t address, size_t accessible_bytes, struct boot_info *info);

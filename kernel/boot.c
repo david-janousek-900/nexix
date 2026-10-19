@@ -52,27 +52,50 @@ bool boot_parse(uintptr_t address, size_t accessible_bytes, struct boot_info *in
             if (command_seen || !string_valid(s, size - 8))
                 return false;
             command_seen = true;
-            if (string_equal(s, "test=selftest")) info->test = BOOT_TEST_SELFTEST;
-            if (string_equal(s, "test=ud")) info->test = BOOT_TEST_UD;
-            if (string_equal(s, "test=pf")) info->test = BOOT_TEST_PF;
-            if (string_equal(s, "test=memory")) info->test = BOOT_TEST_MEMORY;
-            if (string_equal(s, "test=wp")) info->test = BOOT_TEST_WP;
-            if (string_equal(s, "test=nx")) info->test = BOOT_TEST_NX;
-            if (string_equal(s, "test=unmap")) info->test = BOOT_TEST_UNMAP;
-            if (string_equal(s, "test=null")) info->test = BOOT_TEST_NULL;
-            if (string_equal(s, "test=paging-oom")) info->test = BOOT_TEST_PAGING_OOM;
-            if (string_equal(s, "test=protect")) info->test = BOOT_TEST_PROTECT;
-            if (string_equal(s, "test=user-kernel")) info->test = BOOT_TEST_USER_KERNEL;
-            if (string_equal(s, "test=user-ro")) info->test = BOOT_TEST_USER_RO;
-            if (string_equal(s, "test=user-nx")) info->test = BOOT_TEST_USER_NX;
-            if (string_equal(s, "test=user-priv")) info->test = BOOT_TEST_USER_PRIV;
-            if (string_equal(s, "test=user-io")) info->test = BOOT_TEST_USER_IO;
-            if (string_equal(s, "test=user-int")) info->test = BOOT_TEST_USER_INT;
-            if (string_equal(s, "test=user-bad-stack")) info->test = BOOT_TEST_USER_BAD_STACK;
-            if (string_equal(s, "test=user-df")) info->test = BOOT_TEST_USER_DF;
-            if (string_equal(s, "test=tty")) info->test = BOOT_TEST_TTY;
-            if (string_equal(s, "test=packet")) info->test = BOOT_TEST_PACKET;
-            if (string_equal(s, "test=tty-demo")) info->test = BOOT_TEST_TTY_DEMO;
+            bool console_seen = false;
+            while (*s) {
+                while (*s == ' ' || *s == '\t') ++s;
+                if (!*s) break;
+                char token[64] = {0};
+                unsigned length = 0;
+                while (*s && *s != ' ' && *s != '\t') {
+                    if (length < sizeof(token) - 1) token[length++] = *s;
+                    else return false;
+                    ++s;
+                }
+                token[length] = 0;
+                if (token[0]=='c' && token[1]=='o' && token[2]=='n' &&
+                    token[3]=='s' && token[4]=='o' && token[5]=='l' &&
+                    token[6]=='e' && token[7]=='=') {
+                    if (console_seen) return false;
+                    console_seen = true;
+                    if (string_equal(token, "console=vga")) info->console = BOOT_CONSOLE_VGA;
+                    else if (string_equal(token, "console=serial")) info->console = BOOT_CONSOLE_SERIAL;
+                    else if (string_equal(token, "console=multi")) info->console = BOOT_CONSOLE_MULTI;
+                    else return false;
+                }
+                if (string_equal(token, "test=selftest")) info->test = BOOT_TEST_SELFTEST;
+                if (string_equal(token, "test=ud")) info->test = BOOT_TEST_UD;
+                if (string_equal(token, "test=pf")) info->test = BOOT_TEST_PF;
+                if (string_equal(token, "test=memory")) info->test = BOOT_TEST_MEMORY;
+                if (string_equal(token, "test=wp")) info->test = BOOT_TEST_WP;
+                if (string_equal(token, "test=nx")) info->test = BOOT_TEST_NX;
+                if (string_equal(token, "test=unmap")) info->test = BOOT_TEST_UNMAP;
+                if (string_equal(token, "test=null")) info->test = BOOT_TEST_NULL;
+                if (string_equal(token, "test=paging-oom")) info->test = BOOT_TEST_PAGING_OOM;
+                if (string_equal(token, "test=protect")) info->test = BOOT_TEST_PROTECT;
+                if (string_equal(token, "test=user-kernel")) info->test = BOOT_TEST_USER_KERNEL;
+                if (string_equal(token, "test=user-ro")) info->test = BOOT_TEST_USER_RO;
+                if (string_equal(token, "test=user-nx")) info->test = BOOT_TEST_USER_NX;
+                if (string_equal(token, "test=user-priv")) info->test = BOOT_TEST_USER_PRIV;
+                if (string_equal(token, "test=user-io")) info->test = BOOT_TEST_USER_IO;
+                if (string_equal(token, "test=user-int")) info->test = BOOT_TEST_USER_INT;
+                if (string_equal(token, "test=user-bad-stack")) info->test = BOOT_TEST_USER_BAD_STACK;
+                if (string_equal(token, "test=user-df")) info->test = BOOT_TEST_USER_DF;
+                if (string_equal(token, "test=tty")) info->test = BOOT_TEST_TTY;
+                if (string_equal(token, "test=packet")) info->test = BOOT_TEST_PACKET;
+                if (string_equal(token, "test=tty-demo")) info->test = BOOT_TEST_TTY_DEMO;
+            }
         } else if (tag->type == 3) {
             if (size < 17)
                 return false;

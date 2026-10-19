@@ -7,13 +7,14 @@ AR = $(TOOLCHAIN_PREFIX)ar
 OBJCOPY = $(TOOLCHAIN_PREFIX)objcopy
 PYTHON ?= python3
 QEMU ?= qemu-system-x86_64
+CONSOLE ?= vga
 DISK_IMAGE ?= build/nexix.img
 INSTALL_MANIFEST ?= docs/native-install.json
 INSTALL_CONFIG ?= rootfs
 INSTALL_STAGE ?= build/stage
 FULL_ROOT_IMAGE ?= build/distribution.img
 CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-stack-protector -fno-pie -m64 -mno-red-zone -mgeneral-regs-only -fno-asynchronous-unwind-tables -Ikernel/include -Iinclude -MMD -MP
-OBJECTS = build/packet.o build/packet_tty.o build/packet_image.o build/boot.o build/main.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o build/elf.o build/exec.o build/exec_test.o build/exec_image.o build/libc_test.o build/libc_image.o build/block.o build/v7fs.o build/fs_test.o build/root_image.o build/files.o build/files_test.o build/files_image.o build/tty.o build/tty_test.o build/tty_image.o build/signals.o build/signals_test.o build/signals_image.o build/catalog.o build/v7_userland_test.o build/v7_test_image.o
+OBJECTS = build/console.o build/packet.o build/packet_tty.o build/packet_image.o build/boot.o build/main.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o build/elf.o build/exec.o build/exec_test.o build/exec_image.o build/libc_test.o build/libc_image.o build/block.o build/v7fs.o build/fs_test.o build/root_image.o build/files.o build/files_test.o build/files_image.o build/tty.o build/tty_test.o build/tty_image.o build/signals.o build/signals_test.o build/signals_image.o build/catalog.o build/v7_userland_test.o build/v7_test_image.o
 include build/native-config.mk
 OBJECTS += $(NATIVE_CONFIG_OBJECTS)
 
@@ -38,6 +39,9 @@ build/main.o: kernel/main.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/serial_secondary.o: kernel/serial_secondary.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/console.o: kernel/console.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/serial.o: kernel/serial.c | build/.dir
@@ -110,10 +114,13 @@ build/nexix.iso: build/nexix.elf boot/grub.cfg tools/pack_kernel.py
 	grub-mkrescue -o $@ build/iso
 
 iso: check build/nexix.iso
+
+serial-iso: check build/nexix-serial.iso
+multi-iso: check build/nexix-multi.iso
 build: iso disk
-run: build
+run-serial: build serial-iso
 	$(PYTHON) tools/serial_terminal.py --prepare build/ttyS1
-	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -rtc base=utc -boot d -drive "file=$(DISK_IMAGE),format=raw,if=ide,index=0" -cdrom build/nexix.iso -display none -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -serial pipe:build/ttyS1 -mon chardev=console,mode=readline -no-reboot
+	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -rtc base=utc -boot d -drive "file=$(DISK_IMAGE),format=raw,if=ide,index=0" -cdrom build/nexix-serial.iso -display none -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -serial pipe:build/ttyS1 -mon chardev=console,mode=readline -no-reboot
 
 .PHONY: terminal
 terminal:
@@ -125,14 +132,14 @@ smoke: check build/test-selftest.iso
 build/test-%.iso: build/nexix.elf boot/grub.cfg tools/pack_kernel.py
 	mkdir -p build/iso-$*/boot/grub
 	$(PYTHON) tools/pack_kernel.py build/nexix.elf build/iso-$*/boot/nexix.elf
-	sed 's|/boot/nexix.elf|/boot/nexix.elf test=$*|' boot/grub.cfg > build/iso-$*/boot/grub/grub.cfg
+	sed -e 's|set nexix_console=vga|set nexix_console=multi|' -e 's|/boot/nexix.elf|/boot/nexix.elf test=$*|' boot/grub.cfg > build/iso-$*/boot/grub/grub.cfg
 	grub-mkrescue -o $@ build/iso-$*
 
 build/test-memory.iso: build/nexix.elf boot/grub.cfg tools/pack_kernel.py
 	mkdir -p build/iso-memory/boot/grub
 	$(PYTHON) tools/pack_kernel.py build/nexix.elf build/iso-memory/boot/nexix.elf
 	$(PYTHON) -c 'from pathlib import Path; Path("build/iso-memory/boot/reservation.bin").write_bytes(bytes([0xa5]) * 8193)'
-	sed 's|/boot/nexix.elf|/boot/nexix.elf test=memory|' boot/grub.cfg | sed '/multiboot2/a\    module2 /boot/reservation.bin allocator-test' > build/iso-memory/boot/grub/grub.cfg
+	sed -e 's|set nexix_console=vga|set nexix_console=multi|' -e 's|/boot/nexix.elf|/boot/nexix.elf test=memory|' boot/grub.cfg | sed '/multiboot2/a\    module2 /boot/reservation.bin allocator-test' > build/iso-memory/boot/grub/grub.cfg
 	grub-mkrescue -o $@ build/iso-memory
 
 build/memory-test: tests/memory.c kernel/boot.c kernel/memory.c kernel/include/boot.h kernel/include/memory.h | build/.dir
@@ -426,17 +433,17 @@ OBJECTS += build/root_exec_image.o
 build/nexix.elf: build/root_exec_image.o
 -include build/root_exec_program.d
 .PHONY: test-boot
-test-boot: iso
-	$(PYTHON) tools/boot_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/boot_smoke.py $(QEMU) build/nexix.iso 128M
+test-boot: multi-iso
+	$(PYTHON) tools/boot_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/boot_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-boot
 
 .PHONY: test-shell
-test-shell: iso rootfs
-	$(PYTHON) tools/interactive_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/interactive_smoke.py $(QEMU) build/nexix.iso 128M
-	$(PYTHON) tools/interactive_smoke.py $(QEMU) build/nexix.iso 16M ide
-	$(PYTHON) tools/interactive_smoke.py $(QEMU) build/nexix.iso 128M ide
+test-shell: multi-iso rootfs
+	$(PYTHON) tools/interactive_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/interactive_smoke.py $(QEMU) build/nexix-multi.iso 128M
+	$(PYTHON) tools/interactive_smoke.py $(QEMU) build/nexix-multi.iso 16M ide
+	$(PYTHON) tools/interactive_smoke.py $(QEMU) build/nexix-multi.iso 128M ide
 test: test-shell
 
 # Preserve working disks; only new disks receive the full distribution seed.
@@ -448,9 +455,9 @@ build/ide.o: kernel/ide.c | build/.dir
 
 build/nexix.elf: build/ide.o
 -include build/ide.d
-test-storage: rootfs iso
-	$(PYTHON) tools/storage_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/storage_smoke.py $(QEMU) build/nexix.iso 128M
+test-storage: rootfs multi-iso
+	$(PYTHON) tools/storage_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/storage_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-storage
 build/ide-test: tests/ide.c tests/ide/io.h kernel/ide.c kernel/block.c kernel/include/ide.h kernel/include/block.h include/nexix/errno.h | build/.dir
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Itests/ide -Ikernel/include -Iinclude tests/ide.c kernel/ide.c kernel/block.c -o $@
@@ -475,9 +482,9 @@ build/nexix.elf: build/rtc.o build/clock.o
 build/rtc-test: tests/rtc.c tests/rtc/io.h kernel/arch/x86_64/rtc.c kernel/clock.c kernel/include/clock.h | build/.dir
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Itests/rtc -Ikernel/include -Iinclude tests/rtc.c kernel/arch/x86_64/rtc.c kernel/clock.c -o $@
 .PHONY: test-rtc
-test-rtc: build/rtc-test iso
+test-rtc: build/rtc-test multi-iso
 	./build/rtc-test
-	$(PYTHON) tools/rtc_smoke.py $(QEMU) build/nexix.iso
+	$(PYTHON) tools/rtc_smoke.py $(QEMU) build/nexix-multi.iso
 test: test-rtc
 
 # Task 24: test native time code against fixed calendar/DST expectations.
@@ -485,10 +492,10 @@ TIME_TEST_NAMES = -Derrno=nx_test_errno -Dgetenv=nx_test_getenv -Dtime=nx_test_t
 build/time-test: tests/time.c libc/time.c libc/include/time.h libc/include/sys/timeb.h libc/include/assert.h libc/include/stdlib.h | build/.dir
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -fno-builtin $(TIME_TEST_NAMES) -Ilibc/include -Iinclude tests/time.c libc/time.c -o $@
 .PHONY: test-time
-test-time: build/time-test iso
+test-time: build/time-test multi-iso
 	./build/time-test
-	$(PYTHON) tools/time_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/time_smoke.py $(QEMU) build/nexix.iso 128M
+	$(PYTHON) tools/time_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/time_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-time
 
 # Task 25: eager native x87/MMX/SSE state management.
@@ -1230,27 +1237,27 @@ build/image-scale.img: tools/mk_large_image_fixture.py tools/mk_rootfs.py tools/
 test-image-builder-unit: v7-userland build/image-scale-test
 	$(PYTHON) tests/image_builder.py
 test-unit: test-image-builder-unit
-test-image-builder: test-image-builder-unit test-rootfs test-inventory test-libc-interfaces iso
-	$(PYTHON) tools/image_scale_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/image_scale_smoke.py $(QEMU) build/nexix.iso 128M
+test-image-builder: test-image-builder-unit test-rootfs test-inventory test-libc-interfaces multi-iso
+	$(PYTHON) tools/image_scale_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/image_scale_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 # Task 85: independent full IDE seed and fixed embedded bootstrap.
 .PHONY: test-root-separation-unit test-root-separation
 test-root-separation-unit: build/nexix.elf
 	$(PYTHON) tests/root_separation.py
 test-unit: test-root-separation-unit
-test-root-separation: test-root-separation-unit rootfs test-rootfs test-inventory test-libc-interfaces iso
-	$(PYTHON) tools/root_separation_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/root_separation_smoke.py $(QEMU) build/nexix.iso 128M
+test-root-separation: test-root-separation-unit rootfs test-rootfs test-inventory test-libc-interfaces multi-iso
+	$(PYTHON) tools/root_separation_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/root_separation_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 # Task 86: manifest-driven disposable guest acceptance.
 .PHONY: test-guest-harness test-guest-harness-unit
 test-guest-harness-unit:
 	$(PYTHON) tests/guest_harness.py
 test-unit: test-guest-harness-unit
-test-guest-harness: rootfs iso test-guest-harness-unit
-	$(PYTHON) tools/guest_acceptance.py tests/guest/foundation.json --qemu $(QEMU) --ram 16M --report build/guest-16M.json
-	$(PYTHON) tools/guest_acceptance.py tests/guest/foundation.json --qemu $(QEMU) --ram 128M --report build/guest-128M.json
+test-guest-harness: rootfs multi-iso test-guest-harness-unit
+	$(PYTHON) tools/guest_acceptance.py tests/guest/foundation.json --qemu $(QEMU) --iso build/nexix-multi.iso --ram 16M --report build/guest-16M.json
+	$(PYTHON) tools/guest_acceptance.py tests/guest/foundation.json --qemu $(QEMU) --iso build/nexix-multi.iso --ram 128M --report build/guest-128M.json
 
 # Task 89: per-line TTY state and transport ownership.
 build/tty-lines-test: tests/tty-lines.c tests/tty-controller.c tests/packet-inactive.c kernel/v7/tty.c kernel/v7/tty_controller.c kernel/include/tty.h | build/.dir
@@ -1271,9 +1278,9 @@ build/serial-secondary-guest.elf: build/crt0.o build/serial-secondary-guest.o bu
 test-serial-secondary-unit: build/serial-secondary-test
 	./build/serial-secondary-test
 test-unit: test-serial-secondary-unit
-test-serial-secondary: test-serial-secondary-unit rootfs iso build/serial-secondary-guest.elf
-	$(PYTHON) tools/serial_secondary_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/serial_secondary_smoke.py $(QEMU) build/nexix.iso 128M
+test-serial-secondary: test-serial-secondary-unit rootfs multi-iso build/serial-secondary-guest.elf
+	$(PYTHON) tools/serial_secondary_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/serial_secondary_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 # Task 91: controlling-terminal and signal/flow isolation on both real UARTs.
 build/terminal-sessions.o: tests/terminal-sessions.c | build/.dir
@@ -1281,18 +1288,18 @@ build/terminal-sessions.o: tests/terminal-sessions.c | build/.dir
 build/terminal-sessions.elf: build/crt0.o build/terminal-sessions.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
 .PHONY: test-terminal-sessions
-test-terminal-sessions: rootfs iso build/terminal-sessions.elf
-	$(PYTHON) tools/terminal_sessions_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/terminal_sessions_smoke.py $(QEMU) build/nexix.iso 128M
+test-terminal-sessions: rootfs multi-iso build/terminal-sessions.elf
+	$(PYTHON) tools/terminal_sessions_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/terminal_sessions_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 # Task 92: installed COM2 device and the default host endpoint.
 .PHONY: test-terminal-config-unit test-terminal-config
 test-terminal-config-unit:
 	$(PYTHON) tests/serial_terminal.py
 test-unit: test-terminal-config-unit
-test-terminal-config: test-terminal-config-unit rootfs iso build/serial-secondary-guest.elf
-	$(PYTHON) tools/serial_secondary_smoke.py $(QEMU) build/nexix.iso 16M --packaged
-	$(PYTHON) tools/serial_secondary_smoke.py $(QEMU) build/nexix.iso 128M --packaged
+test-terminal-config: test-terminal-config-unit rootfs multi-iso build/serial-secondary-guest.elf
+	$(PYTHON) tools/serial_secondary_smoke.py $(QEMU) build/nexix-multi.iso 16M --packaged
+	$(PYTHON) tools/serial_secondary_smoke.py $(QEMU) build/nexix-multi.iso 128M --packaged
 
 # Task 93: real concurrent shells and repeated resource recovery.
 build/terminal-shells.o: tests/terminal-shells.c | build/.dir
@@ -1301,8 +1308,8 @@ build/terminal-shells.elf: build/crt0.o build/terminal-shells.o build/libc.a use
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
 .PHONY: test-two-terminals
 test-two-terminals: test-serial-secondary test-terminal-sessions test-terminal-config build/terminal-shells.elf
-	$(PYTHON) tools/terminal_shells_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/terminal_shells_smoke.py $(QEMU) build/nexix.iso 128M
+	$(PYTHON) tools/terminal_shells_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/terminal_shells_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 # Task 94: native account and startup configuration.
 build/account-config.o: tests/account-config.c | build/.dir
@@ -1310,9 +1317,9 @@ build/account-config.o: tests/account-config.c | build/.dir
 build/account-config.elf: build/crt0.o build/account-config.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
 .PHONY: test-account-config
-test-account-config: rootfs iso build/account-config.elf test-install-unit test-root-separation-unit
-	$(PYTHON) tools/account_config_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/account_config_smoke.py $(QEMU) build/nexix.iso 128M
+test-account-config: rootfs multi-iso build/account-config.elf test-install-unit test-root-separation-unit
+	$(PYTHON) tools/account_config_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/account_config_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 # Task 95: retained stty command against independent native UARTs.
 build/stty-command.o: tests/stty-command.c tests/command-runner.h | build/.dir
@@ -1320,59 +1327,59 @@ build/stty-command.o: tests/stty-command.c tests/command-runner.h | build/.dir
 build/stty-command.elf: build/crt0.o build/stty-command.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
 .PHONY: test-stty
-test-stty: rootfs iso build/stty-command.elf
-	$(PYTHON) tools/stty_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/stty_smoke.py $(QEMU) build/nexix.iso 128M
+test-stty: rootfs multi-iso build/stty-command.elf
+	$(PYTHON) tools/stty_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/stty_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 .PHONY: test-tty-command
-test-tty-command: rootfs iso
-	$(PYTHON) tools/guest_acceptance.py tests/guest/tty.json --qemu $(QEMU) --ram 16M --report build/tty-command-16M.json
-	$(PYTHON) tools/guest_acceptance.py tests/guest/tty.json --qemu $(QEMU) --ram 128M --report build/tty-command-128M.json
+test-tty-command: rootfs multi-iso
+	$(PYTHON) tools/guest_acceptance.py tests/guest/tty.json --qemu $(QEMU) --iso build/nexix-multi.iso --ram 16M --report build/tty-command-16M.json
+	$(PYTHON) tools/guest_acceptance.py tests/guest/tty.json --qemu $(QEMU) --iso build/nexix-multi.iso --ram 128M --report build/tty-command-128M.json
 
 build/mesg-command.o: tests/mesg-command.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 build/mesg-command.elf: build/crt0.o build/mesg-command.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
 .PHONY: test-mesg
-test-mesg: rootfs iso build/mesg-command.elf
-	$(PYTHON) tools/mesg_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/mesg_smoke.py $(QEMU) build/nexix.iso 128M
+test-mesg: rootfs multi-iso build/mesg-command.elf
+	$(PYTHON) tools/mesg_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/mesg_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 build/getty-handoff.o: tests/getty-handoff.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 build/getty-handoff.elf: build/crt0.o build/getty-handoff.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
 .PHONY: test-getty
-test-getty: rootfs iso build/getty-handoff.elf
-	$(PYTHON) tools/getty_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/getty_smoke.py $(QEMU) build/nexix.iso 128M
+test-getty: rootfs multi-iso build/getty-handoff.elf
+	$(PYTHON) tools/getty_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/getty_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 build/login-identity.o: tests/login-identity.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 build/login-identity.elf: build/crt0.o build/login-identity.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
 .PHONY: test-login
-test-login: rootfs iso build/login-identity.elf test-libc-interfaces
-	$(PYTHON) tools/login_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/login_smoke.py $(QEMU) build/nexix.iso 128M
+test-login: rootfs multi-iso build/login-identity.elf test-libc-interfaces
+	$(PYTHON) tools/login_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/login_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 build/session-records.o: tests/session-records.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 build/session-records.elf: build/crt0.o build/session-records.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
 .PHONY: test-session-accounting
-test-session-accounting: rootfs iso build/session-records.elf
-	$(PYTHON) tools/session_accounting_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/session_accounting_smoke.py $(QEMU) build/nexix.iso 128M
+test-session-accounting: rootfs multi-iso build/session-records.elf
+	$(PYTHON) tools/session_accounting_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/session_accounting_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 build/init-control.o: tests/init-control.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 build/init-control.elf: build/crt0.o build/init-control.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
 .PHONY: test-multiuser-init
-test-multiuser-init: rootfs iso build/init-control.elf
-	$(PYTHON) tools/multiuser_init_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/multiuser_init_smoke.py $(QEMU) build/nexix.iso 128M
+test-multiuser-init: rootfs multi-iso build/init-control.elf
+	$(PYTHON) tools/multiuser_init_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/multiuser_init_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 build/v7-password-file.o: user/v7/password-file.c user/v7/password-file.h | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
@@ -1390,47 +1397,47 @@ build/password-state.elf: build/crt0.o build/password-state.o build/libc.a user/
 test-passwd-command-unit: build/password-file-test
 	./build/password-file-test
 test-unit: test-passwd-command-unit
-test-passwd-command: test-passwd-command-unit rootfs iso build/password-state.elf
-	$(PYTHON) tools/passwd_command_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/passwd_command_smoke.py $(QEMU) build/nexix.iso 128M
+test-passwd-command: test-passwd-command-unit rootfs multi-iso build/password-state.elf
+	$(PYTHON) tools/passwd_command_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/passwd_command_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 build/credentials.o: tests/credentials.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 build/credentials.elf: build/crt0.o build/credentials.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
 .PHONY: test-su
-test-su: rootfs iso build/credentials.elf
-	$(PYTHON) tools/su_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/su_smoke.py $(QEMU) build/nexix.iso 128M
+test-su: rootfs multi-iso build/credentials.elf
+	$(PYTHON) tools/su_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/su_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 .PHONY: test-newgrp
-test-newgrp: rootfs iso build/credentials.elf
-	$(PYTHON) tools/newgrp_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/newgrp_smoke.py $(QEMU) build/nexix.iso 128M
+test-newgrp: rootfs multi-iso build/credentials.elf
+	$(PYTHON) tools/newgrp_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/newgrp_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 .PHONY: test-who
-test-who: rootfs iso
-	$(PYTHON) tools/who_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/who_smoke.py $(QEMU) build/nexix.iso 128M
+test-who: rootfs multi-iso
+	$(PYTHON) tools/who_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/who_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 .PHONY: test-write
-test-write: rootfs iso
-	$(PYTHON) tools/write_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/write_smoke.py $(QEMU) build/nexix.iso 128M
+test-write: rootfs multi-iso
+	$(PYTHON) tools/write_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/write_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 .PHONY: test-wall
-test-wall: rootfs iso
-	$(PYTHON) tools/wall_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/wall_smoke.py $(QEMU) build/nexix.iso 128M
+test-wall: rootfs multi-iso
+	$(PYTHON) tools/wall_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/wall_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 build/session-resources.o: tests/session-resources.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 build/session-resources.elf: build/crt0.o build/session-resources.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
 .PHONY: test-multiuser-acceptance test-multiuser
-test-multiuser-acceptance: rootfs iso build/session-resources.elf
-	$(PYTHON) tools/multiuser_acceptance.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/multiuser_acceptance.py $(QEMU) build/nexix.iso 128M
+test-multiuser-acceptance: rootfs multi-iso build/session-resources.elf
+	$(PYTHON) tools/multiuser_acceptance.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/multiuser_acceptance.py $(QEMU) build/nexix-multi.iso 128M
 test-multiuser: test-two-terminals test-account-config test-stty test-tty-command test-mesg test-getty test-login test-session-accounting test-multiuser-init test-passwd-command test-su test-newgrp test-who test-write test-wall test-multiuser-acceptance
 
 .PHONY: test-v7-archives extract-v7-archives
@@ -1449,18 +1456,18 @@ build/fpsim-equivalent.o: tests/fpsim-equivalent.c | build/.dir
 build/fpsim-equivalent.elf: build/crt0.o build/fpsim-equivalent.o build/libm.a build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o,$^) $(filter %.a,$^) -o $@
 .PHONY: test-fpsim-equivalent
-test-fpsim-equivalent: build/nexix.iso build/fpsim-equivalent.elf stage
-	$(PYTHON) tools/fpsim_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/fpsim_smoke.py $(QEMU) build/nexix.iso 128M
+test-fpsim-equivalent: build/nexix-multi.iso build/fpsim-equivalent.elf stage
+	$(PYTHON) tools/fpsim_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/fpsim_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 build/runtime-equivalent.o: tests/runtime-equivalent.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 build/runtime-equivalent.elf: build/crt0.o build/runtime-equivalent.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o,$^) $(filter %.a,$^) -o $@
 .PHONY: test-runtime-equivalent
-test-runtime-equivalent: build/nexix.iso build/runtime-equivalent.elf stage
-	$(PYTHON) tools/runtime_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/runtime_smoke.py $(QEMU) build/nexix.iso 128M
+test-runtime-equivalent: build/nexix-multi.iso build/runtime-equivalent.elf stage
+	$(PYTHON) tools/runtime_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/runtime_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 .PHONY: test-mkconf
 test-mkconf:
@@ -1478,9 +1485,9 @@ build/typesetter.o: tests/typesetter.c | build/.dir
 build/typesetter.elf: build/crt0.o build/typesetter.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o,$^) $(filter %.a,$^) -o $@
 .PHONY: test-typesetter
-test-typesetter: build/nexix.iso build/typesetter.elf stage
-	$(PYTHON) tools/typesetter_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/typesetter_smoke.py $(QEMU) build/nexix.iso 128M
+test-typesetter: build/nexix-multi.iso build/typesetter.elf stage
+	$(PYTHON) tools/typesetter_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/typesetter_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 build/output-unit-test: tests/output-unit.c kernel/v7/output.c | build/.dir
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude $^ -o $@
@@ -1495,18 +1502,18 @@ build/printer.o: tests/printer.c | build/.dir
 build/printer.elf: build/crt0.o build/printer.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o,$^) $(filter %.a,$^) -o $@
 .PHONY: test-printer
-test-printer: build/nexix.iso build/printer.elf stage test-output-unit
-	$(PYTHON) tools/printer_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/printer_smoke.py $(QEMU) build/nexix.iso 128M
+test-printer: build/nexix-multi.iso build/printer.elf stage test-output-unit
+	$(PYTHON) tools/printer_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/printer_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 build/math-coverage.o: tests/math-coverage.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 build/math-coverage.elf: build/crt0.o build/math-coverage.o build/libm.a build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o,$^) $(filter %.a,$^) -o $@
 .PHONY: test-math-coverage
-test-math-coverage: build/nexix.iso build/math-coverage.elf stage
-	$(PYTHON) tools/math_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/math_smoke.py $(QEMU) build/nexix.iso 128M
+test-math-coverage: build/nexix-multi.iso build/math-coverage.elf stage
+	$(PYTHON) tools/math_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/math_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 .PHONY: test-supplemental-inputs
 test-supplemental-inputs:
@@ -1547,9 +1554,9 @@ build/exec-consumer.o: tests/exec-consumer.c $(INSTALL_STAGE)/receipt.json
 build/exec-consumer.elf: build/exec-consumer.o $(INSTALL_STAGE)/receipt.json user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(INSTALL_STAGE)/root/lib/crt0.o $< $(INSTALL_STAGE)/root/lib/libc.a -o $@
 .PHONY: test-development
-test-development: build/nexix.iso build/devkit-crt0.elf build/devkit-fcrt0.elf build/devkit-mcrt0.elf build/devkit-fmcrt0.elf build/devkit-cat.elf build/exec-consumer.elf stage test-exec-search-unit
-	$(PYTHON) tools/development_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/development_smoke.py $(QEMU) build/nexix.iso 128M
+test-development: build/nexix-multi.iso build/devkit-crt0.elf build/devkit-fcrt0.elf build/devkit-mcrt0.elf build/devkit-fmcrt0.elf build/devkit-cat.elf build/exec-consumer.elf stage test-exec-search-unit
+	$(PYTHON) tools/development_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/development_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 .PHONY: test-libc-source-coverage
 test-libc-source-coverage:
@@ -1584,24 +1591,25 @@ build/local_console.o: kernel/local_console.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: run-vga
+run: run-$(CONSOLE)
 run-vga: build
 	$(PYTHON) tools/serial_terminal.py --prepare build/ttyS1
 	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -rtc base=utc -boot d -drive "file=$(DISK_IMAGE),format=raw,if=ide,index=0" -cdrom build/nexix.iso -vga std -display gtk -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -serial pipe:build/ttyS1 -mon chardev=console,mode=readline -no-reboot
 
 .PHONY: test-vga
-test-vga: test-vga-unit test-keyboard-unit test-tty-lines-unit iso rootfs
-	$(PYTHON) tools/vga_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/vga_smoke.py $(QEMU) build/nexix.iso 128M
+test-vga: test-vga-unit test-keyboard-unit test-tty-lines-unit multi-iso rootfs
+	$(PYTHON) tools/vga_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/vga_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 .PHONY: test-basename
-test-basename: iso rootfs
-	$(PYTHON) tools/guest_acceptance.py tests/guest/basename.json --qemu $(QEMU) --ram 16M --report build/basename-16M.json
-	$(PYTHON) tools/guest_acceptance.py tests/guest/basename.json --qemu $(QEMU) --ram 128M --report build/basename-128M.json
+test-basename: multi-iso rootfs
+	$(PYTHON) tools/guest_acceptance.py tests/guest/basename.json --qemu $(QEMU) --iso build/nexix-multi.iso --ram 16M --report build/basename-16M.json
+	$(PYTHON) tools/guest_acceptance.py tests/guest/basename.json --qemu $(QEMU) --iso build/nexix-multi.iso --ram 128M --report build/basename-128M.json
 
 .PHONY: test-cal
-test-cal: iso rootfs
-	$(PYTHON) tools/guest_acceptance.py tests/guest/cal.json --qemu $(QEMU) --ram 16M --report build/cal-16M.json
-	$(PYTHON) tools/guest_acceptance.py tests/guest/cal.json --qemu $(QEMU) --ram 128M --report build/cal-128M.json
+test-cal: multi-iso rootfs
+	$(PYTHON) tools/guest_acceptance.py tests/guest/cal.json --qemu $(QEMU) --iso build/nexix-multi.iso --ram 16M --report build/cal-16M.json
+	$(PYTHON) tools/guest_acceptance.py tests/guest/cal.json --qemu $(QEMU) --iso build/nexix-multi.iso --ram 128M --report build/cal-128M.json
 
 build/%-command.o: tests/%-command.c tests/command-fixture.h tests/command-runner.h | build/.dir
 	$(CC) $(USER_CFLAGS) -Wno-unused-function -c $< -o $@
@@ -1609,94 +1617,94 @@ build/%-command.elf: build/crt0.o build/%-command.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
 
 .PHONY: test-chgrp
-test-chgrp: iso rootfs build/chgrp-command.elf
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M chgrp
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M chgrp
+test-chgrp: multi-iso rootfs build/chgrp-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 16M chgrp
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 128M chgrp
 
 .PHONY: test-chmod
-test-chmod: iso rootfs build/chmod-command.elf
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M chmod
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M chmod
+test-chmod: multi-iso rootfs build/chmod-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 16M chmod
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 128M chmod
 
 .PHONY: test-chown
-test-chown: iso rootfs build/chown-command.elf
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M chown
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M chown
+test-chown: multi-iso rootfs build/chown-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 16M chown
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 128M chown
 
 .PHONY: test-expr
-test-expr: iso rootfs build/expr-command.elf
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M expr
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M expr
+test-expr: multi-iso rootfs build/expr-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 16M expr
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 128M expr
 
 .PHONY: test-file
-test-file: iso rootfs build/file-command.elf
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M file
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M file
+test-file: multi-iso rootfs build/file-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 16M file
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 128M file
 
 .PHONY: test-kill
-test-kill: iso rootfs build/kill-command.elf
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M kill
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M kill
+test-kill: multi-iso rootfs build/kill-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 16M kill
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 128M kill
 
 .PHONY: test-mkdir
-test-mkdir: iso rootfs build/mkdir-command.elf
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M mkdir
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M mkdir
+test-mkdir: multi-iso rootfs build/mkdir-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 16M mkdir
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 128M mkdir
 
 .PHONY: test-mv
-test-mv: iso rootfs build/mv-command.elf
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M mv
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M mv
+test-mv: multi-iso rootfs build/mv-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 16M mv
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 128M mv
 
 .PHONY: test-nice
-test-nice: iso rootfs build/nice-command.elf
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M nice
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M nice
+test-nice: multi-iso rootfs build/nice-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 16M nice
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 128M nice
 
 .PHONY: test-osh
-test-osh: iso rootfs build/osh-command.elf
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M osh
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M osh
+test-osh: multi-iso rootfs build/osh-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 16M osh
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 128M osh
 
 .PHONY: test-rmdir
-test-rmdir: iso rootfs build/rmdir-command.elf
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M rmdir
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M rmdir
+test-rmdir: multi-iso rootfs build/rmdir-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 16M rmdir
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 128M rmdir
 
 .PHONY: test-sleep
-test-sleep: iso rootfs build/sleep-command.elf
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M sleep
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M sleep
+test-sleep: multi-iso rootfs build/sleep-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 16M sleep
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 128M sleep
 
 .PHONY: test-sync
-test-sync: iso rootfs
-	$(PYTHON) tools/sync_smoke.py $(QEMU) build/nexix.iso 16M
-	$(PYTHON) tools/sync_smoke.py $(QEMU) build/nexix.iso 128M
+test-sync: multi-iso rootfs
+	$(PYTHON) tools/sync_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/sync_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 .PHONY: test-test
-test-test: iso rootfs build/test-command.elf
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M test
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M test
+test-test: multi-iso rootfs build/test-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 16M test
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 128M test
 
 .PHONY: test-yes
-test-yes: iso rootfs build/yes-command.elf
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M yes
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M yes
+test-yes: multi-iso rootfs build/yes-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 16M yes
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 128M yes
 
 .PHONY: test-false
-test-false: iso rootfs
-	$(PYTHON) tools/guest_acceptance.py tests/guest/false.json --qemu $(QEMU) --ram 16M --report build/false-16M.json
-	$(PYTHON) tools/guest_acceptance.py tests/guest/false.json --qemu $(QEMU) --ram 128M --report build/false-128M.json
+test-false: multi-iso rootfs
+	$(PYTHON) tools/guest_acceptance.py tests/guest/false.json --qemu $(QEMU) --iso build/nexix-multi.iso --ram 16M --report build/false-16M.json
+	$(PYTHON) tools/guest_acceptance.py tests/guest/false.json --qemu $(QEMU) --iso build/nexix-multi.iso --ram 128M --report build/false-128M.json
 
 .PHONY: test-true
-test-true: iso rootfs
-	$(PYTHON) tools/guest_acceptance.py tests/guest/true.json --qemu $(QEMU) --ram 16M --report build/true-16M.json
-	$(PYTHON) tools/guest_acceptance.py tests/guest/true.json --qemu $(QEMU) --ram 128M --report build/true-128M.json
+test-true: multi-iso rootfs
+	$(PYTHON) tools/guest_acceptance.py tests/guest/true.json --qemu $(QEMU) --iso build/nexix-multi.iso --ram 16M --report build/true-16M.json
+	$(PYTHON) tools/guest_acceptance.py tests/guest/true.json --qemu $(QEMU) --iso build/nexix-multi.iso --ram 128M --report build/true-128M.json
 
 .PHONY: test-nohup
-test-nohup: iso rootfs build/nohup-command.elf
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M nohup
-	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M nohup
+test-nohup: multi-iso rootfs build/nohup-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 16M nohup
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 128M nohup
 
 .PHONY: test-essential
 test-essential: test-basename test-cal test-chgrp test-chmod test-chown test-expr test-file test-kill test-mkdir test-mv test-nice test-osh test-rmdir test-sleep test-sync test-test test-yes test-false test-true test-nohup
@@ -1705,3 +1713,23 @@ test-essential: test-basename test-cal test-chgrp test-chmod test-chown test-exp
 test-expr-bounds:
 	$(PYTHON) tests/expr_bounds.py --cc "$(HOST_CC)"
 test-expr: test-expr-bounds
+
+# Separate filenames prevent stale console settings when switching modes.
+build/nexix-serial.iso build/nexix-multi.iso: build/nexix.elf boot/grub.cfg tools/pack_kernel.py
+	mkdir -p $(@:.iso=)/boot/grub
+	$(PYTHON) tools/pack_kernel.py build/nexix.elf $(@:.iso=)/boot/nexix.elf
+	sed 's|set nexix_console=vga|set nexix_console=$(if $(findstring serial,$@),serial,multi)|' boot/grub.cfg > $(@:.iso=)/boot/grub/grub.cfg
+	grub-mkrescue -o $@ $(@:.iso=)
+.PHONY: run-serial serial-iso multi-iso
+
+build/console-test: tests/console.c kernel/console.c kernel/include/console.h kernel/include/boot.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include tests/console.c kernel/console.c -o $@
+.PHONY: test-console-unit test-console
+test-console-unit: build/console-test build/memory-test test-tty-lines-unit
+	./build/console-test
+	./build/memory-test
+test-unit: test-console-unit
+test-console: test-console-unit iso serial-iso rootfs
+	$(PYTHON) tools/console_smoke.py $(QEMU) 16M
+	$(PYTHON) tools/console_smoke.py $(QEMU) 128M
+test: test-console

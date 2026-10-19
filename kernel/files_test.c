@@ -1,3 +1,4 @@
+#include "console.h"
 #include "files.h"
 #include "exec.h"
 #include "serial.h"
@@ -61,12 +62,12 @@ void files_selftest(void)
         active = false;
         int32_t status;
         REQUIRE(proc_collect(&status) == pid);
-        if (status) { serial_puts("Nexix: file test failure status="); serial_hex(status); serial_puts("\r\n"); }
+        if (status) { console_puts("Nexix: file test failure status="); console_hex(status); console_puts("\r\n"); }
         REQUIRE(status == 0 && proc_collect(NULL) == -NX_ECHILD);
         REQUIRE(files_live() == 0 && page_free_count() == before);
         REQUIRE(v7_disk_u32(fs.super.tfree) == blocks && v7_disk_u16(fs.super.tinode) == inodes);
     }
     REQUIRE(blocked_checks == 3);
     REQUIRE(files_mount(NULL) == 0 && v7fs_unmount(&fs) == 0);
-    serial_puts("NEXIX_FILES_OK\r\nNEXIX_PIPE_OK\r\nNEXIX_FILES_CLEANUP_OK\r\n");
+    console_puts("NEXIX_FILES_OK\r\nNEXIX_PIPE_OK\r\nNEXIX_FILES_CLEANUP_OK\r\n");
 }

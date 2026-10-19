@@ -1,3 +1,4 @@
+#include "console.h"
 #include "exec.h"
 #include "uaccess.h"
 #include "serial.h"
@@ -111,7 +112,7 @@ void exec_selftest(void)
     for (size_t i = filesz; i < PAGE_SIZE; ++i) REQUIRE(((uint8_t *)pa)[i] == 0);
     exec_image_release(&image);
     REQUIRE(page_free_count() == before);
-    serial_puts("NEXIX_ELF_OK\r\n");
+    console_puts("NEXIX_ELF_OK\r\n");
     /* Force partial construction failure after three successful allocations. */
     uintptr_t head = 0, page;
     while ((page = page_alloc())) { *(uintptr_t *)page = head; head = page; }
@@ -124,7 +125,7 @@ void exec_selftest(void)
     REQUIRE(!image.vm.root && page_free_count() == 3);
     while (head) { uintptr_t next = *(uintptr_t *)head; REQUIRE(page_free(head)); head = next; }
     REQUIRE(page_free_count() == before);
-    serial_puts("NEXIX_EXEC_ROLLBACK_OK\r\n");
+    console_puts("NEXIX_EXEC_ROLLBACK_OK\r\n");
     /* Full bounded argument set and zero-count vectors are valid layouts. */
     args.argc = args.envc = EXEC_ARG_COUNT;
     for (unsigned i = 0; i < EXEC_ARG_COUNT; ++i) args.argv[i] = args.envp[i] = 0;
@@ -153,5 +154,5 @@ void exec_selftest(void)
     REQUIRE(proc_collect(NULL) == -NX_ECHILD);
     REQUIRE(page_free_count() == before);
     for (unsigned i = 1; i < V7_NPROC; ++i) REQUIRE(proc_table()[i].p_stat == V7_UNUSED);
-    serial_puts("NEXIX_EXEC_OK\r\n");
+    console_puts("NEXIX_EXEC_OK\r\n");
 }

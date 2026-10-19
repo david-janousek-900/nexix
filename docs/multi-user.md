@@ -1,5 +1,9 @@
 # Multi-user implementation
 
+The independent terminal setup below uses the explicit `console=multi` profile
+(`make multi-iso`, `build/nexix-multi.iso`). Normal boots now select only VGA,
+or COM1 with `make run-serial`; see [console selection](vga-console.md).
+
 Task 94 prepares the full IDE installation's V7 account and startup files.
 `/etc/passwd` uses the traditional seven fields and DES password hashes;
 `/etc/group` uses V7's name/password/GID/member-list records. Both files are

@@ -1,3 +1,4 @@
+#include "console.h"
 #include "paging.h"
 #include "interrupts.h"
 #include "serial.h"
@@ -45,7 +46,7 @@ static void exhaust_test(void)
         head = next;
     }
     REQUIRE(page_free(data) && page_free_count() == before);
-    serial_puts("NEXIX_PAGING_OOM_OK\r\n");
+    console_puts("NEXIX_PAGING_OOM_OK\r\n");
 }
 
 void paging_selftest(bool exhaustion)
@@ -117,7 +118,7 @@ void paging_selftest(bool exhaustion)
     REQUIRE(page_is_allocated(first) && page_is_allocated(second));
     REQUIRE(page_free(first) && page_free(second));
     REQUIRE(page_free_count() == before);
-    serial_puts("NEXIX_PAGING_OK\r\n");
+    console_puts("NEXIX_PAGING_OK\r\n");
     if (exhaustion)
         exhaust_test();
 }

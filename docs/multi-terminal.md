@@ -1,5 +1,9 @@
 # Independent terminal implementation
 
+The independent terminal setup below uses the explicit `console=multi` profile
+(`make multi-iso`, `build/nexix-multi.iso`). Normal boots now select only VGA,
+or COM1 with `make run-serial`; see [console selection](vga-console.md).
+
 Task 89 replaces the COM1 singleton state with two bounded terminal objects.
 Each owns its queues, editing state, process group, carrier/settings, output delay,
 flow control, exclusive-open flag and mpx ownership. Driver callbacks bind output,
@@ -72,7 +76,8 @@ to that pipe. In a second host terminal, `make terminal` connects the keyboard a
 display. Ctrl-] disconnects without stopping QEMU; Ctrl-C is sent to the guest.
 The connector restores host terminal settings on exit. Pipe preparation is
 idempotent and rejects existing ordinary files and symlinks. Use one COM2 client
-at a time. QEMU still exits through Ctrl-A, release, X on COM1.
+at a time. QEMU exits through Ctrl-A, release, X on COM1 in serial/multi mode.
+Normal VGA boots keep COM2 inactive; the connector requires a multi-mode guest.
 
 Existing working disks are preserved and do not acquire newly packaged device or
 configuration files automatically. To test the current seed while retaining your

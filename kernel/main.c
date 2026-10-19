@@ -1,3 +1,4 @@
+#include "console.h"
 #include "local_console.h"
 #include "process.h"
 #include "fpu.h"
@@ -49,8 +50,7 @@ static void module_selftest(const struct boot_info *info)
 
 void kernel_main(uint32_t magic, uintptr_t boot_info)
 {
-    serial_init();
-    serial_puts("Nexix: x86_64 kernel entered\r\n");
+    console_init(BOOT_CONSOLE_VGA);
     if (magic != 0x36d76289 || !boot_info || (boot_info & 7))
         panic("invalid Multiboot2 handoff");
     segments_init();
@@ -59,22 +59,24 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
     if (boot_info >= PHYSICAL_LIMIT ||
         !boot_parse(boot_info, PHYSICAL_LIMIT - boot_info, &info))
         panic("invalid Multiboot2 information or memory map");
+    console_select(info.console);
+    console_puts("Nexix: x86_64 kernel entered\r\n");
     enum boot_test test = info.test;
-    serial_puts("Nexix: Multiboot2 handoff validated\r\n");
-    serial_puts("Nexix: IDT installed; PIC remapped\r\n");
+    console_puts("Nexix: Multiboot2 handoff validated\r\n");
+    console_puts("Nexix: IDT installed; PIC remapped\r\n");
     if (test == BOOT_TEST_UD) {
-        serial_puts("Nexix: testing invalid opcode\r\n");
+        console_puts("Nexix: testing invalid opcode\r\n");
         __asm__ volatile ("ud2");
     }
     if (test == BOOT_TEST_PF) {
-        serial_puts("Nexix: testing unmapped memory\r\n");
+        console_puts("Nexix: testing unmapped memory\r\n");
         (void)*(volatile uint64_t *)0x40000000UL;
     }
     extern char kernel_end[];
     page_allocator_init(&info, (uintptr_t)kernel_end);
-    serial_puts("Nexix: free physical pages=");
-    serial_hex(page_free_count());
-    serial_puts("\r\n");
+    console_puts("Nexix: free physical pages=");
+    console_hex(page_free_count());
+    console_puts("\r\n");
     uint32_t before = page_free_count();
     uintptr_t first = page_alloc(), second = page_alloc();
     if (!first || !second || first == second || page_free_count() != before - 2)
@@ -88,7 +90,7 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
         !page_free(first) || page_free(first) || !page_free(second) ||
         page_free_count() != before || page_free(0))
         panic("page freeing self-test failed");
-    serial_puts("NEXIX_MEMORY_OK\r\n");
+    console_puts("NEXIX_MEMORY_OK\r\n");
     if (test == BOOT_TEST_MEMORY) {
         uint64_t checksum = boot_checksum(&info);
         module_selftest(&info);
@@ -117,8 +119,8 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
         if (boot_checksum(&info) != checksum)
             panic("reserved boot information was overwritten");
         module_selftest(&info);
-        serial_puts("NEXIX_RESERVATIONS_OK\r\n");
-        serial_puts("NEXIX_MEMORY_EXHAUSTION_OK\r\n");
+        console_puts("NEXIX_RESERVATIONS_OK\r\n");
+        console_puts("NEXIX_MEMORY_EXHAUSTION_OK\r\n");
     }
     paging_init();
     entry_stacks_guard();
@@ -152,7 +154,7 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
             if (test == BOOT_TEST_UNMAP && !vm_unmap(&space, address))
                 panic("cannot unmap paging fault test");
         }
-        serial_puts("Nexix: expected cr2="); serial_hex(address); serial_puts("\r\n");
+        console_puts("Nexix: expected cr2="); console_hex(address); console_puts("\r\n");
         if (test == BOOT_TEST_WP || test == BOOT_TEST_PROTECT)
             *(volatile uint8_t *)address = 0;
         else if (test == BOOT_TEST_NX)
@@ -162,16 +164,17 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
         panic("expected paging fault did not occur");
     }
     if (clock_init()) {
-        serial_puts("Nexix: RTC UTC epoch="); serial_hex(clock_now()); serial_puts("\r\n");
-        serial_puts("NEXIX_RTC_OK\r\n");
+        console_puts("Nexix: RTC UTC epoch="); console_hex(clock_now()); console_puts("\r\n");
+        console_puts("NEXIX_RTC_OK\r\n");
     } else {
-        serial_puts("Nexix: RTC unavailable or invalid; clock starts at UNIX epoch\r\n");
+        console_puts("Nexix: RTC unavailable or invalid; clock starts at UNIX epoch\r\n");
     }
     fpu_init();
     timer_init();
-    tty_init();
-    serial_secondary_init();
-    local_console_init();
+    if (info.console != BOOT_CONSOLE_VGA) tty_init();
+    if (info.console == BOOT_CONSOLE_MULTI) serial_secondary_init();
+    if (info.console != BOOT_CONSOLE_SERIAL) local_console_init();
+    tty_console_line = info.console == BOOT_CONSOLE_VGA ? 2 : 0;
     /* Check and sleep atomically against IRQ delivery. */
     for (;;) {
         __asm__ volatile ("cli" : : : "memory");
@@ -179,8 +182,8 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
             break;
         __asm__ volatile ("sti; hlt" : : : "memory");
     }
-    serial_puts("Nexix: 10 timer interrupts handled\r\n");
-    serial_puts("NEXIX_TIMER_OK\r\n");
+    console_puts("Nexix: 10 timer interrupts handled\r\n");
+    console_puts("NEXIX_TIMER_OK\r\n");
     if (test == BOOT_NORMAL) {
         proc_init();
         rootfs_start();
@@ -197,7 +200,7 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
     v7_userland_selftest();
     rootfs_selftest();
     root_exec_selftest();
-    serial_puts("NEXIX_BOOT_OK\r\n");
+    console_puts("NEXIX_BOOT_OK\r\n");
     for (;;)
         __asm__ volatile ("sti; hlt" : : : "memory");
 }

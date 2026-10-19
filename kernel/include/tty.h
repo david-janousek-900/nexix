@@ -20,6 +20,8 @@ void tty_receive_line(unsigned,uint8_t,unsigned);
 void tty_modem_line(unsigned,unsigned);
 /* Independent bounded terminals. All entry points run with IRQs disabled. Device receive
  * never sleeps; readers/writers use process sleep/wakeup on private channels. */
+/* Physical line backing /dev/console; set at boot before any opens. */
+extern unsigned tty_console_line;
 void tty_init(void);
 void tty_set_group(struct tty *, v7_pid_t);
 int tty_open(v7_dev_t device, struct user *u, struct tty **result);

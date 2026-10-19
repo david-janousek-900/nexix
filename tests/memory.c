@@ -48,7 +48,7 @@ static void parser_tests(void)
     struct boot_info info;
     struct boot_mmap_entry entry = { .address = 0, .length = 16 * PAGE_SIZE, .type = 1 };
     begin(); map_add(&entry, 1, 24); finish();
-    assert(parse(&info));
+    assert(parse(&info) && info.console == BOOT_CONSOLE_VGA);
     assert(!boot_parse((uintptr_t)buffer + 1, sizeof(buffer) - 1, &info));
     assert(!boot_parse((uintptr_t)buffer, position - 1, &info));
     assert(!boot_parse((uintptr_t)buffer, 8, &info));
@@ -86,6 +86,29 @@ static void parser_tests(void)
     assert(parse(&info) && info.test == BOOT_TEST_SELFTEST);
     memset(cmd + 1, 0, 14); memcpy(cmd + 1, "test=tty", 9);
     assert(parse(&info) && info.test == BOOT_TEST_TTY);
+
+    const char *valid_commands[] = {
+        "console=vga", "console=serial", "console=multi",
+        "console=serial test=selftest", "test=selftest  console=vga\t",
+    };
+    const enum boot_console modes[] = {BOOT_CONSOLE_VGA, BOOT_CONSOLE_SERIAL,
+        BOOT_CONSOLE_MULTI, BOOT_CONSOLE_SERIAL, BOOT_CONSOLE_VGA};
+    for (unsigned i=0; i<sizeof(modes)/sizeof(modes[0]); ++i) {
+        begin(); map_add(&entry, 1, 24);
+        cmd=append(1, 9+strlen(valid_commands[i]));
+        strcpy((char *)(cmd+1), valid_commands[i]); finish();
+        assert(parse(&info) && info.console==modes[i]);
+        if(i>=3)assert(info.test==BOOT_TEST_SELFTEST);
+    }
+    const char *invalid_commands[] = {"console=bogus", "console=",
+        "console=vga console=serial", "console=vga console=vga",
+        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"};
+    for (unsigned i=0; i<sizeof(invalid_commands)/sizeof(invalid_commands[0]); ++i) {
+        begin(); map_add(&entry, 1, 24);
+        cmd=append(1, 9+strlen(invalid_commands[i]));
+        strcpy((char *)(cmd+1), invalid_commands[i]); finish();
+        assert(!parse(&info));
+    }
 
     begin(); map_add(&entry, 1, 24);
     struct boot_module *module = append(3, 17);
