@@ -1900,3 +1900,10 @@ test-hostname: test-hostname-unit multi-iso rootfs build/hostname-api.elf
 	python3 tools/hostname_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	python3 tools/hostname_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-hostname
+
+# Intermittent-freeze investigation on disposable IDE roots.
+STABILITY_ROUNDS ?= 100
+.PHONY: test-stability
+test-stability: multi-iso rootfs
+	$(PYTHON) tools/stability_smoke.py $(QEMU) build/nexix-multi.iso 16M --rounds $(STABILITY_ROUNDS)
+	$(PYTHON) tools/stability_smoke.py $(QEMU) build/nexix-multi.iso 128M --rounds $(STABILITY_ROUNDS)

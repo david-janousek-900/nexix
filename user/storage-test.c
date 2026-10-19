@@ -21,6 +21,8 @@ int storage_test(void)
     int b=open("/tmp/blk",O_RDONLY),r=open("/tmp/raw",O_RDONLY);CHECK(b>=0&&r>=0);
     struct stat st;CHECK(fstat(b,&st)==0&&S_ISBLK(st.st_mode)&&st.st_rdev==NX_ROOT_BLOCK_DEV&&st.st_size==0);
     CHECK(read(b,data,1024)==1024&&read(r,other,1024)==1024&&!memcmp(data,other,1024));
+    off_t end=(((uint32_t)data[257]<<16)|data[258])*512; /* V7 superblock fsize. */
+    CHECK(end>1024);
     CHECK(write(b,data,2)==-1&&errno==EBADF);
     CHECK(lseek(b,511,SEEK_SET)==511&&read(b,data,3)==3);
     CHECK(lseek(b,0,SEEK_SET)==0&&read(b,other,2)==2);
@@ -32,9 +34,9 @@ int storage_test(void)
     CHECK(fcntl(b,F_SETFL,O_APPEND)==0&&fcntl(b,F_GETFL)==O_APPEND);
     int duplicate=dup(b);CHECK(duplicate>=0&&lseek(b,0,SEEK_SET)==0);
     CHECK(read(duplicate,data,2)==2&&lseek(b,0,SEEK_CUR)==2);
-    CHECK(lseek(b,524288,SEEK_SET)==524288&&read(b,data,2)==0);
-    CHECK(lseek(b,524289,SEEK_SET)==524289&&read(b,data,2)==-1&&errno==EIO);
-    CHECK(lseek(b,524287,SEEK_SET)==524287&&read(b,data,2)==1);
+    CHECK(lseek(b,end,SEEK_SET)==end&&read(b,data,2)==0);
+    CHECK(lseek(b,end+1,SEEK_SET)==end+1&&read(b,data,2)==-1&&errno==EIO);
+    CHECK(lseek(b,end-1,SEEK_SET)==end-1&&read(b,data,2)==1);
     CHECK(ioctl(b,0,0)==-1&&errno==ENOTTY);
     CHECK(close(b)==0&&close(duplicate)==0&&close(r)==0);
     CHECK(unlink("/tmp/blk")==0&&unlink("/tmp/raw")==0&&unlink("/tmp/baddev")==0);

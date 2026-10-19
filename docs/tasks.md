@@ -569,7 +569,7 @@ required before native-port acceptance.
 | 355 | Full native V7 source-tree build acceptance | To do | All supplied source components, helpers, libraries and explicit native equivalents |
 | 356 | Package complete 0.1.0 distribution | To do | Programs, scripts, libraries, headers, source/build inputs, manuals/data and permissions |
 | 357 | Persistent disk upgrade/install tooling | Done | Git history; [offline upgrade contract](disk-upgrades.md); verified staging, exclusive offline locks, mandatory non-overwritten backup, candidate validation and atomic publication; account/config/TZ/data/hard-link/sparse-file/timestamp preservation; failure tests and two cold boots at 16/128 MiB |
-| 358 | Full multi-user/time/storage/userland acceptance | To do | 16/128 MiB baseline; full IDE release at 128 MiB and two terminals; current full boot self-test fails user/phys-test.c:102 core-dump assertion, reproduced with uname syscall disabled |
+| 358 | Full multi-user/time/storage/userland acceptance | To do | 16/128 MiB baseline; full IDE release at 128 MiB and two terminals; full boot self-test scratch-space exhaustion repaired with a private 1 MiB test volume; 16/128 MiB stress acceptance in `make test-stability`; intermittent freeze remains under investigation ([notes](stability.md)) |
 | 359 | Close all component/source/device blockers | To do | All 219 entries/35 requirements traceable; close historical device-directory node/consumer audit; no hidden omissions |
 | 360 | Reproducible host-bootstrap build and release provenance | To do | Pin SDK inputs, artifact hashes, licensing and validation evidence |
 | 361 | Finalize 0.1.0 release documentation and tag | To do | Only after all required leaves are implemented, tested and committed |

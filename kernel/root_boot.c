@@ -12,19 +12,29 @@
 #include <nexix/errno.h>
 #include <nexix/signal.h>
 extern const uint8_t _binary_build_root_img_start[], _binary_build_root_img_end[];
-static uint8_t root_bytes[1024 * V7_BSIZE];
+/* Extra RAM capacity is exposed only to the disposable full self-test. */
+static uint8_t root_bytes[2048 * V7_BSIZE];
 static struct ramdisk root_device;
 static struct block_device ide_device;
 static struct v7fs root_volume;
 static struct exec_args init_args;
-static void mount_root(void)
+static void mount_root(bool testing)
 {
     size_t length=(uintptr_t)_binary_build_root_img_end-(uintptr_t)_binary_build_root_img_start;
-    if(length!=sizeof(root_bytes))panic("unsupported root volume size");
+    if(length!=1024 * V7_BSIZE)panic("unsupported root volume size");
     for(size_t i=0;i<length;++i)root_bytes[i]=_binary_build_root_img_start[i];
-    if(ramdisk_init(&root_device,root_bytes,length,false) ||
+    if(ramdisk_init(&root_device,root_bytes,testing?sizeof(root_bytes):length,false) ||
        v7fs_mount(&root_volume,&root_device.device,false) || files_mount_root(&root_volume))
         panic("cannot mount root");
+    if(testing){
+        /* Keep the shipped recovery image small; fixture ELFs and native core
+         * images need more scratch space than the recovery shell does. */
+        uint32_t first=root_volume.fsize;
+        root_volume.fsize=sizeof(root_bytes)/V7_BSIZE;
+        v7_disk_put32(root_volume.super.fsize,root_volume.fsize);
+        for(uint32_t block=first;block<root_volume.fsize;++block)
+            if(v7fs_free_block(&root_volume,block))panic("cannot grow test root");
+    }
     console_puts("ROOT MOUNTED\r\n");
 }
 _Noreturn void rootfs_start(void)
@@ -32,7 +42,7 @@ _Noreturn void rootfs_start(void)
     disk_native_init();
     int error=ide_init(&ide_device);
     if(error==-NX_ENODEV) {
-        mount_root();
+        mount_root(false);
         console_puts("ROOT RAM\r\n");
     } else {
         if(error || v7fs_mount(&root_volume,&ide_device,false) ||
@@ -358,7 +368,7 @@ void root_exec_selftest(void)
        storage_bind(1,&storage_fixture.device,false)||storage_bind(2,&storage_readonly.device,false))
         panic("cannot bind storage fixture");
     uint32_t pages=page_free_count();
-    mount_root();
+    mount_root(true);
     uint32_t blocks=v7_disk_u32(root_volume.super.tfree);
     uint16_t inodes=v7_disk_u16(root_volume.super.tinode);
     v7_ino_t temporary;
