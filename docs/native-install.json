@@ -1947,6 +1947,19 @@
         "path": "v7-file.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/kill",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.kill",
+      "source": {
+        "root": "programs",
+        "path": "v7-kill.elf"
+      },
+      "format": "elf"
     }
   ]
 }

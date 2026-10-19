@@ -59,3 +59,10 @@ not native int overlays. Text scanning has sentinel storage/bounds guards;
 -f retains status 1 and accepts a final filename without a newline. Diagnostics
 retain the historical classification-command convention (ordinary missing files
 are reported on stdout without a failing status).
+
+## kill (126)
+
+Retains numeric -signal syntax, default SIGTERM, multiple PIDs and per-process
+errors. Native parsing rejects overflow/trailing junk and signal-only invocations
+instead of risking another PID. Fixtures verify signal 0, actual child death,
+missing processes, invalid signals and non-root permission checks.

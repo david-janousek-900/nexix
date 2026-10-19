@@ -1632,3 +1632,8 @@ test-expr: iso rootfs build/expr-command.elf
 test-file: iso rootfs build/file-command.elf
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M file
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M file
+
+.PHONY: test-kill
+test-kill: iso rootfs build/kill-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M kill
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M kill
