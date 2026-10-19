@@ -134,17 +134,17 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 36 native ELF programs are
+to multi-user V7 login with persistent IDE storage. 37 native ELF programs are
 installed; the complete list and destinations are in [the installation manifest](docs/native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](docs/development-interfaces.md).
 The inventory accounts for **217 components, 2,144 distribution files and
-35 supporting/platform requirements**. Its component statuses are 39 implemented,
-3 partial, 1 prototype and 174 not ported; importing reference inputs does not
+35 supporting/platform requirements**. Its component statuses are 40 implemented,
+3 partial, 1 prototype and 173 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **371 tracking tasks: 127 done, 0 in progress
-and 244 to do** after task 88. Tasks **1–108 and 367–371 are complete**. These counts are a work breakdown, not an
+The expanded roadmap below has **371 tracking tasks: 128 done, 0 in progress
+and 243 to do** after task 88. Tasks **1–108 and 367–371 are complete**. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -390,7 +390,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 130 | Port osh | Done | Retained source; native build/install, error/status and guest fixtures; `make test-osh` at 16/128 MiB; [contract](docs/essential-commands.md); Git history |
 | 131 | Port rmdir | Done | Retained source; native build/install, error/status and guest fixtures; `make test-rmdir` at 16/128 MiB; [contract](docs/essential-commands.md); Git history |
 | 132 | Port sleep | Done | Retained source; native build/install, error/status and guest fixtures; `make test-sleep` at 16/128 MiB; [contract](docs/essential-commands.md); Git history |
-| 133 | Port sync | To do | Native command fixtures, failure statuses and installation |
+| 133 | Port sync | Done | Retained source; native build/install, error/status and guest fixtures; `make test-sync` at 16/128 MiB; [contract](docs/essential-commands.md); Git history |
 | 134 | Port test | To do | Native command fixtures, failure statuses and installation |
 | 135 | Port yes | To do | Native command fixtures, failure statuses and installation |
 | 136 | Install/test false script | To do | Original script behavior and dependencies |

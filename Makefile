@@ -1667,3 +1667,8 @@ test-rmdir: iso rootfs build/rmdir-command.elf
 test-sleep: iso rootfs build/sleep-command.elf
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M sleep
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M sleep
+
+.PHONY: test-sync
+test-sync: iso rootfs
+	$(PYTHON) tools/sync_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/sync_smoke.py $(QEMU) build/nexix.iso 128M

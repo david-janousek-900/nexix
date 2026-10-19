@@ -1,0 +1,1 @@
+{"schema_version":1,"single_user":true,"cases":[{"id":"sync","component":"cmd.sync","steps":[{"command":"/bin/sync"},{"command":"/bin/sync ignored"}]}]}

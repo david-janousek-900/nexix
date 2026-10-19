@@ -118,3 +118,10 @@ Retains integer seconds and the original status-0 arg-count/bad-character
 messages; ignores extra operands as the source does. Native overflow is rejected
 with status 1. Guest clock-tick observations verify zero and one-second waits.
 Full libc alarm/signal compatibility remains separately owned by task 365.
+
+## sync (133)
+
+Retains the argument-independent sync call, with an explicit native status 0.
+Guest acceptance invokes the installed command, then cold-restarts a disposable
+production-root copy and verifies saved file contents at 16/128 MiB. Nexix's
+synchronous storage contract is preserved; no new write-back cache is implied.

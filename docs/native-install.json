@@ -2038,6 +2038,19 @@
         "path": "v7-sleep.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/sync",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.sync",
+      "source": {
+        "root": "programs",
+        "path": "v7-sync.elf"
+      },
+      "format": "elf"
     }
   ]
 }
