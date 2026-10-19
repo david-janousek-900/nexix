@@ -1692,3 +1692,16 @@ test-false: iso rootfs
 test-true: iso rootfs
 	$(PYTHON) tools/guest_acceptance.py tests/guest/true.json --qemu $(QEMU) --ram 16M --report build/true-16M.json
 	$(PYTHON) tools/guest_acceptance.py tests/guest/true.json --qemu $(QEMU) --ram 128M --report build/true-128M.json
+
+.PHONY: test-nohup
+test-nohup: iso rootfs build/nohup-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M nohup
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M nohup
+
+.PHONY: test-essential
+test-essential: test-basename test-cal test-chgrp test-chmod test-chown test-expr test-file test-kill test-mkdir test-mv test-nice test-osh test-rmdir test-sleep test-sync test-test test-yes test-false test-true test-nohup
+
+.PHONY: test-expr-bounds
+test-expr-bounds:
+	$(PYTHON) tests/expr_bounds.py --cc "$(HOST_CC)"
+test-expr: test-expr-bounds

@@ -23888,14 +23888,17 @@
           "name": "nohup",
           "install": "/bin/nohup",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/bin/nohup"
+            "rootfs/bin/nohup",
+            "tests/nohup-command.c",
+            "docs/essential-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 3,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "cmd.sh",
@@ -23926,14 +23929,11 @@
         }
       ],
       "reference_includes": [],
-      "blockers": [
-        "Not installed in Nexix; native integration and functional acceptance remain pending."
-      ],
-      "unresolved": [
-        "Audit native API/format compatibility and remaining transitive dependencies."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
-        "Run the original script with reference-compatible arguments; verify helper execution, output and failures."
+        "Run the original script with reference-compatible arguments; verify helper execution, output and failures.",
+        "make test-nohup at 16/128 MiB; exact output/status and native state assertions; commit recorded in Git history."
       ]
     },
     {

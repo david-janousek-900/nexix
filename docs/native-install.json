@@ -2109,6 +2109,19 @@
         "path": "bin/true"
       },
       "format": "data"
+    },
+    {
+      "path": "/bin/nohup",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "script.nohup",
+      "source": {
+        "root": "config",
+        "path": "bin/nohup"
+      },
+      "format": "data"
     }
   ]
 }

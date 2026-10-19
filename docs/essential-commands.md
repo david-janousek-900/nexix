@@ -158,3 +158,26 @@ Installs the original zero-byte executable script, without inventing a body or
 shebang. Guest fixtures verify status 0 through shell fallback and explicit
 interpretation, extra arguments and boolean lists, including reset of a prior
 failure. Staging tests preserve its empty payload exactly.
+
+## nohup (138)
+
+Installs the original script unchanged. Retains ignoring both SIGHUP and SIGTERM,
+the -5 nice increment, terminal-dependent append to nohup.out, stderr merging,
+unquoted $* expansion and the invoked command's status. Guest fixtures raise
+both ignored signals after exec, inspect actual niceness, exercise file/terminal
+output branches and append behavior, and check missing/no commands and failures.
+
+## Acceptance and installation
+
+`make test-essential` runs all tasks 119–138 at 16 and 128 MiB; each task has a
+separate implementation/test commit. Inventory, script fidelity, installation,
+embedded shell, rootfs, set-ID and interactive-shell checks cover shared paths.
+All guest roots and the auxiliary mv disk are disposable. Existing working disks
+retain their contents and do not automatically receive new installed commands.
+For a fresh full image use an unused DISK_IMAGE path; automatic upgrades remain
+owned by task 357. The fixed embedded recovery installation is unchanged.
+
+Final review added instrumented BRE regression coverage: `make test-expr-bounds`
+uses host AddressSanitizer/UndefinedBehaviorSanitizer, while the same malformed
+and oversized patterns run against the guest command. It guards bytecode writes,
+unclosed groups and bounded captures; each error returns status 2.
