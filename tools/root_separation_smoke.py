@@ -33,7 +33,7 @@ def boot(qemu,iso,ram,disk,second,log):
         marker=b'ROOT RAM' if disk is None else b'ROOT IDE'
         expect(rb'(?s)'+marker+rb'.*BOOT OK\r\n# ')
         if disk is None:
-            command('ls /usr','adm\n')
+            command('ls -1 /usr','adm\n')
             command('echo RAM_RECOVERY_OK','RAM_RECOVERY_OK\n')
         else:
             command('cat /usr/full-only','FULL_ONLY_DATA\n')

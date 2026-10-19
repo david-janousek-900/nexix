@@ -27,6 +27,7 @@ struct lbuf {
 };
 
 int	aflg, dflg, lflg, sflg, tflg, uflg, iflg, fflg, gflg, cflg;
+int	oneflg, name_pending;
 int	rflg	= 1;
 long	year;
 int	flags;
@@ -63,6 +64,10 @@ char *argv[];
 	if (--argc > 0 && *argv[1] == '-') {
 		argv++;
 		while (*++*argv) switch (**argv) {
+
+		case '1':
+			oneflg++;
+			continue;
 
 		case 'a':
 			aflg++;
@@ -144,6 +149,7 @@ char *argv[];
 	for (epp=firstp; epp<slastp; epp++) {
 		ep = *epp;
 		if (ep->ltype=='d' && dflg==0 || fflg) {
+			finish_names();
 			if (argc>1)
 				printf("\n%s:\n", ep->ln.namep);
 			lastp = slastp;
@@ -154,10 +160,19 @@ char *argv[];
 				printf("total %D\n", tblocks);
 			for (ep1=slastp; ep1<lastp; ep1++)
 				pentry(*ep1);
+			finish_names();
 		} else 
 			pentry(ep);
 	}
+	finish_names();
 	exit(0);
+}
+
+/* Finish each directory/operand group without trailing separators. */
+finish_names()
+{
+	if (name_pending) putchar('\n');
+	name_pending = 0;
 }
 
 pentry(ap)
@@ -171,6 +186,8 @@ struct lbuf *ap;
 	p = ap;
 	if (p->lnum == -1)
 		return;
+	if (!lflg && !sflg && !iflg && !oneflg && name_pending)
+		putchar(' ');
 	if (iflg)
 		printf("%5u ", p->lnum);
 	if (sflg)
@@ -196,9 +213,11 @@ struct lbuf *ap;
 			printf(" %-12.12s ", cp+4);
 	}
 	if (p->lflags&ISARG)
-		printf("%s\n", p->ln.namep);
+		printf("%s", p->ln.namep);
 	else
-		printf("%.14s\n", p->ln.lname);
+		printf("%.14s", p->ln.lname);
+	if (lflg || sflg || iflg || oneflg) putchar('\n');
+	else name_pending = 1;
 }
 
 getname(uid, buf)

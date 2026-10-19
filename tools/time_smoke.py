@@ -52,7 +52,7 @@ with tempfile.TemporaryDirectory(prefix='nexix-time-') as directory:
         command('date -u 2403312400', rb'Mon Apr  1 00:00:[0-9]{2} GMT 2024')
         command('touch /tmp/new; ls -l /tmp/new', rb'.*Apr  1 02:00 /tmp/new')
         command('echo preserved > /tmp/data; touch /tmp/data; cat /tmp/data', rb'preserved')
-        command('touch -c /tmp/missing; ls /tmp', rb'touch: file /tmp/missing does not exist.\r\ndata\r\nnew')
+        command('touch -c /tmp/missing; ls -1 /tmp', rb'touch: file /tmp/missing does not exist.\r\ndata\r\nnew')
         command('TZ=GMT0; export TZ; date', rb'Mon Apr  1 00:00:[0-9]{2} GMT 2024')
         command('date -u 0708', rb'Mon Apr  1 07:08:[0-9]{2} GMT 2024')
     except (RuntimeError, OSError) as problem:

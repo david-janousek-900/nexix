@@ -1850,3 +1850,9 @@ test-make: test-make-unit multi-iso rootfs build/make-time.elf build/make-lib.a
 	python3 tools/make_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	python3 tools/make_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-make
+
+.PHONY: test-ls
+test-ls: multi-iso rootfs
+	python3 tools/ls_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	python3 tools/ls_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-ls

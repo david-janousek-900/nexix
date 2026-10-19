@@ -148,3 +148,14 @@ as bytes/words but not a newline. Counters are native 64-bit longs. Success
 returns 0; unknown options and open/read/write errors return 1. Missing files
 are reported while remaining files are processed. `make test-wc` verifies
 these rules, field order and totals with sanitizers and 16/128 MiB guest boots.
+
+## ls output
+
+Plain `ls` prints sorted names separated by spaces, ending each directory or
+file-operand group with a newline. This compact default also applies to
+redirected output. Use `ls -1` for one name per line. Detailed `-l`, block-count
+`-s` and inode `-i` listings retain one entry per line. Multiple directories
+retain their separate headings; empty directories print no name row.
+
+`make test-ls` verifies the default and explicit formats, reverse ordering,
+file operands, empty/multiple directories and redirection at 16 and 128 MiB.
