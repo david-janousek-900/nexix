@@ -115,3 +115,21 @@ counts and native-long overflow are rejected with status 2 rather than wrapped
 or silently ignored. Native byte and line counters are 64-bit. `make test-cmp`
 checks binary data, EOF, stdin, skips and statuses with sanitizers and in
 16/128 MiB guests.
+
+## od (task 152)
+
+`/bin/od [-odxhcb] [file] [+offset[.][b]]` dumps binary files or standard
+input. The default is octal 16-bit words (`o`); `d` selects unsigned decimal
+words, `x` or `h` hexadecimal words, `c` escaped characters and `b` octal bytes.
+Flags can be combined. Word decoding is explicitly little-endian, independent
+of C integer size. Odd final bytes retain V7's zero-padded second byte.
+Identical complete rows collapse to `*`; a shorter final row is always shown.
+
+Offsets default to octal, use `x`/`0x` for hex or a trailing `.` for decimal;
+`b`/`B` multiplies by 512. Addresses use that base and retain the V7 seven-digit
+field. Offset input must be seekable. Invalid formats, overflowing offsets,
+failed opens/seeks and input/output errors return 1; success returns 0.
+
+`make test-od` compares every format and combined formats against an
+independent Python byte oracle, including all 256 byte values, duplicate rows,
+odd lengths and offset bases, with sanitizers and 16/128 MiB guest boots.

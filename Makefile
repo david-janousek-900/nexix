@@ -1806,3 +1806,12 @@ test-cmp: test-cmp-unit multi-iso rootfs
 	python3 tools/cmp_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	python3 tools/cmp_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-cmp
+
+.PHONY: test-od-unit test-od
+test-od-unit:
+	python3 tests/od.py
+test-unit: test-od-unit
+test-od: test-od-unit multi-iso rootfs
+	python3 tools/od_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	python3 tools/od_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-od

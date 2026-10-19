@@ -2227,6 +2227,19 @@
         "path": "v7-cmp.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/od",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.od",
+      "source": {
+        "root": "programs",
+        "path": "v7-od.elf"
+      },
+      "format": "elf"
     }
   ]
 }
