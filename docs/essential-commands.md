@@ -125,3 +125,15 @@ Retains the argument-independent sync call, with an explicit native status 0.
 Guest acceptance invokes the installed command, then cold-restarts a disposable
 production-root copy and verifies saved file contents at 16/128 MiB. Nexix's
 synchronous storage contract is preserved; no new write-back cache is implied.
+
+## test (134)
+
+Installs the external V7 test and a /bin/[ hard-link alias, independently of the
+Bourne shell builtin. Retains string/numeric/logical, -l length, file and terminal
+predicates and status 255 for syntax errors. Absolute bracket invocation is
+recognized; trailing unparsed arguments are rejected. V7 -f means an existing
+non-directory (including special files), not today's regular-file-only test.
+Fixtures execute external paths and verify predicates, syntax and denied access.
+
+The embedded shell regression executable is named v7-regression.elf so it cannot
+collide with the installed test command artifact v7-test.elf.

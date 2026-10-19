@@ -2051,6 +2051,25 @@
         "path": "v7-sync.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/test",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.test",
+      "source": {
+        "root": "programs",
+        "path": "v7-test.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/[",
+      "type": "link",
+      "target": "/bin/test",
+      "component": "cmd.test"
     }
   ]
 }

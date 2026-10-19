@@ -195,7 +195,11 @@ def validate(manifest, root=ROOT):
     try:
         plan = load(root / 'docs/native-install.json')
         validate_profiles(plan,load(root / 'docs/bootstrap-install.json'))
-        packaged = {Path(e['path']).name for e in plan if e.get('format') == 'elf'}
+        executable_paths = {e['path'] for e in plan if e.get('format') == 'elf'}
+        for e in plan:
+            if e['type']=='link' and e['target'] in executable_paths:
+                executable_paths.add(e['path'])
+        packaged = {Path(path).name for path in executable_paths}
         need(installed == packaged, f'implemented output drift: inventory={sorted(installed)}, install={sorted(packaged)}')
     except (OSError, ValueError, KeyError, TypeError) as error:
         errors.append(f'invalid native installation plan: {error}')

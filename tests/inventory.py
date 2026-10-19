@@ -97,6 +97,11 @@ class Inventory(unittest.TestCase):
         self.entry('game.bj')['status'] = 'implemented'
         self.reject('binary-only component cannot claim source or a completed port')
 
+    def test_executable_alias_requires_inventory_output(self):
+        entry=next(e for e in self.manifest['entries'] if e['id']=='cmd.test')
+        entry['outputs']=[o for o in entry['outputs'] if o['name']!='[']
+        self.reject('implemented output drift')
+
     def test_installed_program_index_must_cover_bin(self):
         self.manifest['installed_programs'] = [r for r in self.manifest['installed_programs'] if r['path'] != '/bin/man']
         self.reject('missing installed program: man')

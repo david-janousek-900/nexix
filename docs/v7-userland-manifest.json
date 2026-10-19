@@ -15618,14 +15618,29 @@
           "name": "test",
           "install": "/bin/test",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/test.c",
+            "tests/test-command.c",
+            "docs/essential-commands.md",
+            "Makefile"
+          ]
+        },
+        {
+          "name": "[",
+          "install": "/bin/[",
+          "role": "installed",
+          "status": "implemented",
+          "evidence": [
+            "user/v7/cmd/test.c",
+            "tests/test-command.c",
+            "docs/essential-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 3,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -15639,16 +15654,22 @@
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/test.c",
+            "user/v7/compat.h"
+          ],
+          "note": "Retained source audited against native public headers/libc; guest acceptance exercises the installed command."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/test.c",
+            "user/v7/compat.h"
+          ],
+          "note": "Retained source audited against native public headers/libc; guest acceptance exercises the installed command."
         }
       ],
       "reference_includes": [
@@ -15671,15 +15692,12 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Verify string, integer, file and permission predicates with their exit statuses.",
-        "Verify native build, reference options, exit status and malformed-input handling."
+        "Verify native build, reference options, exit status and malformed-input handling.",
+        "make test-test at 16/128 MiB; exact output/status and native state assertions; commit recorded in Git history."
       ],
       "source_files": [
         "reference/v7/usr/src/cmd/test.c"

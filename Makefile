@@ -364,9 +364,9 @@ build/v7_image_%.o: build/v7-%.elf
 	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents build/v7_raw_$*.o $@
 build/v7_test_program.o: user/v7-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
-build/v7-test.elf: build/crt0.o build/v7_test_program.o build/system_program.o build/popen_program.o build/libc.a user/user.ld
+build/v7-regression.elf: build/crt0.o build/v7_test_program.o build/system_program.o build/popen_program.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/v7_test_program.o build/system_program.o build/popen_program.o build/libc.a -o $@
-build/v7_test_image.o: build/v7-test.elf tools/embed_test_elf.py
+build/v7_test_image.o: build/v7-regression.elf tools/embed_test_elf.py
 	$(PYTHON) tools/embed_test_elf.py $< $@ --ld $(LD) --objcopy $(OBJCOPY)
 .PHONY: test-v7
 test-v7: check build/test-selftest.iso
@@ -1672,3 +1672,8 @@ test-sleep: iso rootfs build/sleep-command.elf
 test-sync: iso rootfs
 	$(PYTHON) tools/sync_smoke.py $(QEMU) build/nexix.iso 16M
 	$(PYTHON) tools/sync_smoke.py $(QEMU) build/nexix.iso 128M
+
+.PHONY: test-test
+test-test: iso rootfs build/test-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M test
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M test
