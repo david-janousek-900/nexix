@@ -74,3 +74,12 @@ because the kernel deliberately reserves directory operations for effective
 root. access checks use the real caller; new ownership is restored to its
 real UID/GID. Bounds, ownership failure and rollback are checked. Guest tests
 verify inode links, umask, multi-operand recovery and non-root denial/success.
+
+## mv (128)
+
+Retains hard-link/unlink moves and cp fallback across devices, including explicit
+native utimbuf timestamp restoration. Fixes uninitialized destination storage
+and bounds pathname construction. Directory moves use caller access checks and
+set-UID root directory links; regular-file moves drop privilege. Guest tests
+mount a disposable auxiliary ATA filesystem and verify data/times, cross-device
+directory rejection, subtree rejection, inode identity and unprivileged renames.

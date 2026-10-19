@@ -1642,3 +1642,8 @@ test-kill: iso rootfs build/kill-command.elf
 test-mkdir: iso rootfs build/mkdir-command.elf
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M mkdir
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M mkdir
+
+.PHONY: test-mv
+test-mv: iso rootfs build/mv-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M mv
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M mv

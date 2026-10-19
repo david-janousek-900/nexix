@@ -1973,6 +1973,19 @@
         "path": "v7-mkdir.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/mv",
+      "type": "file",
+      "mode": "4755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.mv",
+      "source": {
+        "root": "programs",
+        "path": "v7-mv.elf"
+      },
+      "format": "elf"
     }
   ]
 }
