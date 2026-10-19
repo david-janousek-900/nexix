@@ -6,9 +6,11 @@
 #include <sys/stat.h>
 #include <sys/dir.h>
 #include <stdio.h>
+#include <pwd.h>
+#include <grp.h>
 
 #define	NFILES	1024
-FILE	*pwdf, *dirf;
+FILE	*dirf;
 char	stdbuf[BUFSIZ];
 
 struct lbuf {
@@ -20,8 +22,8 @@ struct lbuf {
 	short	lnum;
 	short	lflags;
 	short	lnl;
-	short	luid;
-	short	lgid;
+	unsigned short	luid;
+	unsigned short	lgid;
 	long	lsize;
 	long	lmtime;
 };
@@ -31,8 +33,6 @@ int	oneflg, name_pending;
 int	rflg	= 1;
 long	year;
 int	flags;
-int	lastuid	= -1;
-char	tbuf[16];
 long	tblocks;
 int	statreq;
 struct	lbuf	*flist[NFILES];
@@ -128,12 +128,6 @@ char *argv[];
 		tflg = 0;
 		statreq = 0;
 	}
-	if(lflg) {
-		t = "/etc/passwd";
-		if(gflg)
-			t = "/etc/group";
-		pwdf = fopen(t, "r");
-	}
 	if (argc==0) {
 		argc++;
 		argv = &dotp - 1;
@@ -179,7 +173,8 @@ pentry(ap)
 struct lbuf *ap;
 {
 	struct { char dminor, dmajor;};
-	register t;
+	struct passwd *owner;
+	struct group *group;
 	register struct lbuf *p;
 	register char *cp;
 
@@ -196,13 +191,15 @@ struct lbuf *ap;
 		putchar(p->ltype);
 		pmode(p->lflags);
 		printf("%2d ", p->lnl);
-		t = p->luid;
-		if(gflg)
-			t = p->lgid;
-		if (getname(t, tbuf)==0)
-			printf("%-6.6s", tbuf);
-		else
-			printf("%-6d", t);
+		/* -g retains V7's group-only long listing; -l shows both. */
+		if (!gflg) {
+			owner = getpwuid(p->luid);
+			if (owner) printf("%-8s ", owner->pw_name);
+			else printf("%-8u ", (unsigned)p->luid);
+		}
+		group = getgrgid(p->lgid);
+		if (group) printf("%-8s ", group->gr_name);
+		else printf("%-8u ", (unsigned)p->lgid);
 		if (p->ltype=='b' || p->ltype=='c')
 			printf("%3d,%3d", major((int)p->lsize), minor((int)p->lsize));
 		else
@@ -218,40 +215,6 @@ struct lbuf *ap;
 		printf("%.14s", p->ln.lname);
 	if (lflg || sflg || iflg || oneflg) putchar('\n');
 	else name_pending = 1;
-}
-
-getname(uid, buf)
-int uid;
-char buf[];
-{
-	int j, c, n, i;
-
-	if (uid==lastuid)
-		return(0);
-	if(pwdf == NULL)
-		return(-1);
-	rewind(pwdf);
-	lastuid = -1;
-	do {
-		i = 0;
-		j = 0;
-		n = 0;
-		while((c=fgetc(pwdf)) != '\n') {
-			if (c==EOF)
-				return(-1);
-			if (c==':') {
-				j++;
-				c = '0';
-			}
-			if (j==0)
-				buf[i++] = c;
-			if (j==2)
-				n = n*10 + c - '0';
-		}
-	} while (n != uid);
-	buf[i++] = '\0';
-	lastuid = uid;
-	return(0);
 }
 
 long

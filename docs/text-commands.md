@@ -157,5 +157,10 @@ redirected output. Use `ls -1` for one name per line. Detailed `-l`, block-count
 `-s` and inode `-i` listings retain one entry per line. Multiple directories
 retain their separate headings; empty directories print no name row.
 
+`ls -l` shows permissions, link count, owner, group, size, timestamp and name.
+Owner/group names come from the native account databases, with unsigned numeric
+IDs as fallback. `ls -lg` retains V7's group-only long format.
+
 `make test-ls` verifies the default and explicit formats, reverse ordering,
-file operands, empty/multiple directories and redirection at 16 and 128 MiB.
+file operands, empty/multiple directories, redirection, owner/group names and
+numeric ID fallback at 16 and 128 MiB.
