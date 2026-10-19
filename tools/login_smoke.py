@@ -7,7 +7,7 @@ from private_guest import private_guest
 def main():
     qemu,iso,ram=sys.argv[1:4]
     with private_guest(qemu,iso,ram,'login',{'/bin/identity':'login-identity.elf'}) as guest:
-        guest.expect(r'(?s)BOOT OK\r\nroot@[A-Za-z0-9.-]+ # ')
+        guest.expect(r'(?s)BOOT OK\r\nroot@[A-Za-z0-9.-]+# ')
         guest.command("echo 'probe:alfu/zwrG7eZw:100:100:Probe:/home/alice:identity' >> /etc/passwd")
         guest.command("echo 'bad:alfu/zwrG7eZw:100:100:Bad:/missing:identity' >> /etc/passwd")
         def password(text):
@@ -18,10 +18,10 @@ def main():
         start=password('wrong');guest.expect('Login incorrect\r\nlogin: ');hidden(start,'wrong')
         guest.send('unknown\n');start=password('wrong');guest.expect('Login incorrect\r\nlogin: ');hidden(start,'wrong')
         guest.send('bad\n');start=password('alice');guest.expect('No directory\r\nlogin: ');hidden(start,'alice')
-        guest.send('probe\n');start=password('alice');guest.expect('LOGIN_IDENTITY_OK\r\nroot@[A-Za-z0-9.-]+ # ');hidden(start,'alice')
+        guest.send('probe\n');start=password('alice');guest.expect('LOGIN_IDENTITY_OK\r\nroot@[A-Za-z0-9.-]+# ');hidden(start,'alice')
         # The real shell must run in its own home with the unprivileged prompt.
         guest.send('/bin/login alice\n');guest.expect('/bin/login alice\r\n')
-        start=password('alice');guest.expect('Nexix 0.1.0 development system\r\n'+re.escape('alice@nexix.localdomain $ '));hidden(start,'alice')
+        start=password('alice');guest.expect('Nexix 0.1.0 development system\r\n'+re.escape('alice@nexix.localdomain$ '));hidden(start,'alice')
         guest.command('echo $HOME',stdout='/home/alice\n',prompt=re.escape('$ '))
         guest.command('pwd',stdout='/home/alice\n',prompt=re.escape('$ '))
         guest.command('echo owned > mine; cat mine; rm mine',stdout='owned\n',prompt=re.escape('$ '))

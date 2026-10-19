@@ -21,7 +21,7 @@ def main():
         guest.send('ALICE_MESSAGE\n');guest.expect('ALICE_MESSAGE\r\n',1)
         escape='!echo '+'Q'*121+'\n';assert len(escape)==128
         guest.send(escape);guest.expect(re.escape('Q'*121+'\r\n!\r\n'))
-        guest.send('\x04');guest.expect('EOF\r\n',1);guest.expect('WRITE_STATUS_0\r\n'+r'[A-Za-z0-9_.-]+@[A-Za-z0-9.-]+ '+re.escape('$ '))
+        guest.send('\x04');guest.expect('EOF\r\n',1);guest.expect('WRITE_STATUS_0\r\n'+r'[A-Za-z0-9_.-]+@[A-Za-z0-9.-]+'+re.escape('$ '))
         if b'Q'*121 in guest.buffers[1]:raise AssertionError('shell escape forwarded')
         guest.send('write bob ttyS1\n');guest.expect('write bob ttyS1\r\n')
         guest.expect(re.escape('Message from alice console...\r\n\x07\x07\x07'),1)

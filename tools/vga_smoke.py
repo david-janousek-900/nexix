@@ -67,7 +67,7 @@ def main():
             console.type('roox\x7ft\n');console.expect('login: root\nPassword:')
             console.type('nexix\n');console.expect('# ')
             assert not re.search(r'(?:Password:\s*|\n)nexix(?:\s*\n|$)',console.screen()), 'VGA password echoed'
-            console.type('hostname gui.example.test\n');console.expect('root@gui.example.test # ')
+            console.type('hostname gui.example.test\n');console.expect('root@gui.example.test# ')
             console.type('uname -n\n');console.expect('\ngui.example.test\n')
             console.type('tty\n');console.expect('/dev/tty0')
             console.type('echo VGA_WORKS\n');console.expect('\nVGA_WORKS\n')

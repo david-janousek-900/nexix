@@ -12,7 +12,7 @@ import time
 ram = sys.argv[3] if len(sys.argv) > 3 else '128M'
 log = bytearray()
 
-def boot(disk, commands, initial=rb'(?s)ROOT IDE\r\nROOT MOUNTED.*BOOT OK\r\nroot@[A-Za-z0-9.-]+ # ', rtc='2024-02-29T12:34:56'):
+def boot(disk, commands, initial=rb'(?s)ROOT IDE\r\nROOT MOUNTED.*BOOT OK\r\nroot@[A-Za-z0-9.-]+# ', rtc='2024-02-29T12:34:56'):
     command = [sys.argv[1], '-machine', 'pc', '-accel', 'tcg', '-cpu', 'qemu64',
                '-smp', '1', '-m', ram, '-rtc', f'base={rtc},clock=vm',
                '-boot', 'd', '-cdrom', sys.argv[2],
@@ -55,7 +55,7 @@ def boot(disk, commands, initial=rb'(?s)ROOT IDE\r\nROOT MOUNTED.*BOOT OK\r\nroo
         log.extend(output)
 
 def response(text):
-    return rb'\r\n' + re.escape(text.encode()) + rb'\r\nroot@[A-Za-z0-9.-]+ # '
+    return rb'\r\n' + re.escape(text.encode()) + rb'\r\nroot@[A-Za-z0-9.-]+# '
 
 def inode_times(disk, name):
     # Decode disk bytes independently of the kernel and its inode cache.
@@ -95,7 +95,7 @@ try:
         if inode_times(disk, 'link') != created:
             raise RuntimeError('hard-link timestamps differ')
         boot(disk, [
-            ('cat /tmp/data; cat /tmp/link; /tmp/exec DISK_EXEC', rb'\r\npersisted\r\npersisted\r\nDISK_EXEC\r\nroot@[A-Za-z0-9.-]+ # '),
+            ('cat /tmp/data; cat /tmp/link; /tmp/exec DISK_EXEC', rb'\r\npersisted\r\npersisted\r\nDISK_EXEC\r\nroot@[A-Za-z0-9.-]+# '),
             ('/tmp/large -c "echo INDIRECT_EXEC"', response('INDIRECT_EXEC')),
             ('echo updated >> /tmp/link; touch /tmp/link; rm /tmp/data /tmp/exec /tmp/large; echo CHANGED', response('CHANGED')),
         ], rtc='2024-03-01T12:34:56')
@@ -105,9 +105,9 @@ try:
         if not all(new > old for new, old in zip(updated, created)):
             raise RuntimeError('timestamps did not advance across cold boots')
         boot(disk, [
-            ('ls -l /tmp/link', rb'Mar  1.*link\r\nroot@[A-Za-z0-9.-]+ # '),
-            ('cat /tmp/link; ls /tmp', rb'\r\npersisted\r\nupdated\r\nlink\r\nroot@[A-Za-z0-9.-]+ # '),
-            ('rm /tmp/link; cp /bin/sh /tmp/reused; /tmp/reused -c "echo REUSED"; rm /tmp/reused; ls /tmp; echo CLEAN', rb'\r\nREUSED\r\nCLEAN\r\nroot@[A-Za-z0-9.-]+ # '),
+            ('ls -l /tmp/link', rb'Mar  1.*link\r\nroot@[A-Za-z0-9.-]+# '),
+            ('cat /tmp/link; ls /tmp', rb'\r\npersisted\r\nupdated\r\nlink\r\nroot@[A-Za-z0-9.-]+# '),
+            ('rm /tmp/link; cp /bin/sh /tmp/reused; /tmp/reused -c "echo REUSED"; rm /tmp/reused; ls /tmp; echo CLEAN', rb'\r\nREUSED\r\nCLEAN\r\nroot@[A-Za-z0-9.-]+# '),
         ], rtc='2024-03-02T12:34:56')
         # Independent on-disk free-block and free-inode totals must be restored.
         if disk.read_bytes()[512+418:512+424] != seed[512+418:512+424]:

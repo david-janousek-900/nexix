@@ -2,5 +2,5 @@ PATH=/bin
 HOME=/root
 TZ=GMT0
 export PATH HOME TZ
-PS1='\u@\H \$ '
+PS1='\u@\H\$ '
 export PS1

@@ -45,9 +45,14 @@ Login shells read `/etc/profile` and then their home `.profile`; home settings
 can override the system defaults. Fresh system and home profiles set:
 
 ```sh
-PS1='\u@\H \$ '
+PS1='\u@\H\$ '
 export PS1
 ```
+
+This displays `root@nexix.localdomain# ` or `alice@nexix.localdomain$ `.
+On an existing disk, update PS1 in `/etc/profile` and any home `.profile`
+that overrides it; offline upgrades preserve these configuration files.
+The same assignment updates the current shell immediately.
 
 The native Bourne shell renders `\u` as the effective user's account name,
 `\H` as the full current hostname, `\h` as its first label and `\$` as `#` for
@@ -61,9 +66,10 @@ prompt rendering allocates no memory and performs no shell expansion. Normal
 prompts are written together so input echo cannot split their fields. The
 fresh `/root/.profile`, `/.profile` and regular-user profiles also export this
 prompt. Init supplies HOME=/root to recovery shells; the shared `/.profile`
-does not replace a regular user's HOME. Upgrades preserve existing home profiles; the newly installed global
-`/etc/profile` supplies the prompt unless a home profile explicitly overrides
-it. Existing `/etc/hostname` files are preserved by offline upgrades.
+does not replace a regular user's HOME. Upgrades preserve existing system and
+home profiles. The global `/etc/profile` supplies the prompt unless a home
+profile explicitly overrides it. Existing `/etc/hostname` files are also
+preserved by offline upgrades.
 
 ## Verification
 

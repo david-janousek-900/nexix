@@ -42,7 +42,7 @@ ok:
 		shell = pwd->pw_shell;
 	for (p=environ; *p; p++) {
 		if (strncmp("PS1=", *p, 4) == 0) {
-			*p = "PS1=\\u@\\H \\$ ";
+			*p = "PS1=\\u@\\H\\$ ";
 			break;
 		}
 	}

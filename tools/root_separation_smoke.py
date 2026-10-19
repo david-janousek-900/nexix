@@ -28,10 +28,10 @@ def boot(qemu,iso,ram,disk,second,log):
         raise RuntimeError('guest timeout')
     def command(line,answer):
         process.stdin.write(line.encode()+b'\n');process.stdin.flush()
-        expect(rb'\r\n'+re.escape(answer.encode().replace(b'\n',b'\r\n'))+rb'root@[A-Za-z0-9.-]+ # ')
+        expect(rb'\r\n'+re.escape(answer.encode().replace(b'\n',b'\r\n'))+rb'root@[A-Za-z0-9.-]+# ')
     try:
         marker=b'ROOT RAM' if disk is None else b'ROOT IDE'
-        expect(rb'(?s)'+marker+rb'.*BOOT OK\r\nroot@[A-Za-z0-9.-]+ # ')
+        expect(rb'(?s)'+marker+rb'.*BOOT OK\r\nroot@[A-Za-z0-9.-]+# ')
         if disk is None:
             command('ls -1 /usr','adm\n')
             command('echo RAM_RECOVERY_OK','RAM_RECOVERY_OK\n')

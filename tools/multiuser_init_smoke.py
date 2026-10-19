@@ -28,7 +28,7 @@ def main():
             guest.send(f"exec /bin/sh -c 'exit {code}'\n",1);login('bob','bob',1,'$ ')
             guest.command('/bin/initcontrol two',stdout='INIT_STATE_OK\n')
         guest.send('/bin/initcontrol single\n')
-        guest.expect('init: single-user recovery\r\nroot@[A-Za-z0-9.-]+ # ')
+        guest.expect('init: single-user recovery\r\nroot@[A-Za-z0-9.-]+# ')
         guest.command('/bin/initcontrol recovery',stdout='INIT_STATE_OK\n')
         guest.send('\x04')
         login('root','nexix',0,'# ');login('bob','bob',1,'$ ')

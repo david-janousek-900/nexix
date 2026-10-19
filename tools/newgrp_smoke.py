@@ -13,11 +13,11 @@ def main():
         def state(uid,gid,home,extra=''):
             guest.command('/bin/credentials'+extra,stdout=f'UID={uid} EUID={uid} GID={gid} EGID={gid} HOME={home} CWD_ROOT=1\n',prompt=re.escape('$ '))
         wire='/bin/credentials launch; echo LAUNCH_STATUS_$?'
-        guest.send(wire+'\n');guest.expect(re.escape(wire+'\r\nalice@nexix.localdomain $ '))
-        state(100,100,'/home/alice',' closed');guest.send('\x04');guest.expect('LAUNCH_STATUS_0\r\n'+re.escape('alice@nexix.localdomain $ '));guest.command('rm /tmp/newgrp-fd',prompt=re.escape('$ '))
+        guest.send(wire+'\n');guest.expect(re.escape(wire+'\r\nalice@nexix.localdomain$ '))
+        state(100,100,'/home/alice',' closed');guest.send('\x04');guest.expect('LAUNCH_STATUS_0\r\n'+re.escape('alice@nexix.localdomain$ '));guest.command('rm /tmp/newgrp-fd',prompt=re.escape('$ '))
         def group(name,message=''):
             wire='newgrp'+(' '+name if name else '')
-            guest.send(wire+'\n');guest.expect(re.escape(wire+'\r\n'+(message+'\r\n' if message else '')+'alice@nexix.localdomain $ '))
+            guest.send(wire+'\n');guest.expect(re.escape(wire+'\r\n'+(message+'\r\n' if message else '')+'alice@nexix.localdomain$ '))
         group('staff');state(100,100,'/home/alice')
         group('other');state(100,1,'/home/alice')
         group('bin','Sorry');state(100,1,'/home/alice')

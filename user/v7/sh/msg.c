@@ -61,8 +61,8 @@ MSG	atline		= " at line ";
 MSG	devnull		= "/dev/null";
 MSG	execpmsg	= "+ ";
 MSG	readmsg		= "> ";
-MSG	stdprompt	= "\\u@\\H \\$ ";
-MSG	supprompt	= "\\u@\\H \\$ ";
+MSG	stdprompt	= "\\u@\\H\\$ ";
+MSG	supprompt	= "\\u@\\H\\$ ";
 MSG	profile		= ".profile";
 
 

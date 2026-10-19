@@ -22,11 +22,11 @@ def main():
         guest=Guest(qemu,iso,disk,ram,2)
         try:
             for round in range(4):
-                for line in range(2):guest.expect(f'ROUND_{round}_LINE_{line}\r\nroot@[A-Za-z0-9.-]+ # ',line)
+                for line in range(2):guest.expect(f'ROUND_{round}_LINE_{line}\r\nroot@[A-Za-z0-9.-]+# ',line)
                 # A partial line on COM1 cannot block input or execution on COM2.
                 guest.send('echo PAR',0)
                 guest.command('echo OTHER_LINE',1,'OTHER_LINE\n')
-                guest.send('TIAL\n',0);guest.expect(r'echo PARTIAL\r\nPARTIAL\r\nroot@[A-Za-z0-9.-]+ # ')
+                guest.send('TIAL\n',0);guest.expect(r'echo PARTIAL\r\nPARTIAL\r\nroot@[A-Za-z0-9.-]+# ')
                 for line in range(2):
                     guest.command(f'echo ALIAS_{line} > /dev/tty',line,f'ALIAS_{line}\n')
                     guest.command(f'echo FILE_{line} > /tmp/line{line}',line)
@@ -35,7 +35,7 @@ def main():
                 guest.send('cat -u\n',0);guest.expect('cat -u\r\n')
                 guest.send('CAT_READY\n',0);guest.expect('CAT_READY\r\nCAT_READY\r\n')
                 guest.command('echo OTHER_ALIVE',1,'OTHER_ALIVE\n')
-                guest.send('\x03',0);guest.expect('\r\nroot@[A-Za-z0-9.-]+ # ')
+                guest.send('\x03',0);guest.expect('\r\nroot@[A-Za-z0-9.-]+# ')
                 for line in range(2):
                     guest.send('\n'*8,line)
                     for _ in range(8):guest.expect('# ',line)

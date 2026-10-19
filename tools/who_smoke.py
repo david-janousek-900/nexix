@@ -16,7 +16,7 @@ def main():
         def query(command,pattern,line=0):
             wire=command+'; echo WHO_STATUS_$?'
             guest.send(wire+'\n',line);guest.expect(re.escape(wire+'\r\n'),line)
-            guest.expect(pattern+'WHO_STATUS_0\r\n'+r'[A-Za-z0-9_.-]+@[A-Za-z0-9.-]+ '+re.escape('$ '),line)
+            guest.expect(pattern+'WHO_STATUS_0\r\n'+r'[A-Za-z0-9_.-]+@[A-Za-z0-9.-]+'+re.escape('$ '),line)
         query('who',row('alice','console')+row('bob','ttyS1'))
         query('who am i',row('alice','console'));query('who am i',row('bob','ttyS1'),1)
         query('who am i < /etc/rc',row('alice','tty??'))

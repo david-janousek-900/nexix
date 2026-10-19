@@ -1,2 +1,2 @@
-PS1='\u@\H \$ '
+PS1='\u@\H\$ '
 export PS1

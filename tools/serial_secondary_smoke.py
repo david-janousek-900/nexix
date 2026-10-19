@@ -26,7 +26,7 @@ def main():
         if hasattr(data,'close'):data.close()
         guest=Guest(qemu,iso,disk,ram,2)
         try:
-            guest.expect(r'(?s)BOOT OK\r\nroot@[A-Za-z0-9.-]+ # ')
+            guest.expect(r'(?s)BOOT OK\r\nroot@[A-Za-z0-9.-]+# ')
             guest.send('/tmp/uartcheck'+(' packaged' if packaged else '')+'; echo COM2_STATUS_$?\n')
             guest.expect(r'COM1_READY\r\n')
             guest.expect(b'COM2_READY\n',1)
@@ -34,7 +34,7 @@ def main():
             expected=bytes((i*19)&255 for i in range(512))*16
             before,_=guest.expect(re.escape(expected),1)
             if before:raise AssertionError('unexpected COM2 bytes')
-            guest.expect(r'COM1_DONE\r\nCOM2_STATUS_0\r\nroot@[A-Za-z0-9.-]+ # ')
+            guest.expect(r'COM1_DONE\r\nCOM2_STATUS_0\r\nroot@[A-Za-z0-9.-]+# ')
             guest.command('echo COM1_SURVIVES',stdout='COM1_SURVIVES\n')
             if bytes(guest.buffers[1])!=b'COM2_READY\n'+expected:
                 raise AssertionError('COM2 stream contamination')

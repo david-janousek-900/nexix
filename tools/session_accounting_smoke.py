@@ -7,7 +7,7 @@ from private_guest import private_guest
 def main():
     qemu,iso,ram=sys.argv[1:4]
     with private_guest(qemu,iso,ram,'session-accounting',{'/bin/sessioncheck':'session-records.elf'},2) as guest:
-        guest.expect(r'(?s)BOOT OK\r\nroot@[A-Za-z0-9.-]+ # ')
+        guest.expect(r'(?s)BOOT OK\r\nroot@[A-Za-z0-9.-]+# ')
         guest.command("echo '19console' > /etc/ttys; echo '19ttyS1' >> /etc/ttys")
         guest.send('\x04')
         def login(name,password,line,prompt):

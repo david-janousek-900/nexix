@@ -27,9 +27,9 @@ def boot(disk, qemu, iso, ram, second, log):
         raise RuntimeError('guest timeout')
     def command(line,answer):
         process.stdin.write(line.encode()+b'\n');process.stdin.flush()
-        expect(rb'\r\n'+re.escape(answer.encode().replace(b'\n',b'\r\n'))+rb'root@[A-Za-z0-9.-]+ # ')
+        expect(rb'\r\n'+re.escape(answer.encode().replace(b'\n',b'\r\n'))+rb'root@[A-Za-z0-9.-]+# ')
     try:
-        expect(rb'(?s)ROOT IDE\r\nROOT MOUNTED.*BOOT OK\r\nroot@[A-Za-z0-9.-]+ # ')
+        expect(rb'(?s)ROOT IDE\r\nROOT MOUNTED.*BOOT OK\r\nroot@[A-Za-z0-9.-]+# ')
         command('cat /usr/many/f1599','LARGE_INODE_DATA\n')
         command('cat /usr/alias','LARGE_INODE_DATA\n')
         if second:

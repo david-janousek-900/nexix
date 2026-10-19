@@ -57,7 +57,7 @@ def expect(pattern):
 def command(line, result=b''):
     global checks
     send(line if line.endswith(b'\r') else line + b'\n')
-    expect(rb'\r\n' + re.escape(result.replace(b'\n', b'\r\n')) + rb'root@[A-Za-z0-9.-]+ # ')
+    expect(rb'\r\n' + re.escape(result.replace(b'\n', b'\r\n')) + rb'root@[A-Za-z0-9.-]+# ')
     checks += 1
 
 def cat_ready(name, pipeline=False):
@@ -70,7 +70,7 @@ def cat_ready(name, pipeline=False):
     expect(re.escape(name + b'\r\n' + name + b'\r\n'))
 
 try:
-    expect(rb'INIT PID1\r\n(?:\[[^\]\r\n]+\] )?BOOT OK\r\nroot@[A-Za-z0-9.-]+ # ')
+    expect(rb'INIT PID1\r\n(?:\[[^\]\r\n]+\] )?BOOT OK\r\nroot@[A-Za-z0-9.-]+# ')
     stage = 'empty prompt lines'
     for _ in range(10):
         command(b'')
@@ -93,18 +93,18 @@ try:
     command(b'(echo sub-shell); echo parent', b'sub-shell\nparent\n')
     stage = 'exit status and background wait'
     command(b'/bin/sh -c "exit 7"; echo STATUS_$?', b'STATUS_7\n')
-    send(b'nexix_missing\n'); expect(rb'nexix_missing: not found\r\nroot@[A-Za-z0-9.-]+ # ')
+    send(b'nexix_missing\n'); expect(rb'nexix_missing: not found\r\nroot@[A-Za-z0-9.-]+# ')
     command(b'echo STATUS_$?', b'STATUS_1\n')
     send(b"/bin/sh -c 'exit 0' & wait; echo WAIT_OK\n")
-    expect(rb'\r\n[0-9]+\r\nWAIT_OK\r\nroot@[A-Za-z0-9.-]+ # ')
+    expect(rb'\r\n[0-9]+\r\nWAIT_OK\r\nroot@[A-Za-z0-9.-]+# ')
     checks += 1
     send(b'cat & wait; echo BG_CAT_OK\n')
-    expect(rb'\r\n[0-9]+\r\nBG_CAT_OK\r\nroot@[A-Za-z0-9.-]+ # ')
+    expect(rb'\r\n[0-9]+\r\nBG_CAT_OK\r\nroot@[A-Za-z0-9.-]+# ')
     checks += 1
     stage = 'here document'
     send(b'cat <<END\n'); expect(rb'> ')
     send(b'heredoc $V\n'); expect(rb'> ')
-    send(b'END\n'); expect(rb'\r\nheredoc two words\r\nroot@[A-Za-z0-9.-]+ # ')
+    send(b'END\n'); expect(rb'\r\nheredoc two words\r\nroot@[A-Za-z0-9.-]+# ')
     checks += 1
     stage = 'files and scripts'
     command(b'echo first > /tmp/a; echo second >> /tmp/a; cp /tmp/a /tmp/b; ln /tmp/b /tmp/c; cat /tmp/c', b'first\nsecond\n')
@@ -114,21 +114,21 @@ try:
     command(b'rm a b c script abcdefghijklmn; cd /; echo CLEAN_OK', b'CLEAN_OK\n')
     stage = 'idle interrupt'
     send(b'echo discarded'); expect(rb'echo discarded')
-    send(b'\x03'); expect(rb'\r\nroot@[A-Za-z0-9.-]+ # ')
+    send(b'\x03'); expect(rb'\r\nroot@[A-Za-z0-9.-]+# ')
     command(b'echo IDLE_PID_$$', b'IDLE_PID_2\n')
     stage = 'foreground interrupts'
     for i in range(3):
         cat_ready(f'CAT_READY_{i}'.encode())
-        send(b'\x03'); expect(rb'\r\nroot@[A-Za-z0-9.-]+ # ')
+        send(b'\x03'); expect(rb'\r\nroot@[A-Za-z0-9.-]+# ')
         command(b'echo INTERRUPT_PID_$$', b'INTERRUPT_PID_2\n')
     cat_ready(b'QUIT_READY')
-    send(b'\x1c'); expect(rb'Quit - core dumped\r\nroot@[A-Za-z0-9.-]+ # ')
+    send(b'\x1c'); expect(rb'Quit - core dumped\r\nroot@[A-Za-z0-9.-]+# ')
     command(b'ls core', b'core\n')
     command(b'rm core')
     command(b'echo QUIT_PID_$$', b'QUIT_PID_2\n')
     stage = 'pipeline interrupt and EOF'
     cat_ready(b'PIPE_READY', pipeline=True)
-    send(b'\x03'); expect(rb'\r\nroot@[A-Za-z0-9.-]+ # ')
+    send(b'\x03'); expect(rb'\r\nroot@[A-Za-z0-9.-]+# ')
     command(b'echo PIPE_PID_$$', b'PIPE_PID_2\n')
     send(b'cat -u\n'); expect(rb'cat -u\r\n')
     send(b'EOF_LINE\x04'); expect(rb'EOF_LINEEOF_LINE')
@@ -137,12 +137,12 @@ try:
     stage = 'buffered cat EOF flush'
     send(b'cat\n'); expect(rb'cat\r\n')
     send(b'BUFFERED_CAT\n'); expect(rb'BUFFERED_CAT\r\n')
-    send(b'\x04'); expect(rb'BUFFERED_CAT\r\nroot@[A-Za-z0-9.-]+ # ')
+    send(b'\x04'); expect(rb'BUFFERED_CAT\r\nroot@[A-Za-z0-9.-]+# ')
     checks += 1
     stage = 'trap delivery'
     command(b"trap 'echo TRAP_OK' 2; echo TRAP_SET", b'TRAP_SET\n')
     cat_ready(b'TRAP_READY')
-    send(b'\x03'); expect(rb'TRAP_OK\r\nroot@[A-Za-z0-9.-]+ # ')
+    send(b'\x03'); expect(rb'TRAP_OK\r\nroot@[A-Za-z0-9.-]+# ')
     command(b'trap 2; echo TRAP_CLEAR', b'TRAP_CLEAR\n')
     stage = 'long expansion'
     command(b'L=; echo LONG_START', b'LONG_START\n')

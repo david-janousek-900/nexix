@@ -23,7 +23,7 @@ def main():
             if old is not None:secret('Old password:',old)
             if new is not None:secret('New password:',new);secret('Retype new password:',again if again is not None else new)
             if message:guest.expect(re.escape(message+'\r\n'),line)
-            guest.expect('PASSWD_STATUS_1\r\n'+r'[A-Za-z0-9_.-]+@[A-Za-z0-9.-]+ '+re.escape('# ' if line else '$ '),line)
+            guest.expect('PASSWD_STATUS_1\r\n'+r'[A-Za-z0-9_.-]+@[A-Za-z0-9.-]+'+re.escape('# ' if line else '$ '),line)
         change('wrong',message='Sorry.',implicit=True)
         change('alice','Newpass1','Mismatch',message='Mismatch - password unchanged.')
         guest.command('echo busy > /etc/ptmp',1)
