@@ -2175,6 +2175,19 @@
         "root": "programs",
         "path": "dev-include/nexix/klog.h"
       }
+    },
+    {
+      "path": "/bin/ed",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.ed",
+      "source": {
+        "root": "programs",
+        "path": "v7-ed.elf"
+      },
+      "format": "elf"
     }
   ]
 }

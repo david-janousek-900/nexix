@@ -5451,7 +5451,7 @@
     {
       "id": "cmd.ed",
       "kind": "command",
-      "summary": "ed reference command",
+      "summary": "Native V7 line editor with LP64 line tables, BRE commands and rotor-encrypted files",
       "sources": [
         "reference/v7/bin/ed",
         "reference/v7/usr/src/cmd/ed.c"
@@ -5461,14 +5461,16 @@
           "name": "ed",
           "install": "/bin/ed",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/ed.c",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -5482,16 +5484,22 @@
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/ed.c",
+            "Makefile"
+          ],
+          "note": "Native file/TTY/signal/allocator interfaces; libc crypt replaces the external makekey key-derivation process."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/ed.c",
+            "Makefile"
+          ],
+          "note": "Native file/TTY/signal/allocator interfaces; libc crypt replaces the external makekey key-derivation process."
         }
       ],
       "reference_includes": [
@@ -5514,15 +5522,12 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
-        "Script insert/change/delete/write operations and verify resulting file bytes.",
-        "Verify native build, reference options, exit status and malformed-input handling."
+        "Editing, addresses/marks/global commands, undo/move/copy, save/reopen and large line-table growth.",
+        "Source-defined command errors and flags; bounded names/regex, exclusive temporary creation, SIGINT recovery and SIGHUP ed.hup.",
+        "Independent historical-width rotor ciphertext, terminal key hiding, encrypted temporary/file I/O, permissions and real guest acceptance at 16/128 MiB."
       ],
       "source_files": [
         "reference/v7/usr/src/cmd/ed.c"
@@ -5533,6 +5538,9 @@
           "path": "/bin/ed",
           "artifact": "historical_binary"
         }
+      ],
+      "native_sources": [
+        "user/v7/cmd/ed.c"
       ]
     },
     {

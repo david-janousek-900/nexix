@@ -80,19 +80,19 @@ class Roadmap(unittest.TestCase):
         self.reject('IDs must be unique, ordered and contiguous')
 
     def test_malformed_roadmap_status(self):
-        self.roadmap_text = self.roadmap_text.replace('| 145 | Port ed | To do |', '| 145 | Port ed | Complete |')
+        self.roadmap_text = self.roadmap_text.replace('| 145 | Port ed | Done |', '| 145 | Port ed | Complete |')
         self.reject('malformed roadmap row:')
 
     def test_status_summary_drift(self):
-        self.roadmap_text = self.roadmap_text.replace('| 145 | Port ed | To do |', '| 145 | Port ed | In progress |')
+        self.roadmap_text = self.roadmap_text.replace('| 145 | Port ed | Done |', '| 145 | Port ed | In progress |')
         self.reject('roadmap status summary drift')
 
     def test_unfinished_component_cannot_hide_behind_done_task(self):
-        self.coverage['components']['cmd.ed'] = [16]
-        self.reject('cmd.ed: unfinished component cannot map only to completed tasks')
+        self.coverage['components']['cmd.awk'] = [16]
+        self.reject('cmd.awk: unfinished component cannot map only to completed tasks')
 
     def test_implemented_component_needs_completed_task(self):
-        self.coverage['components']['cmd.cat'] = [145]
+        self.coverage['components']['cmd.cat'] = [174]
         self.reject('cmd.cat: implemented component needs a completed roadmap task')
 
     def test_done_task_needs_commit_evidence(self):

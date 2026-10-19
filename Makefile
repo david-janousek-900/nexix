@@ -1764,3 +1764,18 @@ test-upgrade: test-upgrade-unit serial-iso rootfs
 	$(PYTHON) tools/upgrade_smoke.py $(QEMU) build/nexix-serial.iso 16M
 	$(PYTHON) tools/upgrade_smoke.py $(QEMU) build/nexix-serial.iso 128M
 test: test-upgrade
+
+.PHONY: test-ed-unit test-ed
+test-ed-unit:
+	$(PYTHON) tests/ed.py --cc $(HOST_CC)
+test-unit: test-ed-unit
+test-ed: test-ed-unit multi-iso rootfs
+	$(PYTHON) tools/ed_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/ed_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-ed
+build/ed-recover.o: tests/ed-recover.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/ed-recover.elf: build/crt0.o build/ed-recover.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/ed-recover.o build/libc.a -o $@
+-include build/ed-recover.d
+test-ed: build/ed-recover.elf
