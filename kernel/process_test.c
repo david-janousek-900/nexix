@@ -1,5 +1,6 @@
 #include "console.h"
 #include "process.h"
+#include "callout.h"
 #include "segments.h"
 #include "serial.h"
 #define REQUIRE(c) do { if (!(c)) panic("process self-test: " #c); } while (0)
@@ -11,6 +12,12 @@ static bool active_gate, fork_seen, parent_exit_seen, child_exit_seen;
 static v7_pid_t fork_parent, fork_child;
 static uint64_t preemptions[2];
 static uint8_t code_page[PAGE_SIZE];
+static volatile unsigned callout_seen;
+static void callout_wake(void *argument)
+{
+    REQUIRE(argument==(void *)&callout_seen);
+    ++callout_seen;proc_wakeup(argument);
+}
 
 static void worker(void *argument)
 {
@@ -84,6 +91,14 @@ static void kernel_tests(void *argument)
     proc_delay(3); /* All tasks are sleeping: exercise scheduler STI/HLT wakeup. */
     REQUIRE(timer_ticks() - before >= 3);
     console_puts("PROCESS SLEEP OK\r\n");
+    uintptr_t callout_flags=proc_irq_save();
+    before=timer_ticks();
+    REQUIRE(callout_schedule(callout_wake,(void *)&callout_seen,2)==0);
+    while(!callout_seen)proc_sleep((void *)&callout_seen,26);
+    REQUIRE(callout_seen==1 && timer_ticks()-before>=2);
+    REQUIRE(callout_cancel(callout_wake,(void *)&callout_seen)==0);
+    proc_irq_restore(callout_flags);
+    console_puts("CALLOUT IRQ OK\r\n");
 
     REQUIRE(proc_spawn(orphan_parent, NULL) > 0);
     statuses = 0;

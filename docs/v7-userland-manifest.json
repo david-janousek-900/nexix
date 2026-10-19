@@ -77,7 +77,8 @@
         "docs/kernel-configuration.md",
         "docs/runtime-equivalents.md",
         "kernel/v7/scheduler.c",
-        "docs/kernel-timing.md"
+        "docs/kernel-timing.md",
+        "kernel/v7/callout.c"
       ],
       "locations": []
     },

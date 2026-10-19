@@ -1934,3 +1934,16 @@ test-ftime: build/rtc-test build/time-test multi-iso rootfs build/ftime-api.elf
 	$(PYTHON) tools/timing_api_smoke.py $(QEMU) build/nexix-multi.iso 16M ftime-api FTIME_API_OK
 	$(PYTHON) tools/timing_api_smoke.py $(QEMU) build/nexix-multi.iso 128M ftime-api FTIME_API_OK
 test: test-ftime
+
+# Task 364: bounded native kernel timeout callbacks.
+build/callout.o: kernel/v7/callout.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+OBJECTS += build/callout.o
+build/nexix.elf: build/callout.o
+-include build/callout.d
+build/callout-unit-test: tests/callout.c kernel/v7/callout.c kernel/include/callout.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/callout.c kernel/v7/callout.c -o $@
+.PHONY: test-callout-unit
+test-callout-unit: build/callout-unit-test
+	./build/callout-unit-test
+test-unit: test-callout-unit

@@ -64,8 +64,8 @@ not be treated as missing required features merely because they were stubs.
 
 Task 363 implements syscall 35 with an atomic seconds/milliseconds snapshot.
 Task 362 implements V7's saturating CPU counter, per-second `SCHMAG` decay and
-user priority recalculation. The general `timeout` callback queue remains
-tracked by task 364; alarm deadlines alone do not replace device callouts.
+user priority recalculation. Task 364 implements the bounded general `timeout` callback queue, including
+PIT dispatch and IRQ serialization, separately from process alarm deadlines.
 These audit findings retain their original tracking IDs.
 They are prerequisites to final acceptance, despite their higher IDs.
 

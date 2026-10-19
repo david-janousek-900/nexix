@@ -12,6 +12,7 @@
 #include "user_test.h"
 #include "process.h"
 #include "scheduler.h"
+#include "callout.h"
 #include "profile.h"
 #include <nexix/kinfo.h>
 static uint64_t cpu_user,cpu_nice,cpu_system,cpu_idle;
@@ -168,7 +169,7 @@ static void dispatch(struct interrupt_frame *frame)
         if (frame->vector >= 40)
             outb(0xa0, 0x20);
         outb(0x20, 0x20);
-        if (frame->vector == 32) {tty_timer(ticks);modem_timer(ticks);packet_timer(ticks);proc_timer(frame);}
+        if (frame->vector == 32) {callout_tick(ticks);tty_timer(ticks);modem_timer(ticks);packet_timer(ticks);proc_timer(frame);}
         signal_deliver(frame);
         return;
     }
