@@ -1921,6 +1921,19 @@
         "path": "v7-chown.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/expr",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.expr",
+      "source": {
+        "root": "programs",
+        "path": "v7-expr.elf"
+      },
+      "format": "elf"
     }
   ]
 }

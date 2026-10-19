@@ -39,3 +39,13 @@ operands and exact usage/invalid-mode diagnostics and statuses.
 Retains numeric/user-name selection, group preservation, multi-file handling
 and V7 diagnostics/statuses. Native 16-bit ID bounds and stat failures are
 checked before changing ownership. Fixtures inspect UID/GID and non-root denial.
+
+## expr (124)
+
+The retained expr.y precedence/productions are implemented by a native recursive
+parser; no target yacc prerequisite is introduced. The original BRE compiler
+and matcher remain, with bounded bytecode/captures and empty-backreference safety.
+Arithmetic uses checked native long integers; invalid expressions, division by
+zero and overflow return 2. Comparisons implement the documented <= relation
+(correcting the supplied action's >= typo). Includes match/substr/length/index,
+conjunctions, captures and status 0/1 for true/false results.

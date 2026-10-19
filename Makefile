@@ -1622,3 +1622,8 @@ test-chmod: iso rootfs build/chmod-command.elf
 test-chown: iso rootfs build/chown-command.elf
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M chown
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M chown
+
+.PHONY: test-expr
+test-expr: iso rootfs build/expr-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M expr
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M expr
