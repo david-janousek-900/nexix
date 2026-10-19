@@ -565,8 +565,8 @@
       "routine": "nullsys",
       "label": "indir",
       "status": "historical_stub",
-      "task": 39,
-      "native": "kernel/v7/syscall.c"
+      "task": 366,
+      "native": "kernel/v7/syscall_policy.c"
     },
     {
       "number": 1,
@@ -869,8 +869,8 @@
       "routine": "nullsys",
       "label": "switch; inoperative",
       "status": "historical_stub",
-      "task": 39,
-      "native": "kernel/v7/syscall.c"
+      "task": 366,
+      "native": "kernel/v7/syscall_policy.c"
     },
     {
       "number": 39,
@@ -885,8 +885,8 @@
       "routine": "nosys",
       "label": "tell (obsolete)",
       "status": "historical_stub",
-      "task": 39,
-      "native": "kernel/v7/syscall.c"
+      "task": 366,
+      "native": "kernel/v7/syscall_policy.c"
     },
     {
       "number": 41,
@@ -925,8 +925,8 @@
       "routine": "nosys",
       "label": "unused",
       "status": "historical_stub",
-      "task": 39,
-      "native": "kernel/v7/syscall.c"
+      "task": 366,
+      "native": "kernel/v7/syscall_policy.c"
     },
     {
       "number": 46,
@@ -957,16 +957,16 @@
       "routine": "nosys",
       "label": "reserved for USG",
       "status": "historical_stub",
-      "task": 39,
-      "native": "kernel/v7/syscall.c"
+      "task": 366,
+      "native": "kernel/v7/syscall_policy.c"
     },
     {
       "number": 50,
       "routine": "nosys",
       "label": "reserved for USG",
       "status": "historical_stub",
-      "task": 39,
-      "native": "kernel/v7/syscall.c"
+      "task": 366,
+      "native": "kernel/v7/syscall_policy.c"
     },
     {
       "number": 51,
@@ -1005,8 +1005,8 @@
       "routine": "nosys",
       "label": "readwrite (in abeyance)",
       "status": "historical_stub",
-      "task": 39,
-      "native": "kernel/v7/syscall.c"
+      "task": 366,
+      "native": "kernel/v7/syscall_policy.c"
     },
     {
       "number": 56,
@@ -1021,16 +1021,16 @@
       "routine": "nosys",
       "label": "reserved for USG",
       "status": "historical_stub",
-      "task": 39,
-      "native": "kernel/v7/syscall.c"
+      "task": 366,
+      "native": "kernel/v7/syscall_policy.c"
     },
     {
       "number": 58,
       "routine": "nosys",
       "label": "reserved for USG",
       "status": "historical_stub",
-      "task": 39,
-      "native": "kernel/v7/syscall.c"
+      "task": 366,
+      "native": "kernel/v7/syscall_policy.c"
     },
     {
       "number": 59,
@@ -1061,16 +1061,16 @@
       "routine": "nosys",
       "label": "x",
       "status": "historical_stub",
-      "task": 39,
-      "native": "kernel/v7/syscall.c"
+      "task": 366,
+      "native": "kernel/v7/syscall_policy.c"
     },
     {
       "number": 63,
       "routine": "nosys",
       "label": "used internally",
       "status": "historical_stub",
-      "task": 39,
-      "native": "kernel/v7/syscall.c"
+      "task": 366,
+      "native": "kernel/v7/syscall_policy.c"
     }
   ]
 }

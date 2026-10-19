@@ -53,7 +53,7 @@ def validate(root, audit, manifest, roadmap_text):
         if status == 'pending':
             need(tasks.get(owner) in {'To do', 'In progress'}, f'pending syscall has completed owner: {number}')
         need(bool(record.get('label')), f'missing syscall description: {number}')
-        need(record.get('native') in {'kernel/v7/syscall.c', 'libc/time.c'}, f'invalid syscall integration point: {number}')
+        need(record.get('native') in {'kernel/v7/syscall.c', 'kernel/v7/syscall_policy.c', 'libc/time.c'}, f'invalid syscall integration point: {number}')
     return errors
 
 

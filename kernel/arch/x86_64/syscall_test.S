@@ -21,15 +21,15 @@
 .global syscall_blob_start, syscall_blob_end
 syscall_blob_start:
     CALL 0
-    EXPECT -NX_ENOSYS
+    EXPECT 0
     CALL 45
-    EXPECT -NX_ENOSYS
+    EXPECT -NX_EINVAL
     movabs $0x100000002, %rax  # Must not truncate into fork.
     int $0x80
-    EXPECT -NX_ENOSYS
+    EXPECT -NX_EINVAL
     movabs $-1, %rax
     int $0x80
-    EXPECT -NX_ENOSYS
+    EXPECT -NX_EINVAL
     mov $0x999, %eax          # Inactive test commands cannot execute hooks.
     int $0x81
     EXPECT -NX_ENOSYS

@@ -1954,8 +1954,8 @@ build/sleep-api.o: tests/sleep-api.c | build/.dir
 build/sleep-api.elf: build/sleep-api.o build/crt0.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/sleep-api.o build/libc.a -o $@
 -include build/sleep-api.d
-.PHONY: test-sleep
-test-sleep: multi-iso rootfs build/sleep-api.elf
+.PHONY: test-sleep-api
+test-sleep-api: multi-iso rootfs build/sleep-api.elf
 	$(PYTHON) tools/timing_api_smoke.py $(QEMU) build/nexix-multi.iso 16M sleep-api SLEEP_API_OK
 	$(PYTHON) tools/timing_api_smoke.py $(QEMU) build/nexix-multi.iso 128M sleep-api SLEEP_API_OK
 test: test-sleep
@@ -1964,5 +1964,27 @@ build/sleep-unit-test: tests/sleep.c libc/sleep.c | build/.dir
 .PHONY: test-sleep-unit
 test-sleep-unit: build/sleep-unit-test
 	./build/sleep-unit-test
-test-sleep: test-sleep-unit
+test-sleep: test-sleep-api test-sleep-unit
 test-unit: test-sleep-unit
+
+# Task 366: historical invalid/ignored syscall dispositions.
+build/syscall_policy.o: kernel/v7/syscall_policy.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+OBJECTS += build/syscall_policy.o
+build/nexix.elf: build/syscall_policy.o
+-include build/syscall_policy.d
+build/syscall-policy-unit-test: tests/syscall-policy.c kernel/v7/syscall_policy.c kernel/include/syscall.h include/nexix/syscall.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/syscall-policy.c kernel/v7/syscall_policy.c -o $@
+build/syscall-policy-api.o: tests/syscall-policy-api.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/syscall-policy-api.elf: build/syscall-policy-api.o build/crt0.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/syscall-policy-api.o build/libc.a -o $@
+-include build/syscall-policy-api.d
+.PHONY: test-syscall-policy-unit test-syscall-policy
+test-syscall-policy-unit: build/syscall-policy-unit-test
+	./build/syscall-policy-unit-test
+test-syscall-policy: test-syscall-policy-unit multi-iso rootfs build/syscall-policy-api.elf
+	$(PYTHON) tools/timing_api_smoke.py $(QEMU) build/nexix-multi.iso 16M syscall-policy-api SYSCALL_POLICY_API_OK
+	$(PYTHON) tools/timing_api_smoke.py $(QEMU) build/nexix-multi.iso 128M syscall-policy-api SYSCALL_POLICY_API_OK
+test-unit: test-syscall-policy-unit
+test: test-syscall-policy

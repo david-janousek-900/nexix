@@ -16,11 +16,11 @@ Native libc/libm archives, four startup variants and public headers are installe
 see [development interfaces](development-interfaces.md).
 The inventory accounts for **219 components, 2,144 distribution files and
 35 supporting/platform requirements**. Its component statuses are 55 implemented,
-3 partial, 1 prototype and 160 not ported; importing reference inputs does not
+4 partial, 1 prototype and 159 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **373 tracking tasks: 148 done, 0 in progress
-and 225 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 357, 362–365, 367–373 are complete**. These counts are a work breakdown, not an
+The expanded roadmap below has **373 tracking tasks: 149 done, 0 in progress
+and 224 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 357, 362–373 are complete**. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -587,7 +587,7 @@ required before native-port acceptance.
 | Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 365 | Complete V7 sleep alarm and signal compatibility | Done | Git history; `make test-sleep-unit test-sleep`; [contract](kernel-timing.md); atomic deadline/flag wait fixes alarm-before-pause hang; zero/earlier/equal/later alarms, handler restoration, unrelated signals and native elapsed/return-value acceptance at 16/128 MiB |
-| 366 | Complete invalid/ignored system-call compatibility | To do | sys/trap.c nosys/nullsys and sysent.c reserved slots; original nosys returns EINVAL; define native syscall-number mapping and distinguish invalid calls from temporarily unimplemented calls; test errno and process survival |
+| 366 | Complete invalid/ignored system-call compatibility | Done | Git history; `make test-syscall-policy-unit test-syscall-policy test-syscall`; [native mapping](syscall-abi.md); V7 nosys EINVAL, nullsys success, native setpgrp exception, assigned-but-unavailable ENOSYS, full-width numbers and process survival |
 
 The [reference review](reference-review.md) records coverage, new tasks
 and remaining source-input blockers.

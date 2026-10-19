@@ -138,7 +138,7 @@ static int64_t invoke(uint64_t number, struct interrupt_frame *frame)
         return old;
     }
     case NX_SYS_YIELD: proc_yield(); return 0;
-    default: return -NX_ENOSYS;
+    default: return syscall_fallback(number);
     }
 }
 void syscall_dispatch(struct interrupt_frame *frame)

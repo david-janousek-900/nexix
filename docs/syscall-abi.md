@@ -27,8 +27,9 @@ points to those slots. `u_ar0` names the live saved frame. The dispatcher clears
 truncates a syscall number to select a handler.
 
 Errors use negative values in RAX, not V7's carry-bit protocol. V7 errno values
-1–34 are preserved; ENOSYS=35 is a Nexix extension. Unknown and unimplemented
-numbers return -ENOSYS. The native libc wrapper converts negative errno to its
+1–34 are preserved; ENOSYS=35 is a Nexix extension. Unknown numbers and the
+historical nosys slots return -EINVAL. Assigned calls lacking an implementation
+return -ENOSYS. The native libc wrapper converts negative errno to its
 usual failure result and `errno`. Carry and direction flags are preserved;
 callers must inspect RAX to recognize an error.
 
@@ -237,3 +238,26 @@ protocol/ownership/UART/libc checks and real QEMU COM1 exchanges at 16/128 MiB.
 Arguments are a destination pointer and byte capacity; NULL/0 queries length.
 It returns bytes copied, EPERM for non-root callers, ERANGE without writes for a
 short buffer and EFAULT for an invalid destination. See [kernel log](kernel-log.md).
+
+## Invalid and ignored calls (task 366)
+
+The native direct-call ABI retains V7's EINVAL nosys result for original slots
+40, 45, 49, 50, 55, 57, 58, 62 and 63. Unassigned numbers above the current native
+extension range also return EINVAL; high bits are never discarded. No SIGSYS is
+raised and the process survives. Historical nullsys slots 0 and 38 return zero
+without inspecting their arguments. Native slot 0 does not interpret a PDP-11
+indirect-call instruction or user pointer.
+
+Slot 39 remains the documented native setpgrp operation; its useful native
+behavior intentionally supersedes V7's not-yet-implemented nullsys placeholder.
+Slots 64–76 are native extensions, not aliases of reserved original slots.
+The fallback for an assigned-but-unavailable implementation is ENOSYS, distinct
+from invalid/reserved numbers. All currently assigned calls have dispatcher
+implementations. The private int 0x81 test transport retains ENOSYS for inactive
+hooks and remains outside the public syscall ABI.
+
+`make test-syscall-policy-unit` verifies disposition classification;
+`make test-syscall-policy` checks raw register calls, ignored arguments, reserved
+and full-width unknown numbers, unchanged libc errno and process survival at
+16/128 MiB. `make test-syscall` also checks these returns from assembly while
+retaining the register/flags and user-copy regression coverage.

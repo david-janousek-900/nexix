@@ -170,7 +170,7 @@ int main(int argc, char **argv, char **envp)
     __asm__ volatile ("int $0x81" : "+a"(gate) : : "memory", "cc");
     CHECK(gate == 0);
     errno = EDOM;
-    CHECK(nx_syscall6(0x100000002L, 0, 0, 0, 0, 0, 0) == -ENOSYS && errno == EDOM);
+    CHECK(nx_syscall6(0x100000002L, 0, 0, 0, 0, 0, 0) == -EINVAL && errno == EDOM);
     CHECK(times(NULL) == -1 && errno == EFAULT);
     struct tms ticks;
     CHECK(times(&ticks) >= 0 && ticks.tms_cutime == 0 && ticks.tms_cstime == 0);

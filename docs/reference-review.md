@@ -33,22 +33,21 @@ and the 174 document files by task 288. Lesson archives, formatter tables,
 macros, dictionaries, game data and spool/account configuration are represented
 in inventory components and supporting requirements.
 
-## Newly explicit work
+## Explicit audit tasks and their resolution
 
 **Task 365: libc sleep compatibility.** `usr/src/libc/gen/sleep.c` saves the
 previous alarm, installs a temporary handler, uses setjmp/longjmp and restores
-alarm state. Nexix already has an adaptation in `libc/sleep.c`, but existing
-signal tests do not establish that function's full contract. Test zero duration,
-earlier/equal/later pending alarms, handler restoration, unrelated signals and
-setup races. Document and test native elapsed-time and return-value adaptations.
-This task does not claim that the existing implementation is wholly absent.
+alarm state. Task 365 now preserves the alarm and handler rules using an atomic native
+deadline/flag wait. Host and native tests cover zero duration, earlier/equal/later
+alarms, unrelated signals, handler restoration and the alarm-before-pause race.
+See [kernel timing](kernel-timing.md) for native elapsed-time and return values.
 
 **Task 366: invalid and ignored system calls.** The supplied kernel
 `usr/sys/sys/trap.c` implements `nosys` by setting **EINVAL**, and `nullsys` by
-doing nothing. Nexix's default dispatch currently returns **ENOSYS**. Define
-and test the native syscall mapping, invalid/reserved slots and ignored calls;
-distinguish invalid calls from features that have not yet been implemented.
-Do not assume a SIGSYS behavior from another UNIX release.
+doing nothing. Task 366 now returns **EINVAL** for invalid/reserved calls and zero for ignored
+slots, distinguishing assigned-but-unavailable calls with **ENOSYS**. No SIGSYS
+is generated. Native setpgrp remains an explicit slot-39 adaptation. See the
+[syscall ABI](syscall-abi.md) and raw guest acceptance tests.
 
 ## Remaining known input and acceptance gaps
 

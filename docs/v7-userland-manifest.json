@@ -80,7 +80,9 @@
         "docs/kernel-timing.md",
         "kernel/v7/callout.c",
         "libc/sleep.c",
-        "tests/sleep-api.c"
+        "tests/sleep-api.c",
+        "kernel/v7/syscall_policy.c",
+        "docs/syscall-abi.md"
       ],
       "locations": []
     },
@@ -19809,17 +19811,27 @@
       "source_availability": "not_applicable",
       "outputs": [],
       "priority": 15,
-      "status": "not_ported",
+      "status": "partial",
       "dependencies": [],
       "reference_includes": [],
       "blockers": [
-        "Not installed in Nexix; native integration and functional acceptance remain pending."
+        "Full kernel integration and consumer acceptance remains tracked by task 358; the intermittent VGA/serial freeze is still under investigation."
       ],
       "unresolved": [
-        "Audit native API/format compatibility and remaining transitive dependencies."
+        "Source responsibility coverage does not establish function-by-function V7 behavioral equivalence."
       ],
       "acceptance": [
-        "Integrate supplied inputs into the native port and verify their consuming programs."
+        "Native process/syscall/clock/callout acceptance passes; complete full release integration under task 358 and resolve the reported intermittent freeze."
+      ],
+      "native_sources": [
+        "kernel/v7/process.c",
+        "kernel/v7/scheduler.c",
+        "kernel/v7/callout.c",
+        "kernel/v7/syscall.c",
+        "kernel/v7/syscall_policy.c",
+        "kernel/clock.c",
+        "docs/kernel-coverage.json",
+        "docs/kernel-timing.md"
       ]
     },
     {
