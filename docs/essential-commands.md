@@ -26,3 +26,10 @@ Retains numeric/group-name lookup, multiple operands, owner preservation and
 statuses 4 (usage/unknown identity) and 1 (per-file failure). Native checks reject
 empty/overflowed 16-bit IDs and skip failed stat calls rather than reuse metadata.
 Guest fixtures check actual ownership and non-root permission denial.
+
+## chmod (122)
+
+Retains V7 numeric modes, symbolic classes/operators, mode-copy operations and
+umask rules. Renames the historical abs parser to avoid native libc's abs ABI.
+Guest fixtures verify modes, set-ID bits, owner/non-owner behavior, multiple
+operands and exact usage/invalid-mode diagnostics and statuses.

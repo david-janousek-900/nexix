@@ -1895,6 +1895,19 @@
         "path": "v7-chgrp.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/chmod",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.chmod",
+      "source": {
+        "root": "programs",
+        "path": "v7-chmod.elf"
+      },
+      "format": "elf"
     }
   ]
 }

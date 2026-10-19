@@ -1612,3 +1612,8 @@ build/%-command.elf: build/crt0.o build/%-command.o build/libc.a user/user.ld
 test-chgrp: iso rootfs build/chgrp-command.elf
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M chgrp
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M chgrp
+
+.PHONY: test-chmod
+test-chmod: iso rootfs build/chmod-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M chmod
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M chmod
