@@ -11,6 +11,7 @@
 #include "segments.h"
 #include "user_test.h"
 #include "process.h"
+#include "scheduler.h"
 #include "profile.h"
 #include <nexix/kinfo.h>
 static uint64_t cpu_user,cpu_nice,cpu_system,cpu_idle;
@@ -183,4 +184,5 @@ void interrupt_dispatch(struct interrupt_frame *frame)
      * another process's CPU time, or a kernel PC. Signals/exec may change RIP. */
     if(owner&&trap&&proc_current()==owner&&(frame->cs&3)==3&&owner->p_user->u_stime>system)
         profile_sample(owner,frame->rip,(uint64_t)owner->p_user->u_stime-(uint64_t)system);
+    if(proc_current() && (frame->cs&3)==3)scheduler_priority(proc_current());
 }

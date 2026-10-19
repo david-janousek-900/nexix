@@ -75,7 +75,9 @@
         "docs/physical-mappings.md",
         "docs/output-devices.md",
         "docs/kernel-configuration.md",
-        "docs/runtime-equivalents.md"
+        "docs/runtime-equivalents.md",
+        "kernel/v7/scheduler.c",
+        "docs/kernel-timing.md"
       ],
       "locations": []
     },

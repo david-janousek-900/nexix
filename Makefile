@@ -1907,3 +1907,16 @@ STABILITY_ROUNDS ?= 100
 test-stability: multi-iso rootfs
 	$(PYTHON) tools/stability_smoke.py $(QEMU) build/nexix-multi.iso 16M --rounds $(STABILITY_ROUNDS)
 	$(PYTHON) tools/stability_smoke.py $(QEMU) build/nexix-multi.iso 128M --rounds $(STABILITY_ROUNDS)
+
+# Task 362: V7 resident scheduler policy.
+build/scheduler.o: kernel/v7/scheduler.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+OBJECTS += build/scheduler.o
+build/nexix.elf: build/scheduler.o
+-include build/scheduler.d
+build/scheduler-unit-test: tests/scheduler.c kernel/v7/scheduler.c kernel/include/scheduler.h kernel/include/v7/core.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/scheduler.c kernel/v7/scheduler.c -o $@
+.PHONY: test-scheduler-unit
+test-scheduler-unit: build/scheduler-unit-test
+	./build/scheduler-unit-test
+test-unit: test-scheduler-unit

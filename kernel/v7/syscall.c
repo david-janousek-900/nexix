@@ -11,6 +11,7 @@
 #include "files.h"
 #include "exec.h"
 #include "process.h"
+#include "scheduler.h"
 #include "signals.h"
 #include "tty.h"
 #include "segments.h"
@@ -105,7 +106,7 @@ static int64_t invoke(uint64_t number, struct interrupt_frame *frame)
         if (increment < 0 && !proc_superuser(u)) return -NX_EPERM;
         int64_t n = p->p_nice + increment;
         p->p_nice = n < 0 ? 0 : n > 39 ? 39 : n;
-        p->p_pri = 50 + ((int)p->p_nice - 20) / 2;
+        scheduler_priority(p);
         return 0;
     }
     case NX_SYS_SETPGRP:

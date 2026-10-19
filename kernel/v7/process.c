@@ -1,6 +1,7 @@
 /* Native adaptation of process behavior from V7 sys/{slp,sys1}.c.
  * Original sources and Caldera license are retained under reference/. */
 #include "process.h"
+#include "scheduler.h"
 #include "phys.h"
 #include "fpu.h"
 #include "clock.h"
@@ -14,6 +15,7 @@
 #include "segments.h"
 #include "serial.h"
 #include <limits.h>
+#include <nexix/syscall.h>
 
 struct process_stack { uint8_t guard[PAGE_SIZE], bytes[ENTRY_STACK_SIZE]; };
 static struct process_stack stacks[V7_NPROC] __attribute__((aligned(PAGE_SIZE)));
@@ -132,8 +134,8 @@ struct proc *proc_alloc(void)
         p->p_uid = current ? current->p_uid : 0;
         p->p_pgrp = current ? current->p_pgrp : p->p_pid;
         p->p_flag = V7_SLOAD;
-        p->p_pri = 50;
         p->p_nice = current ? current->p_nice : 20;
+        scheduler_priority(p);
         p->p_stack_bottom = (uintptr_t)stacks[i].bytes;
         p->p_stack_top = p->p_stack_bottom + ENTRY_STACK_SIZE;
         p->p_user = &users[i];
@@ -309,7 +311,8 @@ void proc_sleep(void *channel, unsigned priority)
     current->p_pri = priority;
     current->p_stat = V7_SSLEEP;
     switch_out();
-    current->p_pri = previous_priority;
+    if(current->p_flag&V7_SSYS)current->p_pri=previous_priority;
+    else scheduler_priority(current);
     proc_irq_restore(flags);
 }
 int proc_sleep_interruptible(void *channel, unsigned priority)
@@ -357,16 +360,10 @@ void proc_run(void)
     if (!initialized || scheduling || current) panic("invalid scheduler entry");
     scheduling = true;
     for (;;) {
-        struct proc *selected = NULL;
+        struct proc *selected = scheduler_pick(processes,V7_NPROC,cursor);
         bool live = false;
-        for (unsigned n = 0; n < V7_NPROC - 1; ++n) {
-            unsigned i = 1 + (cursor + n) % (V7_NPROC - 1);
-            struct proc *p = &processes[i];
-            if (p->p_stat == V7_SRUN || p->p_stat == V7_SSLEEP || p->p_stat == V7_SSTOP)
-                live = true;
-            if (p->p_stat == V7_SRUN && (!selected || p->p_pri < selected->p_pri))
-                selected = p;
-        }
+        for(unsigned i=1;i<V7_NPROC;++i)
+            if(processes[i].p_stat==V7_SRUN || processes[i].p_stat==V7_SSLEEP || processes[i].p_stat==V7_SSTOP)live=true;
         if (!live) break;
         if (!selected) {
             /* IF stays clear from the scan through HLT: no lost IRQ wakeup. */
@@ -545,6 +542,7 @@ void proc_timer(struct interrupt_frame *frame)
     require_locked();
     if (!initialized) return;
     uint64_t now = timer_ticks();
+    scheduler_tick(processes,V7_NPROC,current,now%NX_CLK_TCK==0);
     for (unsigned i = 1; i < V7_NPROC; ++i) {
         struct proc *p = &processes[i];
         if (p->p_clktim && now >= (uint64_t)p->p_clktim) {
