@@ -1617,3 +1617,8 @@ test-chgrp: iso rootfs build/chgrp-command.elf
 test-chmod: iso rootfs build/chmod-command.elf
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M chmod
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M chmod
+
+.PHONY: test-chown
+test-chown: iso rootfs build/chown-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M chown
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M chown

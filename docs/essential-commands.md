@@ -33,3 +33,9 @@ Retains V7 numeric modes, symbolic classes/operators, mode-copy operations and
 umask rules. Renames the historical abs parser to avoid native libc's abs ABI.
 Guest fixtures verify modes, set-ID bits, owner/non-owner behavior, multiple
 operands and exact usage/invalid-mode diagnostics and statuses.
+
+## chown (123)
+
+Retains numeric/user-name selection, group preservation, multi-file handling
+and V7 diagnostics/statuses. Native 16-bit ID bounds and stat failures are
+checked before changing ownership. Fixtures inspect UID/GID and non-root denial.

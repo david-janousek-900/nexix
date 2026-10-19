@@ -1908,6 +1908,19 @@
         "path": "v7-chmod.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/chown",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.chown",
+      "source": {
+        "root": "programs",
+        "path": "v7-chown.elf"
+      },
+      "format": "elf"
     }
   ]
 }
