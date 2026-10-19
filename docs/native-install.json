@@ -1986,6 +1986,19 @@
         "path": "v7-mv.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/nice",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.nice",
+      "source": {
+        "root": "programs",
+        "path": "v7-nice.elf"
+      },
+      "format": "elf"
     }
   ]
 }

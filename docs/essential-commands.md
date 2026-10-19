@@ -83,3 +83,11 @@ and bounds pathname construction. Directory moves use caller access checks and
 set-UID root directory links; regular-file moves drop privilege. Guest tests
 mount a disposable auxiliary ATA filesystem and verify data/times, cross-device
 directory rejection, subtree rejection, inode identity and unprivileged renames.
+
+## nice (129)
+
+Retains V7 -increment syntax (including --5 for a negative increment), default
+10 and execvp/script fallback. Native increments are bounded to -40..40. The
+original behavior of proceeding to exec after a failed nice call is retained.
+Guest kinfo observations verify child niceness and parent isolation; fixtures
+also cover PATH, scripts, missing commands and usage errors.
