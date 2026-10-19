@@ -1602,3 +1602,13 @@ test-basename: iso rootfs
 test-cal: iso rootfs
 	$(PYTHON) tools/guest_acceptance.py tests/guest/cal.json --qemu $(QEMU) --ram 16M --report build/cal-16M.json
 	$(PYTHON) tools/guest_acceptance.py tests/guest/cal.json --qemu $(QEMU) --ram 128M --report build/cal-128M.json
+
+build/%-command.o: tests/%-command.c tests/command-fixture.h tests/command-runner.h | build/.dir
+	$(CC) $(USER_CFLAGS) -Wno-unused-function -c $< -o $@
+build/%-command.elf: build/crt0.o build/%-command.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+
+.PHONY: test-chgrp
+test-chgrp: iso rootfs build/chgrp-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M chgrp
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M chgrp

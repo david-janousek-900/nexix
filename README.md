@@ -139,12 +139,12 @@ installed; the complete list and destinations are in [the installation manifest]
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](docs/development-interfaces.md).
 The inventory accounts for **217 components, 2,144 distribution files and
-35 supporting/platform requirements**. Its component statuses are 27 implemented,
-3 partial, 1 prototype and 186 not ported; importing reference inputs does not
+35 supporting/platform requirements**. Its component statuses are 28 implemented,
+3 partial, 1 prototype and 185 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **371 tracking tasks: 115 done, 0 in progress
-and 256 to do** after task 88. Tasks **1–108 and 367–371 are complete**. These counts are a work breakdown, not an
+The expanded roadmap below has **371 tracking tasks: 116 done, 0 in progress
+and 255 to do** after task 88. Tasks **1–108 and 367–371 are complete**. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -378,7 +378,7 @@ coverage and installation remain subject to later acceptance tasks.
 |---:|---|---|---|
 | 119 | Port basename | Done | Retained source; native build/install, error/status and guest fixtures; `make test-basename` at 16/128 MiB; [contract](docs/essential-commands.md); Git history |
 | 120 | Port cal | Done | Retained source; native build/install, error/status and guest fixtures; `make test-cal` at 16/128 MiB; [contract](docs/essential-commands.md); Git history |
-| 121 | Port chgrp | To do | Native command fixtures, failure statuses and installation |
+| 121 | Port chgrp | Done | Retained source; native build/install, error/status and guest fixtures; `make test-chgrp` at 16/128 MiB; [contract](docs/essential-commands.md); Git history |
 | 122 | Port chmod | To do | Native command fixtures, failure statuses and installation |
 | 123 | Port chown | To do | Native command fixtures, failure statuses and installation |
 | 124 | Port expr | To do | Native command fixtures, failure statuses and installation |

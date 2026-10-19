@@ -19,3 +19,10 @@ Retains month/year output, Julian/Gregorian rules and Britain's missing eleven
 days in September 1752. Native fixes bound numeric parsing and trim calendar
 rows without reading outside the buffer. Invalid dates return 1; usage retains
 status 0. Fixtures independently construct modern month/year calendars.
+
+## chgrp (121)
+
+Retains numeric/group-name lookup, multiple operands, owner preservation and
+statuses 4 (usage/unknown identity) and 1 (per-file failure). Native checks reject
+empty/overflowed 16-bit IDs and skip failed stat calls rather than reuse metadata.
+Guest fixtures check actual ownership and non-root permission denial.

@@ -1882,6 +1882,19 @@
         "path": "v7-cal.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/chgrp",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.chgrp",
+      "source": {
+        "root": "programs",
+        "path": "v7-chgrp.elf"
+      },
+      "format": "elf"
     }
   ]
 }
