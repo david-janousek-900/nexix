@@ -3382,23 +3382,33 @@
           "phase": "build",
           "certainty": "confirmed",
           "evidence": [
-            "Makefile"
+            "user/v7/cmd/cmp.c",
+            "Makefile",
+            "docs/text-commands.md"
           ],
-          "note": "Existing Nexix bootstrap uses host GCC/binutils."
+          "note": "Host GCC/binutils bootstrap this native executable."
         },
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/cmp.c",
+            "Makefile",
+            "docs/text-commands.md"
+          ],
+          "note": "Production source builds against the native public declarations and layouts."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/cmp.c",
+            "Makefile",
+            "docs/text-commands.md"
+          ],
+          "note": "Native ELF link and 16/128 MiB guest acceptance confirm the used libc interface."
         }
       ],
       "reference_includes": [
@@ -6786,23 +6796,33 @@
           "phase": "build",
           "certainty": "confirmed",
           "evidence": [
-            "Makefile"
+            "user/v7/cmd/grep.c",
+            "Makefile",
+            "docs/text-commands.md"
           ],
-          "note": "Existing Nexix bootstrap uses host GCC/binutils."
+          "note": "Host GCC/binutils bootstrap this native executable."
         },
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/grep.c",
+            "Makefile",
+            "docs/text-commands.md"
+          ],
+          "note": "Production source builds against the native public declarations and layouts."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/grep.c",
+            "Makefile",
+            "docs/text-commands.md"
+          ],
+          "note": "Native ELF link and 16/128 MiB guest acceptance confirm the used libc interface."
         }
       ],
       "reference_includes": [
@@ -8564,53 +8584,106 @@
           "name": "make",
           "install": "/bin/make",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/make/makefile"
+            "user/v7/cmd/make/main.c",
+            "user/v7/cmd/make/doname.c",
+            "user/v7/cmd/make/misc.c",
+            "user/v7/cmd/make/files.c",
+            "user/v7/cmd/make/dosys.c",
+            "user/v7/cmd/make/ident.c",
+            "user/v7/cmd/make/parser.c",
+            "user/v7/cmd/make/archive.c",
+            "docs/make.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 5,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/make/main.c",
+            "user/v7/cmd/make/doname.c",
+            "user/v7/cmd/make/misc.c",
+            "user/v7/cmd/make/files.c",
+            "user/v7/cmd/make/dosys.c",
+            "user/v7/cmd/make/ident.c",
+            "user/v7/cmd/make/parser.c",
+            "user/v7/cmd/make/archive.c",
+            "Makefile",
+            "docs/make.md"
+          ],
+          "note": "Host GCC/binutils bootstrap this native executable."
         },
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/make/main.c",
+            "user/v7/cmd/make/doname.c",
+            "user/v7/cmd/make/misc.c",
+            "user/v7/cmd/make/files.c",
+            "user/v7/cmd/make/dosys.c",
+            "user/v7/cmd/make/ident.c",
+            "user/v7/cmd/make/parser.c",
+            "user/v7/cmd/make/archive.c",
+            "Makefile",
+            "docs/make.md"
+          ],
+          "note": "Production source builds against the native public declarations and layouts."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/make/main.c",
+            "user/v7/cmd/make/doname.c",
+            "user/v7/cmd/make/misc.c",
+            "user/v7/cmd/make/files.c",
+            "user/v7/cmd/make/dosys.c",
+            "user/v7/cmd/make/ident.c",
+            "user/v7/cmd/make/parser.c",
+            "user/v7/cmd/make/archive.c",
+            "Makefile",
+            "docs/make.md"
+          ],
+          "note": "Native ELF link and 16/128 MiB guest acceptance confirm the used libc interface."
         },
         {
           "target": "cmd.yacc",
-          "phase": "build",
+          "phase": "optional_runtime",
           "certainty": "confirmed",
           "evidence": [
-            "reference/v7/usr/src/cmd/make/makefile"
+            "user/v7/cmd/make/files.c",
+            "user/v7/cmd/make/parser.c",
+            "docs/make.md"
           ],
-          "note": "Direct reference recipe/source dependency."
+          "note": "Builtin yacc suffix recipes require yacc only when used. The native parser replaces the original bootstrap generation dependency."
         },
         {
           "target": "cmd.sh",
           "phase": "runtime",
-          "certainty": "inferred",
+          "certainty": "confirmed",
           "evidence": [
-            "reference/v7/usr/src/cmd/make/makefile"
+            "user/v7/cmd/make/main.c",
+            "user/v7/cmd/make/doname.c",
+            "user/v7/cmd/make/misc.c",
+            "user/v7/cmd/make/files.c",
+            "user/v7/cmd/make/dosys.c",
+            "user/v7/cmd/make/ident.c",
+            "user/v7/cmd/make/parser.c",
+            "user/v7/cmd/make/archive.c",
+            "Makefile",
+            "docs/make.md"
           ],
-          "note": "Build recipes/source purpose identify this dependency; inspect supplied source before porting."
+          "note": "Native /bin/sh executes metacharacter recipes; direct commands use execvp."
         }
       ],
       "reference_includes": [
@@ -8677,15 +8750,12 @@
           ]
         }
       ],
-      "blockers": [
-        "Complete native ABI/API and data-asset audit before porting."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
-        "Build a small native program with dependencies, variables and an incremental rebuild.",
-        "Verify each installed output and its documented behavior; test helpers through their consuming pipeline."
+        "Verify timestamp-dependent native file recipes, incremental rebuild/no-op and dry-run/query/touch decisions; host bootstrap remains until the native compiler tasks.",
+        "Exercise macros, suffix inference, directory wildcards, native archive/ELF symbols, signals, permissions and failure handling at 16/128 MiB.",
+        "Run production parser/engine/archive code under ASan/UBSan with malformed and oversized inputs."
       ],
       "source_files": [
         "reference/v7/usr/src/cmd/make/doname.c",
@@ -8702,6 +8772,16 @@
           "path": "/bin/make",
           "artifact": "historical_binary"
         }
+      ],
+      "native_sources": [
+        "user/v7/cmd/make/main.c",
+        "user/v7/cmd/make/doname.c",
+        "user/v7/cmd/make/misc.c",
+        "user/v7/cmd/make/files.c",
+        "user/v7/cmd/make/dosys.c",
+        "user/v7/cmd/make/ident.c",
+        "user/v7/cmd/make/parser.c",
+        "user/v7/cmd/make/archive.c"
       ]
     },
     {
@@ -10156,23 +10236,33 @@
           "phase": "build",
           "certainty": "confirmed",
           "evidence": [
-            "Makefile"
+            "user/v7/cmd/od.c",
+            "Makefile",
+            "docs/text-commands.md"
           ],
-          "note": "Existing Nexix bootstrap uses host GCC/binutils."
+          "note": "Host GCC/binutils bootstrap this native executable."
         },
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/od.c",
+            "Makefile",
+            "docs/text-commands.md"
+          ],
+          "note": "Production source builds against the native public declarations and layouts."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/od.c",
+            "Makefile",
+            "docs/text-commands.md"
+          ],
+          "note": "Native ELF link and 16/128 MiB guest acceptance confirm the used libc interface."
         }
       ],
       "reference_includes": [
@@ -15112,23 +15202,33 @@
           "phase": "build",
           "certainty": "confirmed",
           "evidence": [
-            "Makefile"
+            "user/v7/cmd/tail.c",
+            "Makefile",
+            "docs/text-commands.md"
           ],
-          "note": "Existing Nexix bootstrap uses host GCC/binutils."
+          "note": "Host GCC/binutils bootstrap this native executable."
         },
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/tail.c",
+            "Makefile",
+            "docs/text-commands.md"
+          ],
+          "note": "Production source builds against the native public declarations and layouts."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/tail.c",
+            "Makefile",
+            "docs/text-commands.md"
+          ],
+          "note": "Native ELF link and 16/128 MiB guest acceptance confirm the used libc interface."
         }
       ],
       "reference_includes": [
@@ -18279,23 +18379,33 @@
           "phase": "build",
           "certainty": "confirmed",
           "evidence": [
-            "Makefile"
+            "user/v7/cmd/wc.c",
+            "Makefile",
+            "docs/text-commands.md"
           ],
-          "note": "Existing Nexix bootstrap uses host GCC/binutils."
+          "note": "Host GCC/binutils bootstrap this native executable."
         },
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/wc.c",
+            "Makefile",
+            "docs/text-commands.md"
+          ],
+          "note": "Production source builds against the native public declarations and layouts."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/wc.c",
+            "Makefile",
+            "docs/text-commands.md"
+          ],
+          "note": "Native ELF link and 16/128 MiB guest acceptance confirm the used libc interface."
         }
       ],
       "reference_includes": [

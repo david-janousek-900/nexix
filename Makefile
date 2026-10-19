@@ -1824,3 +1824,29 @@ test-wc: test-wc-unit multi-iso rootfs
 	python3 tools/wc_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	python3 tools/wc_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-wc
+
+# Task 168: retained V7 dependency engine plus native parser/archive adapters.
+V7_MAKE_SOURCES = main doname misc files dosys ident parser archive
+V7_MAKE_OBJECTS = $(addprefix build/v7-make-,$(addsuffix .o,$(V7_MAKE_SOURCES)))
+-include $(V7_MAKE_OBJECTS:.o=.d)
+build/v7-make-%.o: user/v7/cmd/make/%.c user/v7/cmd/make/defs | build/.dir
+	$(CC) $(V7_CFLAGS) -Dunix -c $< -o $@
+build/v7-make.elf: $(V7_MAKE_OBJECTS) build/crt0.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o $(V7_MAKE_OBJECTS) build/libc.a -o $@
+
+build/make-time.o: tests/make-time.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/make-time.elf: build/make-time.o build/crt0.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/make-time.o build/libc.a -o $@
+build/make-member.o: tests/make-member.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/make-lib.a: build/make-member.o
+	$(AR) rcU $@ $<
+.PHONY: test-make-unit test-make
+test-make-unit:
+	python3 tests/make.py
+test-unit: test-make-unit
+test-make: test-make-unit multi-iso rootfs build/make-time.elf build/make-lib.a
+	python3 tools/make_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	python3 tools/make_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-make

@@ -2253,6 +2253,19 @@
         "path": "v7-wc.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/make",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.make",
+      "source": {
+        "root": "programs",
+        "path": "v7-make.elf"
+      },
+      "format": "elf"
     }
   ]
 }
