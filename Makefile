@@ -1627,3 +1627,8 @@ test-chown: iso rootfs build/chown-command.elf
 test-expr: iso rootfs build/expr-command.elf
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M expr
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M expr
+
+.PHONY: test-file
+test-file: iso rootfs build/file-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M file
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M file

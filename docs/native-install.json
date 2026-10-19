@@ -1934,6 +1934,19 @@
         "path": "v7-expr.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/file",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.file",
+      "source": {
+        "root": "programs",
+        "path": "v7-file.elf"
+      },
+      "format": "elf"
     }
   ]
 }

@@ -49,3 +49,13 @@ Arithmetic uses checked native long integers; invalid expressions, division by
 zero and overflow return 2. Comparisons implement the documented <= relation
 (correcting the supplied action's >= typo). Includes match/substr/length/index,
 conjunctions, captures and status 0/1 for true/false results.
+
+## file (125)
+
+Retains C/Fortran/assembler, English/ascii, commands, data, special-device and
+historical archive/a.out classifications. Adds native ELF64 x86-64 type and ar
+recognition with explicit truncation checks. Historical magic uses byte decoding,
+not native int overlays. Text scanning has sentinel storage/bounds guards;
+-f retains status 1 and accepts a final filename without a newline. Diagnostics
+retain the historical classification-command convention (ordinary missing files
+are reported on stdout without a failing status).
