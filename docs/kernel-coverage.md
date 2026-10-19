@@ -8,20 +8,21 @@ inputs and historical binary objects/archives. Groups identify native integratio
 points, responsibilities and roadmap owners. The reference tree remains pristine.
 
 Completing this audit does **not** complete the kernel port. The inventory entry
-`distribution.kernel` remains `not_ported`; kernel behavior still needs the
-feature tests and consumer acceptance assigned below. Existing native paths are
-implementations of subsets, not claims that every function or field in their
-original files is adapted. Task 39 must audit header fields and exported ABI
-contracts; task 355 and task 359 close whole-distribution integration.
+`distribution.kernel` is `partial`: native process, syscall, scheduling, clock
+and callout paths have acceptance evidence, while full integration and the
+reported intermittent freeze remain tracked by task 358. Existing native paths
+do not establish that every function or field in the original files is adapted.
+Task 39 covers header fields and exported ABI contracts; tasks 355 and 359
+close whole-distribution integration.
 
 ## Existing foundation and remaining owners
 
 | Original area | Native foundation | Remaining acceptance / tasks |
 |---|---|---|
 | m40/mch/l machine assembly, segmentation, memory allocation | Long mode, native interrupt frames, paging, resident memory, eager fork, FXSAVE64 | phys implemented by 64; runtime assembly contracts 79; no PDP-11 binary execution or disk-backed swap required |
-| main/slp/clock | Boot, scheduler, sleep/wakeup, PIT ticks, RTC wall clock, alarms, user/system CPU times | CPU usage saturation and priority decay 362; general timeout callouts 364; profil sampling implemented by 59 |
+| main/slp/clock | Boot, scheduler, sleep/wakeup, PIT ticks, RTC wall clock, alarms, user/system CPU times | CPU usage saturation/priority decay implemented by 362; general timeout callouts implemented by 364; profil sampling implemented by 59 |
 | alloc/iget/nami/rdwri/fio/bio | V7 disk encodings, inode/sector cache, lookup, permissions, files, timestamp updates | Executable exclusion implemented by 51; raw I/O 53; mount/umount 54–55 |
-| sys1–sys4/sysent/trap/ureg | Native dispatcher, user-copy validation, process/files/identity/time calls | Set-ID exec implemented by 50; core dumps implemented by 52; ptrace implemented by 57–58; pending syscall slots below |
+| sys1–sys4/sysent/trap/ureg | Native dispatcher, user-copy validation, process/files/identity/time calls | Set-ID exec implemented by 50; core dumps implemented by 52; ptrace implemented by 57–58; syscall slot responsibilities below |
 | text | Native ELF images, shared inode ownership, ETXTBSY and sticky ownership entries | Task 51 complete; eager private VM pages replace physical text sharing/swap caching; private debugger modifications implemented by 58 |
 | sig | V7 signals, saved registers/FP frames and native ELF core dumps | Core policy/format implemented by 52; stop/wait/register access implemented by 57; memory changes and stepping implemented by 58 |
 | pipe | Native bounded pipes, sleep/wakeup, SIGPIPE and descriptor lifetime | Existing files tests; consumer acceptance remains distribution-wide |

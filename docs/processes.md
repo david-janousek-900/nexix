@@ -41,10 +41,11 @@ The scheduler runs on the bootstrap stack. Interrupts remain disabled while
 selecting a runnable process, changing the current-process pointer, activating
 CR3, updating TSS.RSP0, and switching stacks. Selection favors the lowest numeric
 priority, with round robin selection among equal priorities. A waking task keeps
-its sleep priority until `proc_sleep` resumes, then restores its previous
-priority. This prevents a completed wait from permanently outranking new tasks.
-V7's CPU-usage priority decay and swapping are deferred. Native signals and
-nice priority changes are described in [signals.md](signals.md).
+its sleep priority until `proc_sleep` resumes, then recalculates user priority
+from decayed CPU usage and nice. Kernel workers restore their previous priority.
+Task 362 implements V7 CPU-usage saturation, aging and per-second priority decay;
+swapping remains outside the resident model. See [kernel timing](kernel-timing.md)
+and [signals](signals.md) for scheduling and nice behavior.
 
 The 100 Hz PIT preempts a running kernel or user process after five ticks, once
 PIC EOI has been sent. The outgoing IRQ handler remains suspended on that

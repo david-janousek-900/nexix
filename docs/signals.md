@@ -87,7 +87,8 @@ Setuid/setgid follow V7: root, or a caller selecting its existing real ID, sets
 both real and effective IDs. Other changes return EPERM; wide raw arguments
 are rejected instead of truncating. Nice adjusts the inherited niceness within
 0–39 around baseline 20 and updates runnable priority; only root can decrease
-it. CPU-usage priority decay remains pending.
+it. Task 362 supplies V7 CPU-usage saturation and per-second priority decay;
+see [kernel timing](kernel-timing.md).
 
 Time/stime use signed 64-bit seconds. The wall clock starts from the UTC RTC at boot
 and advances with PIT ticks; root can set it through stime. An invalid RTC
