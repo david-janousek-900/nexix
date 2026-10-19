@@ -66,3 +66,11 @@ Retains numeric -signal syntax, default SIGTERM, multiple PIDs and per-process
 errors. Native parsing rejects overflow/trailing junk and signal-only invocations
 instead of risking another PID. Fixtures verify signal 0, actual child death,
 missing processes, invalid signals and non-root permission checks.
+
+## mkdir (127)
+
+Retains V7 mknod plus explicit dot/dotdot hard links. Installed set-UID root
+because the kernel deliberately reserves directory operations for effective
+root. access checks use the real caller; new ownership is restored to its
+real UID/GID. Bounds, ownership failure and rollback are checked. Guest tests
+verify inode links, umask, multi-operand recovery and non-root denial/success.

@@ -1960,6 +1960,19 @@
         "path": "v7-kill.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/mkdir",
+      "type": "file",
+      "mode": "4755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.mkdir",
+      "source": {
+        "root": "programs",
+        "path": "v7-mkdir.elf"
+      },
+      "format": "elf"
     }
   ]
 }

@@ -139,12 +139,12 @@ installed; the complete list and destinations are in [the installation manifest]
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](docs/development-interfaces.md).
 The inventory accounts for **217 components, 2,144 distribution files and
-35 supporting/platform requirements**. Its component statuses are 33 implemented,
-3 partial, 1 prototype and 180 not ported; importing reference inputs does not
+35 supporting/platform requirements**. Its component statuses are 34 implemented,
+3 partial, 1 prototype and 179 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **371 tracking tasks: 121 done, 0 in progress
-and 250 to do** after task 88. Tasks **1–108 and 367–371 are complete**. These counts are a work breakdown, not an
+The expanded roadmap below has **371 tracking tasks: 122 done, 0 in progress
+and 249 to do** after task 88. Tasks **1–108 and 367–371 are complete**. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -384,7 +384,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 124 | Port expr | Done | Retained source; native build/install, error/status and guest fixtures; `make test-expr` at 16/128 MiB; [contract](docs/essential-commands.md); Git history |
 | 125 | Port file | Done | Retained source; native build/install, error/status and guest fixtures; `make test-file` at 16/128 MiB; [contract](docs/essential-commands.md); Git history |
 | 126 | Port kill | Done | Retained source; native build/install, error/status and guest fixtures; `make test-kill` at 16/128 MiB; [contract](docs/essential-commands.md); Git history |
-| 127 | Port mkdir | To do | Privileged directory operations and failures |
+| 127 | Port mkdir | Done | Retained source; native build/install, error/status and guest fixtures; `make test-mkdir` at 16/128 MiB; [contract](docs/essential-commands.md); Git history |
 | 128 | Port mv | To do | Native command fixtures, failure statuses and installation |
 | 129 | Port nice | To do | Native command fixtures, failure statuses and installation |
 | 130 | Port osh | To do | Retained alternate shell behavior |
