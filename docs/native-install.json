@@ -2266,6 +2266,45 @@
         "path": "v7-make.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/uname",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.uname",
+      "source": {
+        "root": "programs",
+        "path": "v7-uname.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/usr/include/sys/utsname.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.headers",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/sys/utsname.h"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/usr/include/nexix/utsname.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.headers",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/utsname.h"
+      },
+      "format": "data"
     }
   ]
 }

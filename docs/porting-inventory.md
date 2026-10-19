@@ -25,6 +25,12 @@ and original metadata to the recorded archive. See [source provenance](../refere
 
 ## Manifest contract
 
+The reference inventory still covers 217 historical components. Native-only
+additions are recorded separately: `cmd.uname` brings the total to 218.
+`source_availability: native` requires nonempty `native_sources` outside
+`reference/`, and empty reference `sources`/`source_files`. Native additions
+also require installation outputs, tests and an explicit roadmap mapping.
+
 - Schema version 2 covers reference/v7, with usr/src separately identified.
 - The required roadmap_coverage path selects [roadmap-coverage.json](roadmap-coverage.json).
   All components and requirements map to explicit roadmap task IDs; see the
@@ -57,7 +63,7 @@ and original metadata to the recorded archive. See [source provenance](../refere
 ## Implementation priorities
 
 Priorities guide implementation order, not release exclusions. The expanded
-371-task roadmap is in [tasks.md](tasks.md). RTC/timestamps/TZ are
+372-task roadmap is in [tasks.md](tasks.md). RTC/timestamps/TZ are
 tasks 22–24; kernel/libc work spans 25–82, terminals 89–93, and multi-user
 integration 94–108. Individual component ports have their own IDs in the
 [coverage map](roadmap-coverage.json); shared support is developed as needed.

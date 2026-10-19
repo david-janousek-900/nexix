@@ -65,6 +65,7 @@
 #define NX_SYS_GETPGRP 71
 #define NX_SYS_KINFO 72
 #define NX_SYS_KLOG 73
+#define NX_SYS_UNAME 74
 #define NX_CLK_TCK 100
 #ifndef __ASSEMBLER__
 #include <stdint.h>

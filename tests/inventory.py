@@ -26,6 +26,14 @@ class Inventory(unittest.TestCase):
     def reject(self, diagnostic):
         self.assertTrue(any(diagnostic in error for error in validate(self.manifest)), diagnostic)
 
+    def test_native_extension_cannot_claim_reference_inputs(self):
+        self.entry('cmd.uname')['sources']=['reference/v7/usr/src/cmd/cat.c']
+        self.reject('cmd.uname: native extension must not claim reference inputs')
+
+    def test_native_extension_needs_sources(self):
+        self.entry('cmd.uname')['native_sources']=[]
+        self.reject('cmd.uname: native extension needs implementation sources')
+
     def test_current_inventory(self):
         self.assertEqual(validate(self.manifest), [])
 

@@ -53,3 +53,7 @@ identity, multiprecision, standalone I/O and tp) remain explicitly assigned to
 179/232/234/177/109/344/236. They do not belong to the libc ABI and are not
 installed as unsupported native record overlays. Their future tasks also own
 the remaining distribution.headers integration status.
+
+The native [`uname`](uname.md) extension exports `uname(struct utsname *)` in
+`<sys/utsname.h>`; its shared syscall record is installed as
+`<nexix/utsname.h>`. It queries the running kernel without privilege.

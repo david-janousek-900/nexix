@@ -24440,6 +24440,64 @@
         "reference/v7/usr/src/cmd/prep.h"
       ],
       "source_availability": "not_applicable"
+    },
+    {
+      "id": "cmd.uname",
+      "kind": "command",
+      "summary": "Native kernel identity query and uname command (not a V7 reference component)",
+      "sources": [],
+      "source_files": [],
+      "source_availability": "native",
+      "native_sources": [
+        "user/v7/cmd/uname.c",
+        "libc/uname.c",
+        "kernel/v7/syscall.c",
+        "include/nexix/utsname.h",
+        "libc/include/sys/utsname.h",
+        "kernel/include/version.h"
+      ],
+      "outputs": [
+        {
+          "name": "uname",
+          "install": "/bin/uname",
+          "role": "installed",
+          "status": "implemented",
+          "evidence": [
+            "user/v7/cmd/uname.c",
+            "docs/uname.md",
+            "Makefile"
+          ]
+        }
+      ],
+      "priority": 3,
+      "status": "implemented",
+      "dependencies": [
+        {
+          "target": "lib.libc",
+          "phase": "runtime",
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/uname.c",
+            "libc/uname.c"
+          ],
+          "note": "Native uname wrapper queries kernel identity."
+        },
+        {
+          "target": "native-build-tools",
+          "phase": "build",
+          "certainty": "confirmed",
+          "evidence": [
+            "Makefile"
+          ],
+          "note": "Host compiler/binutils bootstrap the native ELF command."
+        }
+      ],
+      "blockers": [],
+      "unresolved": [],
+      "reference_includes": [],
+      "acceptance": [
+        "Verify every field and combined flags against the native syscall at 16/128 MiB, including unprivileged use, bad addresses and argument/output errors."
+      ]
     }
   ],
   "historical_source_archives": [

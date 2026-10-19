@@ -98,15 +98,22 @@ def validate(manifest, root=ROOT):
         need(bool(entry.get('summary')), f'{owner}: missing summary')
         sources = entry.get('sources', [])
         paths(sources, owner, reference=True)
-        need(bool(sources), f'{owner}: no sources')
+        need(bool(sources) or entry.get('source_availability') == 'native', f'{owner}: no sources')
         if isinstance(sources, list) and all(isinstance(x, str) for x in sources):
             need(len(sources) == len(set(sources)), f'{owner}: duplicate source')
             owned.update(sources)
         availability = entry.get('source_availability')
-        need(availability in {'supplied', 'binary_only', 'not_applicable'}, f'{owner}: missing source availability')
+        need(availability in {'supplied', 'binary_only', 'not_applicable', 'native'}, f'{owner}: missing source availability')
         source_files = entry.get('source_files', [])
         paths(source_files, owner, reference=True)
         need(set(source_files).issubset(sources), f'{owner}: source files not owned by component')
+        if availability == 'native':
+            need(not sources and not source_files, f'{owner}: native extension must not claim reference inputs')
+            native = entry.get('native_sources', [])
+            paths(native, owner)
+            need(bool(native), f'{owner}: native extension needs implementation sources')
+            need(isinstance(native, list) and all(isinstance(path, str) and not path.startswith('reference/') for path in native),
+                 f'{owner}: native extension sources must be outside reference')
         if availability == 'supplied':
             need(bool(source_files), f'{owner}: supplied implementation source is empty')
         if availability == 'binary_only':
