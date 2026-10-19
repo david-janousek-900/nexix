@@ -47,7 +47,7 @@ Nexix temporarily mounts the embedded production volume read-only, checks the
 layout and modes, reads every executable through V7 directory/indirect-block
 APIs, verifies its bytes and loads it into a separate address space. All
 loader pages are reclaimed and the temporary mount is released. Required
-markers are `NEXIX_ROOT_IMAGE_OK` and `NEXIX_ROOT_ELF_OK`; logs are
+markers are `ROOT IMAGE OK` and `ROOT ELF OK`; logs are
 `build/rootfs-16M.log` and `build/rootfs-128M.log`.
 
 Normal boot mounts an IDE working copy of the volume, or a RAM copy when

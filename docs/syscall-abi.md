@@ -198,9 +198,9 @@ failures, overflow, zero length, user-range limits, and bounded strings. They
 also pass AddressSanitizer and UBSan with leak detection disabled in the current
 validation environment.
 
-New success markers are NEXIX_SYSCALL_ABI_OK, NEXIX_UACCESS_OK,
-NEXIX_SYSCALL_ERRORS_OK, NEXIX_SYSCALL_FORK_OK and NEXIX_SYSCALL_OK, followed by
-NEXIX_BOOT_OK. Transcripts are `build/boot.log` and `build/syscall-16M.log`.
+New success markers are SYSCALL ABI OK, UACCESS OK,
+SYSCALL ERRORS OK, SYSCALL FORK OK and SYSCALL OK, followed by
+BOOT OK. Transcripts are `build/boot.log` and `build/syscall-16M.log`.
 Task 10 implements ELF64 loading, exec, and argument/environment construction;
 see [exec.md](exec.md). Task 11 implements native libc startup and initial wrappers; see [libc.md](libc.md).
 
@@ -232,3 +232,8 @@ user lock-state lifetime; the native port continues using resident memory.
 Task 68 adds [V7 serial packets](serial-packets.md), TIOCSETD/DIOCGETP
 negotiation and libc pkon/pkoff/turnon. Run `make test-packet` for host
 protocol/ownership/UART/libc checks and real QEMU COM1 exchanges at 16/128 MiB.
+
+`NX_SYS_KLOG` (73) reads a root-only, non-destructive kernel-message snapshot.
+Arguments are a destination pointer and byte capacity; NULL/0 queries length.
+It returns bytes copied, EPERM for non-root callers, ERANGE without writes for a
+short buffer and EFAULT for an invalid destination. See [kernel log](kernel-log.md).

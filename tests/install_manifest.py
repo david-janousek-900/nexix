@@ -91,9 +91,9 @@ class Installation(unittest.TestCase):
 
     def test_removes_only_verified_previous_outputs(self):
         self.stage_it()
-        self.plan['entries'] = [e for e in self.plan['entries'] if e['path'] != '/.profile']
+        self.plan['entries'] = [e for e in self.plan['entries'] if e['path'] != '/root/.profile']
         self.save();self.stage_it()
-        self.assertFalse((self.stage/'root/.profile').exists())
+        self.assertFalse((self.stage/'root/root/.profile').exists())
         install.read_stage(self.stage, self.manifest)
 
     def test_modified_payload_refuses_replacement(self):
@@ -126,7 +126,7 @@ class Installation(unittest.TestCase):
             install.stage_tree(link, self.manifest)
         with self.assertRaisesRegex(ValueError, 'symlink'):
             install.stage_tree(self.stage, self.manifest, programs=link)
-        self.stage_it();target = self.stage/'root/.profile';target.unlink();target.symlink_to(Path('rootfs/profile').resolve())
+        self.stage_it();target = self.stage/'root/root/.profile';target.unlink();target.symlink_to(Path('rootfs/profile').resolve())
         with self.assertRaisesRegex(ValueError, 'symlink'): install.read_stage(self.stage, self.manifest)
 
     def test_stale_or_forged_receipt_rejected(self):
@@ -145,9 +145,9 @@ class Installation(unittest.TestCase):
             lambda e: e[0].update(mode='9999'),
             lambda e: e[0].update(uid=-1),
             lambda e: e[0].update(component='unknown'),
-            lambda e: e[7]['source'].update(path='../escape'),
-            lambda e: e[7].update(path='/missing/init'),
-            lambda e: e[7].update(component='cmd.login'),
+            lambda e: next(x for x in e if x['path']=='/etc/init')['source'].update(path='../escape'),
+            lambda e: next(x for x in e if x['path']=='/etc/init').update(path='/missing/init'),
+            lambda e: next(x for x in e if x['path']=='/etc/init').update(component='cmd.login'),
             lambda e: e.append(dict(path='/cycle',type='link',target='/cycle',component='distribution.config'))]
         for mutate in mutations:
             with self.subTest(mutate=mutate):

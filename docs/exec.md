@@ -85,8 +85,8 @@ concurrently. A future preemptible loader will need per-process scratch storage.
 
 Run `make TOOLCHAIN_PREFIX= test-exec` for the 16 MiB QEMU case, or
 `make TOOLCHAIN_PREFIX= smoke` for the 128 MiB case. Every successful boot must
-print `NEXIX_ELF_OK`, `NEXIX_EXEC_ROLLBACK_OK`, `NEXIX_EXEC_OK`, then
-`NEXIX_BOOT_OK`. `make -j3 TOOLCHAIN_PREFIX= test` includes the full regression
+print `ELF OK`, `EXEC ROLLBACK OK`, `EXEC OK`, then
+`BOOT OK`. `make -j3 TOOLCHAIN_PREFIX= test` includes the full regression
 suite. The executable is also available as `build/exec-test.elf` for inspection
 with `readelf -h -l`; it requires Nexix syscalls and cannot run on the host.
 

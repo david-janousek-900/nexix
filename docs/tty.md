@@ -12,7 +12,7 @@ than PDP-11 clists and device drivers.
 make TOOLCHAIN_PREFIX= run-tty
 ```
 
-Wait for `Nexix: serial TTY demo; type a line, or quit to finish.` Type a line
+Wait for `serial TTY demo; type a line, or quit to finish.` Type a line
 and press Enter; the program prints `received: ` followed by that line.
 Backspace edits the current line, Ctrl-U discards it, and Ctrl-D on an empty
 line ends input. Type `quit` and Enter to finish and reach the kernel idle loop.
@@ -36,8 +36,8 @@ make -j3 TOOLCHAIN_PREFIX= test
 `test-tty` checks real COM1 input with 16 MiB and 128 MiB RAM, then exercises the
 demo with 16 MiB. Logs are `build/tty-16M.log`, `build/tty-128M.log` and
 `build/tty-demo-16M.log`. Normal successful boots require `NEXIX_TTY_USER_WRITE_OK`,
-`NEXIX_TTY_OK` and `NEXIX_TTY_CLEANUP_OK`; UART tests also require
-`NEXIX_TTY_UART_OK`, and the demo requires `NEXIX_TTY_DEMO_OK`.
+`TTY OK` and `TTY CLEANUP OK`; UART tests also require
+`TTY UART OK`, and the demo requires `TTY DEMO OK`.
 
 ## UART and character devices
 

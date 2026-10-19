@@ -29,7 +29,7 @@ def boot(disk, qemu, iso, ram, second, log):
         process.stdin.write(line.encode()+b'\n');process.stdin.flush()
         expect(rb'\r\n'+re.escape(answer.encode().replace(b'\n',b'\r\n'))+rb'# ')
     try:
-        expect(rb'(?s)NEXIX_ROOT_IDE\r\nNEXIX_ROOT_MOUNTED.*NEXIX_BOOT_OK\r\n# ')
+        expect(rb'(?s)ROOT IDE\r\nROOT MOUNTED.*BOOT OK\r\n# ')
         command('cat /usr/many/f1599','LARGE_INODE_DATA\n')
         command('cat /usr/alias','LARGE_INODE_DATA\n')
         if second:

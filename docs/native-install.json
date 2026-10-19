@@ -60,6 +60,14 @@
       "component": "distribution.config"
     },
     {
+      "path": "/root",
+      "type": "directory",
+      "mode": "0700",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config"
+    },
+    {
       "path": "/etc/init",
       "type": "file",
       "mode": "0755",
@@ -242,7 +250,7 @@
       "format": "data"
     },
     {
-      "path": "/.profile",
+      "path": "/root/.profile",
       "type": "file",
       "mode": "0644",
       "uid": 0,
@@ -2122,6 +2130,51 @@
         "path": "bin/nohup"
       },
       "format": "data"
+    },
+    {
+      "path": "/etc/dmesg",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.dmesg",
+      "source": {
+        "root": "programs",
+        "path": "v7-dmesg.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/dmesg",
+      "type": "link",
+      "target": "/etc/dmesg",
+      "component": "cmd.dmesg"
+    },
+    {
+      "path": "/.profile",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config",
+      "source": {
+        "root": "config",
+        "path": "profile"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/usr/include/nexix/klog.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/klog.h"
+      }
     }
   ]
 }

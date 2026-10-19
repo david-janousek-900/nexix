@@ -4923,7 +4923,7 @@
     {
       "id": "cmd.dmesg",
       "kind": "command",
-      "summary": "dmesg reference command",
+      "summary": "Native kernel log snapshots and V7 incremental-save mode",
       "sources": [
         "reference/v7/etc/dmesg",
         "reference/v7/usr/src/cmd/dmesg.c"
@@ -4933,14 +4933,16 @@
           "name": "dmesg",
           "install": "/etc/dmesg",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/dmesg.c",
+            "docs/kernel-log.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 10,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -4993,15 +4995,12 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
-        "Report native kernel messages without exposing invalid memory or stale symbol offsets.",
-        "Verify native build, reference options, exit status and malformed-input handling."
+        "Timestamped chronological kernel-only snapshots, root permissions, safe buffer bounds and ring wrap.",
+        "No-argument and - incremental snapshot modes; repeated reads, bad options and native console acceptance at 16/128 MiB.",
+        "Historical memory/namelist operands are rejected; native NX_SYS_KLOG replaces unsafe kernel-address lookup."
       ],
       "source_files": [
         "reference/v7/usr/src/cmd/dmesg.c"
@@ -5012,6 +5011,11 @@
           "path": "/etc/dmesg",
           "artifact": "historical_binary"
         }
+      ],
+      "native_sources": [
+        "user/v7/cmd/dmesg.c",
+        "kernel/console.c",
+        "kernel/klog.c"
       ]
     },
     {

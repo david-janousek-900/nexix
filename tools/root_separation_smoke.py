@@ -30,8 +30,8 @@ def boot(qemu,iso,ram,disk,second,log):
         process.stdin.write(line.encode()+b'\n');process.stdin.flush()
         expect(rb'\r\n'+re.escape(answer.encode().replace(b'\n',b'\r\n'))+rb'# ')
     try:
-        marker=b'NEXIX_ROOT_RAM' if disk is None else b'NEXIX_ROOT_IDE'
-        expect(rb'(?s)'+marker+rb'.*NEXIX_BOOT_OK\r\n# ')
+        marker=b'ROOT RAM' if disk is None else b'ROOT IDE'
+        expect(rb'(?s)'+marker+rb'.*BOOT OK\r\n# ')
         if disk is None:
             command('ls /usr','adm\n')
             command('echo RAM_RECOVERY_OK','RAM_RECOVERY_OK\n')

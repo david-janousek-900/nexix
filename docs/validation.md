@@ -102,8 +102,8 @@ The process test gate uses `int 0x81` commands only; the native ABI uses `int 0x
 state isolation and signal-context tests. User TLS is not implemented. See [processes.md](processes.md).
 
 Native syscalls and safe user access (task 9): successful boot requires
-NEXIX_SYSCALL_ABI_OK, NEXIX_UACCESS_OK, NEXIX_SYSCALL_ERRORS_OK,
-NEXIX_SYSCALL_FORK_OK and NEXIX_SYSCALL_OK. `make TOOLCHAIN_PREFIX= test-syscall`
+SYSCALL ABI OK, UACCESS OK, SYSCALL ERRORS OK,
+SYSCALL FORK OK and SYSCALL OK. `make TOOLCHAIN_PREFIX= test-syscall`
 boots the ordinary image with 16 MiB and saves `build/syscall-16M.log`; the full
 suite includes this run. `make test-process` remains available for the same
 16 MiB regression boot with `build/process-16M.log` as its transcript.
@@ -121,16 +121,16 @@ pointer leaves the child available to reap. Parent and child memory remain
 independent, tick accounting is collected, and all process resources are freed.
 See [syscall-abi.md](syscall-abi.md) for the ABI and exact service scope.
 
-ELF64 execution (task 10): every successful boot requires `NEXIX_ELF_OK`,
-`NEXIX_EXEC_ROLLBACK_OK` and `NEXIX_EXEC_OK`. `make TOOLCHAIN_PREFIX= test-exec`
+ELF64 execution (task 10): every successful boot requires `ELF OK`,
+`EXEC ROLLBACK OK` and `EXEC OK`. `make TOOLCHAIN_PREFIX= test-exec`
 runs the complete regression boot with 16 MiB RAM (`build/exec-16M.log`), including
 malformed ELF rejection, partial-allocation rollback, argument/environment
 stacks, and an actual CPL3 fork/exec/wait sequence. See [exec.md](exec.md).
 The full suite now uses test-fs for its low-memory regression boot; test-process,
 test-syscall, test-exec and test-libc remain available separately.
 
-Native libc (task 11): every successful boot requires `NEXIX_LIBC_ABI_OK` and
-`NEXIX_LIBC_OK`. `make TOOLCHAIN_PREFIX= test-libc` runs the regression boot with
+Native libc (task 11): every successful boot requires `LIBC ABI OK` and
+`LIBC OK`. `make TOOLCHAIN_PREFIX= test-libc` runs the regression boot with
 16 MiB RAM (`build/libc-16M.log`), including a real C program linked with native
 crt0/libc, argument/environment startup, six-argument register conversion,
 callee-saved registers, errno translation, fork/exec/wait, strings, exit
@@ -138,8 +138,8 @@ callbacks and page/process cleanup. Empty and maximum-size startup vectors
 are also exercised. See [libc.md](libc.md) for the supported interface.
 
 Block devices and V7 filesystem (task 12): successful boots require
-`NEXIX_BLOCK_OK`, `NEXIX_V7FS_READ_OK`, `NEXIX_V7FS_ALLOC_OK`,
-`NEXIX_V7FS_WRITE_OK`, `NEXIX_V7FS_EXEC_OK` and `NEXIX_V7FS_OK`.
+`BLOCK OK`, `V7FS READ OK`, `V7FS ALLOC OK`,
+`V7FS WRITE OK`, `V7FS EXEC OK` and `V7FS OK`.
 `make TOOLCHAIN_PREFIX= test-fs` runs the complete regression boot with 16 MiB RAM
 (`build/fs-16M.log`). Host filesystem tests run under test-unit against the
 generated `build/root-test.img`. Tests cover lookup, all indirect levels,
@@ -148,8 +148,8 @@ execution from a filesystem file, malformed metadata and device fault handling.
 See [filesystem.md](filesystem.md) for API coverage and remaining work.
 
 
-File descriptors and pipes (task 13): successful boots require `NEXIX_FILES_OK`,
-`NEXIX_PIPE_OK` and `NEXIX_FILES_CLEANUP_OK`. `make TOOLCHAIN_PREFIX= test-files`
+File descriptors and pipes (task 13): successful boots require `FILES OK`,
+`PIPE OK` and `FILES CLEANUP OK`. `make TOOLCHAIN_PREFIX= test-files`
 runs the native C acceptance fixture with 16 MiB RAM; normal smoke uses 128 MiB.
 Coverage includes descriptor exhaustion, shared offsets across fork/dup, dup2,
 flags, creation/umask, append/truncation, namespace operations and open-unlinked
@@ -162,7 +162,7 @@ and read-only mutation rejection. See [files.md](files.md).
 
 
 Serial TTY (task 14): every successful boot requires `NEXIX_TTY_USER_WRITE_OK`,
-`NEXIX_TTY_OK` and `NEXIX_TTY_CLEANUP_OK`. Host tests cover cooked editing/echo,
+`TTY OK` and `TTY CLEANUP OK`. Host tests cover cooked editing/echo,
 record boundaries and EOF, queue capacity/wrap/reuse, raw/cbreak, CR/tab expansion,
 baud/parity selection and ioctl validation before mutation. Native userland tests
 cover terminal descriptors, blocking read wakeup, read-only mount output,
@@ -171,9 +171,9 @@ consumption, fork/exec inheritance and complete resource cleanup.
 `make TOOLCHAIN_PREFIX= test-tty` exchanges cooked, raw and cbreak bytes through
 real COM1 IRQ input with 16 MiB and 128 MiB RAM. It stops a writer with Ctrl-S,
 confirms the writer sleeps, then wakes it with Ctrl-Q. Test-only input injection
-is disabled for this UART pass, which requires `NEXIX_TTY_UART_OK`. The target
+is disabled for this UART pass, which requires `TTY UART OK`. The target
 also sends lines to the interactive demo and checks its response/quit behavior,
-requiring `NEXIX_TTY_DEMO_OK`. An additional PTY check verifies the interactive
+requiring `TTY DEMO OK`. An additional PTY check verifies the interactive
 stdio multiplexer and Ctrl-A X exit (`build/tty-pty.log`). See [tty.md](tty.md).
 
 
@@ -190,9 +190,9 @@ See [signals.md](signals.md) for the ABI, coverage and success markers.
 
 `make TOOLCHAIN_PREFIX= test-v7` verifies native V7 userland at 16 MiB and
 128 MiB. Logs are `build/v7-16M.log` and `build/v7-128M.log`.
-Required markers are `NEXIX_V7_INIT_ELF_OK`, `NEXIX_V7_USER_PROGRAM_OK`,
-`NEXIX_V7_SHELL_OK`, `NEXIX_V7_UTILITIES_OK` and
-`NEXIX_V7_USERLAND_CLEANUP_OK`. Init is checked for successful ELF loading;
+Required markers are `V7 INIT ELF OK`, `NEXIX_V7_USER_PROGRAM_OK`,
+`V7 SHELL OK`, `V7 UTILITIES OK` and
+`V7 USERLAND CLEANUP OK`. Init is checked for successful ELF loading;
 the shell and utilities are actually executed at CPL3. The fixture runs twice
 with fresh writable roots and checks process/resource reclamation. See
 [userland.md](userland.md) for coverage and remaining startup work.
@@ -200,8 +200,8 @@ with fresh writable roots and checks process/resource reclamation. See
 ## Task 17 acceptance
 
 `make TOOLCHAIN_PREFIX= test-rootfs` checks the packaged root image on the host
-and boots QEMU at 16 MiB and 128 MiB. `NEXIX_ROOT_IMAGE_OK` and
-`NEXIX_ROOT_ELF_OK` confirm layout/device checks and loading all eleven executables
+and boots QEMU at 16 MiB and 128 MiB. `ROOT IMAGE OK` and
+`ROOT ELF OK` confirm layout/device checks and loading all eleven executables
 read from the volume. Host tests check file bytes, directory link counts,
 complete block ownership/free-list accounting, spare inodes, reproducibility
 and insufficient-space rejection. See [root-image.md](root-image.md).
@@ -212,8 +212,8 @@ and insufficient-space rejection. See [root-image.md](root-image.md).
 and 128 MiB. It checks PID 1 startup, PID 2 shell commands, writable root I/O,
 execution of a copied program and init restarting the shell after console EOF.
 Component tests now use `test=selftest` rather than starting init. They require
-`NEXIX_ROOT_EXEC_USER_OK`, `NEXIX_ROOT_EXEC_OK` and
-`NEXIX_ROOT_EXEC_CLEANUP_OK` in addition to earlier markers. The native driver
+`NEXIX_ROOT_EXEC_USER_OK`, `ROOT EXEC OK` and
+`ROOT EXEC CLEANUP OK` in addition to earlier markers. The native driver
 checks relative exec, missing catalog-only names, permission/type rejection,
 V7 set-ID exec, credential rollback, malformed ELF and post-exec cleanup. Injected loader
 read failures verify rollback before and after allocating staged pages.
@@ -266,7 +266,7 @@ of the previous time after rejected updates.
 
 A bounded QEMU boot uses `-rtc base=2024-02-29T12:34:56,clock=vm` and checks the
 reported epoch against 1709210096 (allowing ten seconds for firmware/boot),
-`NEXIX_RTC_OK`, absence of panic and the normal shell prompt. Its log is
+`RTC OK`, absence of panic and the normal shell prompt. Its log is
 `build/rtc-boot.log`. `make TOOLCHAIN_PREFIX= test-signals` exercises the complete
 self-test boot at 16M/128M, including userspace RTC-derived `time`, pointer-copy
 validation, privileged `stime`, and existing signal/service regressions.
@@ -386,7 +386,7 @@ memory sizes. See [core format and policy](core-dumps.md).
 `make test-ptrace` runs disposable-root tracing acceptance at 16/128 MiB and
 the inventory, header and libc export audits. See [ptrace.md](ptrace.md) for
 the request/register ABI and exercised cases. Markers `NEXIX_PTRACE_OK` and
-`NEXIX_PTRACE_ORPHAN_OK` require both user debugger operations and bootstrap
+`PTRACE ORPHAN OK` require both user debugger operations and bootstrap
 verification of a stopped orphan's release/reap, followed by the existing
 root cleanup and boot markers. `make test-unit` supplies the host baseline.
 

@@ -42,7 +42,7 @@ def exchange(line, expected, raw=False):
     raise RuntimeError('timeout waiting for shell response')
 
 try:
-    exchange(None, re.compile(rb'NEXIX_INIT_PID1\r\nNEXIX_BOOT_OK\r\n# '))
+    exchange(None, re.compile(rb'INIT PID1\r\nBOOT OK\r\n# '))
     reply = exchange(b'echo NEXIX_INIT_CHILD_$$; pwd; ls /bin',
                      re.compile(rb'\r\nNEXIX_INIT_CHILD_2\r\n/\r\ncat\r\ncp\r\ndate\r\necho\r\nln\r\nls\r\npwd\r\nrm\r\nsh\r\ntouch\r\n# '))
     # A copied executable has no embedded-catalog entry: it must be read from disk.
@@ -69,6 +69,6 @@ log.write_bytes(output)
 sys.stdout.buffer.write(output)
 if error:
     sys.exit(f'FAIL: {error}; see {log}')
-if b'PANIC' in output or b'NEXIX_ROOT_MOUNTED\r\n' not in output:
+if b'PANIC' in output or b'ROOT MOUNTED\r\n' not in output:
     sys.exit(f'FAIL: root/PID 1 boot; see {log}')
 print(f'PASS: {ram} writable root, filesystem exec, PID 1 and shell restart')

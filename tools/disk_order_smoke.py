@@ -41,7 +41,7 @@ def check_media(disks):
         for unit, source in enumerate(sources):
             source.seek(0)
             header = source.read(512)
-            assert header[:len(b'NEXIX_ORDER_TEST_ONLY73')] == b'NEXIX_ORDER_TEST_ONLY73' and header[32] == ord('0')+unit
+            assert header[:len(b'ORDER TEST ONLY73')] == b'ORDER TEST ONLY73' and header[32] == ord('0')+unit
     entries = contents(image, 2)
     files = {entries[i+2:i+16].rstrip(b'\0'): struct.unpack_from('<H', entries, i)[0]
              for i in range(0, len(entries), 16)}
@@ -66,7 +66,7 @@ def boot(qemu, iso, ram, disks, number, owned=True):
                 if not chunk:
                     break
                 output.extend(chunk)
-            if b'NEXIX_BOOT_OK' in output or b'PANIC' in output:
+            if b'BOOT OK' in output or b'PANIC' in output:
                 break
     finally:
         process.terminate()
@@ -78,7 +78,7 @@ def boot(qemu, iso, ram, disks, number, owned=True):
         output.extend(extra)
     log = Path(f'build/disk-order-{ram}-boot{number}.log')
     log.write_bytes(output)
-    required = [b'NEXIX_DISK_ORDER_OK', b'NEXIX_ROOT_EXEC_CLEANUP_OK', b'NEXIX_BOOT_OK']
+    required = [b'NEXIX_DISK_ORDER_OK', b'ROOT EXEC CLEANUP OK', b'BOOT OK']
     if owned:
         required.append(b'NEXIX_ORDER_IDE_OK')
     if number == 2:
@@ -102,7 +102,7 @@ def main():
             with disk.open('wb') as target:
                 target.truncate(340670*512)
                 header = bytearray(512)
-                header[:len(b'NEXIX_ORDER_TEST_ONLY73')] = b'NEXIX_ORDER_TEST_ONLY73'
+                header[:len(b'ORDER TEST ONLY73')] = b'ORDER TEST ONLY73'
                 header[32] = ord('0')+unit
                 target.write(header)
                 for block in (418, 836):
@@ -114,7 +114,7 @@ def main():
         for number in (1, 2):
             boot(sys.argv[1], sys.argv[2], sys.argv[3], disks, number)
         with disks[0].open('r+b') as target:
-            target.write(bytes(len(b'NEXIX_ORDER_TEST_ONLY73')))
+            target.write(bytes(len(b'ORDER TEST ONLY73')))
         before = [digest(disk) for disk in disks]
         boot(sys.argv[1], sys.argv[2], sys.argv[3], disks, 3, owned=False)
         assert [digest(disk) for disk in disks] == before

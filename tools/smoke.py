@@ -38,9 +38,9 @@ if mode in ("tty", "tty-demo"):
                b"NEXIX_TTY_UART_RAW_READY\r\n": b"\x00\x80\xffR",
                b"NEXIX_TTY_UART_CBREAK_READY\r\n": b"c",
                b"NEXIX_TTY_UART_STOP_READY\r\n": b"\x13s",
-               b"NEXIX_TTY_UART_START_READY\r\n": b"\x11",
-               b"NEXIX_TTY_UART_INTR_READY\r\n": b"\x03",
-               b"NEXIX_TTY_UART_QUIT_READY\r\n": b"\x1c"} if mode == "tty" else {
+               b"TTY UART START READY\r\n": b"\x11",
+               b"TTY UART INTR READY\r\n": b"\x03",
+               b"TTY UART QUIT READY\r\n": b"\x1c"} if mode == "tty" else {
                    b"NEXIX_TTY_DEMO_READY\r\n": b"terminal demo\r",
                    b"received: terminal demo\r\n": b"quit\r"}
     output = bytearray()
@@ -81,76 +81,78 @@ log = Path("build") / (f"memory-{ram}.log" if mode == "memory" else
                         f"{mode}-{ram}.log" if mode in ("process", "syscall", "exec", "libc", "fs", "files", "signals", "v7", "rootfs", "tty", "tty-demo") else f"{mode}.log")
 log.write_bytes(output)
 sys.stdout.buffer.write(output)
+# Keep raw timestamped transcripts; comparisons below ignore only the log prefix.
+output = re.sub(rb'(?m)^\[ *[0-9]+\.[0-9]{6}\] ', b'', output)
 if mode == "tty" and (b"secret99" in output or b"EXCESS" in output or b"NEXIX_GETPASS_OK" not in output):
     sys.exit(f"FAIL: getpass echo suppression or serial acceptance; see {log}")
 if exited_early:
     sys.exit(f"FAIL: QEMU exited unexpectedly ({process.returncode}); see {log}")
 if mode in full_boot_modes:
-    if (b"NEXIX_BOOT_OK\r\n" not in output or b"NEXIX_TIMER_OK\r\n" not in output
-            or b"NEXIX_MEMORY_OK\r\n" not in output
-            or b"NEXIX_PAGING_OK\r\n" not in output or b"PANIC" in output
+    if (b"BOOT OK\r\n" not in output or b"TIMER OK\r\n" not in output
+            or b"MEMORY OK\r\n" not in output
+            or b"PAGING OK\r\n" not in output or b"PANIC" in output
             or any(marker not in output for marker in
-                   (b"NEXIX_USER_MODE_OK\r\n", b"NEXIX_USER_STACK_OK\r\n",
-                    b"NEXIX_USER_TIMER_OK\r\n", b"NEXIX_USER_RETURN_OK\r\n"))):
+                   (b"USER MODE OK\r\n", b"USER STACK OK\r\n",
+                    b"USER TIMER OK\r\n", b"USER RETURN OK\r\n"))):
         sys.exit(f"FAIL: boot/timer check failed; see {log}")
     process_markers = ("SWITCH", "PREEMPT", "SLEEP", "WAIT", "SLOTS", "OOM", "FORK", "CLEANUP")
-    if any(f"NEXIX_PROCESS_{marker}_OK\r\n".encode() not in output for marker in process_markers):
+    if any(f"PROCESS {marker} OK\r\n".encode() not in output for marker in process_markers):
         sys.exit(f"FAIL: process scheduling/lifecycle check failed; see {log}")
-    syscall_markers = ("NEXIX_SYSCALL_ABI_OK", "NEXIX_UACCESS_OK", "NEXIX_SYSCALL_ERRORS_OK",
-                       "NEXIX_SYSCALL_FORK_OK", "NEXIX_SYSCALL_OK")
+    syscall_markers = ("SYSCALL ABI OK", "UACCESS OK", "SYSCALL ERRORS OK",
+                       "SYSCALL FORK OK", "SYSCALL OK")
     if any(f"{marker}\r\n".encode() not in output for marker in syscall_markers):
         sys.exit(f"FAIL: native syscall/user-copy check failed; see {log}")
     if any(f"{marker}\r\n".encode() not in output for marker in
-           ("NEXIX_ELF_OK", "NEXIX_EXEC_ROLLBACK_OK", "NEXIX_EXEC_OK")):
+           ("ELF OK", "EXEC ROLLBACK OK", "EXEC OK")):
         sys.exit(f"FAIL: ELF/exec check failed; see {log}")
     if any(f"{marker}\r\n".encode() not in output for marker in
-           ("NEXIX_LIBC_ABI_OK", "NEXIX_LIBC_OK", "NEXIX_FPU_OK", "NEXIX_FPU_USER_OK", "NEXIX_FPU_PREEMPT_OK")):
+           ("LIBC ABI OK", "LIBC OK", "FPU OK", "FPU USER OK", "FPU PREEMPT OK")):
         sys.exit(f"FAIL: native libc check failed; see {log}")
     if any(f"{marker}\r\n".encode() not in output for marker in
-           ("NEXIX_BLOCK_OK", "NEXIX_V7FS_READ_OK", "NEXIX_V7FS_ALLOC_OK",
-            "NEXIX_V7FS_WRITE_OK", "NEXIX_V7FS_EXEC_OK", "NEXIX_V7FS_OK")):
+           ("BLOCK OK", "V7FS READ OK", "V7FS ALLOC OK",
+            "V7FS WRITE OK", "V7FS EXEC OK", "V7FS OK")):
         sys.exit(f"FAIL: block/V7 filesystem check failed; see {log}")
     if any(f"{marker}\r\n".encode() not in output for marker in
-           ("NEXIX_FILES_OK", "NEXIX_PIPE_OK", "NEXIX_FILES_CLEANUP_OK")):
+           ("FILES OK", "PIPE OK", "FILES CLEANUP OK")):
         sys.exit(f"FAIL: file descriptors/pipes/ownership check failed; see {log}")
     if any(f"{marker}\r\n".encode() not in output for marker in
-           ("NEXIX_TTY_USER_WRITE_OK", "NEXIX_TTY_OK", "NEXIX_TTY_CLEANUP_OK")):
+           ("NEXIX_TTY_USER_WRITE_OK", "TTY OK", "TTY CLEANUP OK")):
         sys.exit(f"FAIL: serial terminal/ioctl/ownership check failed; see {log}")
     if any(f"{marker}\r\n".encode() not in output for marker in
-           ("NEXIX_SIGNALS_OK", "NEXIX_HEAP_OK", "NEXIX_INIT_SYSCALLS_OK", "NEXIX_SIGNALS_CLEANUP_OK")):
+           ("SIGNALS OK", "HEAP OK", "INIT SYSCALLS OK", "SIGNALS CLEANUP OK")):
         sys.exit(f"FAIL: signals/heap/init syscalls check failed; see {log}")
     if any(f"{marker}\r\n".encode() not in output for marker in
-           ("NEXIX_V7_INIT_ELF_OK", "NEXIX_V7_USER_PROGRAM_OK", "NEXIX_V7_SHELL_OK", "NEXIX_V7_UTILITIES_OK", "NEXIX_V7_USERLAND_CLEANUP_OK")):
+           ("V7 INIT ELF OK", "NEXIX_V7_USER_PROGRAM_OK", "V7 SHELL OK", "V7 UTILITIES OK", "V7 USERLAND CLEANUP OK")):
         sys.exit(f"FAIL: rebuilt V7 userland check failed; see {log}")
     if any(f"{marker}\r\n".encode() not in output for marker in
-           ("NEXIX_ROOT_IMAGE_OK", "NEXIX_ROOT_ELF_OK", "NEXIX_ROOT_EXEC_USER_OK", "NEXIX_STORAGE_OK", "NEXIX_NAMESPACE_OK", "NEXIX_UMOUNT_OK", "NEXIX_ACCOUNTING_OK", "NEXIX_PTRACE_OK", "NEXIX_PTRACE_ORPHAN_OK", "NEXIX_DEBUGGER_OK", "NEXIX_PROFILE_OK", "NEXIX_MONITOR_OK", "NEXIX_NLIST_OK", "NEXIX_KINFO_OK", "NEXIX_LOCK_OK", "NEXIX_PHYS_OK", "NEXIX_MEMDEV_OK", "NEXIX_DISK_OK", "NEXIX_DISK_ORDER_OK", "NEXIX_TAPE_OK", "NEXIX_DECTAPE_OK", "NEXIX_MPX_OK", "NEXIX_MPX_DATA_OK", "NEXIX_MPX_TTY_OK", "NEXIX_TTY_CONTROLLERS_OK", "NEXIX_MODEM_OK", "NEXIX_ACCT_EXEC_OK", "NEXIX_MOUNT_EXEC_OK", "NEXIX_ROOT_EXEC_OK", "NEXIX_ROOT_EXEC_CLEANUP_OK")):
+           ("ROOT IMAGE OK", "ROOT ELF OK", "NEXIX_ROOT_EXEC_USER_OK", "NEXIX_STORAGE_OK", "NEXIX_NAMESPACE_OK", "NEXIX_UMOUNT_OK", "NEXIX_ACCOUNTING_OK", "NEXIX_PTRACE_OK", "PTRACE ORPHAN OK", "NEXIX_DEBUGGER_OK", "NEXIX_PROFILE_OK", "NEXIX_MONITOR_OK", "NEXIX_NLIST_OK", "NEXIX_KINFO_OK", "NEXIX_LOCK_OK", "NEXIX_PHYS_OK", "NEXIX_MEMDEV_OK", "NEXIX_DISK_OK", "NEXIX_DISK_ORDER_OK", "NEXIX_TAPE_OK", "NEXIX_DECTAPE_OK", "NEXIX_MPX_OK", "NEXIX_MPX_DATA_OK", "NEXIX_MPX_TTY_OK", "NEXIX_TTY_CONTROLLERS_OK", "NEXIX_MODEM_OK", "NEXIX_ACCT_EXEC_OK", "NEXIX_MOUNT_EXEC_OK", "ROOT EXEC OK", "ROOT EXEC CLEANUP OK")):
         sys.exit(f"FAIL: packaged root image check failed; see {log}")
-    if mode == "tty" and (replies or b"NEXIX_TTY_UART_OK\r\n" not in output
+    if mode == "tty" and (replies or b"TTY UART OK\r\n" not in output
                            or b"NEXIX_TTY_UART_USER_OK\r\n" not in output
                            or b"NEXIX_TTY_UART_RESUMED\r\n" not in output
                            or b"NEXIX_TTY_UART_SIGNALS_OK\r\n" not in output):
         sys.exit(f"FAIL: COM1 IRQ input/flow-control check failed; see {log}")
-    if mode == "tty-demo" and (replies or b"NEXIX_TTY_DEMO_OK\r\n" not in output
+    if mode == "tty-demo" and (replies or b"TTY DEMO OK\r\n" not in output
                                 or b"received: terminal demo\r\n" not in output):
         sys.exit(f"FAIL: interactive terminal demo check failed; see {log}")
-    if mode == "memory" and (b"NEXIX_MEMORY_EXHAUSTION_OK\r\n" not in output
-                             or b"NEXIX_RESERVATIONS_OK\r\n" not in output):
+    if mode == "memory" and (b"MEMORY EXHAUSTION OK\r\n" not in output
+                             or b"RESERVATIONS OK\r\n" not in output):
         sys.exit(f"FAIL: memory exhaustion check failed; see {log}")
-    if mode == "paging-oom" and b"NEXIX_PAGING_OOM_OK\r\n" not in output:
+    if mode == "paging-oom" and b"PAGING OOM OK\r\n" not in output:
         sys.exit(f"FAIL: page-table allocation rollback failed; see {log}")
-    if mode == "user-bad-stack" and b"NEXIX_USER_BAD_STACK_OK\r\n" not in output:
+    if mode == "user-bad-stack" and b"USER BAD STACK OK\r\n" not in output:
         sys.exit(f"FAIL: TSS handoff with unusable user stack failed; see {log}")
     print("PASS: boot, scheduling, fork/exit/wait, native syscalls, user copies, ELF exec, native libc, V7 filesystem, file descriptors, pipes, serial TTY, signals, heap, init services, rebuilt V7 userland, and packaged root image")
 elif mode in user_faults:
     vector, error = user_faults[mode]
     fault = re.search(rb"exception vector=(0x[0-9a-f]{16}) error=(0x[0-9a-f]{16})"
                       rb" rip=0x[0-9a-f]{16}(?: cr2=(0x[0-9a-f]{16}))?\r\n"
-                      rb"Nexix PANIC: unhandled CPU exception\r\n", output)
+                      rb"PANIC: unhandled CPU exception\r\n", output)
     if (not fault or int(fault[1], 16) != vector or int(fault[2], 16) != error
-            or b"NEXIX_BOOT_OK" in output):
+            or b"BOOT OK" in output):
         sys.exit(f"FAIL: {mode} exception incorrect; see {log}")
     if mode == "user-df":
-        if b"NEXIX_DOUBLE_FAULT_STACK_OK\r\n" not in output:
+        if b"DOUBLE FAULT STACK OK\r\n" not in output:
             sys.exit(f"FAIL: double-fault IST stack not validated; see {log}")
     else:
         if not re.search(rb"trap cs=0x0000000000000023 ss=0x000000000000001b", output):
@@ -165,10 +167,10 @@ elif mode in ("wp", "nx", "unmap", "null", "protect"):
     error = {"wp": 3, "nx": 17, "unmap": 0, "null": 0, "protect": 3}[mode]
     fault = re.search(rb"exception vector=0x000000000000000e error=(0x[0-9a-f]{16})"
                       rb" rip=0x[0-9a-f]{16} cr2=(0x[0-9a-f]{16})\r\n"
-                      rb"Nexix PANIC: unhandled CPU exception\r\n", output)
+                      rb"PANIC: unhandled CPU exception\r\n", output)
     if (not expected or not fault or int(fault[1], 16) != error
-            or fault[2] != expected[1] or b"NEXIX_BOOT_OK" in output
-            or b"NEXIX_PAGING_OK\r\n" not in output):
+            or fault[2] != expected[1] or b"BOOT OK" in output
+            or b"PAGING OK\r\n" not in output):
         sys.exit(f"FAIL: {mode} protection fault incorrect; see {log}")
     print(f"PASS: {mode} page protection and fault diagnostics")
 else:
@@ -176,7 +178,7 @@ else:
     pattern = (rb"exception vector=0x000000000000000" + vector
                + rb" error=0x0000000000000000 rip=0x[0-9a-f]{16}"
                + (rb" cr2=0x0000000040000000" if mode == "pf" else b"")
-               + rb"\r\nNexix PANIC: unhandled CPU exception\r\n")
-    if not re.search(pattern, output) or b"NEXIX_BOOT_OK" in output:
+               + rb"\r\nPANIC: unhandled CPU exception\r\n")
+    if not re.search(pattern, output) or b"BOOT OK" in output:
         sys.exit(f"FAIL: {mode} fault diagnostics incorrect; see {log}")
     print(f"PASS: {mode} exception frame and panic diagnostics")

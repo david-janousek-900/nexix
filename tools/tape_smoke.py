@@ -75,7 +75,7 @@ def boot(qemu, iso, ram, disk, number, owned=True):
                 if not chunk:
                     break
                 output.extend(chunk)
-            if b'NEXIX_BOOT_OK' in output or b'PANIC' in output:
+            if b'BOOT OK' in output or b'PANIC' in output:
                 break
     finally:
         process.terminate()
@@ -87,7 +87,7 @@ def boot(qemu, iso, ram, disk, number, owned=True):
         output.extend(extra)
     log = Path(f'build/tape-{ram}-boot{number}.log')
     log.write_bytes(output)
-    required = [b'NEXIX_TAPE_OK', b'NEXIX_ROOT_EXEC_CLEANUP_OK', b'NEXIX_BOOT_OK']
+    required = [b'NEXIX_TAPE_OK', b'ROOT EXEC CLEANUP OK', b'BOOT OK']
     if owned:
         required.append(b'NEXIX_TAPE_IDE_OK')
     if number == 2:
@@ -107,7 +107,7 @@ def main():
         volume.directory(2, 2, [])
         with disk.open('wb') as target:
             target.truncate(340670*512)
-            target.write(b'NEXIX_TAPE_TEST_ONLY71')
+            target.write(b'TAPE TEST ONLY71')
             target.seek(5000*512)
             target.write(volume.finish())
         for number in (1, 2):

@@ -10,17 +10,17 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 39 native ELF programs are
+to multi-user V7 login with persistent IDE storage. 40 native ELF programs are
 installed; the complete list and destinations are in [the installation manifest](native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
 The inventory accounts for **217 components, 2,144 distribution files and
-35 supporting/platform requirements**. Its component statuses are 45 implemented,
-3 partial, 1 prototype and 168 not ported; importing reference inputs does not
+35 supporting/platform requirements**. Its component statuses are 46 implemented,
+3 partial, 1 prototype and 167 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **371 tracking tasks: 133 done, 0 in progress
-and 238 to do** after tasks 119–138. Tasks **1–108, 119–138 and 367–371 are complete**. These counts are a work breakdown, not an
+The expanded roadmap below has **371 tracking tasks: 134 done, 0 in progress
+and 237 to do** after tasks 119–138 and 251. Tasks **1–108, 119–138, 251 and 367–371 are complete**. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -423,7 +423,7 @@ are accounted for. Final native rebuild acceptance is task 207.
 
 | Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
-| 251 | Port dmesg | To do | Diagnostics/status fixtures |
+| 251 | Port dmesg | Done | Git history; [kernel log](kernel-log.md); safe root-only native snapshots, timestamped console messages and V7 incremental-save mode; ring/bounds/error tests and VGA/serial acceptance at 16/128 MiB |
 | 252 | Port iostat | To do | Native kernel-information interface; no historical structure offsets |
 | 253 | Port ps | To do | Native kernel-information interface; no historical structure offsets |
 | 254 | Port pstat | To do | Native kernel-information interface; no historical structure offsets |

@@ -29,7 +29,7 @@ void filesystem_selftest(void)
     REQUIRE(block_read(&ram.device, 1024, 1, buffer) == -NX_EIO);
     REQUIRE(block_write(&ram.device, UINT32_MAX, UINT32_MAX, buffer) == -NX_EIO);
     REQUIRE(block_read(&ram.device, 0, 1, NULL) == -NX_EINVAL);
-    console_puts("NEXIX_BLOCK_OK\r\n");
+    console_puts("BLOCK OK\r\n");
     REQUIRE(v7fs_mount(&fs, &ram.device, true) == 0);
     REQUIRE(v7fs_mount(&fs, &ram.device, false) == -NX_EBUSY);
     v7_ino_t ino;
@@ -65,7 +65,7 @@ void filesystem_selftest(void)
     uint32_t block;
     REQUIRE(v7fs_alloc_block(&fs, &block) == -NX_EROFS);
     REQUIRE(v7fs_unmount(&fs) == 0);
-    console_puts("NEXIX_V7FS_READ_OK\r\n");
+    console_puts("V7FS READ OK\r\n");
     REQUIRE(v7fs_mount(&fs, &ram.device, false) == 0);
     uint32_t total = v7_disk_u32(fs.super.tfree);
     unsigned count = 0;
@@ -84,7 +84,7 @@ void filesystem_selftest(void)
     REQUIRE(v7_disk_u32(fs.super.tfree) == total);
     REQUIRE(v7fs_unmount(&fs) == 0 && v7fs_mount(&fs, &ram.device, false) == 0);
     REQUIRE(v7fs_alloc_block(&fs, &block) == 0 && v7fs_free_block(&fs, block) == 0);
-    console_puts("NEXIX_V7FS_ALLOC_OK\r\n");
+    console_puts("V7FS ALLOC OK\r\n");
     const uint64_t positions[] = {0, 9 * 512 + 511, (10 + 128) * 512 + 7,
         triple + 7, V7FS_MAX_FILE_SIZE - 3};
     for (unsigned i = 0; i < 5; ++i) {
@@ -97,7 +97,7 @@ void filesystem_selftest(void)
     for (unsigned i = 0; i < done; ++i) REQUIRE(buffer[i] == 0);
     REQUIRE(v7fs_unmount(&fs) == 0 && v7fs_mount(&fs, &ram.device, true) == 0);
     for (unsigned i = 0; i < 5; ++i) expect_file(8, positions[i], "xyz", 3);
-    console_puts("NEXIX_V7FS_WRITE_OK\r\n");
+    console_puts("V7FS WRITE OK\r\n");
     /* Load a real executable read through directory and indirect-block APIs. */
     REQUIRE(v7fs_lookup(&fs, 2, "/bin/libc-test", &ino) == 0);
     REQUIRE(v7fs_inode_get(&fs, ino, &inode) == 0 && inode.size < sizeof(executable));
@@ -114,6 +114,6 @@ void filesystem_selftest(void)
     int32_t status;
     REQUIRE(proc_collect(&status) == pid && status == 0 && proc_collect(NULL) == -NX_ECHILD);
     REQUIRE(page_free_count() == before && v7fs_unmount(&fs) == 0);
-    console_puts("NEXIX_V7FS_EXEC_OK\r\n");
-    console_puts("NEXIX_V7FS_OK\r\n");
+    console_puts("V7FS EXEC OK\r\n");
+    console_puts("V7FS OK\r\n");
 }

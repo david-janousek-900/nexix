@@ -1,6 +1,7 @@
 """Verify boot, init, shell and panic use only the selected console."""
 from pathlib import Path
 import shutil
+import re
 import sys
 import tempfile
 import time
@@ -21,12 +22,21 @@ def check(qemu, ram, mode):
             screen=LocalConsole(guest,temp)
             if mode=='vga':
                 text=screen.expect('login: ')
-                assert 'Nexix: x86_64 kernel entered' in text, text
+                assert 'x86_64 kernel entered' in text, text
                 assert 'Nexix 0.1.0' in text, text
                 screen.type('root\n');screen.expect('Password:')
                 screen.type('nexix\n');screen.expect('# ')
+                assert re.search(r'\[ *[0-9]+\.[0-9]{6}\] x86_64 kernel entered',text),text
+                screen.type('pwd\n');screen.expect('\n/root\n')
+                screen.type('echo BACKSPACE_BAD');screen.type('\x7f'*3)
+                text=screen.expect('echo BACKSPACE_')
+                assert 'BACKSPACE_BAD' not in text,text
+                screen.type('OK\n');screen.expect('\nBACKSPACE_OK\n')
+                screen.type('echo SECOND_BAD');screen.type('\x08'*3)
+                screen.type('OK\n');screen.expect('\nSECOND_OK\n')
                 screen.type('echo VGA_SELECTED\n');screen.expect('\nVGA_SELECTED\n')
                 screen.type('echo CONSOLE_DEVICE > /dev/console\n');screen.expect('\nCONSOLE_DEVICE\n')
+                screen.type('dmesg\n');screen.expect('] BOOT OK\n# ')
                 screen.type('\x04');screen.expect('login: ')
                 # Neither UART may get boot messages, prompts, echo or shell output.
                 guest.send('root\nnexix\necho WRONG_UART\n',0)
@@ -35,7 +45,11 @@ def check(qemu, ram, mode):
                 assert not any(guest.buffers), guest.buffers
             else:
                 login(guest,'root','nexix')
-                assert b'Nexix: x86_64 kernel entered' in guest.buffers[0]
+                assert re.search(rb'\[ *[0-9]+\.[0-9]{6}\] x86_64 kernel entered',guest.buffers[0])
+                guest.command('pwd',stdout='/root\n')
+                guest.command('echo $HOME',stdout='/root\n')
+                guest.send('echo BAD\x7f\x7f\x7fOK\n');guest.expect('\r\nOK\r\n# ')
+                guest.send('echo BAD\x08\x08\x08OK\n');guest.expect('\r\nOK\r\n# ')
                 assert b'Nexix 0.1.0' in guest.buffers[0]
                 guest.command('echo SERIAL_SELECTED',stdout='SERIAL_SELECTED\n')
                 guest.command('echo CONSOLE_DEVICE > /dev/console',stdout='CONSOLE_DEVICE\n')
@@ -45,12 +59,12 @@ def check(qemu, ram, mode):
             # An NMI exercises the production panic path without a test kernel.
             screen.call('inject-nmi')
             if mode=='vga':
-                screen.expect('Nexix PANIC: unhandled CPU exception')
+                screen.expect('PANIC: unhandled CPU exception')
                 guest.pump(.1)
                 assert not any(guest.buffers), guest.buffers
             else:
                 deadline=time.monotonic()+10
-                while b'Nexix PANIC: unhandled CPU exception' not in guest.buffers[0]:
+                while b'PANIC: unhandled CPU exception' not in guest.buffers[0]:
                     if time.monotonic()>deadline:
                         raise AssertionError('serial panic diagnostic missing')
                     guest.pump(.05)

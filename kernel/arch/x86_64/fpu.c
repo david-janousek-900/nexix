@@ -41,5 +41,5 @@ void fpu_init(void)
     initial.bytes[0] = 0x7f; initial.bytes[1] = 3;
     initial.bytes[24] = 0x80; initial.bytes[25] = 0x1f;
     fpu_restore(&initial);
-    console_puts("NEXIX_FPU_OK\r\n");
+    console_puts("FPU OK\r\n");
 }

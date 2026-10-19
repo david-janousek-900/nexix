@@ -1,3 +1,4 @@
+#include "klog.h"
 /* Native trap dispatch based on V7 sys/trap.c and sys/sysent.c numbering. */
 #include "syscall.h"
 #include "clock.h"
@@ -30,6 +31,7 @@ static int64_t invoke(uint64_t number, struct interrupt_frame *frame)
     case NX_SYS_STTY: case NX_SYS_GTTY: case NX_SYS_IOCTL:
     case NX_SYS_CHMOD: case NX_SYS_CHOWN: case NX_SYS_ACCESS: case NX_SYS_SYNC: case NX_SYS_UTIME:
         return files_syscall(number, u->u_arg);
+    case NX_SYS_KLOG:return klog_request(u->u_arg[0],u->u_arg[1]);
     case NX_SYS_KINFO:return kinfo_request(u->u_arg[0],u->u_arg[1],u->u_arg[2],u->u_arg[3]);
     case NX_SYS_PHYS:return phys_request(u->u_arg[0],u->u_arg[1],u->u_arg[2]);
     case NX_SYS_LOCK:return proc_lock(u->u_arg[0]);

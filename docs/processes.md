@@ -112,10 +112,10 @@ make TOOLCHAIN_PREFIX= test-process   # same checks with 16 MiB RAM
 make -j3 TOOLCHAIN_PREFIX= test        # complete regression suite
 ```
 
-Successful serial output includes `NEXIX_PROCESS_SWITCH_OK`,
-`NEXIX_PROCESS_PREEMPT_OK`, `NEXIX_PROCESS_SLEEP_OK`, `NEXIX_PROCESS_WAIT_OK`,
-`NEXIX_PROCESS_SLOTS_OK`, `NEXIX_PROCESS_OOM_OK`, `NEXIX_PROCESS_FORK_OK`, and
-`NEXIX_PROCESS_CLEANUP_OK`, followed by `NEXIX_BOOT_OK`. Detailed assertions and
+Successful serial output includes `PROCESS SWITCH OK`,
+`PROCESS PREEMPT OK`, `PROCESS SLEEP OK`, `PROCESS WAIT OK`,
+`PROCESS SLOTS OK`, `PROCESS OOM OK`, `PROCESS FORK OK`, and
+`PROCESS CLEANUP OK`, followed by `BOOT OK`. Detailed assertions and
 failure cases are listed in [validation.md](validation.md).
 
 Task 9 now provides the separate native `int 0x80` interface with safe user access;

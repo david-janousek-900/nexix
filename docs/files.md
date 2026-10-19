@@ -15,8 +15,8 @@ make TOOLCHAIN_PREFIX= run
 ```
 
 `test-files` runs with 16 MiB RAM and saves `build/files-16M.log`; smoke uses
-128 MiB. Successful boots require `NEXIX_FILES_OK`, `NEXIX_PIPE_OK`,
-`NEXIX_FILES_CLEANUP_OK`, and the existing boot markers. The tests execute
+128 MiB. Successful boots require `FILES OK`, `PIPE OK`,
+`FILES CLEANUP OK`, and the existing boot markers. The tests execute
 `user/files-test.c` as a native ELF64 program at CPL3, linked with Nexix libc.
 Normal boot starts V7 init and its single-user shell; component self-tests
 use separate boot images. Task 14 supplies serial TTY input and a demo;

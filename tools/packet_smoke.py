@@ -155,10 +155,10 @@ def main():
                         send(data(b'port', 32, 1, ack))
                     else:
                         assert payload == b'DRAIN'
-            if b'NEXIX_BOOT_OK' in output:
+            if b'BOOT OK' in output:
                 break
-        required = [b'NEXIX_PACKET_OK', b'NEXIX_PACKET_CLEANUP_OK', b'NEXIX_BOOT_OK',
-                    b'NEXIX_MPX_TTY_OK', b'NEXIX_TTY_CLEANUP_OK']
+        required = [b'NEXIX_PACKET_OK', b'PACKET CLEANUP OK', b'BOOT OK',
+                    b'NEXIX_MPX_TTY_OK', b'TTY CLEANUP OK']
         assert all(m in output for m in required), ('missing markers', [m for m in required if m not in output])
         assert session == 3 and dropped and retransmitted and rejected and saw_eof and last_payload == b'B'
         assert b'PANIC' not in output and b'FAIL' not in output

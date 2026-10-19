@@ -58,7 +58,7 @@ There is no fallback to embedded executable names during normal operation.
 It checks PID 2, the root directory, the packaged utilities, writable file I/O,
 a newly copied executable and shell restart through actual COM1 input.
 Transcripts are `build/boot-16M.log` and `build/boot-128M.log`.
-Markers `NEXIX_ROOT_MOUNTED`, `NEXIX_INIT_PID1` and `NEXIX_BOOT_OK` identify
+Markers `ROOT MOUNTED`, `INIT PID1` and `BOOT OK` identify
 kernel startup; the received prompt and command results verify init/shell execution.
 
 The regression ISO uses `test=selftest` to run the earlier fixtures and idle

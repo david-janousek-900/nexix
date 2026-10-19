@@ -12,7 +12,7 @@ with tempfile.TemporaryDirectory(prefix='nx-command-') as temp:
         with auxiliary.open('ab') as stream:stream.truncate(9614*512)
         extra=['-drive',f'file={auxiliary},format=raw,if=ide,index=1']
     with private_guest(qemu,iso,ram,name,{'/bin/check':name+'-command.elf'},extra_args=extra) as guest:
-        guest.expect(r'(?s)NEXIX_BOOT_OK\r\n# ')
+        guest.expect(r'(?s)BOOT OK\r\n# ')
         prefix="Sending output to 'nohup.out'\n"*2 if name=='nohup' else ''
         guest.command('/bin/check',stdout=prefix+name.upper()+'_OK\n')
 print(f'PASS: {ram} installed {name}: output/status, native metadata and failure fixtures')

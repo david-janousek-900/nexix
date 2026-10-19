@@ -14,7 +14,7 @@ INSTALL_CONFIG ?= rootfs
 INSTALL_STAGE ?= build/stage
 FULL_ROOT_IMAGE ?= build/distribution.img
 CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-stack-protector -fno-pie -m64 -mno-red-zone -mgeneral-regs-only -fno-asynchronous-unwind-tables -Ikernel/include -Iinclude -MMD -MP
-OBJECTS = build/console.o build/packet.o build/packet_tty.o build/packet_image.o build/boot.o build/main.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o build/elf.o build/exec.o build/exec_test.o build/exec_image.o build/libc_test.o build/libc_image.o build/block.o build/v7fs.o build/fs_test.o build/root_image.o build/files.o build/files_test.o build/files_image.o build/tty.o build/tty_test.o build/tty_image.o build/signals.o build/signals_test.o build/signals_image.o build/catalog.o build/v7_userland_test.o build/v7_test_image.o
+OBJECTS = build/klog.o build/console.o build/packet.o build/packet_tty.o build/packet_image.o build/boot.o build/main.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o build/elf.o build/exec.o build/exec_test.o build/exec_image.o build/libc_test.o build/libc_image.o build/block.o build/v7fs.o build/fs_test.o build/root_image.o build/files.o build/files_test.o build/files_image.o build/tty.o build/tty_test.o build/tty_image.o build/signals.o build/signals_test.o build/signals_image.o build/catalog.o build/v7_userland_test.o build/v7_test_image.o
 include build/native-config.mk
 OBJECTS += $(NATIVE_CONFIG_OBJECTS)
 
@@ -39,6 +39,9 @@ build/main.o: kernel/main.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/serial_secondary.o: kernel/serial_secondary.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/klog.o: kernel/klog.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/console.o: kernel/console.c | build/.dir
@@ -1723,7 +1726,7 @@ build/nexix-serial.iso build/nexix-multi.iso: build/nexix.elf boot/grub.cfg tool
 .PHONY: run-serial serial-iso multi-iso
 
 build/console-test: tests/console.c kernel/console.c kernel/include/console.h kernel/include/boot.h | build/.dir
-	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include tests/console.c kernel/console.c -o $@
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/console.c kernel/console.c -o $@
 .PHONY: test-console-unit test-console
 test-console-unit: build/console-test build/memory-test test-tty-lines-unit
 	./build/console-test
@@ -1733,3 +1736,15 @@ test-console: test-console-unit iso serial-iso rootfs
 	$(PYTHON) tools/console_smoke.py $(QEMU) 16M
 	$(PYTHON) tools/console_smoke.py $(QEMU) 128M
 test: test-console
+
+build/klog-test: tests/klog.c kernel/klog.c kernel/include/klog.h include/nexix/klog.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/klog.c kernel/klog.c -o $@
+.PHONY: test-klog-unit test-dmesg
+test-klog-unit: build/klog-test build/console-test
+	./build/klog-test
+	./build/console-test
+test-unit: test-klog-unit
+test-dmesg: test-klog-unit multi-iso rootfs
+	$(PYTHON) tools/dmesg_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/dmesg_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-dmesg

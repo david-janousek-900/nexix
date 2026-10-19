@@ -55,7 +55,7 @@ def boot(qemu, iso, ram, disk, number, owned=True):
                 if not chunk:
                     break
                 output.extend(chunk)
-            if b'NEXIX_BOOT_OK' in output or b'PANIC' in output:
+            if b'BOOT OK' in output or b'PANIC' in output:
                 break
     finally:
         process.terminate()
@@ -67,7 +67,7 @@ def boot(qemu, iso, ram, disk, number, owned=True):
         output.extend(extra)
     log = Path(f'build/disk-{ram}-boot{number}.log')
     log.write_bytes(output)
-    required = [b'NEXIX_DISK_OK', b'NEXIX_ROOT_EXEC_CLEANUP_OK', b'NEXIX_BOOT_OK']
+    required = [b'NEXIX_DISK_OK', b'ROOT EXEC CLEANUP OK', b'BOOT OK']
     if owned:
         required.append(b'NEXIX_DISK_IDE_OK')
     if number == 2:

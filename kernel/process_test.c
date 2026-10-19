@@ -66,8 +66,8 @@ static void kernel_tests(void *argument)
     }
     REQUIRE(statuses == 0x300 && progress[0] == 3 && progress[1] == 3);
     REQUIRE(proc_current()->p_user->u_cstime > 0);
-    console_puts("NEXIX_PROCESS_SWITCH_OK\r\n");
-    console_puts("NEXIX_PROCESS_PREEMPT_OK\r\n");
+    console_puts("PROCESS SWITCH OK\r\n");
+    console_puts("PROCESS PREEMPT OK\r\n");
 
     REQUIRE(proc_spawn(sleeper, &channels[0]) > 0);
     REQUIRE(proc_spawn(sleeper, &channels[0]) > 0);
@@ -83,7 +83,7 @@ static void kernel_tests(void *argument)
     uint64_t before = timer_ticks();
     proc_delay(3); /* All tasks are sleeping: exercise scheduler STI/HLT wakeup. */
     REQUIRE(timer_ticks() - before >= 3);
-    console_puts("NEXIX_PROCESS_SLEEP_OK\r\n");
+    console_puts("PROCESS SLEEP OK\r\n");
 
     REQUIRE(proc_spawn(orphan_parent, NULL) > 0);
     statuses = 0;
@@ -93,7 +93,7 @@ static void kernel_tests(void *argument)
         statuses |= status;
     }
     REQUIRE(statuses == 0x7700 && proc_wait(NULL) == -V7_ECHILD);
-    console_puts("NEXIX_PROCESS_WAIT_OK\r\n");
+    console_puts("PROCESS WAIT OK\r\n");
 
     /* Reserve every free slot; failure and abort must not leak VM roots. */
     uintptr_t flags = proc_irq_save();
@@ -114,7 +114,7 @@ static void kernel_tests(void *argument)
     proc_current()->p_uid = proc_current()->p_user->u_uid = 0;
     REQUIRE(page_free_count() == pages);
     proc_irq_restore(flags);
-    console_puts("NEXIX_PROCESS_SLOTS_OK\r\n");
+    console_puts("PROCESS SLOTS OK\r\n");
 }
 
 static void fork_oom_test(struct interrupt_frame *frame)
@@ -144,7 +144,7 @@ static void fork_oom_test(struct interrupt_frame *frame)
         head = next;
     }
     REQUIRE(page_free_count() == before);
-    console_puts("NEXIX_PROCESS_OOM_OK\r\n");
+    console_puts("PROCESS OOM OK\r\n");
 }
 
 bool process_test_gate(struct interrupt_frame *frame)
@@ -268,6 +268,6 @@ void process_selftest(void)
     REQUIRE(proc_collect(NULL) == -V7_ECHILD);
     REQUIRE(page_free_count() == before);
     for (unsigned i = 1; i < V7_NPROC; ++i) REQUIRE(proc_table()[i].p_stat == V7_UNUSED);
-    console_puts("NEXIX_PROCESS_FORK_OK\r\n");
-    console_puts("NEXIX_PROCESS_CLEANUP_OK\r\n");
+    console_puts("PROCESS FORK OK\r\n");
+    console_puts("PROCESS CLEANUP OK\r\n");
 }

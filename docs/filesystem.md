@@ -120,9 +120,9 @@ retained for regression fixtures.
 
 ## Validation
 
-Every successful QEMU boot requires `NEXIX_BLOCK_OK`, `NEXIX_V7FS_READ_OK`,
-`NEXIX_V7FS_ALLOC_OK`, `NEXIX_V7FS_WRITE_OK`, `NEXIX_V7FS_EXEC_OK` and
-`NEXIX_V7FS_OK` before `NEXIX_BOOT_OK`. `test-fs` uses 16 MiB RAM and logs to
+Every successful QEMU boot requires `BLOCK OK`, `V7FS READ OK`,
+`V7FS ALLOC OK`, `V7FS WRITE OK`, `V7FS EXEC OK` and
+`V7FS OK` before `BOOT OK`. `test-fs` uses 16 MiB RAM and logs to
 `build/fs-16M.log`; smoke uses 128 MiB. The full suite uses test-fs as its
 low-memory regression boot; the earlier test-process/syscall/exec/libc targets
 remain available separately.

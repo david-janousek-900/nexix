@@ -45,6 +45,8 @@ switching, or ANSI cursor-addressing emulation is provided.
 `make run` and `make run-vga` use QEMU's GTK display. `make run-serial` uses
 the launching host terminal; Ctrl-A, release, then X exits serial QEMU.
 All run targets preserve an existing `DISK_IMAGE`. VGA requires QEMU GTK support.
+Kernel diagnostics have uptime timestamps; root can read them later with
+`dmesg`. See [kernel log and root-home changes](kernel-log.md).
 
 ## Independent terminals
 

@@ -90,7 +90,7 @@ static int uart(void)
 static int demo(void)
 {
     REQUIRE(open("/dev/console", O_RDWR) == 0 && dup(0) == 1 && dup(0) == 2);
-    const char intro[] = "Nexix: serial TTY demo; type a line, or quit to finish.\nNEXIX_TTY_DEMO_READY\n";
+    const char intro[] = "serial TTY demo; type a line, or quit to finish.\nNEXIX_TTY_DEMO_READY\n";
     REQUIRE(write(1, intro, sizeof(intro) - 1) == sizeof(intro) - 1);
     for (;;) {
         ssize_t n = read(0, buffer, sizeof(buffer)); REQUIRE(n >= 0);

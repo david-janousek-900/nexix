@@ -25,7 +25,7 @@ static void mount_root(void)
     if(ramdisk_init(&root_device,root_bytes,length,false) ||
        v7fs_mount(&root_volume,&root_device.device,false) || files_mount_root(&root_volume))
         panic("cannot mount root");
-    console_puts("NEXIX_ROOT_MOUNTED\r\n");
+    console_puts("ROOT MOUNTED\r\n");
 }
 _Noreturn void rootfs_start(void)
 {
@@ -33,19 +33,19 @@ _Noreturn void rootfs_start(void)
     int error=ide_init(&ide_device);
     if(error==-NX_ENODEV) {
         mount_root();
-        console_puts("NEXIX_ROOT_RAM\r\n");
+        console_puts("ROOT RAM\r\n");
     } else {
         if(error || v7fs_mount(&root_volume,&ide_device,false) ||
            files_mount_root(&root_volume)) panic("cannot mount IDE root");
-        console_puts("NEXIX_ROOT_IDE\r\nNEXIX_ROOT_MOUNTED\r\n");
+        console_puts("ROOT IDE\r\nROOT MOUNTED\r\n");
     }
     v7_ino_t ino;
     if(v7fs_lookup(&root_volume,V7_ROOTINO,"/etc/init",&ino))panic("missing init");
     const char name[]="/etc/init";
     for(size_t i=0;i<sizeof(name);++i)init_args.bytes[i]=name[i];
     init_args.used=sizeof(name);init_args.argc=1;
-    const char *environment = console_mode() == BOOT_CONSOLE_VGA ? "NEXIX_CONSOLE=vga" :
-        console_mode() == BOOT_CONSOLE_SERIAL ? "NEXIX_CONSOLE=serial" : "NEXIX_CONSOLE=multi";
+    const char *environment = console_mode() == BOOT_CONSOLE_VGA ? "CONSOLE=vga" :
+        console_mode() == BOOT_CONSOLE_SERIAL ? "CONSOLE=serial" : "CONSOLE=multi";
     init_args.envc=1;init_args.envp[0]=init_args.used;
     do { init_args.bytes[init_args.used++]=*environment; } while (*environment++);
     struct exec_image image={0};
@@ -63,7 +63,7 @@ _Noreturn void rootfs_start(void)
     p->p_user->u_comm[0]='i';p->p_user->u_comm[1]='n';p->p_user->u_comm[2]='i';p->p_user->u_comm[3]='t';
     exec_image_release(&empty);
     if(!proc_start_init(p,image.entry,image.stack))panic("cannot start init");
-    console_puts("NEXIX_INIT_PID1\r\nNEXIX_BOOT_OK\r\n");
+    console_puts("INIT PID1\r\nBOOT OK\r\n");
     proc_run();
     panic("init scheduler returned");
 }
@@ -313,7 +313,7 @@ bool root_exec_test_gate(struct interrupt_frame *frame)
         if(frame->rdi==1){frame->rax=disk_bind(NX_DISK_RP,0,NULL);return true;}
         int error=ide_init_unit(&tape_aux,1);uint8_t bytes[512];
         if(!error)error=block_read(&tape_aux,0,1,bytes);
-        const char *tag=frame->rdi==2?"NEXIX_DECTAPE_TEST_ONLY72":"NEXIX_TAPE_TEST_ONLY71";
+        const char *tag=frame->rdi==2?"DECTAPE TEST ONLY72":"TAPE TEST ONLY71";
         if(!error)for(unsigned i=0;tag[i];++i)if(bytes[i]!=(uint8_t)tag[i]){error=-NX_ENXIO;break;}
         if(!error)error=disk_bind(NX_DISK_RP,0,&tape_aux);
         frame->rax=error;return true;
@@ -327,7 +327,7 @@ bool root_exec_test_gate(struct interrupt_frame *frame)
         }else if(frame->rdi==1){
             for(unsigned u=0;u<2;++u){error=disk_bind(NX_DISK_HP,u,NULL);if(error)break;}
         }else if(frame->rdi==2){
-            uint8_t bytes[512];const char tag[]="NEXIX_ORDER_TEST_ONLY73";
+            uint8_t bytes[512];const char tag[]="ORDER TEST ONLY73";
             for(unsigned u=0;u<2 && !error;++u){
                 error=ide_init_unit(&order_ata[u],u+1);
                 if(!error)error=block_read(&order_ata[u],0,1,bytes);
@@ -361,11 +361,13 @@ void root_exec_selftest(void)
     mount_root();
     uint32_t blocks=v7_disk_u32(root_volume.super.tfree);
     uint16_t inodes=v7_disk_u16(root_volume.super.tinode);
+    v7_ino_t temporary;
+    if(v7fs_lookup(&root_volume,V7_ROOTINO,"/tmp",&temporary))panic("missing test temporary directory");
     const char names[][V7_DIRSIZ]={"setid"};
     size_t probe_size=(uintptr_t)_binary_build_setid_probe_elf_end-(uintptr_t)_binary_build_setid_probe_elf_start;
     for(unsigned i=0;i<sizeof(names)/sizeof(names[0]);++i){
         v7_ino_t probe;size_t written;
-        if(v7fs_create(&root_volume,6,names[i],V7_IFREG|0755,0,0,&probe)||
+        if(v7fs_create(&root_volume,temporary,names[i],V7_IFREG|0755,0,0,&probe)||
            v7fs_write(&root_volume,probe,0,_binary_build_setid_probe_elf_start,probe_size,&written)||written!=probe_size)
             panic("cannot install setid fixture");
     }
@@ -381,18 +383,18 @@ void root_exec_selftest(void)
     v7_pid_t pid=p->p_pid;exec_testing=true;proc_run();exec_testing=false;int32_t status;
     if(held_count)panic("exec fault fixture leaked pages");
     if(proc_collect(&status)!=pid || status) {
-        console_puts("Nexix: root exec failure status=");console_hex(status);console_puts("\r\n");
+        console_puts("root exec failure status=");console_hex(status);console_puts("\r\n");
         panic("root exec test failed");
     }
     if(!trace_orphan||proc_collect(&status)!=trace_orphan||status!=NX_SIGINT||proc_collect(NULL)!=-NX_ECHILD)
         panic("trace orphan release/reap failed");
     trace_orphan=0;
-    console_puts("NEXIX_PTRACE_ORPHAN_OK\r\n");
+    console_puts("PTRACE ORPHAN OK\r\n");
     if(files_live() || tty_open_count() || page_free_count()!=pages ||
         v7_disk_u32(root_volume.super.tfree)!=blocks ||
         v7_disk_u16(root_volume.super.tinode)!=inodes)
         panic("root exec cleanup failed");
     for(unsigned i=1;i<STORAGE_SLOTS;++i)if(storage_bind(i,NULL,false))panic("storage handles leaked");
     if(files_mount(NULL) || v7fs_unmount(&root_volume))panic("cannot detach test root");
-    console_puts("NEXIX_ROOT_EXEC_OK\r\nNEXIX_ROOT_EXEC_CLEANUP_OK\r\n");
+    console_puts("ROOT EXEC OK\r\nROOT EXEC CLEANUP OK\r\n");
 }

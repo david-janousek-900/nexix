@@ -191,7 +191,7 @@ rline()
 	/* The kernel selects one console; multi is the explicit legacy test profile.
 	 * Keep inactive configured lines from starting duplicate or failed gettys. */
 	{
-		char *mode = getenv("NEXIX_CONSOLE");
+		char *mode = getenv("CONSOLE");
 		if (mode && strcmp(mode, "multi") && strcmp(line.line, "console"))
 			goto bad;
 	}

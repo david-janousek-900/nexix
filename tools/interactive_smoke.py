@@ -70,7 +70,7 @@ def cat_ready(name, pipeline=False):
     expect(re.escape(name + b'\r\n' + name + b'\r\n'))
 
 try:
-    expect(rb'NEXIX_INIT_PID1\r\nNEXIX_BOOT_OK\r\n# ')
+    expect(rb'INIT PID1\r\nBOOT OK\r\n# ')
     stage = 'empty prompt lines'
     for _ in range(10):
         command(b'')

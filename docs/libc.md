@@ -110,8 +110,8 @@ verifies `_exit` bypasses it. Each test run recovers all VM pages and process
 slots. A failure status identifies the C fixture's failing CHECK line when
 that process exits directly.
 
-Every successful boot requires `NEXIX_LIBC_ABI_OK` and `NEXIX_LIBC_OK` before
-`NEXIX_BOOT_OK`. These libc fixtures alone do not prove a userland port; the rebuilt V7 init,
+Every successful boot requires `LIBC ABI OK` and `LIBC OK` before
+`BOOT OK`. These libc fixtures alone do not prove a userland port; the rebuilt V7 init,
 shell and utilities have separate acceptance tests (see [userland.md](userland.md)).
 Task 12 implements the block interface, RAM root device and V7 filesystem
 foundation; see [filesystem.md](filesystem.md). Tasks 13 and 14 add file

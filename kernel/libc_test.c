@@ -17,7 +17,7 @@ bool libc_test_gate(struct interrupt_frame *frame)
     if (frame->rax == 0x301) { fp_preemptions = p->p_preemptions; frame->rax = 0; return true; }
     if (frame->rax == 0x302) {
         REQUIRE(p->p_preemptions > fp_preemptions);
-        console_puts("NEXIX_FPU_PREEMPT_OK\r\n");
+        console_puts("FPU PREEMPT OK\r\n");
         frame->rax = 0; return true;
     }
     REQUIRE(p->p_pid == root_pid && !checked);
@@ -27,7 +27,7 @@ bool libc_test_gate(struct interrupt_frame *frame)
     REQUIRE(p->p_user->u_error == 0 && p->p_user->u_r.r_val1 == root_pid);
     frame->rax = 0;
     checked = true;
-    console_puts("NEXIX_LIBC_ABI_OK\r\n");
+    console_puts("LIBC ABI OK\r\n");
     return true;
 }
 void libc_selftest(void)
@@ -60,11 +60,11 @@ void libc_selftest(void)
         active = false;
         int32_t status;
         REQUIRE(proc_collect(&status) == root_pid);
-        if (status) { console_puts("Nexix: C libc test failure status="); console_hex(status); console_puts("\r\n"); }
+        if (status) { console_puts("C libc test failure status="); console_hex(status); console_puts("\r\n"); }
         REQUIRE(checked == (pass == 0) && status == 0);
         REQUIRE(proc_collect(NULL) == -NX_ECHILD && page_free_count() == before);
         for (unsigned i = 1; i < V7_NPROC; ++i) REQUIRE(proc_table()[i].p_stat == V7_UNUSED);
     }
-    console_puts("NEXIX_LIBC_OK\r\n");
-    console_puts("NEXIX_FPU_USER_OK\r\n");
+    console_puts("LIBC OK\r\n");
+    console_puts("FPU USER OK\r\n");
 }

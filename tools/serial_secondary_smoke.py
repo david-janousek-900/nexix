@@ -26,7 +26,7 @@ def main():
         if hasattr(data,'close'):data.close()
         guest=Guest(qemu,iso,disk,ram,2)
         try:
-            guest.expect(r'(?s)NEXIX_BOOT_OK\r\n# ')
+            guest.expect(r'(?s)BOOT OK\r\n# ')
             guest.send('/tmp/uartcheck'+(' packaged' if packaged else '')+'; echo COM2_STATUS_$?\n')
             guest.expect(r'COM1_READY\r\n')
             guest.expect(b'COM2_READY\n',1)

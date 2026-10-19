@@ -60,6 +60,14 @@
       "component": "distribution.config"
     },
     {
+      "path": "/root",
+      "type": "directory",
+      "mode": "0700",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config"
+    },
+    {
       "path": "/etc/init",
       "type": "file",
       "mode": "0755",
@@ -253,7 +261,7 @@
       "format": "data"
     },
     {
-      "path": "/.profile",
+      "path": "/root/.profile",
       "type": "file",
       "mode": "0644",
       "uid": 0,
@@ -648,6 +656,19 @@
       "gid": 0,
       "component": "distribution.devices",
       "device": 7424
+    },
+    {
+      "path": "/.profile",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config",
+      "source": {
+        "root": "config",
+        "path": "profile"
+      },
+      "format": "data"
     }
   ]
 }

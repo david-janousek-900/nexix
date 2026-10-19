@@ -27,7 +27,7 @@ bool syscall_test_gate(struct interrupt_frame *frame)
         REQUIRE(frame->rflags & 0x400);
         abi_checked = true;
         frame->rax = 0;
-        console_puts("NEXIX_SYSCALL_ABI_OK\r\n");
+        console_puts("SYSCALL ABI OK\r\n");
         return true;
     }
     if (frame->rax == 0x201) {
@@ -46,7 +46,7 @@ bool syscall_test_gate(struct interrupt_frame *frame)
         REQUIRE(copyout(&p->p_vm, frame->rsi, &value, sizeof(value)) == 0);
         copy_checked = true;
         frame->rax = 0;
-        console_puts("NEXIX_UACCESS_OK\r\n");
+        console_puts("UACCESS OK\r\n");
         return true;
     }
     if (frame->rax == 0x202) {
@@ -94,7 +94,7 @@ void syscall_selftest(void)
     REQUIRE(proc_collect(NULL) == -NX_ECHILD);
     REQUIRE(page_free_count() == before);
     for (unsigned i = 1; i < V7_NPROC; ++i) REQUIRE(proc_table()[i].p_stat == V7_UNUSED);
-    console_puts("NEXIX_SYSCALL_ERRORS_OK\r\n");
-    console_puts("NEXIX_SYSCALL_FORK_OK\r\n");
-    console_puts("NEXIX_SYSCALL_OK\r\n");
+    console_puts("SYSCALL ERRORS OK\r\n");
+    console_puts("SYSCALL FORK OK\r\n");
+    console_puts("SYSCALL OK\r\n");
 }

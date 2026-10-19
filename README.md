@@ -8,7 +8,7 @@ ELF64 executables; Nexix does not emulate PDP-11 binaries.
 
 The current development version is **0.1.0**. It boots in QEMU to multi-user login
 on a VGA/PS/2 console by default, with optional serial mode. It provides persistent
-IDE storage, the V7 Bourne shell and 39 native programs. The kernel provides protected process
+IDE storage, the V7 Bourne shell and 40 native programs. The kernel provides protected process
 address spaces, scheduling, fork/exec, signals, pipes, permissions and filesystem
 operations. Native libc, libm, startup objects and headers support the ported
 programs. The complete V7 port and guest self-hosting are still unfinished.
@@ -122,7 +122,8 @@ This builds any missing artifacts and opens QEMU's GTK window with standard VGA
 and a PS/2 keyboard. Wait for `login:` and use `root` with password `nexix`.
 Fresh development images also provide `alice`/`alice` and `bob`/`bob`. Password
 input is hidden. These are development defaults, not deployment credentials.
-The local keyboard layout is US.
+The local keyboard layout is US. Root starts in its private `/root` directory;
+Backspace or Ctrl-H removes the previous input character.
 
 For a host-terminal serial console, including on a headless host, run:
 
@@ -146,11 +147,13 @@ ls -l /
 echo hello > /tmp/hello
 cat /tmp/hello
 date -u
+dmesg
 sync
 ```
 
 These commands show active sessions, inspect the filesystem, create and read a
-file, display UTC time and flush filesystem updates. `exit` or Ctrl-D logs out;
+file, display UTC time, read timestamped kernel messages and flush filesystem
+updates. `dmesg` is available to root; it does not clear the log. Ctrl-D logs out;
 Ctrl-C interrupts a foreground command. To stop serial QEMU, press Ctrl-A,
 release it, then press X. For VGA QEMU, close its window after flushing updates.
 
@@ -182,6 +185,7 @@ make test-unit
 make test-essential
 make test-vga
 make test-console
+make test-dmesg
 ```
 
 `test-inventory` checks historical file hashes, source coverage and task mappings.
@@ -189,7 +193,8 @@ make test-console
 `test-essential` exercises the essential command ports in guests at 16 and
 128 MiB. `test-vga` drives real emulated VGA/PS/2 login and shell sessions at
 both memory sizes. `test-console` checks exclusive VGA/serial routing, including
-boot, login, `/dev/console` writes and panic output. Guest tests use disposable images rather than the working
+boot, login, `/dev/console` writes and panic output. `test-dmesg` checks retained
+messages, incremental reads and permissions. Guest tests use disposable images rather than the working
 disk; VGA tests require local QMP sockets. Run `make test` for the broader
 regression suite. Some tests intentionally provoke kernel faults and accept
 only the expected diagnostic. See [validation](docs/validation.md) for details.
@@ -198,6 +203,7 @@ only the expected diagnostic. See [validation](docs/validation.md) for details.
 
 - [Architecture](docs/architecture.md), [boot sequence](docs/booting.md) and [storage](docs/storage.md)
 - [Userland](docs/userland.md), [multi-user sessions](docs/multi-user.md) and [time/timezones](docs/time.md)
+- [Kernel messages and dmesg](docs/kernel-log.md)
 - [Development interfaces](docs/development-interfaces.md) and [syscall ABI](docs/syscall-abi.md)
 - [Tasks and release scope](docs/tasks.md) and [task coverage rules](docs/roadmap-coverage.md)
 - [Historical source provenance](reference/README.md) and [supplemental inputs](docs/support-inputs.md)

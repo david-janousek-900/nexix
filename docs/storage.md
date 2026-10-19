@@ -49,8 +49,8 @@ writes; filesystem operations have no journal or crash-atomic transaction.
 DMA, IDE interrupts, additional drives, partitions, AHCI and NVMe are outside
 this initial driver.
 
-Normal boot prints `NEXIX_ROOT_IDE` for the IDE root. If the primary master is
-absent, it prints `NEXIX_ROOT_RAM` and uses the embedded root. An attached drive
+Normal boot prints `ROOT IDE` for the IDE root. If the primary master is
+absent, it prints `ROOT RAM` and uses the embedded root. An attached drive
 that fails identification or mounting causes a boot panic instead of silently
 starting another root. Diskless boot/shell tests and RAM filesystem fixtures
 remain available.

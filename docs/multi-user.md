@@ -1,5 +1,12 @@
 # Multi-user implementation
 
+Root's home is `/root`, owned by root with mode 0700; its login profile is
+`/root/.profile`. Native 115200 getty sessions use DEL/Backspace (also Ctrl-H in
+cooked mode) to erase and Ctrl-U to kill a line. Login preserves these settings,
+including when VGA is named `/dev/console`. Historical terminal profiles retain
+their configured erase/kill characters. See [kernel messages](kernel-log.md) for
+uptime prefixes and `dmesg`.
+
 The independent terminal setup below uses the explicit `console=multi` profile
 (`make multi-iso`, `build/nexix-multi.iso`). Normal boots now select only VGA,
 or COM1 with `make run-serial`; see [console selection](vga-console.md).

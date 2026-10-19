@@ -123,8 +123,8 @@ that RAW preserves those bytes. Test-tty additionally sends Ctrl-C and
 Ctrl-backslash through QEMU COM1 to a sleeping child and checks both parent
 and child receive their terminal group signal.
 
-Success markers are NEXIX_SIGNALS_OK, NEXIX_HEAP_OK, NEXIX_INIT_SYSCALLS_OK and
-NEXIX_SIGNALS_CLEANUP_OK, followed by NEXIX_BOOT_OK. Logs are
+Success markers are SIGNALS OK, HEAP OK, INIT SYSCALLS OK and
+SIGNALS CLEANUP OK, followed by BOOT OK. Logs are
 `build/signals-16M.log` and `build/signals-128M.log`.
 
 Task 16 rebuilds V7 init, the shell and basic utilities. The shell and utilities

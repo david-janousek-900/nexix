@@ -46,8 +46,7 @@ char **argv;
 	nice(0);
 	gtty(0, &ttyb);
 	ttyn = ttyname(0);
-	ttyb.sg_erase = ttyn && !strcmp(ttyn, "/dev/tty0") ? 0177 : '#';
-	ttyb.sg_kill = ttyn && !strcmp(ttyn, "/dev/tty0") ? 025 : '@';
+	/* Preserve getty/stty erase and kill settings, including /dev/console. */
 	stty(0, &ttyb);
 	for (t=3; t<20; t++)
 		close(t);

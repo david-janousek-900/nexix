@@ -19,7 +19,7 @@ void local_console_init(void)
 {
     if(tty_attach(2,&driver))return;
     if(!keyboard_init(receive)){
-        static const uint8_t message[]="Nexix: PS/2 keyboard unavailable\r\n";
+        static const uint8_t message[]="PS/2 keyboard unavailable\r\n";
         console_puts((const char *)message);
     }
 }

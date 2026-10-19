@@ -108,7 +108,7 @@ def boot(qemu, iso, ram, disk, number, owned=True):
                 if not chunk:
                     break
                 output.extend(chunk)
-            if b'NEXIX_BOOT_OK' in output or b'PANIC' in output:
+            if b'BOOT OK' in output or b'PANIC' in output:
                 break
     finally:
         process.terminate()
@@ -120,7 +120,7 @@ def boot(qemu, iso, ram, disk, number, owned=True):
         output.extend(extra)
     log = Path(f'build/dectape-{ram}-boot{number}.log')
     log.write_bytes(output)
-    required = [b'NEXIX_DECTAPE_OK', b'NEXIX_ROOT_EXEC_CLEANUP_OK', b'NEXIX_BOOT_OK']
+    required = [b'NEXIX_DECTAPE_OK', b'ROOT EXEC CLEANUP OK', b'BOOT OK']
     if owned:
         required.append(b'NEXIX_DECTAPE_IDE_OK')
     if number == 2:
@@ -146,7 +146,7 @@ def main():
         volume.directory(2, 2, [('tp', 5), ('fs', 6), ('blank', 7)])
         with disk.open('wb') as target:
             target.truncate(340670*512)
-            target.write(b'NEXIX_DECTAPE_TEST_ONLY72')
+            target.write(b'DECTAPE TEST ONLY72')
             target.seek(5000*512)
             target.write(volume.finish())
         for number in (1, 2):

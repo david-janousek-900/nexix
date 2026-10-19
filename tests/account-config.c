@@ -12,13 +12,13 @@
 int main(void)
 {
     const char *names[]={"root","alice","bob"},*passwords[]={"nexix","alice","bob"};
-    const char *homes[]={"/","/home/alice","/home/bob"};uint16_t ids[]={0,100,101};
+    const char *homes[]={"/root","/home/alice","/home/bob"};uint16_t ids[]={0,100,101};
     struct stat s;
     for(unsigned n=0;n<3;++n){
         struct passwd *p=getpwnam(names[n]);
         CHECK(p && p->pw_uid==ids[n] && p->pw_gid==(n?100:0) && !strcmp(p->pw_dir,homes[n]) && !strcmp(p->pw_shell,"/bin/sh"));
         CHECK(!strcmp(crypt(passwords[n],p->pw_passwd),p->pw_passwd));
-        CHECK(stat(homes[n],&s)==0 && S_ISDIR(s.st_mode) && s.st_uid==ids[n] && s.st_gid==(n?100:0) && (s.st_mode&0777)==(n?0700:0755));
+        CHECK(stat(homes[n],&s)==0 && S_ISDIR(s.st_mode) && s.st_uid==ids[n] && s.st_gid==(n?100:0) && (s.st_mode&0777)==0700);
     }
     CHECK(getpwnam("daemon") && !strcmp(getpwnam("daemon")->pw_passwd,"x"));endpwent();
     struct group *g=getgrnam("staff");CHECK(g && g->gr_gid==100 && !strcmp(g->gr_mem[0],"root") && !strcmp(g->gr_mem[1],"alice") && !strcmp(g->gr_mem[2],"bob") && !g->gr_mem[3]);endgrent();

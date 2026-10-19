@@ -157,7 +157,7 @@ char **argv;
 			tabp = itab;
 		native_output = tabp->tname == '9';
 		{ char *terminal = ttyname(0);
-		  local_terminal = terminal && !strcmp(terminal, "/dev/tty0"); }
+		  local_terminal = native_output || (terminal && !strcmp(terminal, "/dev/tty0")); }
 		tmode.sg_flags = tabp->iflags;
 		tmode.sg_ispeed = tabp->ispeed;
 		tmode.sg_ospeed = tabp->ospeed;
@@ -207,7 +207,7 @@ getname()
 		if (c=='\r' || c=='\n' || np >= &name[16])
 			break;
 		/* Local raw username editing must update the displayed text too. */
-		if (local_terminal && c == 0177) {
+		if (local_terminal && (c == 0177 || c == '\b')) {
 			if (np > name) { --np; getty_puts("\b \b"); }
 			continue;
 		}

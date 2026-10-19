@@ -7,7 +7,7 @@ from private_guest import private_guest
 def main():
     qemu,iso,ram=sys.argv[1:4]
     with private_guest(qemu,iso,ram,'login',{'/bin/identity':'login-identity.elf'}) as guest:
-        guest.expect(r'(?s)NEXIX_BOOT_OK\r\n# ')
+        guest.expect(r'(?s)BOOT OK\r\n# ')
         guest.command("echo 'probe:alfu/zwrG7eZw:100:100:Probe:/home/alice:identity' >> /etc/passwd")
         guest.command("echo 'bad:alfu/zwrG7eZw:100:100:Bad:/missing:identity' >> /etc/passwd")
         def password(text):

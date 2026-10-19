@@ -113,9 +113,9 @@ static void run_context(enum boot_test test, unsigned context)
     if (test == BOOT_TEST_USER_DF)
         test_invalid_entry_stack();
     if (test == BOOT_TEST_USER_KERNEL || test == BOOT_TEST_USER_RO || test == BOOT_TEST_USER_NX) {
-        console_puts("Nexix: expected cr2="); console_hex(argument); console_puts("\r\n");
+        console_puts("expected cr2="); console_hex(argument); console_puts("\r\n");
     }
-    console_puts("Nexix: entering user mode; kernel stack=");
+    console_puts("entering user mode; kernel stack=");
     console_hex(entry_stack_top(context)); console_puts("\r\n");
     vm_activate(&space);
     uintptr_t user_entry = USER_CODE + ((uintptr_t)entry - (uintptr_t)user_blob_start);
@@ -133,12 +133,12 @@ void user_mode_selftest(enum boot_test test)
         run_context(test, 0);
         if (test != BOOT_TEST_USER_BAD_STACK)
             panic("expected user-mode fault did not occur");
-        console_puts("NEXIX_USER_BAD_STACK_OK\r\n");
+        console_puts("USER BAD STACK OK\r\n");
     }
     run_context(BOOT_NORMAL, 0);
     run_context(BOOT_NORMAL, 1);
-    console_puts("NEXIX_USER_MODE_OK\r\n");
-    console_puts("NEXIX_USER_STACK_OK\r\n");
-    console_puts("NEXIX_USER_TIMER_OK\r\n");
-    console_puts("NEXIX_USER_RETURN_OK\r\n");
+    console_puts("USER MODE OK\r\n");
+    console_puts("USER STACK OK\r\n");
+    console_puts("USER TIMER OK\r\n");
+    console_puts("USER RETURN OK\r\n");
 }

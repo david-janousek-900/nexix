@@ -10,6 +10,6 @@ int main(int argc,char **argv)
         gtty(0,&s) || ioctl(0,TIOCGETC,&c) ||
         (s.sg_ispeed!=B115200 && s.sg_ispeed!=B9600) ||
         s.sg_ospeed!=s.sg_ispeed || (s.sg_flags&RAW) || !(s.sg_flags&ECHO) ||
-        s.sg_erase!='#' || s.sg_kill!='@' || c.t_intrc!=(s.sg_ispeed==B115200?3:127))return 1;
+        s.sg_erase!=(s.sg_ispeed==B115200?127:'#') || s.sg_kill!=(s.sg_ispeed==B115200?21:'@') || c.t_intrc!=(s.sg_ispeed==B115200?3:127))return 1;
     puts("GETTY_HANDOFF_OK");return 0;
 }
