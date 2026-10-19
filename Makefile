@@ -1569,3 +1569,15 @@ build/vga-test: tests/vga.c kernel/vga.c kernel/include/vga.h tests/vga/io.h | b
 test-vga-unit: build/vga-test
 	./build/vga-test
 test-unit: test-vga-unit
+
+build/keyboard.o: kernel/keyboard.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+build/keyboard-test: tests/keyboard.c kernel/keyboard.c kernel/include/keyboard.h tests/keyboard/io.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Itests/keyboard -Ikernel/include tests/keyboard.c kernel/keyboard.c -o $@
+.PHONY: test-keyboard-unit
+test-keyboard-unit: build/keyboard-test
+	./build/keyboard-test
+test-unit: test-keyboard-unit
+
+OBJECTS += build/keyboard.o
+build/nexix.elf: build/keyboard.o
