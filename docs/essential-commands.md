@@ -111,3 +111,10 @@ set-UID root with real-caller parent write checks. Uses stat(".") instead of
 the historical empty pathname, bounds names and directory records, and checks
 read errors. Fixtures verify parent link counts, current/nonempty directory
 protection, wrong types, missing paths and unprivileged directory removal.
+
+## sleep (132)
+
+Retains integer seconds and the original status-0 arg-count/bad-character
+messages; ignores extra operands as the source does. Native overflow is rejected
+with status 1. Guest clock-tick observations verify zero and one-second waits.
+Full libc alarm/signal compatibility remains separately owned by task 365.

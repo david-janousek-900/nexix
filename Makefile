@@ -1662,3 +1662,8 @@ test-osh: iso rootfs build/osh-command.elf
 test-rmdir: iso rootfs build/rmdir-command.elf
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M rmdir
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M rmdir
+
+.PHONY: test-sleep
+test-sleep: iso rootfs build/sleep-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M sleep
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M sleep
