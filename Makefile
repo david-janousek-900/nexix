@@ -1947,3 +1947,22 @@ build/callout-unit-test: tests/callout.c kernel/v7/callout.c kernel/include/call
 test-callout-unit: build/callout-unit-test
 	./build/callout-unit-test
 test-unit: test-callout-unit
+
+# Task 365: sleep/alarm compatibility and atomic deadline waiting.
+build/sleep-api.o: tests/sleep-api.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/sleep-api.elf: build/sleep-api.o build/crt0.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/sleep-api.o build/libc.a -o $@
+-include build/sleep-api.d
+.PHONY: test-sleep
+test-sleep: multi-iso rootfs build/sleep-api.elf
+	$(PYTHON) tools/timing_api_smoke.py $(QEMU) build/nexix-multi.iso 16M sleep-api SLEEP_API_OK
+	$(PYTHON) tools/timing_api_smoke.py $(QEMU) build/nexix-multi.iso 128M sleep-api SLEEP_API_OK
+test: test-sleep
+build/sleep-unit-test: tests/sleep.c libc/sleep.c | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -fno-builtin -Derrno=nx_sleep_errno -Dsleep=nx_test_sleep -Dsignal=nx_test_signal -Dalarm=nx_test_alarm -Dtimes=nx_test_times -Ilibc/include -Iinclude tests/sleep.c libc/sleep.c -o $@
+.PHONY: test-sleep-unit
+test-sleep-unit: build/sleep-unit-test
+	./build/sleep-unit-test
+test-sleep: test-sleep-unit
+test-unit: test-sleep-unit

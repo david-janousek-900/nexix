@@ -393,9 +393,10 @@
     {
       "source": "reference/v7/usr/src/libc/gen/sleep.c",
       "native": [
-        "libc/sleep.c"
+        "libc/sleep.c",
+        "kernel/v7/process.c"
       ],
-      "note": "Native implementation; public records and widths use the Nexix ABI."
+      "note": "Task 365: V7 alarm/handler preservation with an atomic native deadline/cancellation-flag wait; no shared longjmp state or alarm-before-pause hang."
     },
     {
       "source": "reference/v7/usr/src/libc/gen/strcat.c",

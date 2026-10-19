@@ -27,6 +27,7 @@ int64_t proc_brk(uintptr_t address);
 int proc_lock(uintptr_t flag); /* V7 superuser user-lock toggle; memory stays resident. */
 unsigned proc_wakeup(void *channel);
 void proc_delay(uint64_t ticks);
+int proc_timedpause(uint64_t deadline,uintptr_t flag);
 /* Fork a live CPL3 frame; parent gets PID, child's RAX is zero. Negative errno
  * on failure. Managed file/cwd references are acquired after VM clone succeeds;
  * unsupported foreign file/inode/text references still return EBUSY. */

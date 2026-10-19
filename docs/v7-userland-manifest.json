@@ -78,7 +78,9 @@
         "docs/runtime-equivalents.md",
         "kernel/v7/scheduler.c",
         "docs/kernel-timing.md",
-        "kernel/v7/callout.c"
+        "kernel/v7/callout.c",
+        "libc/sleep.c",
+        "tests/sleep-api.c"
       ],
       "locations": []
     },

@@ -1,5 +1,10 @@
 # Stability investigation
 
+Task 365 fixes a concrete sleep lost-wakeup race: SIGALRM could arrive after
+alarm setup but before pause, leaving the process waiting indefinitely. A
+deterministic host regression injects that ordering; native tests also exercise
+short deadline boundaries and child-delivered signals.
+
 The reported intermittent VGA/serial freeze is still under investigation.
 Passing bounded acceptance runs do not establish that it has been fixed.
 

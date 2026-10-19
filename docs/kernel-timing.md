@@ -37,3 +37,29 @@ current interfaces; their future callout consumers can use this API.
 `make test-callout-unit` covers ordering, deadlines, queue exhaustion,
 cancellation, callback rearming and wraparound. `make test-process` also schedules
 a real PIT callback that wakes a sleeping kernel process (`CALLOUT IRQ OK`).
+
+## Sleep, alarms and signals (task 365)
+
+Libc `sleep(0)` leaves alarms and handlers untouched. Nonzero sleep preserves
+V7's earlier/equal/later alarm rules: an earlier alarm shortens the sleep; an
+alarm that would expire during sleep is deferred for one second after return;
+a later alarm retains its remaining whole-second interval. The native return
+value is unslept whole seconds, rounded up from the measured elapsed interval.
+The original SIGALRM disposition is restored. Unrelated handled signals run
+and sleep continues; an externally delivered SIGALRM ends sleep early.
+
+Native syscall 76 (`TIMEDPAUSE`) accepts an absolute monotonic tick deadline
+and an optional pointer to a 32-bit cancellation flag. With interrupts disabled,
+it checks the flag, deadline and pending signals before entering interruptible
+sleep. It returns 0 on deadline/cancellation, EINTR for pending signals, EFAULT
+for an invalid flag pointer and EINVAL for deadlines above INT64_MAX. An
+already-set flag returns immediately, even if the signal handler ran before the
+syscall. There is no alarm-then-pause lost-wakeup window or shared longjmp buffer.
+SIGALRM handlers only set the current sleep's local flag; nested calls preserve
+the outer flag pointer. This remains the single-threaded V7 signal model.
+
+`make test-sleep-unit` injects SIGALRM between setup and the atomic flag check,
+and checks zero/no/earlier/equal/later alarm cases and handler restoration.
+`make test-sleep` additionally checks real elapsed ticks, unrelated and alarm
+signals from children, deadline/flag memory errors, and 100 short boundary waits
+at both 16 and 128 MiB. Acceptance fixtures are private, not installed commands.

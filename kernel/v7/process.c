@@ -2,6 +2,7 @@
  * Original sources and Caldera license are retained under reference/. */
 #include "process.h"
 #include "scheduler.h"
+#include "uaccess.h"
 #include "phys.h"
 #include "fpu.h"
 #include "clock.h"
@@ -352,6 +353,28 @@ void proc_delay(uint64_t ticks)
     current->p_timed_sleep = true;
     proc_sleep(&timer_channel, 40);
     proc_irq_restore(flags);
+}
+
+/* Serialize the deadline/flag/pending-signal checks with going to sleep. A
+ * userspace alarm handler can set flag before this syscall without losing the
+ * wakeup in a following pause. No signal frame or longjmp owns a global buffer. */
+int proc_timedpause(uint64_t deadline,uintptr_t flag)
+{
+    uintptr_t flags=proc_irq_save();
+    int error=0;
+    if(deadline>INT64_MAX){error=-V7_EINVAL;goto done;}
+    for(;;){
+        int32_t cancelled=0;
+        if(flag && (error=copyin(&current->p_vm,flag,&cancelled,sizeof cancelled)))break;
+        if(cancelled || timer_ticks()>=deadline)break;
+        current->p_deadline=deadline;
+        current->p_timed_sleep=true;
+        error=proc_sleep_interruptible(&timer_channel,40);
+        current->p_timed_sleep=false;
+        if(error)break;
+    }
+ done:
+    proc_irq_restore(flags);return error;
 }
 
 void proc_run(void)

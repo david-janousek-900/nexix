@@ -74,6 +74,7 @@ static int64_t invoke(uint64_t number, struct interrupt_frame *frame)
         p->p_clktim = u->u_arg[0] ? now + u->u_arg[0] * NX_CLK_TCK : 0;
         return old;
     }
+    case NX_SYS_TIMEDPAUSE:return proc_timedpause(u->u_arg[0],u->u_arg[1]);
     case NX_SYS_PAUSE:
         while (!proc_sleep_interruptible(u, 40)) {}
         return -NX_EINTR;
