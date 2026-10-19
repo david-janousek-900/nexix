@@ -19,7 +19,7 @@ static void command(char *const argv[],int expected,const char *output,const cha
 {
  char path[32],error[1024];sprintf(path,"/tmp/cmd%u",(unsigned)getpid());int in=open("/dev/null",O_RDONLY),out=creat(path,0600);CHECK(in>=0 && out>=0);
  int status=run_command(argv,in,out,error,sizeof(error));
- if(status!=expected || strcmp(error,diagnostic))printf("COMMAND_RESULT %s status=%d expected=%d error=%s\n",argv[0],status,expected,error);
+ if(status!=expected || strcmp(error,diagnostic)){for(unsigned i=0;argv[i];++i)printf("ARG[%u]=%s\n",i,argv[i]);printf("COMMAND_RESULT %s status=%d expected=%d error=%s\n",argv[0],status,expected,error);}
  CHECK(status==expected && !strcmp(error,diagnostic));CHECK(!close(in) && !close(out));contents(path,output);CHECK(!unlink(path));
 }
 #define CMD(...) (char *const[]){__VA_ARGS__,NULL}

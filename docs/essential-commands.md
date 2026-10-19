@@ -91,3 +91,15 @@ Retains V7 -increment syntax (including --5 for a negative increment), default
 original behavior of proceeding to exec after a failed nice call is retained.
 Guest kinfo observations verify child niceness and parent isolation; fixtures
 also cover PATH, scripts, missing commands and usage errors.
+
+## osh (130)
+
+Retains the older shell parser, quoting, positional substitution/shift, command
+lists, pipes, subshells, chdir/wait and V7 status accumulation. Tree cells are
+native intptr_t; signal handlers, UID/PID widths, historical assignment syntax,
+script fallback and path construction are adapted. The absent /etc/glob helper
+is replaced internally with bounded, sorted V7-directory expansion supporting
+*, ?, [] and quoted literals, including wildcard directory components. Searches
+current directory, /bin and /usr/bin as the original shell does; it does not
+adopt Bourne shell environment-variable syntax. Guest fixtures cover installed scripts, redirection, pipes, quoting,
+argument shifting, globbing, syntax/missing-command and redirection failures.

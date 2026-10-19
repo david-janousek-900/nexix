@@ -1999,6 +1999,19 @@
         "path": "v7-nice.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/osh",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.osh",
+      "source": {
+        "root": "programs",
+        "path": "v7-osh.elf"
+      },
+      "format": "elf"
     }
   ]
 }

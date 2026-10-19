@@ -1652,3 +1652,8 @@ test-mv: iso rootfs build/mv-command.elf
 test-nice: iso rootfs build/nice-command.elf
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M nice
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M nice
+
+.PHONY: test-osh
+test-osh: iso rootfs build/osh-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M osh
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M osh
