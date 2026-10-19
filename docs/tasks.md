@@ -10,17 +10,17 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 42 native ELF programs are
+to multi-user V7 login with persistent IDE storage. 43 native ELF programs are
 installed; the complete list and destinations are in [the installation manifest](native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
 The inventory accounts for **217 components, 2,144 distribution files and
-35 supporting/platform requirements**. Its component statuses are 48 implemented,
-3 partial, 1 prototype and 165 not ported; importing reference inputs does not
+35 supporting/platform requirements**. Its component statuses are 49 implemented,
+3 partial, 1 prototype and 164 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **371 tracking tasks: 137 done, 0 in progress
-and 234 to do**. Tasks **1–108, 119–138, 145–146, 251, 357, 367–371 are complete**. These counts are a work breakdown, not an
+The expanded roadmap below has **371 tracking tasks: 138 done, 0 in progress
+and 233 to do**. Tasks **1–108, 119–138, 145–146, 160, 251, 357, 367–371 are complete**. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -298,7 +298,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 157 | Port sp | To do | Source-defined behavior, byte fixtures and error cases |
 | 158 | Port split | To do | Source-defined behavior, byte fixtures and error cases |
 | 159 | Port tabs | To do | Source-defined behavior, byte fixtures and error cases |
-| 160 | Port tail | To do | Source-defined behavior, byte fixtures and error cases |
+| 160 | Port tail | Done | Git history; [native command contract](text-commands.md); retained V7 line/byte/block/reverse paths, safe native argument and I/O handling; ASan/UBSan ring-boundary fixtures and files/pipes at 16/128 MiB |
 | 161 | Port tee | To do | Source-defined behavior, byte fixtures and error cases |
 | 162 | Port tr | To do | Source-defined behavior, byte fixtures and error cases |
 | 163 | Port tsort | To do | Source-defined behavior, byte fixtures and error cases |

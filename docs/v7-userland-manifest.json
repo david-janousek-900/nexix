@@ -15094,14 +15094,16 @@
           "name": "tail",
           "install": "/bin/tail",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/tail.c",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -15147,12 +15149,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Select expected final lines/bytes and handle empty or short inputs.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -15166,6 +15164,9 @@
           "path": "/bin/tail",
           "artifact": "historical_binary"
         }
+      ],
+      "native_sources": [
+        "user/v7/cmd/tail.c"
       ]
     },
     {

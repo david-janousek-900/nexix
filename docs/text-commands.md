@@ -79,3 +79,24 @@ backtracking can be slow for pathological patterns.
 
 `make test-grep` runs sanitizer bounds tests and boots the installed command
 at 16 and 128 MiB, checking flags, multiple files, pipes and error statuses.
+
+## tail (task 160)
+
+`/bin/tail [+-number[lbcr]] [file]` retains V7 syntax. The default is `-10l`:
+the last ten lines. `+number` starts at the one-based line, byte (`c`) or
+512-byte block (`b`); `-number` selects a suffix. `-r` reverses lines from the
+buffer, adding a newline to a final incomplete line; `-numberr` limits the
+reversed line count. Files and standard-input pipes are supported. This V7
+source has no `-f` or modern `-n` option.
+
+The historical bounded-buffer behavior remains: line suffixes and reverse
+output use 4,097 bytes; byte suffixes of seekable files can exceed that bound,
+whereas pipes retain only their ring buffer. Count overflow and invalid
+suffixes now fail with status 1, as do open, read, seek and write failures.
+Successful output, including empty input, returns 0. The port fixes the
+uninitialized pointer for `+1l`, argument-vector underflow, input seekability
+detection after opening a file, and empty reverse output.
+
+`make test-tail` checks files and pipes, byte/block positions, reverse output,
+partial lines, overflow and ring boundaries with ASan/UBSan, then boots the
+installed utility at 16 and 128 MiB.

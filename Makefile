@@ -1788,3 +1788,12 @@ test-grep: test-grep-unit multi-iso rootfs
 	python3 tools/grep_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	python3 tools/grep_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-grep
+
+.PHONY: test-tail-unit test-tail
+test-tail-unit:
+	python3 tests/tail.py
+test-unit: test-tail-unit
+test-tail: test-tail-unit multi-iso rootfs
+	python3 tools/tail_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	python3 tools/tail_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-tail

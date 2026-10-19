@@ -2201,6 +2201,19 @@
         "path": "v7-grep.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/tail",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.tail",
+      "source": {
+        "root": "programs",
+        "path": "v7-tail.elf"
+      },
+      "format": "elf"
     }
   ]
 }
