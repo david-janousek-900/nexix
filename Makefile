@@ -1779,3 +1779,12 @@ build/ed-recover.elf: build/crt0.o build/ed-recover.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/ed-recover.o build/libc.a -o $@
 -include build/ed-recover.d
 test-ed: build/ed-recover.elf
+
+.PHONY: test-grep-unit test-grep
+test-grep-unit:
+	python3 tests/grep.py
+test-unit: test-grep-unit
+test-grep: test-grep-unit multi-iso rootfs
+	python3 tools/grep_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	python3 tools/grep_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-grep

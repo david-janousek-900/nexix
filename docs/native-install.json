@@ -2188,6 +2188,19 @@
         "path": "v7-ed.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/grep",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.grep",
+      "source": {
+        "root": "programs",
+        "path": "v7-grep.elf"
+      },
+      "format": "elf"
     }
   ]
 }

@@ -6769,14 +6769,16 @@
           "name": "grep",
           "install": "/bin/grep",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/grep.c",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -6822,12 +6824,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Verify basic pattern matching, inverted matches and missing-file failures.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -6841,6 +6839,9 @@
           "path": "/bin/grep",
           "artifact": "historical_binary"
         }
+      ],
+      "native_sources": [
+        "user/v7/cmd/grep.c"
       ]
     },
     {

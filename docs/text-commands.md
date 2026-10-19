@@ -57,3 +57,25 @@ malformed/overlong inputs. `make test-ed` exercises installed commands at 16 and
 keys, ciphertext from an independent historical-width DES/rotor implementation,
 SIGINT and a child-process SIGHUP/ed.hup recovery fixture. The retained reference
 source is unchanged. Logs are `build/ed-*`.
+
+## grep (task 146)
+
+`/bin/grep` ports the retained V7 source. `grep [-y] [-h] [-s] [-v]
+[-b] [-l] [-c] [-n] [-e] pattern [file ...]` searches files or standard input.
+Use separate option arguments. `-y` folds lowercase pattern letters into both
+cases, `-h` suppresses filenames, `-s` suppresses selected-line output, `-v`
+inverts selection, `-b` prints 512-byte block numbers, `-l` lists filenames,
+`-c` counts and `-n` prints line numbers. `-e` ends option parsing so patterns
+can begin with `-`. Status is 0 for selected lines, 1 for none, 2 for an error.
+
+The retained basic regular expressions support anchors, dot, classes, star,
+`\(...\)` captures and `\1`–`\9` backreferences. The native compiler bounds
+its 256-byte bytecode and case expansion, validates closed captures and safely
+handles empty backreferences. Classes retain V7's seven-bit interpretation;
+non-ASCII class syntax is rejected. The V7 input contract is retained: long
+lines are searched in 511-byte chunks and an unterminated final chunk is
+ignored. This is not a modern extended-regex implementation. Recursive star
+backtracking can be slow for pathological patterns.
+
+`make test-grep` runs sanitizer bounds tests and boots the installed command
+at 16 and 128 MiB, checking flags, multiple files, pipes and error statuses.
