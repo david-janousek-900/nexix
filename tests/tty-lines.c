@@ -25,5 +25,18 @@ int main(void)
     assert(size==3 && !memcmp(wire,"one",3) && e.count==5 && !memcmp(e.wire,"two\r\n",5));
     assert(!ctl(x,NX_TIOCEXCL,NULL));ub.u_uid=1;assert(!tty_open(0x101,&ub,&alias));tty_close(alias);ub.u_uid=0;
     tty_receive_line(1,'z',0);tty_receive_line(1,'\n',0);tty_close(x);expect(y,"z\n",2);tty_close(y);
-    assert(!tty_open_count());puts("PASS: independent TTY queues, settings, transports, ownership, ctty alias, exclusivity and close lifetime");
+    assert(!tty_open_count());
+    struct endpoint local={0};struct tty_driver local_driver={&local,transmit_line,line_idle,line_flush,line_format,line_outputs,line_status};
+    assert(!tty_attach(2,&local_driver));
+    struct proc c={.p_pid=30};struct user uc={.u_procp=&c};struct tty *z;
+    assert(!tty_open(0x102,&uc,&z) && z!=x && z!=y && uc.u_ttyd==0x102);
+    assert(!tty_open(NX_CTTY_DEV,&uc,&alias) && alias==z);tty_close(alias);
+    assert(!ctl(z,NX_TIOCSETP,&sy));
+    tty_receive_line(2,'v',0);tty_receive_line(2,'g',0);tty_receive_line(2,'#',0);tty_receive_line(2,'\r',0);
+    expect(z,"v\n",2);
+    assert(tty_io(z,&vm,(uintptr_t)"local\n",6,true)==6);
+    assert(local.count==7 && !memcmp(local.wire,"local\r\n",7));
+    tty_close(z);assert(!tty_open_count());
+    assert(tty_open(0x103,&uc,&alias)==-NX_ENXIO);
+    puts("PASS: independent TTY queues, settings, transports, ownership, ctty alias, exclusivity and close lifetime");
 }

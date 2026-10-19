@@ -297,6 +297,15 @@
       "device": 257
     },
     {
+      "path": "/dev/tty0",
+      "type": "character",
+      "mode": "0600",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.devices",
+      "device": 258
+    },
+    {
       "path": "/dev/tty",
       "type": "character",
       "mode": "0666",

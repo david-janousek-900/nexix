@@ -1,3 +1,4 @@
+#include "local_console.h"
 #include "process.h"
 #include "fpu.h"
 #include "clock.h"
@@ -170,6 +171,7 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
     timer_init();
     tty_init();
     serial_secondary_init();
+    local_console_init();
     /* Check and sleep atomically against IRQ delivery. */
     for (;;) {
         __asm__ volatile ("cli" : : : "memory");

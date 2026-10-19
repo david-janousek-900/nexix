@@ -109,6 +109,7 @@ int	crmod;
 int	upper;
 int	lower;
 int	native_output;
+int local_terminal;
 
 char partab[] = {
 	0001,0201,0201,0001,0201,0001,0001,0201,
@@ -155,6 +156,8 @@ char **argv;
 		if(tabp >= &itab[NITAB])
 			tabp = itab;
 		native_output = tabp->tname == '9';
+		{ char *terminal = ttyname(0);
+		  local_terminal = terminal && !strcmp(terminal, "/dev/tty0"); }
 		tmode.sg_flags = tabp->iflags;
 		tmode.sg_ispeed = tabp->ispeed;
 		tmode.sg_ospeed = tabp->ospeed;
@@ -165,8 +168,8 @@ char **argv;
 			exit(1);
 		getty_puts(tabp->message);
 		if(getname()) {
-			tmode.sg_erase = ERASE;
-			tmode.sg_kill = KILL;
+			tmode.sg_erase = local_terminal ? 0177 : ERASE;
+			tmode.sg_kill = local_terminal ? 025 : KILL;
 			tmode.sg_flags = tabp->fflags;
 			if(crmod)
 				tmode.sg_flags |= CRMOD;
@@ -209,11 +212,11 @@ getname()
 		else if (c>='A' && c<='Z') {
 			upper++;
 			c += 'a'-'A';
-		} else if (c==ERASE) {
+		} else if (c==(local_terminal ? 0177 : ERASE)) {
 			if (np > name)
 				np--;
 			continue;
-		} else if (c==KILL) {
+		} else if (c==(local_terminal ? 025 : KILL)) {
 			putchr('\r');
 			putchr('\n');
 			np = name;

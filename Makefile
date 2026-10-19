@@ -1581,3 +1581,8 @@ test-unit: test-keyboard-unit
 
 OBJECTS += build/keyboard.o
 build/nexix.elf: build/keyboard.o
+
+build/local_console.o: kernel/local_console.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+OBJECTS += build/vga.o build/local_console.o
+build/nexix.elf: build/vga.o build/local_console.o
