@@ -1657,3 +1657,8 @@ test-nice: iso rootfs build/nice-command.elf
 test-osh: iso rootfs build/osh-command.elf
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M osh
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M osh
+
+.PHONY: test-rmdir
+test-rmdir: iso rootfs build/rmdir-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M rmdir
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M rmdir

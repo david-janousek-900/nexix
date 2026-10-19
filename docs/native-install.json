@@ -2012,6 +2012,19 @@
         "path": "v7-osh.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/rmdir",
+      "type": "file",
+      "mode": "4755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.rmdir",
+      "source": {
+        "root": "programs",
+        "path": "v7-rmdir.elf"
+      },
+      "format": "elf"
     }
   ]
 }

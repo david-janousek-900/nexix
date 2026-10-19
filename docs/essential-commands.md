@@ -103,3 +103,11 @@ is replaced internally with bounded, sorted V7-directory expansion supporting
 current directory, /bin and /usr/bin as the original shell does; it does not
 adopt Bourne shell environment-variable syntax. Guest fixtures cover installed scripts, redirection, pipes, quoting,
 argument shifting, globbing, syntax/missing-command and redirection failures.
+
+## rmdir (131)
+
+Retains explicit removal of dot/dotdot and the parent entry, enabled through
+set-UID root with real-caller parent write checks. Uses stat(".") instead of
+the historical empty pathname, bounds names and directory records, and checks
+read errors. Fixtures verify parent link counts, current/nonempty directory
+protection, wrong types, missing paths and unprivileged directory removal.
