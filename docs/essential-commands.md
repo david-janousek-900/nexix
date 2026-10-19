@@ -137,3 +137,10 @@ Fixtures execute external paths and verify predicates, syntax and denied access.
 
 The embedded shell regression executable is named v7-regression.elf so it cannot
 collide with the installed test command artifact v7-test.elf.
+
+## yes (135)
+
+Retains unlimited repetition of y or the first argument, including empty strings
+and the historical ignoring of additional operands. Native guest pipe fixtures
+check exact repeated bytes, close the reader, and require SIGPIPE termination
+and child cleanup rather than leaving an infinite writer running.

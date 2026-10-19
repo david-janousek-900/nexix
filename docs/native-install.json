@@ -2070,6 +2070,19 @@
       "type": "link",
       "target": "/bin/test",
       "component": "cmd.test"
+    },
+    {
+      "path": "/bin/yes",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.yes",
+      "source": {
+        "root": "programs",
+        "path": "v7-yes.elf"
+      },
+      "format": "elf"
     }
   ]
 }

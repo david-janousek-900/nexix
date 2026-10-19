@@ -1677,3 +1677,8 @@ test-sync: iso rootfs
 test-test: iso rootfs build/test-command.elf
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M test
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M test
+
+.PHONY: test-yes
+test-yes: iso rootfs build/yes-command.elf
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 16M yes
+	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix.iso 128M yes
