@@ -36,6 +36,9 @@ int main(void)
     expect(z,"v\n",2);
     assert(tty_io(z,&vm,(uintptr_t)"local\n",6,true)==6);
     assert(local.count==7 && !memcmp(local.wire,"local\r\n",7));
+    assert(!ctl(z,NX_TIOCSETP,&sx));
+    tty_receive_line(2,0x80,0);tty_receive_line(2,0,0);
+    const uint8_t raw_local[]={0x80,0};expect(z,raw_local,2);
     tty_close(z);assert(!tty_open_count());
     assert(tty_open(0x103,&uc,&alias)==-NX_ENXIO);
     puts("PASS: independent TTY queues, settings, transports, ownership, ctty alias, exclusivity and close lifetime");

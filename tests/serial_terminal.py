@@ -19,7 +19,9 @@ class Terminal(unittest.TestCase):
         self.assertEqual(nodes['/dev/tty']['device'],0x200)
         line=nodes['/dev/ttyS1']
         self.assertEqual((line['type'],line['device'],line['mode'],line['uid'],line['gid']),('character',0x101,'0600',0,0))
-        self.assertEqual(Path('rootfs/etc/ttys').read_text().splitlines(),['19console','19ttyS1'])
+        local=nodes['/dev/tty0']
+        self.assertEqual((local['type'],local['device'],local['mode'],local['uid'],local['gid']),('character',0x102,'0600',0,0))
+        self.assertEqual(Path('rootfs/etc/ttys').read_text().splitlines(),['19console','19ttyS1','19tty0'])
         self.assertEqual(Path('rootfs/bootstrap/etc/ttys').read_bytes(),b'')
 
     def test_preserve_non_fifo(self):

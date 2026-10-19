@@ -143,8 +143,8 @@ The inventory accounts for **217 components, 2,144 distribution files and
 3 partial, 1 prototype and 188 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **371 tracking tasks: 112 done, 0 in progress
-and 259 to do** after task 88. Tasks **1–108 are complete**. These counts are a work breakdown, not an
+The expanded roadmap below has **371 tracking tasks: 113 done, 0 in progress
+and 258 to do** after task 88. Tasks **1–108 and 367–371 are complete**. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -728,11 +728,12 @@ virtual-console switching and scrollback are outside this work.
 | 368 | Implement PS/2 keyboard input | Done | Git history; `make test-keyboard-unit`; IRQ1, bounded controller initialization, US layout, modifiers and control keys; safely consume release/extended scan codes; host decoding/timeout tests; initialization failure preserves serial access |
 | 369 | Integrate independent VGA terminal | Done | Git history; `make test-tty-lines-unit` and 128 MiB QEMU VGA/three-session acceptance; Third TTY, /dev/tty0 (major 1, minor 2), getty/login and session accounting; reuse line discipline and controlling-terminal behavior; preserve COM1, COM2 and /dev/console |
 | 370 | Package and document graphical console | Done | Git history; `make test-mkconf test-install-unit`; deterministic gzip round trip and packaged 16 MiB VGA login acceptance; [setup](docs/vga-console.md); Fresh-image device/getty configuration, kernel driver build integration, make run-vga, virt-manager BIOS/standard VGA/PS/2 settings and existing-disk setup instructions; preserve make run and working disks |
-| 371 | Validate graphical console management | To do | Automated injected-keyboard and VGA-display login/shell tests at 16/128 MiB; hidden passwords, editing, Ctrl-C/Ctrl-D and getty restart; concurrent serial isolation and terminal identity; affected regressions and manual virt-manager acceptance |
+| 371 | Validate graphical console management | Done | Git history; `make test-vga` at 16/128 MiB, serial/getty/login/multi-user regressions, libvirt guest and inspected virt-manager console; [evidence](docs/vga-console.md#acceptance-evidence); Automated injected-keyboard and VGA-display login/shell tests at 16/128 MiB; hidden passwords, editing, Ctrl-C/Ctrl-D and getty restart; concurrent serial isolation and terminal identity; affected regressions and manual virt-manager acceptance |
 
 ### Execution priorities and release acceptance
 
-The next execution priority is VGA console support in tasks 367–371.
+VGA console support is complete in tasks 367–371; continue with dependency-ready
+remaining kernel, library and userland tasks.
 
 Task 37 records coverage relationships and validates the roadmap. Complete
 staging, image and test infrastructure in tasks 83–88 before expanding

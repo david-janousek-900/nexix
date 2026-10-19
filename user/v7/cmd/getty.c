@@ -206,6 +206,15 @@ getname()
 			exit(1);
 		if (c=='\r' || c=='\n' || np >= &name[16])
 			break;
+		/* Local raw username editing must update the displayed text too. */
+		if (local_terminal && c == 0177) {
+			if (np > name) { --np; getty_puts("\b \b"); }
+			continue;
+		}
+		if (local_terminal && c == 025) {
+			while (np > name) { --np; getty_puts("\b \b"); }
+			continue;
+		}
 		putchr(cs);
 		if (c>='a' && c <='z')
 			lower++;

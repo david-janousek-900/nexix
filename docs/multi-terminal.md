@@ -6,7 +6,9 @@ flow control, exclusive-open flag and mpx ownership. Driver callbacks bind outpu
 formatting and modem operations to the appropriate transport. Unbound devices
 return ENODEV; attaching over open descriptions returns EBUSY.
 
-The primary device family uses major 1, minor 0/1. Console and historical profile
+Tasks 367–371 add a third bounded terminal at major 1, minor 2 (`/dev/tty0`),
+using VGA output and PS/2 input. See [VGA setup and acceptance](vga-console.md).
+COM1/COM2 retain major 1, minor 0/1. Console and historical profile
 aliases continue using terminal zero; /dev/tty follows a valid controlling-terminal
 pointer. Per-line receive/error and modem entry points prevent cross-terminal
 routing. Existing COM1 entry points remain compatible with private fixtures.

@@ -60,3 +60,24 @@ For manual virt-manager acceptance, confirm a visible login, enter a username
 with a Backspace correction, verify hidden password input, run `tty` (expect
 `/dev/tty0`) and `echo VGA_OK`, interrupt `cat` with Ctrl-C, then log out with
 Ctrl-D and log in again. Confirm serial input and output remain independent.
+
+## Acceptance evidence
+
+Tasks 367–371 were validated on 2026-10-19:
+
+- `make test-vga` passed at 16 and 128 MiB, including displayed username
+  Backspace correction, password hiding, shell Backspace/Ctrl-U, Ctrl-C,
+  Ctrl-D/relogin, three terminal identities and independent serial sessions.
+- `make test-inventory test-rootfs test-guest-harness-unit test-tty test-getty
+  test-login test-multiuser-acceptance` passed; guest checks cover both memory
+  sizes. `make test-two-terminals` passed binary UART traffic, signal/flow
+  isolation, concurrent shells and repeated resource recovery at both sizes.
+- A transient `qemu:///session` libvirt guest used BIOS, PC/i440fx, IDE,
+  standard VGA, PS/2 and VNC with a disposable production-seed disk. Libvirt
+  key injection exercised edited username, hidden password, `/dev/tty0`, shell
+  output, Ctrl-C and logout/relogin. The actual virt-manager graphical console
+  was captured and visually inspected. The temporary VM was destroyed afterward.
+
+Local evidence artifacts are `build/vga-acceptance.log`,
+`build/vga-regressions.log`, `build/vga-serial-regressions.log`,
+`build/vga-getty-regression.log` and `build/virt-manager-vga.png`.

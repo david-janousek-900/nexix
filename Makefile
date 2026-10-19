@@ -1587,3 +1587,8 @@ build/local_console.o: kernel/local_console.c | build/.dir
 run-vga: build
 	$(PYTHON) tools/serial_terminal.py --prepare build/ttyS1
 	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -rtc base=utc -boot d -drive "file=$(DISK_IMAGE),format=raw,if=ide,index=0" -cdrom build/nexix.iso -vga std -display gtk -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -serial pipe:build/ttyS1 -mon chardev=console,mode=readline -no-reboot
+
+.PHONY: test-vga
+test-vga: test-vga-unit test-keyboard-unit test-tty-lines-unit iso rootfs
+	$(PYTHON) tools/vga_smoke.py $(QEMU) build/nexix.iso 16M
+	$(PYTHON) tools/vga_smoke.py $(QEMU) build/nexix.iso 128M
