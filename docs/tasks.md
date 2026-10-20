@@ -10,17 +10,17 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 57 native ELF programs are
+to multi-user V7 login with persistent IDE storage. 58 native ELF programs are
 installed; the complete list and destinations are in [the installation manifest](native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
-The inventory accounts for **221 components, 2,144 distribution files and
-36 supporting/platform requirements**. Its component statuses are 59 implemented,
+The inventory accounts for **222 components, 2,144 distribution files and
+36 supporting/platform requirements**. Its component statuses are 60 implemented,
 5 partial, 1 prototype and 156 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **386 tracking tasks: 168 done, 0 in progress
-and 218 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 253, 264–266, 281, 286, 357, 362–386** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **387 tracking tasks: 169 done, 0 in progress
+and 218 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 253, 264–266, 281, 286, 357, 362–387** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -685,3 +685,9 @@ Traditional Vi 050325 is an additional 0.1.0 component; see [port contract](vi-p
 | 384 | Package vi, ex, view and documentation | Done | Installed vi/ex/view/helpers, manuals/licenses, native inventory ownership and terminal defaults; package, installed ex/recovery and backed-up upgrade/two-boot tests pass at 16/128 MiB; Git history |
 | 385 | Complete traditional vi acceptance | Done | Combined installed acceptance passes at 16/128 MiB: full-screen VGA/serial, packed/large termcap IDs, interrupt cleanup, concurrent editors, storage/recovery/clear and login/upgrade regressions; docs/vi-acceptance.md; Git history |
 | 386 | Add clear terminal command | Done | Installed termcap-driven clear and ANSI/VGA descriptions; test-clear verifies serial bytes, VGA memory and errors at 16/128 MiB; Git history |
+
+### Native monitoring and manual navigation extensions
+
+| Task | Description | Status | Evidence / notes / acceptance |
+|---:|---|---|---|
+| 387 | Add uptime and scheduler load averages | Done | Monotonic boot ticks, utmp sessions and real 1/5/15-minute kernel load; `make test-uptime` at 16/128 MiB; Git history |

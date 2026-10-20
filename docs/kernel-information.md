@@ -16,14 +16,14 @@ ssize_t used = nx_kinfo(NX_KINFO_VERSION, NX_KINFO_PROCESS, buffer, bytes);
 ```
 
 `nx_kinfo(unsigned version, unsigned kind, void *buffer, size_t capacity)` returns
-the required/written byte count, or -1/errno. Effective UID zero is required for
-both sizing and data calls, independently of real UID (EPERM otherwise). Like
-other V7 superuser checks, an authorized call marks ASU for accounting. This is
-a privileged diagnostic interface; later command ports decide their installation
-privileges. An ordinary process cannot read even its own snapshot through this API.
-No new privilege or raw-memory interface is granted by the libc wrapper.
+the required/written byte count, or -1/errno. PROCESS and LOAD are public,
+address-free snapshots used by `ps` and `uptime`. FILE, INODE, TEXT, MOUNT,
+MEMORY and IO require effective UID zero for sizing and data calls (EPERM
+otherwise). Authorized privileged calls mark ASU for accounting. The libc wrapper
+does not grant access to raw memory.
 
-Version 1 defines seven kinds: PROCESS, FILE, INODE, TEXT, MOUNT, MEMORY and IO.
+Version 1 defines eight kinds: PROCESS, FILE, INODE, TEXT, MOUNT, MEMORY, IO
+and the native LOAD extension.
 A null buffer with capacity zero queries size. A non-null short buffer returns
 ERANGE without writing; size can change between calls as processes/files/mounts
 change, so callers must re-query and retry. A null buffer with nonzero capacity
@@ -62,6 +62,7 @@ All records use fixed-width native little-endian fields. The shared contract is
 | TEXT | 32 | Text ID, references/resident references, V7 flags, byte size and executable inode identity; includes retained unused sticky text |
 | MOUNT | 48 | Mount ID, root/read-only/failed flags, device and mountpoint identity, filesystem/device block counts, inode capacity, buffer-cache capacity/occupancy |
 | MEMORY | 32 | Managed page total, free/allocated pages, page size and resident-memory flag |
+| LOAD | 32 | 1/5/15-minute fixed-point scheduler averages, scale and last sampled runnable/process counts; see [uptime](uptime.md) |
 | IO | 96 | CPU user/nice/system/idle ticks; successful block read/write sectors and device-transfer errors; cache lookup/hit counters; TTY input/output bytes |
 
 IDs are table slots plus one, with zero meaning absent. They are identities for

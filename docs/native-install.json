@@ -7585,6 +7585,32 @@
         "root": "programs",
         "path": "v7-ps.elf"
       }
+    },
+    {
+      "path": "/bin/uptime",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.uptime",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-uptime.elf"
+      }
+    },
+    {
+      "path": "/usr/man/man1/uptime.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.uptime",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/uptime.1"
+      }
     }
   ]
 }

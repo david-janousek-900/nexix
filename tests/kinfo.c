@@ -39,6 +39,7 @@ bool user_access_ok(const struct address_space *vm,uintptr_t addr,size_t n,bool 
 int copyout(const struct address_space *vm,uintptr_t addr,const void *src,size_t n)
 {assert(user_access_ok(vm,addr,n,true));memcpy(output+addr-base,src,n);++writes;return 0;}
 _Noreturn void panic(const char *s){fprintf(stderr,"panic: %s\n",s);abort();}
+void loadavg_snapshot(struct nx_kinfo_load *r){*r=(struct nx_kinfo_load){.average={65536,32768,16384},.scale=65536};}
 static int64_t request(unsigned kind,uintptr_t addr,size_t n)
 {return kinfo_request(1,kind,addr,n);}
 int main(void)
@@ -50,9 +51,9 @@ int main(void)
     processes[2]=(struct proc){.p_pid=43,.p_stat=V7_SZOMB,.p_xstat=0x1700};
     processes[3].p_stat=V7_SIDL;
     processes[149]=(struct proc){.p_pid=44,.p_stat=V7_SSTOP};
-    const unsigned counts[]={0,3,1,1,1,1,1,1};
-    const unsigned sizes[]={0,144,40,40,32,48,32,96};
-    for(unsigned kind=1;kind<=7;++kind){
+    const unsigned counts[]={0,3,1,1,1,1,1,1,1};
+    const unsigned sizes[]={0,144,40,40,32,48,32,96,32};
+    for(unsigned kind=1;kind<=8;++kind){
         size_t n=48+counts[kind]*sizes[kind];
         memset(output,0xa5,sizeof(output));writes=0;
         assert(request(kind,0,0)==(int64_t)n && !writes);
@@ -82,11 +83,12 @@ int main(void)
     assert(request(1,0,1)==-NX_EFAULT && !writes);
     assert(kinfo_request(UINT64_C(0x100000001),1,base,sizeof(output))==-NX_EINVAL);
     assert(kinfo_request(1,UINT64_C(0x100000001),base,sizeof(output))==-NX_EINVAL);
-    assert(request(0,base,sizeof(output))==-NX_EINVAL && request(8,0,0)==-NX_EINVAL);
+    assert(request(0,base,sizeof(output))==-NX_EINVAL && request(9,0,0)==-NX_EINVAL);
     user.u_uid=123;
     for(unsigned kind=2;kind<=7;++kind)assert(request(kind,0,0)==-NX_EPERM && request(kind,base,sizeof(output))==-NX_EPERM);
     assert(!writes);for(unsigned i=0;i<sizeof(output);++i)assert(output[i]==0xa5);
     assert(request(1,base,sizeof(output))>0);
+    assert(request(8,base,sizeof(output))>0);
     assert(saves==restores && !locked);
     puts("PASS: snapshot versions, dense tables, 64-bit fields, bounds, atomic rejection and privilege");
     return 0;

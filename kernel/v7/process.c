@@ -1,3 +1,4 @@
+#include "loadavg.h"
 /* Native adaptation of process behavior from V7 sys/{slp,sys1}.c.
  * Original sources and Caldera license are retained under reference/. */
 #include "process.h"
@@ -566,6 +567,7 @@ void proc_timer(struct interrupt_frame *frame)
     if (!initialized) return;
     uint64_t now = timer_ticks();
     scheduler_tick(processes,V7_NPROC,current,now%NX_CLK_TCK==0);
+    if(now%NX_CLK_TCK==0)loadavg_sample(processes,V7_NPROC);
     for (unsigned i = 1; i < V7_NPROC; ++i) {
         struct proc *p = &processes[i];
         if (p->p_clktim && now >= (uint64_t)p->p_clktim) {

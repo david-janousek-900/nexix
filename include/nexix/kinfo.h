@@ -9,6 +9,7 @@
 #define NX_KINFO_MOUNT 5U
 #define NX_KINFO_MEMORY 6U
 #define NX_KINFO_IO 7U
+#define NX_KINFO_LOAD 8U
 #define NX_KINFO_RESIDENT 1U
 #define NX_KINFO_MOUNT_ROOT 1U
 #define NX_KINFO_MOUNT_RDONLY 2U
@@ -104,6 +105,12 @@ struct nx_kinfo_io {
     uint64_t read_sectors, write_sectors, read_errors, write_errors;
     uint64_t cache_lookups, cache_hits, tty_in, tty_out;
 };
+/* Native extension. Averages are fixed point with the published scale. */
+struct nx_kinfo_load {
+    uint32_t average[3],scale,runnable,processes;
+    uint64_t reserved;
+};
+_Static_assert(sizeof(struct nx_kinfo_load)==32,"snapshot load averages");
 _Static_assert(sizeof(struct nx_kinfo_header)==48,"snapshot header");
 _Static_assert(sizeof(struct nx_kinfo_process)==144,"snapshot process");
 _Static_assert(sizeof(struct nx_kinfo_file)==40,"snapshot file");

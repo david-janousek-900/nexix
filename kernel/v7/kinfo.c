@@ -1,5 +1,6 @@
 /* Native counterpart of V7 diagnostic reads of kernel tables via /dev/{k,}mem. */
 #include "kinfo.h"
+#include "loadavg.h"
 #include "files.h"
 #include "text.h"
 #include "namespace.h"
@@ -16,6 +17,7 @@ union record {
     struct nx_kinfo_mount mount;
     struct nx_kinfo_memory memory;
     struct nx_kinfo_io io;
+    struct nx_kinfo_load load;
 };
 static bool process_info(unsigned i,struct nx_kinfo_process *r,uint64_t now)
 {
@@ -51,6 +53,8 @@ static bool get(unsigned kind,unsigned i,union record *r,uint64_t now)
         r->memory=(struct nx_kinfo_memory){.total_pages=page_total_count(),
             .free_pages=page_free_count(),.page_size=PAGE_SIZE,.flags=NX_KINFO_RESIDENT};
         r->memory.allocated_pages=r->memory.total_pages-r->memory.free_pages;return i==0;
+    case NX_KINFO_LOAD:
+        loadavg_snapshot(&r->load);return i==0;
     case NX_KINFO_IO:
         r->io=(struct nx_kinfo_io){0};block_statistics(&r->io);cache_statistics(&r->io);
         tty_statistics(&r->io);cpu_statistics(&r->io);return i==0;
@@ -59,16 +63,16 @@ static bool get(unsigned kind,unsigned i,union record *r,uint64_t now)
 }
 int64_t kinfo_request(uint64_t version,uint64_t kind,uintptr_t buffer,size_t bytes)
 {
-    if(version!=NX_KINFO_VERSION || kind<NX_KINFO_PROCESS || kind>NX_KINFO_IO)return -NX_EINVAL;
+    if(version!=NX_KINFO_VERSION || kind<NX_KINFO_PROCESS || kind>NX_KINFO_LOAD)return -NX_EINVAL;
     uintptr_t irq=proc_irq_save();
     struct proc *caller=proc_current();
-    if(!caller || !caller->p_user || (kind!=NX_KINFO_PROCESS && !proc_superuser(caller->p_user))){
+    if(!caller || !caller->p_user || (kind!=NX_KINFO_PROCESS && kind!=NX_KINFO_LOAD && !proc_superuser(caller->p_user))){
         proc_irq_restore(irq);return -NX_EPERM;
     }
-    static const unsigned capacities[]={0,V7_NPROC,V7_NFILE,V7_NINODE,V7_NTEXT,NAMESPACE_MOUNTS,1,1};
+    static const unsigned capacities[]={0,V7_NPROC,V7_NFILE,V7_NINODE,V7_NTEXT,NAMESPACE_MOUNTS,1,1,1};
     static const unsigned sizes[]={0,sizeof(struct nx_kinfo_process),sizeof(struct nx_kinfo_file),
         sizeof(struct nx_kinfo_inode),sizeof(struct nx_kinfo_text),sizeof(struct nx_kinfo_mount),
-        sizeof(struct nx_kinfo_memory),sizeof(struct nx_kinfo_io)};
+        sizeof(struct nx_kinfo_memory),sizeof(struct nx_kinfo_io),sizeof(struct nx_kinfo_load)};
     uint64_t now=timer_ticks();unsigned count=0;union record r;
     for(unsigned i=0;i<capacities[kind];++i)if(get(kind,i,&r,now))++count;
     size_t total=sizeof(struct nx_kinfo_header)+(size_t)count*sizes[kind];

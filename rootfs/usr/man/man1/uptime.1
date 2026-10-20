@@ -1,0 +1,21 @@
+.TH UPTIME 1 Nexix
+.SH NAME
+uptime \- time since boot, logged-in sessions and scheduler load
+.SH SYNOPSIS
+.B uptime
+.SH DESCRIPTION
+Print the current local time, elapsed boot time, logged-in user session count,
+and the 1-, 5- and 15-minute load averages.
+Boot time uses monotonic kernel ticks and is independent of date changes.
+Each occupied utmp entry counts as one session, including multiple sessions
+belonging to the same user.
+.PP
+Load averages are exponentially damped samples taken once per second.
+They count runnable user processes and uninterruptible I/O waits.
+Stopped processes, zombies, interruptible sleeps, timed sleeps and kernel
+system processes do not contribute.
+Averages start at zero at boot; they are not normalized by CPU count.
+.PP
+This command and the kernel load samples are native Nexix extensions.
+.SH SEE ALSO
+ps(1), who(1), date(1)

@@ -24863,6 +24863,51 @@
       "acceptance": [
         "Native ex, visual vi/view, storage failures, private SIGHUP/cold-boot recovery and installed/upgrade acceptance on VGA and serial at 16/128 MiB."
       ]
+    },
+    {
+      "id": "cmd.uptime",
+      "kind": "command",
+      "summary": "Native monotonic uptime, login sessions and sampled 1/5/15 minute load",
+      "sources": [],
+      "source_files": [],
+      "source_availability": "native",
+      "native_sources": [
+        "user/v7/cmd/uptime.c",
+        "kernel/loadavg.c",
+        "rootfs/usr/man/man1/uptime.1"
+      ],
+      "outputs": [
+        {
+          "name": "uptime",
+          "install": "/bin/uptime",
+          "role": "installed",
+          "status": "implemented",
+          "evidence": [
+            "user/v7/cmd/uptime.c",
+            "tools/uptime_smoke.py",
+            "docs/uptime.md"
+          ]
+        }
+      ],
+      "priority": 11,
+      "status": "implemented",
+      "dependencies": [
+        {
+          "target": "lib.libc",
+          "phase": "runtime",
+          "certainty": "confirmed",
+          "evidence": [
+            "libc/kinfo.c"
+          ],
+          "note": "Uses public native snapshots and native utmp/time interfaces."
+        }
+      ],
+      "blockers": [],
+      "unresolved": [],
+      "reference_includes": [],
+      "acceptance": [
+        "Verify monotonic uptime, actual scheduler load, login-session accounting and ordinary users at 16/128 MiB."
+      ]
     }
   ],
   "historical_source_archives": [

@@ -2147,3 +2147,26 @@ test-ps: build/v7-ps.elf build/nexix-multi.iso test-kinfo-unit
 	$(PYTHON) tools/ps_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/ps_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-ps
+# Native scheduler load and uptime extension (task 387).
+build/loadavg.o: kernel/loadavg.c kernel/include/loadavg.h include/nexix/kinfo.h | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+OBJECTS += build/loadavg.o
+build/nexix.elf: build/loadavg.o
+-include build/loadavg.d
+build/loadavg-test: tests/loadavg.c kernel/loadavg.c kernel/include/loadavg.h include/nexix/kinfo.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/loadavg.c kernel/loadavg.c -o $@
+build/v7-uptime.o: user/v7/cmd/uptime.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+.PHONY: test-loadavg-unit
+test-loadavg-unit: build/loadavg-test
+	./build/loadavg-test
+test-unit: test-loadavg-unit
+build/uptime-guest.o: tests/uptime-guest.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/uptime-guest.elf: build/crt0.o build/uptime-guest.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/uptime-guest.o build/libc.a -o $@
+.PHONY: test-uptime
+test-uptime: test-loadavg-unit test-kinfo-unit build/v7-uptime.elf build/uptime-guest.elf build/nexix-multi.iso
+	$(PYTHON) tools/uptime_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/uptime_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-uptime
