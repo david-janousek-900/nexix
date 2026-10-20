@@ -414,7 +414,7 @@ filep newip;
 	nchar = rchar = pendt = ch0 = ch = 0;
 	frame = nxf;
 	if(nxf->nargs == 0) nxf += 1;
-		else nxf = (struct s *)argtop;
+		else nxf = (struct s *)(((uintptr_t)argtop + sizeof(void *)-1) & ~(sizeof(void *)-1));
 	return(ip = newip);
 }
 char *setbrk(x)
@@ -468,7 +468,11 @@ collect()
 	nxf->nargs = 0;
 	savnxf = nxf;
 	if(skip())goto rtn;
-	lim = (int *)(nxf = savnxf + 1);
+	/* String interpolation can push nested frames while collecting arguments.
+     * Reserve argument text before placing those frames, using byte units. */
+    lim = (int *)((char *)savnxf + 8192);
+    while(enda < (char *)lim + sizeof(struct s))setbrk(DELTA);
+    nxf = (struct s *)lim;
 	strflg = 0;
 	if((argppend =
 		(argpp = (int **)(savnxf + 1)) + 9)
@@ -490,7 +494,7 @@ collect()
 				break;
 			}
 			*strp++ = i;
-			if(strflg && (strp >= lim)){
+			if(strp >= lim){
 				prstrfl("Macro argument too long.\n");
 				copyf--;
 				edone(004);

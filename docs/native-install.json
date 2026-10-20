@@ -7189,6 +7189,165 @@
       "uid": 0,
       "gid": 0,
       "component": "cmd.troff"
+    },
+    {
+      "path": "/usr/lib/yaccpar",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.library-data",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/lib/yaccpar"
+      }
+    },
+    {
+      "path": "/usr/lib/lex",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.library-data"
+    },
+    {
+      "path": "/usr/lib/lex/ncform",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.library-data",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/lib/lex/ncform"
+      }
+    },
+    {
+      "path": "/usr/lib/llib-lc",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.library-data",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/lib/llib-lc"
+      }
+    },
+    {
+      "path": "/usr/lib/llib-lm",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.library-data",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/lib/llib-lm"
+      }
+    },
+    {
+      "path": "/usr/lib/llib-port",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.library-data",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/lib/llib-port"
+      }
+    },
+    {
+      "path": "/usr/lib/tmac",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.library-data"
+    },
+    {
+      "path": "/usr/lib/tmac/tmac.an",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.library-data",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/lib/tmac/tmac.an"
+      }
+    },
+    {
+      "path": "/usr/lib/tmac/tmac.s",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.library-data",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/lib/tmac/tmac.s"
+      }
+    },
+    {
+      "path": "/usr/lib/tmac/tmac.scover",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.library-data",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/lib/tmac/tmac.scover"
+      }
+    },
+    {
+      "path": "/usr/lib/tmac/tmac.sdisp",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.library-data",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/lib/tmac/tmac.sdisp"
+      }
+    },
+    {
+      "path": "/usr/lib/tmac/tmac.skeep",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.library-data",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/lib/tmac/tmac.skeep"
+      }
+    },
+    {
+      "path": "/usr/lib/tmac/tmac.srefs",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.library-data",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/lib/tmac/tmac.srefs"
+      }
     }
   ]
 }

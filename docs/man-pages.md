@@ -26,3 +26,8 @@ names, and initializes device tables before calculating character widths.
 Macro parsing, registers, diversions, filling and line/page layout remain the V7
 implementation. The formatter's private `atoi` parser is namespaced separately
 from libc.
+
+Task 281 installs the original tmac macro packages, yacc parser template, lex
+scanner template and lint library descriptions without changing their contents.
+The parser-generator, scanner-generator and lint implementation tasks still own
+retargeting those descriptions for their future native consumers.

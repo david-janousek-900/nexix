@@ -19,8 +19,8 @@ The inventory accounts for **221 components, 2,144 distribution files and
 5 partial, 1 prototype and 157 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **386 tracking tasks: 165 done, 0 in progress
-and 221 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 357, 362–386 are complete**. These counts are a work breakdown, not an
+The expanded roadmap below has **386 tracking tasks: 166 done, 0 in progress
+and 220 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 357, 362–386 are complete**. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -458,7 +458,7 @@ are accounted for. Final native rebuild acceptance is task 207.
 | 278 | Port spellin/spellout and hash generation | To do | Regenerate native dictionary hashes |
 | 279 | Complete spell command and script | To do | American/British/local/stop inputs and wrapper |
 | 280 | Install dictionaries and bibliography inputs | To do | Validate indexes and consuming programs |
-| 281 | Install formatter macros/parser descriptions/library data | To do | yaccpar, ncform, lint descriptions, tmac and shared inputs |
+| 281 | Install formatter macros/parser descriptions/library data | Done | Original tmac packages, yaccpar, ncform and lint descriptions installed intact; native macro rendering at 16/128 MiB; `make test-formatter-macros`; Git history |
 | 282 | Install public ASCII/Greek/equation data | To do | Byte fidelity and format consumers |
 | 283 | Port learn engine | To do | Sessions, workspace isolation and helper execution |
 | 284 | Port learn private tee/lcount helpers | To do | Distinct from /usr/bin/tee |

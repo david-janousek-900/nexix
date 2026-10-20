@@ -1,4 +1,5 @@
 /* Native declarations; formatter atoi/getline are private parser operations. */
+#include <stdint.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
