@@ -2370,6 +2370,32 @@
         "path": "dev-include/nexix/timeb.h"
       },
       "format": "data"
+    },
+    {
+      "path": "/bin/clear",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.clear",
+      "source": {
+        "root": "programs",
+        "path": "v7-clear.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/etc/termcap",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config",
+      "source": {
+        "root": "config",
+        "path": "etc/termcap"
+      },
+      "format": "data"
     }
   ]
 }

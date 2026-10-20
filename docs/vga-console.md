@@ -128,3 +128,12 @@ Tasks 367–371 were validated on 2026-10-19:
 Local evidence artifacts are `build/vga-acceptance.log`,
 `build/vga-regressions.log`, `build/vga-serial-regressions.log`,
 `build/vga-getty-regression.log` and `build/virt-manager-vga.png`.
+
+The installed `clear` command reads `TERM` and the `cl` capability from
+`/etc/termcap`. The login profile supplies `TERM=ansi` when unset; an explicit
+terminal setting is preserved. Both `ansi` (serial) and `nexix` (VGA) descriptions
+clear and home the screen. `clear` takes no arguments and reports missing
+terminal descriptions/capabilities and output failures with a nonzero status.
+Run `make test-clear` to check exact serial bytes, VGA memory and error paths on
+disposable 16/128 MiB guests. Existing persistent disks need `make upgrade-disk`
+to install the command, profile and terminal database.

@@ -10,17 +10,17 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 49 native ELF programs are
+to multi-user V7 login with persistent IDE storage. 50 native ELF programs are
 installed; the complete list and destinations are in [the installation manifest](native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
-The inventory accounts for **219 components, 2,144 distribution files and
-36 supporting/platform requirements**. Its component statuses are 55 implemented,
+The inventory accounts for **220 components, 2,144 distribution files and
+36 supporting/platform requirements**. Its component statuses are 56 implemented,
 4 partial, 1 prototype and 159 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **386 tracking tasks: 153 done, 0 in progress
-and 233 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 357, 362–373 are complete**. These counts are a work breakdown, not an
+The expanded roadmap below has **386 tracking tasks: 154 done, 0 in progress
+and 232 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 357, 362–373 are complete**. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -641,7 +641,7 @@ two terminals.
 
 Release acceptance requires multi-user startup, RTC-derived time and persistent
 V7 timestamps, complete component coverage, native V7 development tools,
-installed manuals/data and resolution of explicit release blockers. All 219
+installed manuals/data and resolution of explicit release blockers. All 220
 components and 36 requirements must be traceable to tested native implementations,
 assets or documented native equivalents. No required feature is silently removed
 to declare the release complete.
@@ -684,4 +684,4 @@ Traditional Vi 050325 is an additional 0.1.0 component; see [port contract](vi-p
 | 383 | Port preservation and recovery helpers | To do | Private ownership, interrupted sessions and cold-boot vi -r recovery |
 | 384 | Package vi, ex, view and documentation | To do | Install programs/helpers/data/notices; existing-disk upgrade and terminal defaults |
 | 385 | Complete traditional vi acceptance | To do | Real VGA/PS2 and serial edit/save/recovery at 16/128 MiB, session isolation and regressions |
-| 386 | Add clear terminal command | To do | Use TERM/termcap clear-screen capability; VGA and serial output/error/terminal acceptance |
+| 386 | Add clear terminal command | Done | Installed termcap-driven clear and ANSI/VGA descriptions; test-clear verifies serial bytes, VGA memory and errors at 16/128 MiB; Git history |

@@ -2029,3 +2029,10 @@ build/vga-control.elf: build/crt0.o build/vga-control.o build/libc.a user/user.l
 test-vga-controls: test-vga-unit build/nexix-multi.iso build/vga-control.elf stage
 	$(PYTHON) tools/vga_control_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/vga_control_smoke.py $(QEMU) build/nexix-multi.iso 128M
+
+build/v7-clear.o: user/v7/cmd/clear.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+.PHONY: test-clear
+test-clear: build/nexix-multi.iso build/v7-clear.elf stage
+	$(PYTHON) tools/clear_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/clear_smoke.py $(QEMU) build/nexix-multi.iso 128M

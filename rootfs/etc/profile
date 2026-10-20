@@ -1,2 +1,4 @@
 PS1='\u@\H\$ '
 export PS1
+TERM=${TERM-ansi}
+export TERM

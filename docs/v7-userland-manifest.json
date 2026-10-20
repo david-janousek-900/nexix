@@ -24639,6 +24639,51 @@
       "acceptance": [
         "Test FQDN persistence across cold boots, root-only setters, live username/host prompts and unchanged configuration on invalid input."
       ]
+    },
+    {
+      "id": "cmd.clear",
+      "kind": "command",
+      "summary": "Native terminal clearing through TERM and termcap",
+      "sources": [],
+      "source_files": [],
+      "source_availability": "native",
+      "native_sources": [
+        "user/v7/cmd/clear.c",
+        "libc/termcap.c",
+        "libc/termcap_output.c"
+      ],
+      "outputs": [
+        {
+          "name": "clear",
+          "install": "/bin/clear",
+          "role": "installed",
+          "status": "implemented",
+          "evidence": [
+            "user/v7/cmd/clear.c",
+            "tools/clear_smoke.py",
+            "Makefile"
+          ]
+        }
+      ],
+      "priority": 3,
+      "status": "implemented",
+      "dependencies": [
+        {
+          "target": "lib.libc",
+          "phase": "runtime",
+          "certainty": "confirmed",
+          "evidence": [
+            "libc/termcap.c"
+          ],
+          "note": "Uses native termcap lookup and output."
+        }
+      ],
+      "blockers": [],
+      "unresolved": [],
+      "reference_includes": [],
+      "acceptance": [
+        "Verify native VGA clearing, exact serial bytes and missing TERM/capability/output failures at 16/128 MiB."
+      ]
     }
   ],
   "historical_source_archives": [
