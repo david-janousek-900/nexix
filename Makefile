@@ -2020,3 +2020,12 @@ build/termcap-output-unit-test: tests/termcap-output.c libc/termcap_output.c lib
 test-termcap-output: build/termcap-output-unit-test
 	ASAN_OPTIONS=detect_leaks=0 ./build/termcap-output-unit-test
 test-unit: test-termcap-output
+
+build/vga-control.o: tests/vga-control.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/vga-control.elf: build/crt0.o build/vga-control.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o,$^) $(filter %.a,$^) -o $@
+.PHONY: test-vga-controls
+test-vga-controls: test-vga-unit build/nexix-multi.iso build/vga-control.elf stage
+	$(PYTHON) tools/vga_control_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/vga_control_smoke.py $(QEMU) build/nexix-multi.iso 128M

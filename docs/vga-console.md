@@ -39,8 +39,11 @@ Open the VM's graphical console and log in as `root` with password `nexix`,
 `alice`/`alice`, or `bob`/`bob` on a fresh development installation. Passwords
 are hidden. Backspace and Ctrl-U edit input; Ctrl-C interrupts a foreground
 program; Ctrl-D logs out. The keyboard layout is US. There is one 80×25 text
-screen with scrolling and a hardware cursor; no scrollback, virtual terminal
-switching, or ANSI cursor-addressing emulation is provided.
+screen with scrolling and a hardware cursor; no scrollback or virtual terminal switching. Task 377 supplies a bounded ANSI
+CSI subset: H/f and A/B/C/D cursor movement, J/K clearing, and m reset/bright/
+standout attributes. Escape sequences may span writes; unsupported/oversized
+sequences are discarded without changing screen bounds. This is not a full
+VT100 emulator.
 
 `make run` and `make run-vga` use QEMU's GTK display. `make run-serial` uses
 the launching host terminal; Ctrl-A, release, then X exits serial QEMU.

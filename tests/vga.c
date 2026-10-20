@@ -26,5 +26,21 @@ int main(void)
     assert(position==1921 && cells[1921]==0x0742);
     write_text("\r\bC");assert(position==1921 && cells[1921]==0x0743);
     assert(cells[0]==0xbeef && cells[2001]==0xbeef);
+    vga_init(cells+1);
+    write_text("old screen\033[H\033[2J");
+    for(unsigned i=1;i<=2000;++i)assert(cells[i]==0x0720);
+    assert(position==0);
+    write_text("\033[25;79HX");assert(cells[1999]==0x0758);
+    vga_init(cells+1);write_text("\033[3;4H\033[7mZ\033[0mQ");
+    assert(cells[164]==0x705a && cells[165]==0x0751);
+    write_text("\033[2D\033[K");assert(cells[164]==0x0720 && cells[165]==0x0720);
+    write_text("\033[9999;9999H");assert(position==1999);
+    write_text("\033[999999999999999999H");assert(position==1999);
+    write_text("\033[1;2;3;4;5;6;7;8;9H");assert(position==1999);
+    write_text("\033[H\033[100A\033[100D");assert(position==0);
+    write_text("\033[12");write_text(";14H");assert(position==11*80+13);
+    write_text("\033[2J");assert(position==11*80+13);
+    for(unsigned i=1;i<=2000;++i)assert(cells[i]==0x0720);
+    assert(cells[0]==0xbeef && cells[2001]==0xbeef);
     puts("PASS: VGA controls, scrolling, cursor and bounds");
 }
