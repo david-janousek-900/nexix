@@ -2629,6 +2629,4061 @@
         "path": "vi-port.md"
       },
       "format": "data"
+    },
+    {
+      "path": "/usr/man/man0",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals"
+    },
+    {
+      "path": "/usr/man/man0/intro",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man0/intro"
+      }
+    },
+    {
+      "path": "/usr/man/man0/permindex",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man0/permindex"
+      }
+    },
+    {
+      "path": "/usr/man/man0/pref",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man0/pref"
+      }
+    },
+    {
+      "path": "/usr/man/man0/ptxmac",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man0/ptxmac"
+      }
+    },
+    {
+      "path": "/usr/man/man0/title",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man0/title"
+      }
+    },
+    {
+      "path": "/usr/man/man0/xx",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man0/xx"
+      }
+    },
+    {
+      "path": "/usr/man/man1/ac.1m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/ac.1m"
+      }
+    },
+    {
+      "path": "/usr/man/man1/adb.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/adb.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/ar.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/ar.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/arcv.1m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/arcv.1m"
+      }
+    },
+    {
+      "path": "/usr/man/man1/as.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/as.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/at.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/at.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/awk.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/awk.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/bas.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/bas.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/basename.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/basename.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/bc.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/bc.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/cal.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/cal.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/calendar.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/calendar.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/cat.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/cat.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/cb.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/cb.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/cc.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/cc.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/cd.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/cd.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/chmod.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/chmod.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/chown.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/chown.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/clri.1m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/clri.1m"
+      }
+    },
+    {
+      "path": "/usr/man/man1/cmp.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/cmp.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/col.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/col.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/comm.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/comm.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/cp.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/cp.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/crypt.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/crypt.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/cu.1c",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/cu.1c"
+      }
+    },
+    {
+      "path": "/usr/man/man1/date.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/date.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/dc.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/dc.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/dcheck.1m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/dcheck.1m"
+      }
+    },
+    {
+      "path": "/usr/man/man1/dd.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/dd.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/deroff.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/deroff.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/df.1m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/df.1m"
+      }
+    },
+    {
+      "path": "/usr/man/man1/diff.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/diff.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/diff3.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/diff3.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/du.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/du.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/dump.1m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/dump.1m"
+      }
+    },
+    {
+      "path": "/usr/man/man1/dumpdir.1m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/dumpdir.1m"
+      }
+    },
+    {
+      "path": "/usr/man/man1/echo.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/echo.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/ed.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/ed.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/eqn.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/eqn.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/expr.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/expr.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/f77.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/f77.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/factor.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/factor.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/file.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/file.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/find.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/find.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/graph.1g",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/graph.1g"
+      }
+    },
+    {
+      "path": "/usr/man/man1/grep.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/grep.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/icheck.1m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/icheck.1m"
+      }
+    },
+    {
+      "path": "/usr/man/man1/intro.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/intro.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/iostat.1m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/iostat.1m"
+      }
+    },
+    {
+      "path": "/usr/man/man1/join.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/join.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/kill.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/kill.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/ld.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/ld.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/lex.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/lex.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/lint.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/lint.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/ln.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/ln.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/login.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/login.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/look.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/look.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/lookall.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/lookall.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/lorder.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/lorder.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/ls.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/ls.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/m4.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/m4.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/mail.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/mail.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/make.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/make.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/man.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/man.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/mesg.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/mesg.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/mkconf.1m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/mkconf.1m"
+      }
+    },
+    {
+      "path": "/usr/man/man1/mkdir.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/mkdir.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/mkfs.1m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/mkfs.1m"
+      }
+    },
+    {
+      "path": "/usr/man/man1/mknod.1m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/mknod.1m"
+      }
+    },
+    {
+      "path": "/usr/man/man1/mount.1m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/mount.1m"
+      }
+    },
+    {
+      "path": "/usr/man/man1/mv.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/mv.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/ncheck.1m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/ncheck.1m"
+      }
+    },
+    {
+      "path": "/usr/man/man1/newgrp.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/newgrp.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/nice.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/nice.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/nm.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/nm.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/od.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/od.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/passwd.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/passwd.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/plot.1g",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/plot.1g"
+      }
+    },
+    {
+      "path": "/usr/man/man1/pr.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/pr.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/prep.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/prep.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/prof.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/prof.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/ps.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/ps.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/pstat.1m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/pstat.1m"
+      }
+    },
+    {
+      "path": "/usr/man/man1/ptx.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/ptx.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/pubindex.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/pubindex.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/pwd.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/pwd.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/quot.1m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/quot.1m"
+      }
+    },
+    {
+      "path": "/usr/man/man1/ranlib.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/ranlib.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/ratfor.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/ratfor.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/refer.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/refer.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/restor.1m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/restor.1m"
+      }
+    },
+    {
+      "path": "/usr/man/man1/rev.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/rev.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/rm.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/rm.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/roff.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/roff.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/sa.1m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/sa.1m"
+      }
+    },
+    {
+      "path": "/usr/man/man1/sed.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/sed.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/sh.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/sh.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/size.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/size.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/sleep.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/sleep.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/sort.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/sort.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/spell.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/spell.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/spline.1g",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/spline.1g"
+      }
+    },
+    {
+      "path": "/usr/man/man1/split.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/split.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/strip.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/strip.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/struct.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/struct.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/stty.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/stty.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/su.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/su.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/sum.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/sum.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/sync.1m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/sync.1m"
+      }
+    },
+    {
+      "path": "/usr/man/man1/tabs.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/tabs.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/tail.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/tail.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/tar.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/tar.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/tbl.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/tbl.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/tc.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/tc.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/tee.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/tee.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/test.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/test.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/time.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/time.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/tk.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/tk.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/touch.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/touch.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/tp.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/tp.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/tr.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/tr.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/troff.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/troff.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/true.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/true.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/tsort.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/tsort.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/tty.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/tty.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/uniq.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/uniq.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/units.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/units.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/uucp.1c",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/uucp.1c"
+      }
+    },
+    {
+      "path": "/usr/man/man1/uux.1c",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/uux.1c"
+      }
+    },
+    {
+      "path": "/usr/man/man1/wait.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/wait.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/wall.1m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/wall.1m"
+      }
+    },
+    {
+      "path": "/usr/man/man1/wc.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/wc.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/who.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/who.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/write.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/write.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/xsend.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/xsend.1"
+      }
+    },
+    {
+      "path": "/usr/man/man1/yacc.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/yacc.1"
+      }
+    },
+    {
+      "path": "/usr/man/man2",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals"
+    },
+    {
+      "path": "/usr/man/man2/access.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/access.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/acct.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/acct.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/alarm.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/alarm.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/brk.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/brk.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/chdir.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/chdir.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/chmod.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/chmod.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/chown.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/chown.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/close.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/close.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/creat.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/creat.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/dup.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/dup.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/exec.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/exec.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/exit.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/exit.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/fork.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/fork.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/getpid.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/getpid.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/getuid.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/getuid.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/indir.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/indir.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/intro.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/intro.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/ioctl.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/ioctl.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/kill.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/kill.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/link.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/link.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/lock.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/lock.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/lseek.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/lseek.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/mknod.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/mknod.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/mount.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/mount.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/mpx.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/mpx.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/mpxcall.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/mpxcall.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/nice.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/nice.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/open.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/open.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/pause.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/pause.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/phys.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/phys.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/pipe.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/pipe.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/pkon.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/pkon.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/profil.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/profil.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/ptrace.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/ptrace.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/read.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/read.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/setuid.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/setuid.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/signal.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/signal.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/stat.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/stat.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/stime.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/stime.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/sync.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/sync.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/time.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/time.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/times.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/times.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/umask.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/umask.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/unlink.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/unlink.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/utime.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/utime.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/wait.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/wait.2"
+      }
+    },
+    {
+      "path": "/usr/man/man2/write.2",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man2/write.2"
+      }
+    },
+    {
+      "path": "/usr/man/man3",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals"
+    },
+    {
+      "path": "/usr/man/man3/abort.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/abort.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/abs.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/abs.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/assert.3x",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/assert.3x"
+      }
+    },
+    {
+      "path": "/usr/man/man3/atof.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/atof.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/crypt.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/crypt.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/ctime.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/ctime.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/ctype.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/ctype.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/dbm.3x",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/dbm.3x"
+      }
+    },
+    {
+      "path": "/usr/man/man3/ecvt.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/ecvt.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/end.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/end.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/exp.3m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/exp.3m"
+      }
+    },
+    {
+      "path": "/usr/man/man3/fclose.3s",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/fclose.3s"
+      }
+    },
+    {
+      "path": "/usr/man/man3/ferror.3s",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/ferror.3s"
+      }
+    },
+    {
+      "path": "/usr/man/man3/floor.3m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/floor.3m"
+      }
+    },
+    {
+      "path": "/usr/man/man3/fopen.3s",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/fopen.3s"
+      }
+    },
+    {
+      "path": "/usr/man/man3/fread.3s",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/fread.3s"
+      }
+    },
+    {
+      "path": "/usr/man/man3/frexp.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/frexp.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/fseek.3s",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/fseek.3s"
+      }
+    },
+    {
+      "path": "/usr/man/man3/getc.3s",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/getc.3s"
+      }
+    },
+    {
+      "path": "/usr/man/man3/getenv.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/getenv.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/getgrent.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/getgrent.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/getlogin.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/getlogin.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/getpass.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/getpass.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/getpw.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/getpw.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/getpwent.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/getpwent.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/gets.3s",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/gets.3s"
+      }
+    },
+    {
+      "path": "/usr/man/man3/hypot.3m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/hypot.3m"
+      }
+    },
+    {
+      "path": "/usr/man/man3/intro.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/intro.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/j0.3m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/j0.3m"
+      }
+    },
+    {
+      "path": "/usr/man/man3/l3tol.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/l3tol.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/malloc.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/malloc.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/mktemp.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/mktemp.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/monitor.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/monitor.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/mp.3x",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/mp.3x"
+      }
+    },
+    {
+      "path": "/usr/man/man3/nlist.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/nlist.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/perror.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/perror.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/pkopen.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/pkopen.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/plot.3x",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/plot.3x"
+      }
+    },
+    {
+      "path": "/usr/man/man3/popen.3s",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/popen.3s"
+      }
+    },
+    {
+      "path": "/usr/man/man3/printf.3s",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/printf.3s"
+      }
+    },
+    {
+      "path": "/usr/man/man3/putc.3s",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/putc.3s"
+      }
+    },
+    {
+      "path": "/usr/man/man3/puts.3s",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/puts.3s"
+      }
+    },
+    {
+      "path": "/usr/man/man3/qsort.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/qsort.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/rand.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/rand.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/scanf.3s",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/scanf.3s"
+      }
+    },
+    {
+      "path": "/usr/man/man3/setbuf.3s",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/setbuf.3s"
+      }
+    },
+    {
+      "path": "/usr/man/man3/setjmp.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/setjmp.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/sin.3m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/sin.3m"
+      }
+    },
+    {
+      "path": "/usr/man/man3/sinh.3m",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/sinh.3m"
+      }
+    },
+    {
+      "path": "/usr/man/man3/sleep.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/sleep.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/stdio.3s",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/stdio.3s"
+      }
+    },
+    {
+      "path": "/usr/man/man3/string.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/string.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/swab.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/swab.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/system.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/system.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/ttyname.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/ttyname.3"
+      }
+    },
+    {
+      "path": "/usr/man/man3/ungetc.3s",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/ungetc.3s"
+      }
+    },
+    {
+      "path": "/usr/man/man4",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals"
+    },
+    {
+      "path": "/usr/man/man4/cat.4",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man4/cat.4"
+      }
+    },
+    {
+      "path": "/usr/man/man4/dn.4",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man4/dn.4"
+      }
+    },
+    {
+      "path": "/usr/man/man4/du.4",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man4/du.4"
+      }
+    },
+    {
+      "path": "/usr/man/man4/hp.4",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man4/hp.4"
+      }
+    },
+    {
+      "path": "/usr/man/man4/hs.4",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man4/hs.4"
+      }
+    },
+    {
+      "path": "/usr/man/man4/ht.4",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man4/ht.4"
+      }
+    },
+    {
+      "path": "/usr/man/man4/mem.4",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man4/mem.4"
+      }
+    },
+    {
+      "path": "/usr/man/man4/null.4",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man4/null.4"
+      }
+    },
+    {
+      "path": "/usr/man/man4/pk.4",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man4/pk.4"
+      }
+    },
+    {
+      "path": "/usr/man/man4/rf.4",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man4/rf.4"
+      }
+    },
+    {
+      "path": "/usr/man/man4/rk.4",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man4/rk.4"
+      }
+    },
+    {
+      "path": "/usr/man/man4/rp.4",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man4/rp.4"
+      }
+    },
+    {
+      "path": "/usr/man/man4/tc.4",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man4/tc.4"
+      }
+    },
+    {
+      "path": "/usr/man/man4/tm.4",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man4/tm.4"
+      }
+    },
+    {
+      "path": "/usr/man/man4/tty.4",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man4/tty.4"
+      }
+    },
+    {
+      "path": "/usr/man/man4/vp.4",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man4/vp.4"
+      }
+    },
+    {
+      "path": "/usr/man/man5",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals"
+    },
+    {
+      "path": "/usr/man/man5/a.out.5",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man5/a.out.5"
+      }
+    },
+    {
+      "path": "/usr/man/man5/acct.5",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man5/acct.5"
+      }
+    },
+    {
+      "path": "/usr/man/man5/ar.5",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man5/ar.5"
+      }
+    },
+    {
+      "path": "/usr/man/man5/core.5",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man5/core.5"
+      }
+    },
+    {
+      "path": "/usr/man/man5/dir.5",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man5/dir.5"
+      }
+    },
+    {
+      "path": "/usr/man/man5/dump.5",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man5/dump.5"
+      }
+    },
+    {
+      "path": "/usr/man/man5/environ.5",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man5/environ.5"
+      }
+    },
+    {
+      "path": "/usr/man/man5/filsys.5",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man5/filsys.5"
+      }
+    },
+    {
+      "path": "/usr/man/man5/group.5",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man5/group.5"
+      }
+    },
+    {
+      "path": "/usr/man/man5/mpxio.5",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man5/mpxio.5"
+      }
+    },
+    {
+      "path": "/usr/man/man5/mtab.5",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man5/mtab.5"
+      }
+    },
+    {
+      "path": "/usr/man/man5/passwd.5",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man5/passwd.5"
+      }
+    },
+    {
+      "path": "/usr/man/man5/plot.5",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man5/plot.5"
+      }
+    },
+    {
+      "path": "/usr/man/man5/tp.5",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man5/tp.5"
+      }
+    },
+    {
+      "path": "/usr/man/man5/ttys.5",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man5/ttys.5"
+      }
+    },
+    {
+      "path": "/usr/man/man5/types.5",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man5/types.5"
+      }
+    },
+    {
+      "path": "/usr/man/man5/utmp.5",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man5/utmp.5"
+      }
+    },
+    {
+      "path": "/usr/man/man6",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals"
+    },
+    {
+      "path": "/usr/man/man6/arithmetic.6",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man6/arithmetic.6"
+      }
+    },
+    {
+      "path": "/usr/man/man6/backgammon.6",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man6/backgammon.6"
+      }
+    },
+    {
+      "path": "/usr/man/man6/banner.6",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man6/banner.6"
+      }
+    },
+    {
+      "path": "/usr/man/man6/bcd.6",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man6/bcd.6"
+      }
+    },
+    {
+      "path": "/usr/man/man6/bj.6",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man6/bj.6"
+      }
+    },
+    {
+      "path": "/usr/man/man6/checkers.6",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man6/checkers.6"
+      }
+    },
+    {
+      "path": "/usr/man/man6/chess.6",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man6/chess.6"
+      }
+    },
+    {
+      "path": "/usr/man/man6/ching.6",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man6/ching.6"
+      }
+    },
+    {
+      "path": "/usr/man/man6/cubic.6",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man6/cubic.6"
+      }
+    },
+    {
+      "path": "/usr/man/man6/maze.6",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man6/maze.6"
+      }
+    },
+    {
+      "path": "/usr/man/man6/moo.6",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man6/moo.6"
+      }
+    },
+    {
+      "path": "/usr/man/man6/quiz.6",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man6/quiz.6"
+      }
+    },
+    {
+      "path": "/usr/man/man6/reversi.6",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man6/reversi.6"
+      }
+    },
+    {
+      "path": "/usr/man/man6/ttt.6",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man6/ttt.6"
+      }
+    },
+    {
+      "path": "/usr/man/man6/words.6",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man6/words.6"
+      }
+    },
+    {
+      "path": "/usr/man/man6/wump.6",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man6/wump.6"
+      }
+    },
+    {
+      "path": "/usr/man/man7",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals"
+    },
+    {
+      "path": "/usr/man/man7/ascii.7",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man7/ascii.7"
+      }
+    },
+    {
+      "path": "/usr/man/man7/eqnchar.7",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man7/eqnchar.7"
+      }
+    },
+    {
+      "path": "/usr/man/man7/hier.7",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man7/hier.7"
+      }
+    },
+    {
+      "path": "/usr/man/man7/man.7",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man7/man.7"
+      }
+    },
+    {
+      "path": "/usr/man/man7/ms.7",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man7/ms.7"
+      }
+    },
+    {
+      "path": "/usr/man/man7/term.7",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man7/term.7"
+      }
+    },
+    {
+      "path": "/usr/man/man8",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals"
+    },
+    {
+      "path": "/usr/man/man8/boot.8",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man8/boot.8"
+      }
+    },
+    {
+      "path": "/usr/man/man8/crash.8",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man8/crash.8"
+      }
+    },
+    {
+      "path": "/usr/man/man8/cron.8",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man8/cron.8"
+      }
+    },
+    {
+      "path": "/usr/man/man8/getty.8",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man8/getty.8"
+      }
+    },
+    {
+      "path": "/usr/man/man8/init.8",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man8/init.8"
+      }
+    },
+    {
+      "path": "/usr/man/man8/makekey.8",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man8/makekey.8"
+      }
+    },
+    {
+      "path": "/usr/man/man8/update.8",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man8/update.8"
+      }
     }
   ]
 }

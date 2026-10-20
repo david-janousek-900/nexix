@@ -19,8 +19,8 @@ The inventory accounts for **221 components, 2,144 distribution files and
 4 partial, 1 prototype and 159 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **386 tracking tasks: 162 done, 0 in progress
-and 224 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 357, 362–386 are complete**. These counts are a work breakdown, not an
+The expanded roadmap below has **386 tracking tasks: 163 done, 0 in progress
+and 223 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 357, 362–386 are complete**. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -463,7 +463,7 @@ are accounted for. Final native rebuild acceptance is task 207.
 | 283 | Port learn engine | To do | Sessions, workspace isolation and helper execution |
 | 284 | Port learn private tee/lcount helpers | To do | Distinct from /usr/bin/tee |
 | 285 | Install/test lesson archives and learn workdirs | To do | All six archives and representative lesson sessions |
-| 286 | Install all manual pages and native annotations | To do | 307 pages, sections 0–8 |
+| 286 | Install all manual pages and native annotations | Done | All 307 original files installed byte-for-byte; separate native-port notes; `make test-man-pages`; Git history |
 | 287 | Install/test original man script | To do | Section selection, -w, missing pages and formatter modes |
 | 288 | Install/test technical documents and driving scripts | To do | Native formatter/tool references |
 

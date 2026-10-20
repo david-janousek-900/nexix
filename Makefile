@@ -2134,3 +2134,8 @@ test-vi-edit: build/nexix-multi.iso stage
 	$(PYTHON) tools/vi_edit_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/vi_edit_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test-vi-acceptance: test-vi-edit
+
+.PHONY: test-man-pages
+test-man-pages:
+	$(PYTHON) tests/manual_pages.py
+test: test-man-pages
