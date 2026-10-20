@@ -6684,6 +6684,511 @@
         "root": "config",
         "path": "usr/man/man8/update.8"
       }
+    },
+    {
+      "path": "/usr/lib/term",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff"
+    },
+    {
+      "path": "/usr/lib/term/tab300-12",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/tab300-12"
+      }
+    },
+    {
+      "path": "/usr/lib/term/tab300",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/tab300"
+      }
+    },
+    {
+      "path": "/usr/lib/term/tab300s-12",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/tab300s-12"
+      }
+    },
+    {
+      "path": "/usr/lib/term/tab300s",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/tab300s"
+      }
+    },
+    {
+      "path": "/usr/lib/term/tab37",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/tab37"
+      }
+    },
+    {
+      "path": "/usr/lib/term/tab450-12-8",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/tab450-12-8"
+      }
+    },
+    {
+      "path": "/usr/lib/term/tab450-12",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/tab450-12"
+      }
+    },
+    {
+      "path": "/usr/lib/term/tab450",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/tab450"
+      }
+    },
+    {
+      "path": "/usr/lib/term/tab832",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/tab832"
+      }
+    },
+    {
+      "path": "/usr/lib/term/taba1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/taba1"
+      }
+    },
+    {
+      "path": "/usr/lib/term/tablp",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/tablp"
+      }
+    },
+    {
+      "path": "/usr/lib/term/tabtn300",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/tabtn300"
+      }
+    },
+    {
+      "path": "/usr/lib/font",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff"
+    },
+    {
+      "path": "/usr/lib/font/ftB",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftB"
+      }
+    },
+    {
+      "path": "/usr/lib/font/ftBC",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftBC"
+      }
+    },
+    {
+      "path": "/usr/lib/font/ftC",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftC"
+      }
+    },
+    {
+      "path": "/usr/lib/font/ftCE",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftCE"
+      }
+    },
+    {
+      "path": "/usr/lib/font/ftCI",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftCI"
+      }
+    },
+    {
+      "path": "/usr/lib/font/ftCK",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftCK"
+      }
+    },
+    {
+      "path": "/usr/lib/font/ftCS",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftCS"
+      }
+    },
+    {
+      "path": "/usr/lib/font/ftCW",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftCW"
+      }
+    },
+    {
+      "path": "/usr/lib/font/ftG",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftG"
+      }
+    },
+    {
+      "path": "/usr/lib/font/ftGI",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftGI"
+      }
+    },
+    {
+      "path": "/usr/lib/font/ftGM",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftGM"
+      }
+    },
+    {
+      "path": "/usr/lib/font/ftGR",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftGR"
+      }
+    },
+    {
+      "path": "/usr/lib/font/ftI",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftI"
+      }
+    },
+    {
+      "path": "/usr/lib/font/ftL",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftL"
+      }
+    },
+    {
+      "path": "/usr/lib/font/ftLI",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftLI"
+      }
+    },
+    {
+      "path": "/usr/lib/font/ftPA",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftPA"
+      }
+    },
+    {
+      "path": "/usr/lib/font/ftPB",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftPB"
+      }
+    },
+    {
+      "path": "/usr/lib/font/ftPI",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftPI"
+      }
+    },
+    {
+      "path": "/usr/lib/font/ftR",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftR"
+      }
+    },
+    {
+      "path": "/usr/lib/font/ftS",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftS"
+      }
+    },
+    {
+      "path": "/usr/lib/font/ftSB",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftSB"
+      }
+    },
+    {
+      "path": "/usr/lib/font/ftSI",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftSI"
+      }
+    },
+    {
+      "path": "/usr/lib/font/ftSM",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftSM"
+      }
+    },
+    {
+      "path": "/usr/lib/font/ftUD",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftUD"
+      }
+    },
+    {
+      "path": "/usr/lib/font/ftXM",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "roff-data/ftXM"
+      }
+    },
+    {
+      "path": "/usr/lib",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff"
     }
   ]
 }

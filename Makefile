@@ -2139,3 +2139,5 @@ test-vi-acceptance: test-vi-edit
 test-man-pages:
 	$(PYTHON) tests/manual_pages.py
 test: test-man-pages
+
+include tools/formatter-tables.mk

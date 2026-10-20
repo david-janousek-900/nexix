@@ -15,12 +15,12 @@ installed; the complete list and destinations are in [the installation manifest]
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
 The inventory accounts for **221 components, 2,144 distribution files and
-36 supporting/platform requirements**. Its component statuses are 57 implemented,
-4 partial, 1 prototype and 159 not ported; importing reference inputs does not
+36 supporting/platform requirements**. Its component statuses are 58 implemented,
+5 partial, 1 prototype and 157 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **386 tracking tasks: 163 done, 0 in progress
-and 223 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 357, 362–386 are complete**. These counts are a work breakdown, not an
+The expanded roadmap below has **386 tracking tasks: 164 done, 0 in progress
+and 222 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 357, 362–386 are complete**. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -442,7 +442,7 @@ are accounted for. Final native rebuild acceptance is task 207.
 |---:|---|---|---|
 | 263 | Port roff | To do | Retained formatter behavior |
 | 264 | Retarget nroff/troff parsing and layout core | To do | Native widths and formatter memory model |
-| 265 | Regenerate native terminal/font tables | To do | mkfont/chars and supplied table targets |
+| 265 | Regenerate native terminal/font tables | Done | 12 terminal and 25 font tables regenerated without PDP-11 headers; native mkfont/chars; `make test-formatter-table-helpers` at 16/128 MiB; Git history |
 | 266 | Complete nroff terminal output | To do | Readable serial text and formatter fixtures |
 | 267 | Complete troff typesetter output | To do | Captured protocol and font/layout fixtures |
 | 268 | Port eqn | To do | Equation parsing and troff integration |

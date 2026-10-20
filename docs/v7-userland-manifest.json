@@ -16527,402 +16527,445 @@
           "name": "mkfont",
           "install": null,
           "role": "helper",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "chars",
           "install": null,
           "role": "helper",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/chars.c"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "textscript",
           "install": null,
           "role": "build_helper",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/textscript"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftB",
           "install": "/usr/lib/font/ftB",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftB.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftBC",
           "install": "/usr/lib/font/ftBC",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftBC.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftC",
           "install": "/usr/lib/font/ftC",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftC.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftCE",
           "install": "/usr/lib/font/ftCE",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftCE.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftCI",
           "install": "/usr/lib/font/ftCI",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftCI.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftCK",
           "install": "/usr/lib/font/ftCK",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftCK.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftCS",
           "install": "/usr/lib/font/ftCS",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftCS.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftCW",
           "install": "/usr/lib/font/ftCW",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftCW.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftG",
           "install": "/usr/lib/font/ftG",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftG.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftGI",
           "install": "/usr/lib/font/ftGI",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftGI.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftGM",
           "install": "/usr/lib/font/ftGM",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftGM.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftGR",
           "install": "/usr/lib/font/ftGR",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftGR.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftI",
           "install": "/usr/lib/font/ftI",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftI.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftL",
           "install": "/usr/lib/font/ftL",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftL.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftLI",
           "install": "/usr/lib/font/ftLI",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftLI.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftPA",
           "install": "/usr/lib/font/ftPA",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftPA.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftPB",
           "install": "/usr/lib/font/ftPB",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftPB.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftPI",
           "install": "/usr/lib/font/ftPI",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftPI.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftR",
           "install": "/usr/lib/font/ftR",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftR.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftS",
           "install": "/usr/lib/font/ftS",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftS.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftSB",
           "install": "/usr/lib/font/ftSB",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftSB.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftSI",
           "install": "/usr/lib/font/ftSI",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftSI.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftSM",
           "install": "/usr/lib/font/ftSM",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftSM.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftUD",
           "install": "/usr/lib/font/ftUD",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftUD.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "font/ftXM",
           "install": "/usr/lib/font/ftXM",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/font/ftXM.c",
-            "reference/v7/usr/src/cmd/troff/font/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "term/tab300-12",
           "install": "/usr/lib/term/tab300-12",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/term/tab300-12.c",
-            "reference/v7/usr/src/cmd/troff/term/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "term/tab300",
           "install": "/usr/lib/term/tab300",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/term/tab300.c",
-            "reference/v7/usr/src/cmd/troff/term/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "term/tab300s-12",
           "install": "/usr/lib/term/tab300s-12",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/term/tab300s-12.c",
-            "reference/v7/usr/src/cmd/troff/term/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "term/tab300s",
           "install": "/usr/lib/term/tab300s",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/term/tab300s.c",
-            "reference/v7/usr/src/cmd/troff/term/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "term/tab37",
           "install": "/usr/lib/term/tab37",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/term/tab37.c",
-            "reference/v7/usr/src/cmd/troff/term/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "term/tab450-12-8",
           "install": "/usr/lib/term/tab450-12-8",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/term/tab450-12-8.c",
-            "reference/v7/usr/src/cmd/troff/term/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "term/tab450-12",
           "install": "/usr/lib/term/tab450-12",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/term/tab450-12.c",
-            "reference/v7/usr/src/cmd/troff/term/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "term/tab450",
           "install": "/usr/lib/term/tab450",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/term/tab450.c",
-            "reference/v7/usr/src/cmd/troff/term/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "term/tab832",
           "install": "/usr/lib/term/tab832",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/term/tab832.c",
-            "reference/v7/usr/src/cmd/troff/term/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "term/taba1",
           "install": "/usr/lib/term/taba1",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/term/taba1.c",
-            "reference/v7/usr/src/cmd/troff/term/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "term/tablp",
           "install": "/usr/lib/term/tablp",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/term/tablp.c",
-            "reference/v7/usr/src/cmd/troff/term/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         },
         {
           "name": "term/tabtn300",
           "install": "/usr/lib/term/tabtn300",
           "role": "data",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/term/tabtn300.c",
-            "reference/v7/usr/src/cmd/troff/term/makefile"
+            "tools/formatter_tables.py",
+            "tests/formatter_tables.py",
+            "tools/formatter_tables_smoke.py"
           ]
         }
       ],
       "priority": 11,
-      "status": "not_ported",
+      "status": "partial",
       "dependencies": [
         {
           "target": "native-build-tools",

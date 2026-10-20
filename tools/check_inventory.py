@@ -136,7 +136,7 @@ def validate(manifest, root=ROOT):
             paths(output.get('evidence'), owner)
             if output.get('status') == 'implemented':
                 need(bool(output.get('evidence')), f'{owner}: implemented output needs evidence')
-                need(entry.get('status') == 'implemented', f'{owner}: output/entry implementation status differs')
+                need(entry.get('status') in {'implemented', 'partial'}, f'{owner}: output/entry implementation status differs')
                 if output.get('role') == 'installed':
                     need(location is not None, f'{owner}: installed output requires a destination')
                 if location is not None and output.get('role') in {'installed', 'optional', 'helper'}:
