@@ -7697,6 +7697,19 @@
         "root": "config",
         "path": "usr/pub/eqnchar"
       }
+    },
+    {
+      "path": "/bin/tc",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.tc",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-tc.elf"
+      }
     }
   ]
 }

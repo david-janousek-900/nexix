@@ -15634,14 +15634,16 @@
           "name": "tc",
           "install": "/bin/tc",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/tc.c",
+            "tools/tc_smoke.py",
+            "tests/formatter-protocol.c"
           ]
         }
       ],
       "priority": 12,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -15688,12 +15690,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Translate a typesetter fixture into expected Tektronix protocol output.",
         "Verify native build, reference options, exit status and malformed-input handling."

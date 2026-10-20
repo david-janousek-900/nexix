@@ -58,3 +58,9 @@ The distinct V7 terminal-equation sources are retained under `user/neqn` with
 the same pointer/diagnostic/parser adaptations. `neqn` output feeds `nroff`;
 `eqn` output feeds `troff`. The respective reference implementations' layout
 choices and supported syntax are retained.
+
+`tc` retains the V7 C/A/T-to-Tektronix 4014 converter for historical `man -k`
+and `man -ek` modes. Those modes produce Tektronix graphics protocol, not keyword
+search results or ANSI text. Use `tc -t` for noninteractive captures. Acceptance
+checks generated protocol with page/scale options; a Tektronix terminal/emulator
+is needed to display it graphically. Normal `man` output uses the text pager.

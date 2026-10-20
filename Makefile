@@ -2176,3 +2176,8 @@ test-public-data: build/nexix-multi.iso stage
 	$(PYTHON) tools/public_data_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/public_data_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-public-data
+.PHONY: test-tc
+test-tc: build/v7-tc.elf build/formatter-protocol.elf build/nexix-multi.iso
+	$(PYTHON) tools/tc_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/tc_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-tc
