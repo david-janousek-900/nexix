@@ -44,14 +44,18 @@ class Installation(unittest.TestCase):
         self.assertEqual(bootstrap, Path('build/root.img').read_bytes())
         self.assertFalse((self.stage / 'root/dev/console').exists())
 
-    def test_installed_scripts_preserve_reference_bytes(self):
+    def test_installed_scripts_preserve_reference_or_declared_port_bytes(self):
         self.stage_it()
         entries,payloads=install.read_stage(self.stage,self.manifest)
         owners={e['id']:e for e in json.loads(install.INVENTORY.read_text())['entries']}
         for e in entries:
             owner=owners[e['component']]
             if owner['kind']=='installed_script':
-                self.assertEqual(payloads[e['path']],(install.ROOT/owner['source_files'][0]).read_bytes())
+                source=owner['ported_script'] if 'ported_script' in owner else owner['source_files'][0]
+                self.assertEqual(payloads[e['path']],(install.ROOT/source).read_bytes())
+                if 'ported_script' in owner:
+                    self.assertTrue((install.ROOT/owner['port_notes']).is_file())
+                    self.assertFalse(source.startswith('reference/'))
                 self.assertTrue(int(e['mode'],8)&0o111)
 
     def test_nonexecutable_script_is_rejected(self):

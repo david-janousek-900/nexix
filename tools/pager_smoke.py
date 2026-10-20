@@ -37,8 +37,8 @@ with tempfile.TemporaryDirectory(prefix='nx-pager-') as temp:
     send('n');check(20) # No preceding occurrence: stable position.
     send('N');check(20)
     send('g');check(1)
-    if backend=='serial':send('\x1b[6~');check(page+1);send('\x1b[5~');check(1);send('\x1b[B');check(2);send('\x1b[A');check(1)
-    send('q');g.expect('PAGER_DONE\r\n');g.expect(r'root@nexix.localdomain# ')
+    if backend=='serial':send('\x1b[6~');check(page+1);send('\x1b[5~');check(1);send('\x1b[B');check(2);send('\x1b[A');check(1);send('\x1b[4~');check(101-page);send('\x1b[1~');check(1)
+    send('\x1bq' if backend=='serial' else 'q');g.expect('PAGER_DONE\r\n');g.expect(r'root@nexix.localdomain# ')
    # A long/tabbed document cannot overwrite input while normalization expands it.
    g.send('TERM=ansi /tmp/more /tmp/tabs; echo PAGER_DONE\n');g.expect('--More-- ');g.send('q');g.expect('PAGER_DONE\r\n');g.expect(r'root@nexix.localdomain# ')
    g.command('echo terminal-restored',stdout='terminal-restored\n')

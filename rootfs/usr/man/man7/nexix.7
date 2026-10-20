@@ -1,0 +1,27 @@
+.TH NEXIX 7 Nexix
+.SH NAME
+nexix \- native manual-reading and port notes
+.SH DESCRIPTION
+Nexix 0.1.0 ports the V7 distribution to x86_64.
+Original manual sources are preserved unchanged in sections 0 through 8.
+Presence of a manual does not imply that every documented command or interface
+is implemented yet. The repository task list and inventory record port status.
+.PP
+The system uses ELF64 executables, native drivers and native ABI structures.
+Historical header excerpts under /usr/man/include are documentation;
+use /usr/include for native development.
+Filesystem access, modification and change timestamps retain V7 semantics.
+The kernel initializes UTC epoch time from RTC; libc applies the configured TZ.
+.SH READING MANUALS
+Use man name or man section name.
+The default text pager supports space/b for forward/backward pages, j/k or
+arrow keys for lines, Page Up/Down, g/G for beginning/end, /text and ?text for
+literal search, n/N to repeat/reverse, and q to quit.
+Redirected manual output contains no pager controls.
+MANPAGER overrides PAGER; the default is more.
+.PP
+The original formatter modes are retained: -n uses nroff, -ne uses terminal
+equation processing, -t uses troff, -e uses eqn and troff, and -w lists source
+paths. Historical -k/-ek modes emit Tektronix graphics and are not keyword search.
+.SH SEE ALSO
+man(1), more(1), ps(1), uptime(1)

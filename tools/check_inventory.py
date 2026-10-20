@@ -123,6 +123,11 @@ def validate(manifest, root=ROOT):
             need(isinstance(value, list) and all(isinstance(x, str) and x for x in value), f'{owner}: invalid {key}')
         need(bool(entry.get('acceptance')), f'{owner}: no acceptance checks')
         need(bool(entry.get('blockers')) or entry.get('status') == 'implemented' or entry.get('kind') == 'support', f'{owner}: missing blocker assessment')
+        if 'ported_script' in entry:
+            need(entry.get('kind') == 'installed_script', f'{owner}: script port requires installed_script kind')
+            paths([entry['ported_script'], entry.get('port_notes')], owner)
+            need(isinstance(entry['ported_script'], str) and not entry['ported_script'].startswith('reference/'),
+                 f'{owner}: active script port must be outside reference')
         outputs = entry.get('outputs')
         need(isinstance(outputs, list), f'{owner}: outputs must be a list')
         for output in outputs if isinstance(outputs, list) else []:

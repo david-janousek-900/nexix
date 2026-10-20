@@ -15,12 +15,12 @@ installed; the complete list and destinations are in [the installation manifest]
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
 The inventory accounts for **223 components, 2,144 distribution files and
-36 supporting/platform requirements**. Its component statuses are 66 implemented,
-4 partial, 1 prototype and 152 not ported; importing reference inputs does not
+36 supporting/platform requirements**. Its component statuses are 67 implemented,
+4 partial, 1 prototype and 151 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **388 tracking tasks: 175 done, 0 in progress
-and 213 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 253, 264–269, 281–282, 286, 295, 357, 362–388** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **388 tracking tasks: 176 done, 0 in progress
+and 212 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 253, 264–269, 281–282, 286–287, 295, 357, 362–388** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -464,7 +464,7 @@ are accounted for. Final native rebuild acceptance is task 207.
 | 284 | Port learn private tee/lcount helpers | To do | Distinct from /usr/bin/tee |
 | 285 | Install/test lesson archives and learn workdirs | To do | All six archives and representative lesson sessions |
 | 286 | Install all manual pages and native annotations | Done | All 307 original files installed byte-for-byte; separate native-port notes; `make test-man-pages`; Git history |
-| 287 | Install/test original man script | To do | Section selection, -w, missing pages and formatter modes |
+| 287 | Install/test original man script | Done | V7 source lookup and formatter modes, section-0 front matter, native notes and navigable root/user VGA/serial paging; timezone-correct date registers; `make test-man` at 16/128 MiB; Git history |
 | 288 | Install/test technical documents and driving scripts | To do | Native formatter/tool references |
 
 ### Plotting and historical output

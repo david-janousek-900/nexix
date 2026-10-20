@@ -12,6 +12,8 @@ ARG=\\$1
 .NX native
 .nr xx 42
 REGISTER=\n(xx
+DAY=\n(dy
+MONTH=\n(mo
 .ev 1
 .nf
 ENVIRONMENT=one
@@ -29,5 +31,10 @@ with private_guest(qemu,iso,ram,'formatter',{'/tmp/nroff':'v7-nroff.elf','/tmp/i
  g.command('/tmp/nroff -Tlp /tmp/input > /tmp/out')
  for line in ['ARG=native','REGISTER=42','ENVIRONMENT=one','ENVIRONMENT=zero','DIVERTED=text']:
   g.command("grep '"+line+"' /tmp/out",stdout=line+'\n')
+ g.command('TZ=UTC14 /tmp/nroff -Tlp /tmp/input > /tmp/out')
+ g.command("grep 'DAY=' /tmp/out",stdout='DAY=28\n')
+ g.command('TZ=UTC-14 /tmp/nroff -Tlp /tmp/input > /tmp/out')
+ g.command("grep 'DAY=' /tmp/out",stdout='DAY=1\n')
+ g.command("grep 'MONTH=' /tmp/out",stdout='MONTH=3\n')
  g.command('/tmp/nroff -Tmissing /tmp/input > /tmp/out',stdout='Cannot open /usr/lib/term/tabmissing\n',status=255)
 print('PASS: '+ram+' native V7 text, macros, argument frames, environments, registers and diversions')

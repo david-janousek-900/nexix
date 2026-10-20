@@ -4,10 +4,12 @@ Nexix 0.1.0 targets the complete V7 source distribution through native kernel,
 userland, toolchain and historical-platform equivalents, with multi-user boot. The first
 20 tasks provide a bootable single-user system with persistent IDE storage.
 This inventory accounts for the remaining work; it does not implement ports.
+See [manual pages](man-pages.md), [ps](ps.md) and [uptime](uptime.md) for the
+additional installed manual/monitoring commands and their native adaptations.
 
 The authoritative [manifest](v7-userland-manifest.json) accounts for all
 **2,144 distribution files**, grouped into **217 historical components**.
-Four native additions bring the manifest to **221 components** and **36 platform
+Six native additions bring the manifest to **223 components** and **36 platform
 or supporting-input requirements**. The preserved userland source subset still
 contains 1,121 files and its original 174 component records. The full audit adds
 installed scripts, additional games, the root diagnostic source, kernel/boot
@@ -27,8 +29,8 @@ and original metadata to the recorded archive. See [source provenance](../refere
 ## Manifest contract
 
 The reference inventory still covers 217 historical components. Native-only
-additions are recorded separately: `cmd.uname`, `cmd.hostname`, `cmd.clear` and
-`cmd.vi` bring the total to 221. The additional traditional-vi requirement records
+additions are recorded separately: `cmd.uname`, `cmd.hostname`, `cmd.clear`,
+`cmd.vi`, `cmd.uptime` and `cmd.more` bring the total to 223. The additional traditional-vi requirement records
 the separately pinned release and its tested native terminal/editor/recovery port.
 `source_availability: native` requires nonempty `native_sources` outside
 `reference/`, and empty reference `sources`/`source_files`. Native additions
@@ -39,6 +41,9 @@ also require installation outputs, tests and an explicit roadmap mapping.
   All components and requirements map to explicit roadmap task IDs; see the
   [coverage/status contract](roadmap-coverage.md). Task mappings describe planned
   responsibility and do not change native implementation status.
+- Installed shell scripts preserve reference bytes unless an explicit
+  `ported_script` outside the reference tree and `port_notes` document their
+  native adaptation. Staging tests compare against that declared active source.
 - Each entry has an identifier, kind, explicit reference files, outputs and
   install locations, priority, status, dependencies, blockers and acceptance checks.
 - Dependencies distinguish build, runtime and optional runtime requirements.

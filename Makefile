@@ -2191,3 +2191,10 @@ test-pager: build/v7-more.elf build/v7-manfmt.elf build/nexix-multi.iso
 	$(PYTHON) tools/pager_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/pager_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-pager
+.PHONY: test-man
+test-man: build/nexix-multi.iso build/formatter-protocol.elf stage
+	$(PYTHON) tools/man_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/man_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-man
+.PHONY: test-manuals
+test-manuals: test-man-pages test-formatter-table-helpers test-formatter-core test-formatter-macros test-nroff test-troff test-eqn test-neqn test-public-data test-tc test-pager test-man

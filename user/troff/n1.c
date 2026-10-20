@@ -389,25 +389,13 @@ init2()
 	nx = mflg;
 }
 cvtime(){
-
-	long tt;
-	register i;
-
-	time(&tt);
-	tt -= 3600*ZONE;	/*5hrs for EST*/
-	v.dy = (tt/86400L) + 1;
-	v.dw = (v.dy + 3)%7 + 1;
-	for(v.yr=70;; v.yr++){
-		if((v.yr)%4)ms[1]=28;else ms[1]=29;
-		for(i=0;i<12;){
-			if(v.dy<=ms[i]){
-				v.mo = i+1;
-				return;
-			}
-			v.dy -= ms[i++];
-		}
-	}
+    time_t epoch=time(NULL);
+    struct tm *calendar=localtime(&epoch);
+    if(!calendar){prstr("Cannot read local date.\n");done3(1);}
+    v.dy=calendar->tm_mday;v.dw=calendar->tm_wday+1;
+    v.mo=calendar->tm_mon+1;v.yr=calendar->tm_year;
 }
+
 cnum(a)
 char *a;
 {

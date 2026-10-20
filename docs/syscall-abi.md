@@ -118,7 +118,7 @@ four-byte status, even though its pointer occupies an eight-byte argument slot.
 
 | 70 | sigreturn | Readable nx_signal_context pointer | Restores interrupted frame |
 | 71 | getpgrp | None | Current process group |
-| 72 | nx_kinfo | Version, kind, output buffer, capacity | Required/written bytes; effective-root only; [snapshot contract](kernel-information.md) |
+| 72 | nx_kinfo | Version, kind, output buffer, capacity | Required/written bytes; public process/load records, other kinds effective-root only; [snapshot contract](kernel-information.md) |
 
 Calls 64–72 are native extensions beyond V7's 64-entry table. The separate
 identity calls and wait status pointer replace V7's secondary-register returns.

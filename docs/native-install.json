@@ -7749,6 +7749,45 @@
         "root": "config",
         "path": "usr/man/man1/more.1"
       }
+    },
+    {
+      "path": "/bin/man",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "script.man",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "bin/man"
+      }
+    },
+    {
+      "path": "/usr/man/README",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/README"
+      }
+    },
+    {
+      "path": "/usr/man/man7/nexix.7",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man7/nexix.7"
+      }
     }
   ]
 }

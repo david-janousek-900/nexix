@@ -12,7 +12,8 @@ namelist. Process records are readable by ordinary users and contain no kernel
 addresses or environment/argument memory. Other diagnostic table kinds remain
 root-only. The command displays the saved executable name rather than guessing
 arguments from user stacks. Long listings report memory in KiB and a WAIT
-indicator in place of historical ADDR/WCHAN addresses. Archived `k`/namelist mode
+indicator in place of historical ADDR/WCHAN addresses. NICE is shown relative
+to V7's internal baseline of 20, so an unchanged process displays 0. Archived `k`/namelist mode
 is explicitly rejected; Nexix is a resident-memory x86_64 system.
 
 `make test-ps` tests both memory sizes with independent root and ordinary-user

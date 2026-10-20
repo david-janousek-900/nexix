@@ -1,0 +1,109 @@
+if test $# = 0
+then
+    echo 'usage: man [section] [-n|-ne|-t|-e|-k|-ek|-w] name ...' 1>&2
+    exit 2
+fi
+missing=0
+macros=-man
+front=0 normal=0
+tcopt=
+if test ! -t 1
+then
+    tcopt=-t
+fi
+cmd= sec= fil= opt= i= all=
+cmd=n sec=\?
+cd /usr/man || exit 1
+for i
+do
+	case $i in
+
+	0)
+        sec=0 ;;
+	[1-8])
+		sec=$i ;;
+	-n)
+		cmd=n ;;
+	-t)
+		cmd=t ;;
+	-k)
+		cmd=k ;;
+	-e | -et | -te)
+		cmd=e ;;
+	-ek | -ke)
+		cmd=ek ;;
+	-ne | -en)
+		cmd=ne ;;
+
+	-w)
+		cmd=where ;;
+	-*)
+		opt="$opt $i" ;;
+
+	*)
+		if test "$sec" = 0
+        then
+            front=1
+            fil=man0/$i
+            if test ! -f "$fil"
+            then
+                fil='*'
+            fi
+            if test "$i" = permindex
+            then
+                fil="man0/ptxmac $fil"
+            fi
+        else
+            normal=1
+            fil=`echo man$sec/$i.*`
+        fi
+		case $fil in
+		man7/eqnchar.7)
+			all="$all /usr/pub/eqnchar $fil" ;;
+
+		*\*)
+			echo $i not found 1>&2
+            missing=1 ;;
+		*)
+			all="$all $fil" ;;
+		esac
+	esac
+done
+if test "$front$normal" = 11
+then
+    echo 'man: select section 0 separately' 1>&2
+    exit 2
+fi
+if test "$front" = 1
+then
+    macros=-ms
+fi
+case $all in
+	"")
+		exit 1 ;;
+esac
+case $cmd in
+
+n)
+	/usr/libexec/manfmt nroff $opt $macros $all ;;
+ne)
+	neqn $all | /usr/libexec/manfmt nroff $opt $macros ;;
+t)
+	troff -t $opt $macros $all ;;
+k)
+	troff -t $opt $macros $all | tc $tcopt ;;
+e)
+	eqn $all | troff -t $opt $macros ;;
+ek)
+	eqn $all | troff -t $opt $macros | tc $tcopt ;;
+
+where)
+	echo $all ;;
+esac
+
+status=$?
+if test $status = 0
+then
+    exit $missing
+fi
+exit $status

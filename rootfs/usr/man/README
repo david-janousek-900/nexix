@@ -1,0 +1,13 @@
+Nexix manuals
+
+The original V7 manual files in sections 0 through 8 are preserved unchanged.
+They document historical V7. Availability of a page does not mean the command
+or every interface is implemented in Nexix 0.1.0 yet.
+
+Nexix uses native x86_64 ELF programs and native device/interface adaptations,
+not PDP-11 executable layouts or hardware. The historical header excerpts in
+/usr/man/include are for documentation only; installed development headers
+are under /usr/include. Files retain V7 access/modification/change timestamps,
+with the system epoch initialized from RTC. There is no file birth timestamp.
+
+Use man 7 nexix for native manual-reading instructions and adaptations.

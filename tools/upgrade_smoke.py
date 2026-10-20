@@ -25,7 +25,9 @@ def main():
         replace('/etc/hostname',b'upgrade.example.test\n')
         profile=b'PATH=/bin\nHOME=/root\nTZ=CET-1\nexport PATH HOME TZ\n'
         replace('/root/.profile',profile)
-        new_programs=['/bin/vi','/bin/ex','/bin/view','/bin/clear','/usr/libexec/expreserve','/usr/libexec/exrecover']
+        new_programs=['/bin/vi','/bin/ex','/bin/view','/bin/clear','/usr/libexec/expreserve','/usr/libexec/exrecover',
+                      '/bin/man','/bin/more','/usr/libexec/manfmt','/bin/nroff','/bin/troff','/bin/eqn',
+                      '/bin/neqn','/bin/tc','/bin/ps','/bin/uptime','/usr/man/man1/ls.1','/usr/pub/eqnchar']
         for name in new_programs:paths.pop(name)
         saved=replace('/root/keep',b'PRESERVED_DATA\n',REG|0o640);paths['/root/alias']=saved
         data=build_upgrade(source,paths,1700000000);write_image(disk,data)
@@ -51,6 +53,11 @@ def main():
                 login(guest,'root','nexix')
                 guest.command('echo q! | ex -')
                 guest.command('clear && echo',stdout='\033[H\033[2J\n')
+                guest.command('man -w ls',stdout='man1/ls.1\n')
+                guest.command('man ls > /tmp/mancheck')
+                guest.command("grep -c 'list contents' /tmp/mancheck",stdout='1\n')
+                guest.command("uptime | grep -c 'load average: '",stdout='1\n')
+                guest.command('ps ax > /tmp/pscheck')
                 guest.command('echo UPGRADED_OK',stdout='UPGRADED_OK\n')
                 guest.command('echo $TZ',stdout='CET-1\n')
                 guest.command('hostname',stdout='upgrade.example.test\n')

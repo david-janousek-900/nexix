@@ -64,3 +64,35 @@ and `man -ek` modes. Those modes produce Tektronix graphics protocol, not keywor
 search results or ANSI text. Use `tc -t` for noninteractive captures. Acceptance
 checks generated protocol with page/scale options; a Tektronix terminal/emulator
 is needed to display it graphically. Normal `man` output uses the text pager.
+
+## Reading manuals
+
+Use `man ls`, `man 2 read`, `man 3 printf`, `man uptime` or `man 7 nexix`.
+The installed original script is adapted to select `more` on VGA/serial terminals.
+Use Space/b or Page Down/Up for pages, j/k or arrow keys for lines, g/G for
+beginning/end, /text or ?text to search, n/N to repeat/reverse, and q to quit.
+Search is literal and case-sensitive. See [pager behavior](pager.md).
+`MANPAGER` overrides `PAGER`; redirected output bypasses the pager.
+
+`man -w name` retains V7's relative source-path output. Missing pages return 1;
+invalid empty invocations return 2. Section 0 front matter is selected explicitly,
+for example `man 0 intro`, and uses `-ms` (the permuted index loads ptxmac first).
+Section 0 and other sections must be requested separately. Original sections
+1–8 use `-man`; section 1 includes historical suffixes such as `.1m`.
+
+The original formatter selections are retained. `-ne` invokes neqn/nroff and
+`-e` invokes eqn/troff. Native `-t`/`-e` write C/A/T bytes to standard output
+for capture instead of implicitly opening a physical typesetter. Non-terminal
+`-k`/`-ek` captures make tc noninteractive; terminal previews retain its
+interactive behavior. These are historical Tektronix modes, not modern keyword
+search options. The script still has V7 pipeline semantics for optional
+preprocessors; the text formatter/pager adapter checks both of its child statuses.
+
+Manuals describe historical interfaces. `/usr/man/README` and `man 7 nexix`
+provide native annotations without changing the original pages. The formatter's
+date registers now follow libc timezone handling rather than a fixed EST offset;
+the historical year-register representation remains years since 1900.
+
+`make test-manuals` runs the complete manual/data/formatter/pager/frontend
+acceptance group. `make test-man` focuses on installed lookup, formatter modes
+and login-session VGA/serial navigation. Tests use disposable images.

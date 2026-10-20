@@ -81,7 +81,8 @@ int main(int argc,char **argv)
         printf("%.*s",columns-1,status);
         *message=0;if(fflush(stdout)==EOF){result=1;break;}
         c=key();if(c<0 || c=='q' || c=='Q')break;
-        if(c==27){c=key();if(c=='['){c=key();if(c=='A')c='k';else if(c=='B')c='j';else if(c=='H')c='g';else if(c=='F')c='G';else if(c=='5'||c=='6'){int page=c;if(key()=='~')c=page=='5'?'b':' ';}else continue;}else continue;}
+        if(c==27){c=key();if(c=='['){c=key();if(c=='A')c='k';else if(c=='B')c='j';else if(c=='H')c='g';else if(c=='F')c='G';else if(c=='1'||c=='4'||c=='5'||c=='6'||c=='7'||c=='8'){int code=c;if(key()=='~')c=code=='5'?'b':code=='6'?' ':code=='1'||code=='7'?'g':'G';else continue;}else continue;}}
+        if(c<0 || c=='q' || c=='Q')break;
         if(c==' '||c=='f'||c==6)top+=rows-1;
         else if(c=='b'||c==2)top=top>=(size_t)(rows-1)?top-(rows-1):0;
         else if(c=='j'||c=='\n'||c=='\r'||c==14)top++;

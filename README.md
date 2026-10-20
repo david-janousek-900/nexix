@@ -8,7 +8,7 @@ ELF64 executables; Nexix does not emulate PDP-11 binaries.
 
 The current development version is **0.1.0**. It boots in QEMU to multi-user login
 on a VGA/PS/2 console by default, with optional serial mode. It provides persistent
-IDE storage, the V7 Bourne shell and 55 native ELF programs. The kernel provides protected process
+IDE storage, the V7 Bourne shell and 64 native ELF programs. The kernel provides protected process
 address spaces, scheduling, fork/exec, signals, pipes, permissions and filesystem
 operations. Native libc, libm, startup objects and headers support the ported
 programs. The complete V7 port and guest self-hosting are still unfinished.
@@ -17,6 +17,12 @@ TCP/IP networking is planned for **0.2.0**; it is not currently available.
 Traditional BSD `vi`, `ex` and read-only `view` are installed alongside V7 `ed`.
 See [vi usage, recovery and tests](docs/vi-port.md). The `clear` command clears
 the VGA or ANSI serial terminal.
+
+The `man` command reads the V7 manuals with a navigable VGA/serial pager.
+Use Space/b for pages, j/k or arrows for lines, /text to search and q to quit.
+See [manuals and formatter modes](docs/man-pages.md). The native
+[ps](docs/ps.md) command lists processes; [uptime](docs/uptime.md) reports
+elapsed boot time, logged-in sessions and 1/5/15-minute scheduler load.
 
 See the [task list](docs/tasks.md) for completed and remaining work, the
 [installation manifest](docs/native-install.json) for installed programs, and the
@@ -156,6 +162,9 @@ echo hello > /tmp/hello
 cat /tmp/hello
 date -u
 dmesg
+ps ax
+uptime
+man ls
 sync
 ```
 
@@ -193,6 +202,10 @@ existing-image migration and console limitations.
 
 ```sh
 make test-inventory
+make test-man
+make test-pager
+make test-ps
+make test-uptime
 make test-unit
 make test-essential
 make test-vga
