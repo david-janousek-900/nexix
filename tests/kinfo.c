@@ -84,8 +84,9 @@ int main(void)
     assert(kinfo_request(1,UINT64_C(0x100000001),base,sizeof(output))==-NX_EINVAL);
     assert(request(0,base,sizeof(output))==-NX_EINVAL && request(8,0,0)==-NX_EINVAL);
     user.u_uid=123;
-    for(unsigned kind=1;kind<=7;++kind)assert(request(kind,0,0)==-NX_EPERM && request(kind,base,sizeof(output))==-NX_EPERM);
+    for(unsigned kind=2;kind<=7;++kind)assert(request(kind,0,0)==-NX_EPERM && request(kind,base,sizeof(output))==-NX_EPERM);
     assert(!writes);for(unsigned i=0;i<sizeof(output);++i)assert(output[i]==0xa5);
+    assert(request(1,base,sizeof(output))>0);
     assert(saves==restores && !locked);
     puts("PASS: snapshot versions, dense tables, 64-bit fields, bounds, atomic rejection and privilege");
     return 0;

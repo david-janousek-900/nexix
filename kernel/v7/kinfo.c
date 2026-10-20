@@ -62,7 +62,7 @@ int64_t kinfo_request(uint64_t version,uint64_t kind,uintptr_t buffer,size_t byt
     if(version!=NX_KINFO_VERSION || kind<NX_KINFO_PROCESS || kind>NX_KINFO_IO)return -NX_EINVAL;
     uintptr_t irq=proc_irq_save();
     struct proc *caller=proc_current();
-    if(!caller || !caller->p_user || !proc_superuser(caller->p_user)){
+    if(!caller || !caller->p_user || (kind!=NX_KINFO_PROCESS && !proc_superuser(caller->p_user))){
         proc_irq_restore(irq);return -NX_EPERM;
     }
     static const unsigned capacities[]={0,V7_NPROC,V7_NFILE,V7_NINODE,V7_NTEXT,NAMESPACE_MOUNTS,1,1};

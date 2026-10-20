@@ -106,7 +106,8 @@ int kinfo_test(void)
     pid_t child=fork();CHECK(child>=0);
     if(!child){
         CHECK(setuid(123)==0);
-        for(unsigned k=1;k<=7;++k){
+        CHECK(nx_kinfo(1,NX_KINFO_PROCESS,buffer,CAPACITY)>0);
+        for(unsigned k=2;k<=7;++k){
             CHECK(nx_kinfo(1,k,NULL,0)==-1 && errno==EPERM);
             CHECK(nx_kinfo(1,k,buffer,CAPACITY)==-1 && errno==EPERM);
         }

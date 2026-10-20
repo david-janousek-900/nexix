@@ -7348,6 +7348,19 @@
         "root": "config",
         "path": "usr/lib/tmac/tmac.srefs"
       }
+    },
+    {
+      "path": "/bin/ps",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.ps",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-ps.elf"
+      }
     }
   ]
 }

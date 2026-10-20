@@ -2142,3 +2142,8 @@ test: test-man-pages
 
 include tools/formatter-tables.mk
 include tools/formatter.mk
+.PHONY: test-ps
+test-ps: build/v7-ps.elf build/nexix-multi.iso test-kinfo-unit
+	$(PYTHON) tools/ps_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/ps_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-ps
