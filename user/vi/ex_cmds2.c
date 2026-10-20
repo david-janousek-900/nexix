@@ -199,6 +199,7 @@ error1(char *str)
 {
 	bool die;
 
+	if (!inopen) failed=1; /* Keep ex batch errors through a later quit. */
 	if (io > 0) {
 		close(io);
 		io = -1;

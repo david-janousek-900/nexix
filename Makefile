@@ -2079,3 +2079,7 @@ build/vi-storage.elf: build/crt0.o build/vi-storage.o build/libc.a user/user.ld
 test-vi-storage: build/nexix-multi.iso build/vi-dev.elf build/vi-storage.elf stage
 	$(PYTHON) tools/vi_storage_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/vi_storage_smoke.py $(QEMU) build/nexix-multi.iso 128M
+.PHONY: test-ex
+test-ex: build/nexix-multi.iso build/vi-dev.elf stage
+	$(PYTHON) tools/ex_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/ex_smoke.py $(QEMU) build/nexix-multi.iso 128M

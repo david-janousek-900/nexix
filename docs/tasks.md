@@ -19,8 +19,8 @@ The inventory accounts for **220 components, 2,144 distribution files and
 4 partial, 1 prototype and 159 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **386 tracking tasks: 157 done, 0 in progress
-and 229 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 357, 362–373 are complete**. These counts are a work breakdown, not an
+The expanded roadmap below has **386 tracking tasks: 158 done, 0 in progress
+and 228 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 357, 362–373 are complete**. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -679,7 +679,7 @@ Traditional Vi 050325 is an additional 0.1.0 component; see [port contract](vi-p
 | 378 | Integrate editor terminal modes and geometry | Done | Checked atomic termios bridge and fixed geometry; physical-terminal TERM defaults; test-termios, test-vga, interfaces and inventory pass at 16/128 MiB; Git history |
 | 379 | Port vi library and native ABI dependencies | Done | Native working sources compile/link with checked LP64 interfaces, historical regexp and private I/O; native dependency/startup tests pass at 16/128 MiB; Git history |
 | 380 | Port editor buffers and temporary storage | Done | Checked pool/temp allocation and seeks; uid-100 6000-line growth, exclusive collision/0600 ownership, ENOSPC status/cleanup and unchanged saved content pass at 16/128 MiB; Git history |
-| 381 | Port ex command execution | To do | Batch commands, substitutions, read/write and shell/error/status acceptance |
+| 381 | Port ex command execution | Done | Native ex command execution, dumb batch terminal and persistent error status; append/substitute/global/read/write/reopen/shell and error tests pass at 16/128 MiB; Git history |
 | 382 | Port interactive vi and view | To do | Screen refresh, movement, input/edit/search/undo, read-only and terminal cleanup |
 | 383 | Port preservation and recovery helpers | To do | Private ownership, interrupted sessions and cold-boot vi -r recovery |
 | 384 | Package vi, ex, view and documentation | To do | Install programs/helpers/data/notices; existing-disk upgrade and terminal defaults |

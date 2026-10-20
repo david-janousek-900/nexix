@@ -42,3 +42,10 @@ compares every byte, then fills the disposable filesystem and checks an ENOSPC
 error, nonzero exit, removal of the editor's temporary file and unchanged saved
 content. It runs at 16/128 MiB. V7 directory permissions remain V7 permissions;
 this task does not introduce POSIX sticky-directory semantics.
+
+Task 381 integrates ex command execution. Batch command errors retain failure
+status through a subsequent quit; the database includes a dumb terminal entry
+for the upstream `ex -` batch mode. `make test-ex` checks append, substitution,
+global deletion, file reads/writes, argument-file reopening, byte-for-byte file
+comparison, shell escapes and invalid-command/no-match/write failures at
+16/128 MiB. It checks both result text and printed command output.
