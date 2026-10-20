@@ -14,6 +14,8 @@ operations. Native libc, libm, startup objects and headers support the ported
 programs. The complete V7 port and guest self-hosting are still unfinished.
 TCP/IP networking is planned for **0.2.0**; it is not currently available.
 
+Traditional BSD vi is being added through [tasks 374–385](docs/vi-port.md).
+
 See the [task list](docs/tasks.md) for completed and remaining work, the
 [installation manifest](docs/native-install.json) for installed programs, and the
 [porting inventory](docs/porting-inventory.md) for historical source coverage.

@@ -92,3 +92,17 @@ GRUB boot-image dependency. It found no basis to relicense Caldera, CDDL or ACM
 material under BSD-3-Clause. The identified permissions and ISO packaging gaps
 are documented above rather than asserted to be cleared. Hash/inventory checks
 verify preservation and task mappings; they do not determine copyright ownership.
+
+## Traditional ex/vi 050325
+
+`reference/ex-vi/050325/` preserves the separately indexed Traditional Vi release
+050325, derived from BSD ex/vi 3.7 and the 2.11BSD termcap library. Its files
+retain their individual Regents of the University of California, Gunnar Ritter,
+Caldera and other upstream notices; the optional libuxre files retain their own
+notices too. They are not relicensed by the root BSD license. The complete
+archive URL and per-file hashes are in `reference/ex-vi/provenance.json`.
+Active ports must retain the original notices and distribute applicable license
+text with installed binaries. The editor source's Berkeley acknowledgement is:
+
+> This product includes software developed by the University of California,
+> Berkeley and its contributors.

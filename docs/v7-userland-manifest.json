@@ -618,6 +618,21 @@
         "Verify man can find and render representative command, syscall, library and administration pages."
       ],
       "archive_supply": "supplied"
+    },
+    {
+      "id": "traditional-vi",
+      "category": "userland-extension",
+      "status": "partial",
+      "description": "Additional BSD ex/vi 050325 source imported and indexed; native terminal/library/editor/recovery ports remain tasks 375-385.",
+      "evidence": [
+        "docs/vi-port.md",
+        "reference/ex-vi/provenance.json"
+      ],
+      "locations": [
+        "/bin/vi",
+        "/bin/ex",
+        "/bin/view"
+      ]
     }
   ],
   "entries": [

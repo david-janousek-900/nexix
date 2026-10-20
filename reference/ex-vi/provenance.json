@@ -1,0 +1,402 @@
+{
+  "version": "050325",
+  "url": "https://downloads.sourceforge.net/project/ex-vi/ex-vi/050325/ex-050325.tar.bz2",
+  "archive_sha256": "da4be7cf67e94572463b19e56850aa36dc4e39eb0d933d3688fe8574bb632409",
+  "files": [
+    {
+      "path": "ex.spec",
+      "size": 1406,
+      "sha256": "3390dbcef5535f1af64ca75ed28dbd9ed03cfb0f84c24f354757466219128956"
+    },
+    {
+      "path": "regexp.h",
+      "size": 25463,
+      "sha256": "63d91fb75dfc5e153b154a49e25e4176f310550f7b42dd36b5866c127a2a06e9"
+    },
+    {
+      "path": "libuxre/wcharm.h",
+      "size": 1829,
+      "sha256": "a3941494699466c9d1958a3b4ec49c5439fc92fd87a471a13447b05bd99e7bd8"
+    },
+    {
+      "path": "libuxre/regex.h",
+      "size": 5981,
+      "sha256": "67fe983cec32f437a608e3752786e7fab272c34611ac897d83c83bb167bfd463"
+    },
+    {
+      "path": "libuxre/regdfa.h",
+      "size": 2591,
+      "sha256": "bfb3024628e46f99dd5b6346e8f3a08d420309a31c7b2a9f0412500e7d1bd945"
+    },
+    {
+      "path": "libuxre/re.h",
+      "size": 7258,
+      "sha256": "b56ac5d8b6589a96c7a4d0993895b7991f1e60bf5c236abc0fd66a872eeb643e"
+    },
+    {
+      "path": "libuxre/colldata.h",
+      "size": 8274,
+      "sha256": "b2d5b7286c6e84bb166c0cc94c47cd68ddaf1feac16baf93e3e4b16cadddcd70"
+    },
+    {
+      "path": "libterm/libterm.h",
+      "size": 2403,
+      "sha256": "846a85a95d013939e7d5abc31cb6a3e732eb81eb5f0507cfa833628bf735d8b5"
+    },
+    {
+      "path": "ex_vis.h",
+      "size": 13076,
+      "sha256": "f1860ac66a60f34cf2ba15c3d670a958a89bcdcf77fb91f842a6a752f07c2e85"
+    },
+    {
+      "path": "ex_vars.h",
+      "size": 1287,
+      "sha256": "0fad227dff86f92d629d32b1b00b8e72e16b69244968eb6cfc041f08f3049887"
+    },
+    {
+      "path": "ex_tune.h",
+      "size": 8226,
+      "sha256": "468e976e6f9387af73e74b85b51b3c5f9051019c796663d7036862550c950500"
+    },
+    {
+      "path": "ex_tty.h",
+      "size": 11364,
+      "sha256": "6f0c9d51ed025a56a99448c05484f9cdf961ca54814933fc8988655facf35438"
+    },
+    {
+      "path": "ex_temp.h",
+      "size": 8654,
+      "sha256": "19cde8ca771b5115688a28a3feedc68ff91f0cc666ee2ebb8b91a00a1f5a3dc9"
+    },
+    {
+      "path": "ex_re.h",
+      "size": 5497,
+      "sha256": "86a1477d104c16a8910f54c2b00565e7189a11511656cadb5b61a314ec6a0cf8"
+    },
+    {
+      "path": "ex_proto.h",
+      "size": 18643,
+      "sha256": "145c86d2c5977a62a9578b1cdb5d6601c03566f94f7cbc21e3ff4ddd0a6600e9"
+    },
+    {
+      "path": "ex_argv.h",
+      "size": 4818,
+      "sha256": "5b753bd2ded4c7e17697a7421b3a4d9851e0caf22bc0d90cf581be07f465bf32"
+    },
+    {
+      "path": "ex.h",
+      "size": 19213,
+      "sha256": "b4b7f894e03610490addbcf7d5ea98a7da4f1a7a1d9dc4f2c37314f09ce005c0"
+    },
+    {
+      "path": "config.h",
+      "size": 6085,
+      "sha256": "867dff622d1a071559a108d7a30ed1c02ec98b4586bb3265f5b9fd4a251d451c"
+    },
+    {
+      "path": "printf.c",
+      "size": 11722,
+      "sha256": "aa7bb0dac161a20f6ae9d6cc0b3bf283e63342c7f3faf98adbf423b0cc88b1f6"
+    },
+    {
+      "path": "mapmalloc.c",
+      "size": 10093,
+      "sha256": "bbff57c88fbcdaeec3f95e52a9d3773503866d121387c902ad571d968de43218"
+    },
+    {
+      "path": "malloc.c",
+      "size": 8487,
+      "sha256": "bb78b5a043f2c4ccc3dc936cbfabd2587e3a245aa8749e537486b47b545c67b6"
+    },
+    {
+      "path": "libuxre/stubs.c",
+      "size": 2530,
+      "sha256": "a45f7b2f6cb5122dbb872288c158f54a8b8125bf82c94425e723c566ddd06639"
+    },
+    {
+      "path": "libuxre/regparse.c",
+      "size": 21226,
+      "sha256": "4bb606334f633c097a621d4e0bdacfd3d5854ebbad22af997b112fab88597d63"
+    },
+    {
+      "path": "libuxre/regnfa.c",
+      "size": 22968,
+      "sha256": "ffbf7387ea12bb0e9cf83f30a875c1fb8fe35f04423f11bcf2b9fdf4c7d04e05"
+    },
+    {
+      "path": "libuxre/regfree.c",
+      "size": 1334,
+      "sha256": "da3f787663f727890cb8c7bb2352740cbe975343ac6a6b691d8d788d3ec46dc2"
+    },
+    {
+      "path": "libuxre/regexec.c",
+      "size": 1932,
+      "sha256": "f12395ea56bbd712c597248103de818c04b1e913af855f4ad5b9a3c1c2c7337f"
+    },
+    {
+      "path": "libuxre/regerror.c",
+      "size": 2891,
+      "sha256": "b04a0d00329be9dd78a1a7e6d95a2d88fc983aba85fa5cc47eae7e514d6d883a"
+    },
+    {
+      "path": "libuxre/regdfa.c",
+      "size": 19532,
+      "sha256": "e646ab9524515a95872e9a114aec03316f8ea47cd1593aed8308768a56d189dc"
+    },
+    {
+      "path": "libuxre/regcomp.c",
+      "size": 2393,
+      "sha256": "5b56695719253d93c623ac54d1646db89c42b823235b6918b83156bfa3eb6ca6"
+    },
+    {
+      "path": "libuxre/onefile.c",
+      "size": 1255,
+      "sha256": "459b90afd56cae6f141d073dfa2dc2f16c3746b49afd304db3a99a5462564c16"
+    },
+    {
+      "path": "libuxre/bracket.c",
+      "size": 18517,
+      "sha256": "af60487748501fa1c83eae1a475bf05295dfb9f34b6773d060a332c6b069f28d"
+    },
+    {
+      "path": "libuxre/_collmult.c",
+      "size": 1634,
+      "sha256": "a42388c27abaec67f5fae4dce0343bbe174846cfbafefe84fdd67353c2c6a5f1"
+    },
+    {
+      "path": "libuxre/_collelem.c",
+      "size": 3355,
+      "sha256": "400a63b1aafaaccdbb0a67e55160e2eaae1d601e7c665ca0927c00a90115e79e"
+    },
+    {
+      "path": "libterm/tputs.c",
+      "size": 3935,
+      "sha256": "b407310dc967360ccd96369f1d54666ea675afe79d6ce79377570de16b0c4cf4"
+    },
+    {
+      "path": "libterm/tgoto.c",
+      "size": 5770,
+      "sha256": "be6ce10cee88e72616c1c0b28e1cc613e6bad4215e4242f213c50e4e8827a29b"
+    },
+    {
+      "path": "libterm/termcap.c",
+      "size": 9463,
+      "sha256": "73a1f323be4ebc1f7933c046a1956442823b70ef23996196793bb6f92c2092e8"
+    },
+    {
+      "path": "exrecover.c",
+      "size": 21642,
+      "sha256": "ed6a91eab62307a9da9e731425d37e740263f27f26eb8f326e159e04cb949650"
+    },
+    {
+      "path": "expreserve.c",
+      "size": 13816,
+      "sha256": "c0adbc6a7dcf9fb122fb7b47ffbba803a20d39da6c6ffb087ba0d49b73cba53f"
+    },
+    {
+      "path": "ex_vwind.c",
+      "size": 11513,
+      "sha256": "82cf31bc17d8e58d94e62b01e34e415b1f61456bd4c8d4d8e6bf64b7907f1464"
+    },
+    {
+      "path": "ex_vput.c",
+      "size": 38905,
+      "sha256": "16667310f6d97076c546959d9a53ee443ab48f29c1d91c2eba943fd1a2ab8524"
+    },
+    {
+      "path": "ex_vops3.c",
+      "size": 15399,
+      "sha256": "bdbdf6cefd8cb34e4c7491b73be6caa796a5abee7818ef733f4fbac019b1e0f1"
+    },
+    {
+      "path": "ex_vops2.c",
+      "size": 25143,
+      "sha256": "f600de7c6746960c334467d2d2fbac54855e77a4ff1fd9bc968eb07b01cca312"
+    },
+    {
+      "path": "ex_vops.c",
+      "size": 23678,
+      "sha256": "03f2f7ed86a6f8e2ea19e2da4d8fecce45dce2b0e042f4679e76ffd3d9c16b8d"
+    },
+    {
+      "path": "ex_voper.c",
+      "size": 20161,
+      "sha256": "6ed64261254a7b14cba2ac22b53d44c2767324884af568e4981377f6d9fd6d94"
+    },
+    {
+      "path": "ex_vmain.c",
+      "size": 32371,
+      "sha256": "59d55060644da33d1cc8f2fa8ff1f2ed168b76089693bb4b1551511620dccc27"
+    },
+    {
+      "path": "ex_vget.c",
+      "size": 20474,
+      "sha256": "15381af6cd68e79d0634e08c18db718b787767d8e1b350c1d427a4434698d4e3"
+    },
+    {
+      "path": "ex_version.c",
+      "size": 4171,
+      "sha256": "4d7348affb9e0662949d5d2c4d8c5eb29bd2f5cc601b8aa5da385c0d8bdd6991"
+    },
+    {
+      "path": "ex_vadj.c",
+      "size": 28236,
+      "sha256": "7df57341ed1d4fdacd9312a872cb36100e18f45a5d2f57c33176d9698f7173fb"
+    },
+    {
+      "path": "ex_v.c",
+      "size": 13000,
+      "sha256": "621f0cee10fe69ce533e6d90ac2553b6607663c8f8fa6781abed2ca45a12bd5b"
+    },
+    {
+      "path": "ex_unix.c",
+      "size": 10735,
+      "sha256": "7beb99daeee9702440d3435b6f3abc37adfae798847fc516e5041e2a629fe9b7"
+    },
+    {
+      "path": "ex_tty.c",
+      "size": 11414,
+      "sha256": "c17cf3900cc0c05d433ecdbf797e66ac7c42b959be92d2e4f0e0d91fd78831bf"
+    },
+    {
+      "path": "ex_temp.c",
+      "size": 16810,
+      "sha256": "0e26d8b56c82084d4f61fbd620fb110baf875c078eeaa111ec21b13a71b1dc3e"
+    },
+    {
+      "path": "ex_tagio.c",
+      "size": 5746,
+      "sha256": "86e5765eb1b5dad66f8c9ad56dbcb7bc9a25aae2e359880ef4979747c7937f45"
+    },
+    {
+      "path": "ex_subr.c",
+      "size": 19692,
+      "sha256": "4d9dd2df18145707689281dfd7b4c887832445d3e12e68f9673c04de7eab1070"
+    },
+    {
+      "path": "ex_set.c",
+      "size": 8973,
+      "sha256": "92d773ed2163a3616197ea2411dc9194633a7675eda9b8abb722e9c01cce0d57"
+    },
+    {
+      "path": "ex_re.c",
+      "size": 26683,
+      "sha256": "ed7bf807209b2ffb7546a6e0753800672d3933c19516fae45fdc04c6592d742e"
+    },
+    {
+      "path": "ex_put.c",
+      "size": 26325,
+      "sha256": "c833c724ff2561d46a1487a9991e0fe3189beb1fad20deb76d56d0ef25a343c6"
+    },
+    {
+      "path": "ex_io.c",
+      "size": 23661,
+      "sha256": "93f1ce622d39055d3903d6d207d53fe6638c8829a4c111c4d036bacce307e971"
+    },
+    {
+      "path": "ex_get.c",
+      "size": 8432,
+      "sha256": "f40df1744156ac8237c0caeba7de85e597e70dce661f556558654b74dec5546e"
+    },
+    {
+      "path": "ex_extern.c",
+      "size": 4467,
+      "sha256": "65dd4b366eb6a76ac348fa558b300e8b2ccb0737e1a1e82f72a110bae52d608c"
+    },
+    {
+      "path": "ex_data.c",
+      "size": 7038,
+      "sha256": "3d9020bd6dec4e530e39d7503766bd3e9a4b40855d10688c95a253adcbdad63f"
+    },
+    {
+      "path": "ex_cmdsub.c",
+      "size": 30863,
+      "sha256": "ad9eff70bec6fbe8569276f368ac8acc2e21c7406eff169f7997b2fa7abb87c3"
+    },
+    {
+      "path": "ex_cmds2.c",
+      "size": 13706,
+      "sha256": "3eddbdab9f90e9a3c0d4cf9ee532ff8c7d83e1fa60b16c3202e10347ca7f4073"
+    },
+    {
+      "path": "ex_cmds.c",
+      "size": 18534,
+      "sha256": "b605688e3c97a947d5c6ceeeea5cda8c1500ebfd1f8afc276bc0b0e331669bd8"
+    },
+    {
+      "path": "ex_addr.c",
+      "size": 9733,
+      "sha256": "6b8c2f6e3803a058043a2e2993d80bb50e6fe0f5d7785e2dc96d87b832dcfb4e"
+    },
+    {
+      "path": "ex.c",
+      "size": 16448,
+      "sha256": "16f3d8f1d2b60ea21cb72d959d5381953616fcb91839287ed28567eb26c736dc"
+    },
+    {
+      "path": "libuxre/COPYING.LGPL",
+      "size": 26430,
+      "sha256": "a190dc9c8043755d90f8b0a75fa66b9e42d4af4c980bf5ddc633f0124db3cee7"
+    },
+    {
+      "path": "vi.1",
+      "size": 34199,
+      "sha256": "20362442d4890a82678baebed5e27e7056d6a262f883a563a25c2d7f930ae489"
+    },
+    {
+      "path": "ex.1",
+      "size": 59115,
+      "sha256": "c83aa7c40060d2f5e40aca22481adefb8244e83d6ff3ca83bd12157f5764b1b1"
+    },
+    {
+      "path": "makeoptions",
+      "size": 4936,
+      "sha256": "15ac71d98eea0c286df64bee5875612f426d883708ca1b0bda4b8669c91995b6"
+    },
+    {
+      "path": "libuxre/NOTES",
+      "size": 534,
+      "sha256": "8cc3d33d490e649dbff6a4d0e15a7cf3b179423ed2990f9f996440f7a0a8b7ea"
+    },
+    {
+      "path": "libuxre/Makefile",
+      "size": 283,
+      "sha256": "2a6e08215fc75b4f92357558d5809c43764b5f6b141a273661660aaa0ea058cd"
+    },
+    {
+      "path": "libterm/Makefile",
+      "size": 2449,
+      "sha256": "270fab6c21e859f49bcce22853e330e0cf66aca1d044f94f608ace528bbf7ed7"
+    },
+    {
+      "path": "catd/en_US",
+      "size": 9676,
+      "sha256": "d333c14d7d73b632cca7926c7f499c55bece15b374231654a7bc0bcbc519975c"
+    },
+    {
+      "path": "TODO",
+      "size": 459,
+      "sha256": "6515372496085a516e738d3ff5b97e8c7e6e26ff86fe9856f4d8598d53b90bee"
+    },
+    {
+      "path": "README",
+      "size": 6062,
+      "sha256": "0c7e030c550a617aca9e2fa10354f8d8f30b293459dbd61d9ea6e3c65878916c"
+    },
+    {
+      "path": "Makefile",
+      "size": 16348,
+      "sha256": "289f85e3e2966700cc14509e373c1b898db43b4d21b4eae5c4b5eaa798c0a981"
+    },
+    {
+      "path": "LICENSE",
+      "size": 3700,
+      "sha256": "0f99eff0bb2e4c26225f82d6ba2267bc94c8c488df76d10f81bdb862366b70c4"
+    },
+    {
+      "path": "Changes",
+      "size": 13010,
+      "sha256": "d524e73c97f0d12f246795e6c61ca92b357c096db081305bb61113944bb3666c"
+    }
+  ]
+}

@@ -11,7 +11,7 @@ The [inventory](v7-userland-manifest.json) points to that map through
 Coverage schema version 2 contains the release version, task-list/inventory paths,
 task count, policy and two mappings: `components` and `requirements`. Mapping
 keys are inventory IDs; values are nonempty, sorted, unique arrays of task IDs.
-All 217 components, all 35 requirements and all 371 tasks must be accounted for.
+All 217 components, all 36 requirements and all 385 tasks must be accounted for.
 There is no name-based inference or fallback assigning omitted work to a generic
 release task. New components and requirements require explicit mappings.
 

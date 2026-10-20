@@ -15,12 +15,12 @@ installed; the complete list and destinations are in [the installation manifest]
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
 The inventory accounts for **219 components, 2,144 distribution files and
-35 supporting/platform requirements**. Its component statuses are 55 implemented,
+36 supporting/platform requirements**. Its component statuses are 55 implemented,
 4 partial, 1 prototype and 159 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **373 tracking tasks: 149 done, 0 in progress
-and 224 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 357, 362–373 are complete**. These counts are a work breakdown, not an
+The expanded roadmap below has **385 tracking tasks: 150 done, 0 in progress
+and 235 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 357, 362–373 are complete**. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -642,7 +642,7 @@ two terminals.
 Release acceptance requires multi-user startup, RTC-derived time and persistent
 V7 timestamps, complete component coverage, native V7 development tools,
 installed manuals/data and resolution of explicit release blockers. All 219
-components and 35 requirements must be traceable to tested native implementations,
+components and 36 requirements must be traceable to tested native implementations,
 assets or documented native equivalents. No required feature is silently removed
 to declare the release complete.
 
@@ -665,3 +665,22 @@ the first release. See [architecture notes](architecture.md) and
 | --- | --- | --- | --- |
 | 372 | Add native uname command and system identity API | Done | Git history; [uname contract](uname.md); kernel-owned identity, checked native syscall, public libc header, command flags and unprivileged/error acceptance at 16/128 MiB |
 | 373 | Add persistent hostname and identity prompts | Done | Git history; [hostname contract](hostname.md); boot configuration, root-only native setter, full domain preservation, hostname command and live credential/hostname prompts; host and 16/128 MiB guest tests |
+
+### Traditional BSD vi extension
+
+Traditional Vi 050325 is an additional 0.1.0 component; see [port contract](vi-port.md).
+
+| Task | Description | Status | Evidence / notes / acceptance |
+|---:|---|---|---|
+| 374 | Audit and pin traditional vi sources | Done | Release 050325, full byte/provenance index and audited native dependency/build choices; make test-vi-reference; docs/vi-port.md; Git history |
+| 375 | Implement termcap database lookup | To do | Names, inheritance, escapes, numeric/boolean/string capabilities, bounds and malformed inputs |
+| 376 | Implement termcap output routines | To do | tgoto expansion, padding and captured output fixtures |
+| 377 | Add VGA screen-control sequences | To do | Incremental bounded parser, cursor/clear/attributes, malformed inputs and console regressions |
+| 378 | Integrate editor terminal modes and geometry | To do | Checked terminal adapter, geometry and TERM for VGA/serial; restore modes after signals/errors |
+| 379 | Port vi library and native ABI dependencies | To do | Resolve audited libc/header/regex and LP64 requirements with native callers |
+| 380 | Port editor buffers and temporary storage | To do | Line references, allocation/growth, safe temp creation, permissions and disk-full cleanup |
+| 381 | Port ex command execution | To do | Batch commands, substitutions, read/write and shell/error/status acceptance |
+| 382 | Port interactive vi and view | To do | Screen refresh, movement, input/edit/search/undo, read-only and terminal cleanup |
+| 383 | Port preservation and recovery helpers | To do | Private ownership, interrupted sessions and cold-boot vi -r recovery |
+| 384 | Package vi, ex, view and documentation | To do | Install programs/helpers/data/notices; existing-disk upgrade and terminal defaults |
+| 385 | Complete traditional vi acceptance | To do | Real VGA/PS2 and serial edit/save/recovery at 16/128 MiB, session isolation and regressions |

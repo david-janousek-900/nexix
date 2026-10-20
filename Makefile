@@ -1988,3 +1988,8 @@ test-syscall-policy: test-syscall-policy-unit multi-iso rootfs build/syscall-pol
 	$(PYTHON) tools/timing_api_smoke.py $(QEMU) build/nexix-multi.iso 128M syscall-policy-api SYSCALL_POLICY_API_OK
 test-unit: test-syscall-policy-unit
 test: test-syscall-policy
+
+.PHONY: test-vi-reference
+test-vi-reference:
+	$(PYTHON) tests/vi_reference.py
+test-inventory: test-vi-reference
