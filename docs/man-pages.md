@@ -53,3 +53,8 @@ are corrected. The parser is regenerated with a host-only bootstrap of the V7
 yacc sources (`tools/v7-yacc`); the native yacc tasks remain separate. Equation
 acceptance covers fractions, roots, powers, sums, delimiters, matrices, definitions,
 inline equations, movement and formatter integration at both memory sizes.
+
+The distinct V7 terminal-equation sources are retained under `user/neqn` with
+the same pointer/diagnostic/parser adaptations. `neqn` output feeds `nroff`;
+`eqn` output feeds `troff`. The respective reference implementations' layout
+choices and supported syntax are retained.

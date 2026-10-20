@@ -9837,14 +9837,16 @@
           "name": "neqn",
           "install": "/bin/neqn",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/neqn/makefile"
+            "user/neqn/e.h",
+            "tools/equations_smoke.py",
+            "tools/eqn_generate.py"
           ]
         }
       ],
       "priority": 11,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -9924,12 +9926,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Complete native ABI/API and data-asset audit before porting."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Format equation fixtures through nroff and verify terminal output.",
         "Verify each installed output and its documented behavior; test helpers through their consuming pipeline."
