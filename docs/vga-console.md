@@ -137,3 +137,9 @@ terminal descriptions/capabilities and output failures with a nonzero status.
 Run `make test-clear` to check exact serial bytes, VGA memory and error paths on
 disposable 16/128 MiB guests. Existing persistent disks need `make upgrade-disk`
 to install the command, profile and terminal database.
+
+Horizontal tab moves to the next eight-column stop without changing cells under
+the cursor. At the right margin it stays in the last column and does not scroll.
+This matters when vi uses tabs as an efficient cursor movement. `make test-vi-edit`
+checks actual VGA screen contents after movement, deletion and common edits;
+`make test-vga-unit` also checks tab preservation and the bottom-right margin.

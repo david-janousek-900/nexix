@@ -21,6 +21,7 @@ existing working disk retained its pre-suite SHA-256 hash.
 | 6,000-line / 528 KiB buffer, temporary collision/0600 ownership, ENOSPC cleanup and unchanged saved file | test-vi-storage |
 | Append, substitution, global deletion, file read/write/reopen, shell escape and failure statuses | test-ex |
 | Installed full-screen vi/view, VGA/PS2 plus serial insert/motion/delete/undo/search/save, read-only rejection, >1 KiB capability strings and Ctrl-C cleanup | test-vi |
+| Rendered h/j/k/l and numbered movement, 34 edit cases per backend, EOF cells, dirty quit/ZZ and exact saved bytes | test-vi-edit |
 | SIGHUP preservation as uid 100, 0600 ownership, cold-boot vi -r listing/recovery, wrong-user denial and malformed input | test-vi-recovery |
 | Installed aliases, helper privilege metadata and pinned manuals/licenses | test-vi-package |
 | Concurrent VGA/serial editors, independent display/input/files and restored terminals | test-vi-multiuser |
@@ -69,3 +70,24 @@ Individual task commits before final acceptance:
 Task 385's commit is recorded in Git history with this report and the combined
 acceptance target. Runtime logs are build/vi-*, build/ex-*, build/termios-*,
 build/clear-* and build/upgrade-*; host build artifacts and logs are not committed.
+
+
+## Navigation and deletion regression coverage
+
+The later review reproduced two display problems missed by the original tests:
+`j10l` erased the first eight cells of a populated VGA line because horizontal
+tab wrote spaces, and `dd` left a lazy `@` placeholder on a cursor-addressable
+terminal without insert/delete-line capabilities. VGA tabs now preserve cells
+and stay at the right margin; vi enables immediate redraw for cursor-addressable
+terminals. The terminal database does not need replacing for these fixes.
+
+`test-vi-edit` checks complete text rows, including EOF markers, against expected
+rendering after commands. It observes real VGA memory/PS2 input and independently
+renders the ANSI serial stream. Each of its 34 edit cases saves to a separate
+file and compares every byte with a fixture: counted deletion/yank/change, undo
+and line restore, line/character puts, joins/splits, insertion/append/open,
+character/word/end-of-line changes, dot repeat, searches, substitution, global
+and range deletion, indentation, page movement and 79/80/81/159-column lines
+with tabs. It also checks numbered motion, rejection of an unsaved quit, continued
+editing and ZZ save/quit. The matrix runs on both backends at both memory sizes
+(136 edit-case executions), and is part of `make test-vi-acceptance`/`make test`.

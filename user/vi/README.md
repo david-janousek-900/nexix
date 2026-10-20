@@ -72,3 +72,17 @@ uid 101, recovers every byte as uid 100 and rejects malformed input at 16/128 Mi
 If /bin/mail is absent, preservation skips the optional mail notification; it
 still saves the buffer successfully. When mail is installed, the release's
 notification path remains available with a controlled MAILRC environment.
+
+Navigation/deletion regression review: native VGA HT now moves the cursor without
+blanking skipped cells, and clamps at the right margin. Vi's default redraw
+option is enabled for cursor-addressable terminals, so line changes repaint
+immediately even when the description lacks insert/delete-line capabilities.
+These fixes work with existing /etc/termcap entries.
+
+`make test-vi-edit` checks h/j/k/l and numbered movement, 34 common edit cases,
+EOF cells, dirty-quit refusal and ZZ, using both real VGA/PS2 frames and an ANSI
+serial screen observer at 16/128 MiB. Every edit case also writes a separate
+output file and compares its bytes with an independent expected fixture. This
+covers counted deletes/changes/yanks, line/character puts, undo/U, word/character
+changes, join/split, insert/append/open, dot repeat, searches, substitutions,
+global/range deletion, shifts, page movement and tabbed/wrapped lines.

@@ -84,3 +84,20 @@ The combined `make test-vi-acceptance` gate passed; see the
 [acceptance report](vi-acceptance.md) for coverage and limits. It checks two
 concurrent editors plus a third login at 16 MiB, and three concurrent editors
 at 128 MiB. The 16 MiB resident kernel can reject a third editor with ENOMEM.
+
+## Applying the navigation/display fixes
+
+VGA tabs now preserve the text they pass over, and cursor-addressable terminals
+use immediate vi redraw after line changes. `make test-vi-edit` checks rendered
+screens and saved bytes for common editing operations; see the acceptance report
+for the test matrix. These fixes use the existing terminal descriptions.
+
+For an existing disk, stop QEMU and rebuild both the boot image and installed
+editor. Preview the offline upgrade and use an unused backup filename:
+
+```sh
+make build
+make upgrade-preview
+make upgrade-disk UPGRADE_BACKUP=build/nexix-before-vi-fix.img
+make run
+```

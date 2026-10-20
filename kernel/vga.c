@@ -103,8 +103,10 @@ void vga_write(const uint8_t *bytes, size_t count)
         else if (c == '\n') ++row;
         else if (c == '\b') { if (column) --column; }
         else if (c == '\t') {
-            unsigned spaces = 8 - column % 8;
-            while (spaces--) { screen[row * WIDTH + column++] = blank(); advance(); }
+            /* HT is cursor motion, not output of spaces. Full-screen programs
+             * rely on existing cells surviving a tab, including at the margin. */
+            unsigned next=(column|7U)+1;
+            column=next<WIDTH?next:WIDTH-1;
         } else if (c >= 32 && c != 127) {
             screen[row * WIDTH + column++] = ((uint16_t)attribute<<8) | c;
         }

@@ -252,7 +252,9 @@ setterm(char *type)
 	/* proper strings to change tty type */
 	termreset();
 	gettmode();
-	value(REDRAW) = AL && DL;
+	/* Cursor-addressable native/ANSI terminals can repaint immediately even
+	 * without insert/delete-line capabilities. Avoid lazy @ placeholders. */
+	value(REDRAW) = CA || (AL && DL);
 	value(OPTIMIZE) = !CA && !GT;
 	if (ospeed == B1200 && !value(REDRAW))
 		value(SLOWOPEN) = 1;	/* see also gettmode above */

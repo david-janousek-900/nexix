@@ -20,6 +20,12 @@ int main(void)
     assert(cells[1]==0x0759 && cells[3]==0x0758);
     write_text("\tZ");assert(cells[9]==0x075a && position==9);
     vga_init(cells+1);
+    write_text("abcdefghijklmnop\r\t");
+    assert(position==8);
+    for(unsigned i=0;i<16;i++)assert(cells[i+1]==(uint16_t)(0x0700+'a'+i));
+    write_text("\033[25;79H\t");assert(position==1999);
+    write_text("\t");assert(position==1999 && cells[1]==0x0761);
+    vga_init(cells+1);
     for(unsigned i=0;i<80;++i)write_text("A");
     assert(position==80);
     for(unsigned i=0;i<24;++i)write_text("\r\nB");

@@ -2129,3 +2129,8 @@ test-vi-multiuser: build/nexix-multi.iso rootfs
 	$(PYTHON) tools/vi_multiuser_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test-vi-acceptance: test-vi-reference test-termcap test-termcap-output test-termcap-guest test-vga-controls test-termios test-vi-native test-vi-storage test-ex test-vi test-vi-recovery test-vi-package test-vi-multiuser test-clear test-vga test-upgrade test-libc-interfaces test-inventory
 test: test-vi-acceptance
+.PHONY: test-vi-edit
+test-vi-edit: build/nexix-multi.iso stage
+	$(PYTHON) tools/vi_edit_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/vi_edit_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test-vi-acceptance: test-vi-edit
