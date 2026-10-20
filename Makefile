@@ -2011,3 +2011,12 @@ build/termcap-guest.elf: build/crt0.o build/termcap-guest.o build/libc.a user/us
 test-termcap-guest: build/nexix-serial.iso build/termcap-guest.elf stage
 	$(PYTHON) tools/termcap_smoke.py $(QEMU) build/nexix-serial.iso 16M
 	$(PYTHON) tools/termcap_smoke.py $(QEMU) build/nexix-serial.iso 128M
+
+LIBC_OBJECTS += build/libc_termcap_output.o
+build/libc.a: build/libc_termcap_output.o
+build/termcap-output-unit-test: tests/termcap-output.c libc/termcap_output.c libc/include/termcap.h | build/.dir
+	$(HOST_CC) -std=c11 -Wall -Wextra -Werror -g -fsanitize=address,undefined tests/termcap-output.c libc/termcap_output.c -o $@
+.PHONY: test-termcap-output
+test-termcap-output: build/termcap-output-unit-test
+	ASAN_OPTIONS=detect_leaks=0 ./build/termcap-output-unit-test
+test-unit: test-termcap-output

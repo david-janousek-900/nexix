@@ -36,3 +36,9 @@ a bounded sixteen-entry inheritance expansion, child overrides/cancellation,
 continuations and escapes. The standard tgetstr interface requires caller-sized
 string storage; reserve 2048 bytes for one complete set of distinct capabilities.
 Malformed/oversize entries and numeric overflow fail explicitly.
+
+Task 376 adds tgoto/tputs and the standard UP/BC/PC/ospeed globals. Cursor
+expansion supports BSD d/2/3/./+/r/i/n/>/B/D/% operations with a bounded native
+result and correction buffer. Invalid formats/coordinates return OOPS with
+errno; excessive padding returns an error before output. Callback failures are
+propagated. Unsupported output speed selectors retain the BSD no-padding policy.

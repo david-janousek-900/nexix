@@ -7,4 +7,8 @@ int tgetent(char *,const char *);
 int tgetnum(char *);
 int tgetflag(char *);
 char *tgetstr(char *,char **);
+char *tgoto(char *,int,int);
+int tputs(const char *,int,int (*)(int));
+extern char *UP,*BC,PC;
+extern short ospeed;
 #endif
