@@ -19,7 +19,7 @@ The inventory accounts for **219 components, 2,144 distribution files and
 4 partial, 1 prototype and 159 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **385 tracking tasks: 150 done, 0 in progress
+The expanded roadmap below has **386 tracking tasks: 151 done, 0 in progress
 and 235 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 357, 362–373 are complete**. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
@@ -673,7 +673,7 @@ Traditional Vi 050325 is an additional 0.1.0 component; see [port contract](vi-p
 | Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 374 | Audit and pin traditional vi sources | Done | Release 050325, full byte/provenance index and audited native dependency/build choices; make test-vi-reference; docs/vi-port.md; Git history |
-| 375 | Implement termcap database lookup | To do | Names, inheritance, escapes, numeric/boolean/string capabilities, bounds and malformed inputs |
+| 375 | Implement termcap database lookup | Done | Bounded native lookup/inheritance/cancellation/decoding; ASan/UBSan host fixtures and native filesystem guests at 16/128 MiB; make test-termcap test-termcap-guest; Git history |
 | 376 | Implement termcap output routines | To do | tgoto expansion, padding and captured output fixtures |
 | 377 | Add VGA screen-control sequences | To do | Incremental bounded parser, cursor/clear/attributes, malformed inputs and console regressions |
 | 378 | Integrate editor terminal modes and geometry | To do | Checked terminal adapter, geometry and TERM for VGA/serial; restore modes after signals/errors |
@@ -684,3 +684,4 @@ Traditional Vi 050325 is an additional 0.1.0 component; see [port contract](vi-p
 | 383 | Port preservation and recovery helpers | To do | Private ownership, interrupted sessions and cold-boot vi -r recovery |
 | 384 | Package vi, ex, view and documentation | To do | Install programs/helpers/data/notices; existing-disk upgrade and terminal defaults |
 | 385 | Complete traditional vi acceptance | To do | Real VGA/PS2 and serial edit/save/recovery at 16/128 MiB, session isolation and regressions |
+| 386 | Add clear terminal command | To do | Use TERM/termcap clear-screen capability; VGA and serial output/error/terminal acceptance |

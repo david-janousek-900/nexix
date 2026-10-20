@@ -28,3 +28,11 @@ Each task is implemented, tested and committed separately. Final acceptance
 requires editing/save/reopen, single-level undo, search, ex commands, view mode,
 interrupt cleanup, storage failures and private preservation/recovery, using real
 VGA and serial guests at 16/128 MiB. All storage tests use disposable images.
+
+Task 386 supplies the requested clear command using the same terminal capabilities.
+
+Task 375 supplies native termcap lookup in libc with 2048-byte entry buffers,
+a bounded sixteen-entry inheritance expansion, child overrides/cancellation,
+continuations and escapes. The standard tgetstr interface requires caller-sized
+string storage; reserve 2048 bytes for one complete set of distinct capabilities.
+Malformed/oversize entries and numeric overflow fail explicitly.

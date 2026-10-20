@@ -1993,3 +1993,21 @@ test: test-syscall-policy
 test-vi-reference:
 	$(PYTHON) tests/vi_reference.py
 test-inventory: test-vi-reference
+
+LIBC_OBJECTS += build/libc_termcap.o
+build/libc.a: build/libc_termcap.o
+build/termcap-unit-test: tests/termcap.c libc/termcap.c libc/include/termcap.h | build/.dir
+	$(HOST_CC) -std=c11 -Wall -Wextra -Werror -g -fsanitize=address,undefined tests/termcap.c libc/termcap.c -o $@
+.PHONY: test-termcap
+test-termcap: build/termcap-unit-test
+	ASAN_OPTIONS=detect_leaks=0 ./build/termcap-unit-test
+test-unit: test-termcap
+
+build/termcap-guest.o: tests/termcap-guest.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/termcap-guest.elf: build/crt0.o build/termcap-guest.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o,$^) $(filter %.a,$^) -o $@
+.PHONY: test-termcap-guest
+test-termcap-guest: build/nexix-serial.iso build/termcap-guest.elf stage
+	$(PYTHON) tools/termcap_smoke.py $(QEMU) build/nexix-serial.iso 16M
+	$(PYTHON) tools/termcap_smoke.py $(QEMU) build/nexix-serial.iso 128M
