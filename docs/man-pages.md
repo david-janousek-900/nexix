@@ -39,3 +39,9 @@ When using `-man`, includes of historical `/usr/include/...` text are resolved
 from unchanged archival excerpts under `/usr/man/include`. These excerpts are
 historical documentation, not native development headers. Other formatter use
 continues to read the requested include paths normally.
+
+`troff -a` produces its historical plain-text approximation; `troff -t` writes
+C/A/T typesetter bytes to standard output. Mounted fonts use the regenerated
+224-byte width files without an object header. `make test-troff` checks ASCII
+output, mounted fonts, size changes, original manual macros and independently
+validated C/A/T initialization/stop/padding/flush framing at 16/128 MiB.

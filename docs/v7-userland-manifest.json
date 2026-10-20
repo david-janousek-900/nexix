@@ -16517,9 +16517,11 @@
           "name": "troff",
           "install": "/bin/troff",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/makefile"
+            "user/troff/t6.c",
+            "user/troff/t10.c",
+            "tools/troff_smoke.py"
           ]
         },
         {
@@ -16964,7 +16966,7 @@
         }
       ],
       "priority": 11,
-      "status": "partial",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -17160,12 +17162,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Complete native ABI/API and data-asset audit before porting."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Build font/terminal tables; format document fixtures through both nroff and troff.",
         "Verify each installed output and its documented behavior; test helpers through their consuming pipeline."
