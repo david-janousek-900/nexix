@@ -2036,3 +2036,15 @@ build/v7-clear.o: user/v7/cmd/clear.c | build/.dir
 test-clear: build/nexix-multi.iso build/v7-clear.elf stage
 	$(PYTHON) tools/clear_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/clear_smoke.py $(QEMU) build/nexix-multi.iso 128M
+
+LIBC_OBJECTS += build/libc_termios.o
+build/libc.a: build/libc_termios.o
+build/termios-guest.o: tests/termios-guest.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/termios-guest.elf: build/crt0.o build/termios-guest.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+.PHONY: test-termios
+test-termios: build/tty-unit-test build/nexix-multi.iso build/termios-guest.elf stage
+	./build/tty-unit-test
+	$(PYTHON) tools/termios_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/termios_smoke.py $(QEMU) build/nexix-multi.iso 128M

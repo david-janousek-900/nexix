@@ -2396,6 +2396,32 @@
         "path": "etc/termcap"
       },
       "format": "data"
+    },
+    {
+      "path": "/usr/include/termios.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.headers",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/termios.h"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/usr/include/termcap.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.headers",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/termcap.h"
+      },
+      "format": "data"
     }
   ]
 }

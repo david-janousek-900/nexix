@@ -18,7 +18,7 @@ struct	sgttyb ttyb;
 struct	utmp utmp;
 char	minusnam[16] = "-";
 char	homedir[64] = "HOME=";
-char	*envinit[] = {homedir, "PATH=:/bin:/usr/bin", 0};
+char	*envinit[] = {homedir, "PATH=:/bin:/usr/bin", "TERM=ansi", 0};
 struct	passwd *pwd;
 
 struct	passwd *getpwnam();
@@ -100,6 +100,7 @@ char **argv;
 	}
 	if (*pwd->pw_shell == '\0')
 		pwd->pw_shell = "/bin/sh";
+	envinit[2]=v7_terminal_environment(0);
 	environ = envinit;
 	strncat(homedir, pwd->pw_dir, sizeof(homedir)-6);
 	if ((namep = rindex(pwd->pw_shell, '/')) == NULL)

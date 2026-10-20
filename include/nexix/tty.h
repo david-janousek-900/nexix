@@ -12,6 +12,15 @@
 #define NX_TIOCFLUSH 0x7410
 #define NX_TIOCSETC 0x7411
 #define NX_TIOCGETC 0x7412
+/* Native termios bridge; historical sgtty defaults remain unchanged. */
+#define NX_TIOCGETA 0x7480
+#define NX_TIOCSETA 0x7481
+#define NX_TIOCGWINSZ 0x7482
+#define NX_TTY_NOSIG (1U<<19)
+#define NX_TTY_PASS8 (1U<<20)
+#define NX_TTY_SPLITCR (1U<<21)
+#define NX_TTY_ICRNL (1U<<22)
+#define NX_TTY_ONLCR (1U<<23)
 #define NX_FIOCLEX 0x6601
 #define NX_FIONCLEX 0x6602
 #define NX_TANDEM 0000001
@@ -61,6 +70,9 @@
 #include <stdint.h>
 struct nx_sgttyb { uint8_t ispeed, ospeed, erase, kill; uint32_t flags; };
 struct nx_tchars { uint8_t intr, quit, start, stop, eof, brk; };
+struct nx_tty_state { struct nx_sgttyb settings; struct nx_tchars chars; uint16_t reserved; uint32_t action; };
+struct nx_winsize { uint16_t rows, columns, xpixel, ypixel; };
+_Static_assert(sizeof(struct nx_tty_state) == 20, "native terminal state ABI");
 _Static_assert(sizeof(struct nx_sgttyb) == 8, "native sgtty ABI");
 _Static_assert(sizeof(struct nx_tchars) == 6, "native tchars ABI");
 #endif

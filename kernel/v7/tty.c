@@ -184,7 +184,7 @@ static void logical(struct tty *t,uint8_t c)
         for(unsigned i=0;i<10;i+=2)if(c==(uint8_t)pairs[i+1]){logical(t,'\\');c=pairs[i];break;}
         if(c>='a' && c<='z')c-='a'-'A';
     }
-    if(c=='\n' && (t->settings.flags&NX_CRMOD))logical(t,'\r');
+    if(c=='\n' && (t->settings.flags&(t->settings.flags&NX_TTY_SPLITCR?NX_TTY_ONLCR:NX_CRMOD)))logical(t,'\r');
     byte(t,c);unsigned delay=0,type=tty_character(c)&077,col=t->column;
     switch(type){
     case 0:t->column=(col+1)&255;break;
@@ -258,8 +258,8 @@ static void receive(struct tty *t,uint8_t c)
     if(packet_active(t)){packet_receive(t,c);return;}
     input_high(t);
     if (!(t->settings.flags & NX_RAW)) {
-        c &= 0177;
-        if ((c == t->chars.intr || c == t->chars.quit) && c != 0377) {
+        if(!(t->settings.flags&NX_TTY_PASS8))c &= 0177;
+        if (!(t->settings.flags&NX_TTY_NOSIG) && (c == t->chars.intr || c == t->chars.quit) && c != 0377) {
             flush_output(t);flush(t); resume(t);
             unsigned sig=c==t->chars.intr?NX_SIGINT:NX_SIGQUIT;
             if(t->mpx_owner)mpx_tty_notify(t->mpx_owner,sig);else signal_group(t->group,sig);
@@ -267,7 +267,7 @@ static void receive(struct tty *t,uint8_t c)
         }
         if (c == t->chars.start && c != 0377) { resume(t); return; }
         if (c == t->chars.stop && c != 0377) { t->stopped = true; return; }
-        if (c == '\r' && (t->settings.flags & NX_CRMOD)) c = '\n';
+        if (c == '\r' && (t->settings.flags & (t->settings.flags&NX_TTY_SPLITCR?NX_TTY_ICRNL:NX_CRMOD))) c = '\n';
     }
     if((t->settings.flags&NX_LCASE) && c>='A' && c<='Z')c+='a'-'A';
     if (immediate(t)) {
@@ -358,12 +358,36 @@ int tty_control(struct tty *t,uint64_t request,void *argument)
         t->modem_mode=status.mode;modem_outputs(t,!t->hungup);
         carrier_update(t,status.mode==NX_MDM_UART?t->driver->status(t->driver->context):0,false);return 0;
     }
+    case NX_TIOCGWINSZ: {
+        struct nx_winsize size={t==&terminals[2]?25:24,80,0,0};
+        tcopy(argument,&size,sizeof(size));return 0;
+    }
+    case NX_TIOCGETA: {
+        struct nx_tty_state state={.settings=t->settings,.chars=t->chars};
+        tcopy(argument,&state,sizeof(state));return 0;
+    }
+    case NX_TIOCSETA: {
+        struct nx_tty_state state;tcopy(&state,argument,sizeof(state));
+        if(state.reserved || state.action>2)return -NX_EINVAL;
+        /* Validate all settings before any interruptible drain or mutation. */
+        struct tty_parameters parameters;
+        uint32_t allowed=NX_TANDEM|NX_CBREAK|NX_LCASE|NX_ECHO|NX_CRMOD|NX_RAW|NX_ODDP|NX_EVENP|
+            NX_NLDELAY|NX_TBDELAY|NX_CRDELAY|NX_VTDELAY|NX_BSDELAY|
+            NX_TTY_NOSIG|NX_TTY_PASS8|NX_TTY_SPLITCR|NX_TTY_ICRNL|NX_TTY_ONLCR;
+        if(state.settings.flags&~allowed || tty_parameters(t->profile,&state.settings,&parameters))return -NX_EINVAL;
+        if(packet_active(t))return -NX_EBUSY;
+        if(state.action==1 && t->carrier){int error=drain(t);if(error)return error;}
+        int error=tty_control(t,state.action==2?NX_TIOCSETP:NX_TIOCSETN,&state.settings);
+        if(error)return error;
+        return tty_control(t,NX_TIOCSETC,&state.chars);
+    }
     case NX_TIOCGETP: tcopy(argument,&t->settings,sizeof(t->settings));return 0;
     case NX_TIOCSETP: case NX_TIOCSETN: {
         struct nx_sgttyb settings;
         tcopy(&settings,argument,sizeof(settings));
         uint32_t allowed=NX_TANDEM|NX_CBREAK|NX_LCASE|NX_ECHO|NX_CRMOD|NX_RAW|NX_ODDP|NX_EVENP|
-            NX_NLDELAY|NX_TBDELAY|NX_CRDELAY|NX_VTDELAY|NX_BSDELAY;
+            NX_NLDELAY|NX_TBDELAY|NX_CRDELAY|NX_VTDELAY|NX_BSDELAY|
+            NX_TTY_NOSIG|NX_TTY_PASS8|NX_TTY_SPLITCR|NX_TTY_ICRNL|NX_TTY_ONLCR;
         struct tty_parameters parameters;
         bool b0=!settings.ispeed && !settings.ospeed && (t->profile==NX_TTY_DH || t->profile==NX_TTY_DZ);
         if(settings.flags&~allowed || (!b0 && tty_parameters(t->profile,&settings,&parameters)))return -NX_EINVAL;
@@ -418,6 +442,9 @@ int tty_control_size(uint64_t request,bool *get)
 {
     *get=false;
     switch(request){
+    case NX_TIOCGWINSZ:*get=true;return sizeof(struct nx_winsize);
+    case NX_TIOCGETA:*get=true;return sizeof(struct nx_tty_state);
+    case NX_TIOCSETA:return sizeof(struct nx_tty_state);
     case NX_MDM_GET:*get=true;return sizeof(struct nx_modem_tty);
     case NX_MDM_SET:return sizeof(struct nx_modem_tty);
     case NX_TIOCGETP:*get=true;return sizeof(struct nx_sgttyb);
@@ -450,7 +477,7 @@ int tty_ioctl(struct tty *t,struct address_space *vm,uint64_t request,uintptr_t 
         }
     }
     bool get;int size=tty_control_size(request,&get);if(size<0)return size;
-    uint64_t data[2]={0};int error=0;
+    uint64_t data[4]={0};int error=0;
     if(!get && size)error=copyin(vm,address,&data,size);
     if(!error)error=tty_control(t,request,&data);
     if(!error && get)error=copyout(vm,address,&data,size);

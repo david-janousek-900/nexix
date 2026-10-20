@@ -5,6 +5,7 @@
 #include <string.h>
 #include <time.h>
 #include <errno.h>
+#include <sys/ioctl.h>
 static void field(char output[8],const char *input)
 {unsigned n=0;while(n<8 && input[n]){output[n]=input[n];++n;}while(n<8)output[n++]=0;}
 static int put(int fd,const struct utmp *record)
@@ -70,4 +71,11 @@ int v7_logout_record(const char *line)
     }
     if(append(&logout))result=-1;
     return result;
+}
+
+/* Geometry is fixed by each physical native terminal, including console aliases. */
+char *v7_terminal_environment(int fd)
+{
+    struct winsize size;
+    return ioctl(fd,TIOCGWINSZ,&size)==0 && size.ws_row==25 ? "TERM=nexix" : "TERM=ansi";
 }

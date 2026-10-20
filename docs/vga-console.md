@@ -130,8 +130,8 @@ Local evidence artifacts are `build/vga-acceptance.log`,
 `build/vga-getty-regression.log` and `build/virt-manager-vga.png`.
 
 The installed `clear` command reads `TERM` and the `cl` capability from
-`/etc/termcap`. The login profile supplies `TERM=ansi` when unset; an explicit
-terminal setting is preserved. Both `ansi` (serial) and `nexix` (VGA) descriptions
+`/etc/termcap`. Login and single-user init select `TERM=nexix` for VGA and `TERM=ansi` for
+serial; the profile preserves explicit settings and defaults to `ansi` when unset. Both `ansi` (serial) and `nexix` (VGA) descriptions
 clear and home the screen. `clear` takes no arguments and reports missing
 terminal descriptions/capabilities and output failures with a nonzero status.
 Run `make test-clear` to check exact serial bytes, VGA memory and error paths on

@@ -10,7 +10,7 @@
 #include <string.h>
 
 extern char **environ;
-static char *recovery_environment[]={"HOME=/root","PATH=/bin",0};
+static char *recovery_environment[]={"HOME=/root","PATH=/bin","TERM=ansi",0};
 static void reset(int);
 static void merge_signal(int);
 int merge(void);
@@ -112,6 +112,7 @@ single()
 		dup(0);
 		if (!initial_boot)
 			write(1, "init: single-user recovery\n", 27);
+		recovery_environment[2]=v7_terminal_environment(0);
 		environ=recovery_environment;
 		execl(shell, minus, (char *)0);
 		exit(0);

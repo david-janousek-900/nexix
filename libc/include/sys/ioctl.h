@@ -3,6 +3,8 @@
 #include <nexix/tty.h>
 #include <nexix/modem.h>
 #include <nexix/packet.h>
+struct winsize { uint16_t ws_row, ws_col, ws_xpixel, ws_ypixel; };
+#define TIOCGWINSZ NX_TIOCGWINSZ
 #define DIOCGETP NX_DIOCGETP
 #include <nexix/mpx.h>
 #define MXLSTN NX_MXLSTN
