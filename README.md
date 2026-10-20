@@ -198,6 +198,11 @@ the graphical console to log in. Stop any Make-launched VM before reusing its
 disk. See the [VGA/virt-manager guide](docs/vga-console.md) for detailed setup,
 existing-image migration and console limitations.
 
+For live investigation of freezes, use `make run-debug` (serial) or
+`make DEBUG=1 run` (VGA). Leave the guest running and ask for analysis;
+`make debug-capture` from another host terminal saves registers and RAM.
+See [live debugging](docs/live-debugging.md) for details.
+
 ## Test
 
 ```sh

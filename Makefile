@@ -8,6 +8,20 @@ OBJCOPY = $(TOOLCHAIN_PREFIX)objcopy
 PYTHON ?= python3
 QEMU ?= qemu-system-x86_64
 CONSOLE ?= vga
+DEBUG ?= 0
+DEBUG_DIR ?= build/debug
+ifeq ($(DEBUG),1)
+QEMU_DEBUG_ARGS = -qmp "unix:$(abspath $(DEBUG_DIR))/qmp.sock,server=on,wait=off" -gdb "unix:$(abspath $(DEBUG_DIR))/gdb.sock,server=on,wait=off" -pidfile "$(DEBUG_DIR)/qemu.pid" -D "$(DEBUG_DIR)/qemu.log" -d guest_errors,cpu_reset
+run-serial run-vga: debug-prepare
+endif
+
+.PHONY: run-debug debug-prepare debug-capture
+run-debug:
+	$(MAKE) DEBUG=1 run-serial
+debug-prepare:
+	$(PYTHON) tools/debug_vm.py prepare "$(DEBUG_DIR)"
+debug-capture:
+	$(PYTHON) tools/debug_vm.py capture "$(DEBUG_DIR)"
 DISK_IMAGE ?= build/nexix.img
 INSTALL_MANIFEST ?= docs/native-install.json
 INSTALL_CONFIG ?= rootfs
@@ -123,7 +137,7 @@ multi-iso: check build/nexix-multi.iso
 build: iso disk
 run-serial: build serial-iso
 	$(PYTHON) tools/serial_terminal.py --prepare build/ttyS1
-	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -rtc base=utc -boot d -drive "file=$(DISK_IMAGE),format=raw,if=ide,index=0" -cdrom build/nexix-serial.iso -display none -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -serial pipe:build/ttyS1 -mon chardev=console,mode=readline -no-reboot
+	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -rtc base=utc -boot d -drive "file=$(DISK_IMAGE),format=raw,if=ide,index=0" -cdrom build/nexix-serial.iso -display none -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -serial pipe:build/ttyS1 -mon chardev=console,mode=readline -no-reboot $(QEMU_DEBUG_ARGS)
 
 .PHONY: terminal
 terminal:
@@ -1597,7 +1611,7 @@ build/local_console.o: kernel/local_console.c | build/.dir
 run: run-$(CONSOLE)
 run-vga: build
 	$(PYTHON) tools/serial_terminal.py --prepare build/ttyS1
-	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -rtc base=utc -boot d -drive "file=$(DISK_IMAGE),format=raw,if=ide,index=0" -cdrom build/nexix.iso -vga std -display gtk -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -serial pipe:build/ttyS1 -mon chardev=console,mode=readline -no-reboot
+	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -rtc base=utc -boot d -drive "file=$(DISK_IMAGE),format=raw,if=ide,index=0" -cdrom build/nexix.iso -vga std -display gtk -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -serial pipe:build/ttyS1 -mon chardev=console,mode=readline -no-reboot $(QEMU_DEBUG_ARGS)
 
 .PHONY: test-vga
 test-vga: test-vga-unit test-keyboard-unit test-tty-lines-unit multi-iso rootfs
@@ -1693,6 +1707,11 @@ test-test: multi-iso rootfs build/test-command.elf
 test-yes: multi-iso rootfs build/yes-command.elf
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 16M yes
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 128M yes
+
+.PHONY: test-debug-vm
+test-debug-vm: multi-iso rootfs
+	$(PYTHON) tools/debug_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/debug_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 .PHONY: test-yes-interrupt
 test-yes-interrupt: multi-iso rootfs
