@@ -2141,3 +2141,4 @@ test-man-pages:
 test: test-man-pages
 
 include tools/formatter-tables.mk
+include tools/formatter.mk

@@ -17,3 +17,12 @@ an `NXTERM1` header, nine little-endian 32-bit metrics, and length-prefixed stri
 font data is exactly 224 width bytes. Neither format contains object headers or
 pointers. The original mkfont/chars helper logic is also built for Nexix, with
 modern initializer syntax, explicit character pairs and bounded width input.
+
+The active formatter sources live in `user/troff`, derived from
+`reference/v7/usr/src/cmd/troff`. The native port replaces the contiguous global
+"environment block" assumption with an explicit structure, sizes macro call
+frames and argument pointers for x86_64, uses mutable six-placeholder temporary
+names, and initializes device tables before calculating character widths.
+Macro parsing, registers, diversions, filling and line/page layout remain the V7
+implementation. The formatter's private `atoi` parser is namespaced separately
+from libc.
