@@ -49,3 +49,11 @@ for the upstream `ex -` batch mode. `make test-ex` checks append, substitution,
 global deletion, file reads/writes, argument-file reopening, byte-for-byte file
 comparison, shell escapes and invalid-command/no-match/write failures at
 16/128 MiB. It checks both result text and printed command output.
+
+Task 382 enables native visual vi/view. The BIT8 screen buffer is bounded for the
+fixed native terminal sizes and fits the 32 KiB user stack (the release's default
+16,000 short cells plus scratch space would exceed it). The QMP keyboard harness
+sends a real Escape key. `make test-vi` exercises serial and physical VGA memory
+with PS/2 input: insert, line motion, deletion/single undo, search, save/reopen,
+read-only write rejection, unchanged view contents and restored shell modes at
+16/128 MiB. No modern vi extensions or UTF-8 behavior are implied.

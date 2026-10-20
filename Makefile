@@ -2083,3 +2083,7 @@ test-vi-storage: build/nexix-multi.iso build/vi-dev.elf build/vi-storage.elf sta
 test-ex: build/nexix-multi.iso build/vi-dev.elf stage
 	$(PYTHON) tools/ex_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/ex_smoke.py $(QEMU) build/nexix-multi.iso 128M
+.PHONY: test-vi
+test-vi: build/nexix-multi.iso build/vi-dev.elf stage
+	$(PYTHON) tools/vi_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/vi_smoke.py $(QEMU) build/nexix-multi.iso 128M

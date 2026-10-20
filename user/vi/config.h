@@ -94,9 +94,9 @@
 #define TUBECOLS        160     /* Number of screen columns for visual */
 #define TUBESIZE        6000    /* Maximum screen size for visual */
 #else	/* VMUNIX */
-#define TUBELINES       100
+#define TUBELINES       26 /* Native VGA/serial geometry is at most 25 rows. */
 #define TUBECOLS        160
-#define TUBESIZE        16000
+#define TUBESIZE        4000 /* Keep BIT8 cell arrays within the 32 KiB stack. */
 #endif	/* VMUNIX */
 
 /*

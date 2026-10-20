@@ -51,6 +51,7 @@ class LocalConsole:
         for c in text:
             if c in shifts:self.key('shift',shifts[c])
             elif c.isupper():self.key('shift',c.lower())
+            elif c=='\x1b':self.key('esc')
             elif ord(c)<32 and c not in '\r\n':self.key('ctrl',chr(ord(c)+96))
             else:self.key(names.get(c,c))
     def close(self):self.stream.close();self.sock.close()
