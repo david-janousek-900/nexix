@@ -2438,6 +2438,22 @@
       "uid": 0,
       "gid": 0,
       "component": "distribution.config"
+    },
+    {
+      "path": "/var/preserve",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config"
+    },
+    {
+      "path": "/usr/libexec",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config"
     }
   ]
 }

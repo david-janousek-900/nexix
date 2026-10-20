@@ -429,7 +429,7 @@ waitfor(void)
 		if (WIFEXITED(status))
 			status = WEXITSTATUS(status);
 		else
-			status = 0;
+			status = 128 + WTERMSIG(status);
 	}
 }
 
@@ -443,8 +443,10 @@ revocer(void)
 {
 
 	waitfor();
-	if (pid == rpid && status != 0)
+	if (pid != rpid || status != 0) {
 		edited = 0;
+		failed = 1;
+	}
 	else
 		change();
 }

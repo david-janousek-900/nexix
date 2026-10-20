@@ -41,6 +41,7 @@ def load_suite(path):
 
 class Guest:
     def __init__(self,qemu,iso,disk,ram,terminals=1,timeout=20,rtc='2024-02-29T12:34:56',extra_args=()):
+        self.disk=Path(disk) if disk is not None else None
         self.temp=tempfile.TemporaryDirectory(prefix='nx-serial-');self.sockets=[];self.writers=[];self.buffers=[bytearray() for _ in range(terminals)];self.positions=[0]*terminals
         self.timeout=timeout;self.process=None;self.diagnostics=tempfile.TemporaryFile()
         paths=[str(Path(self.temp.name)/str(i)) for i in range(terminals)]

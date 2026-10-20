@@ -134,7 +134,7 @@ static	union store allocs[2];	/*initial arena*/
 static	union store *allocp;	/*search ptr*/
 static	union store *alloct;	/*arena top*/
 static	union store *allocx;	/*for benefit of realloc*/
-extern int	error(char *, ...);
+extern void	error(char *, ...);
 
 char *
 poolsbrk(intptr_t inc)

@@ -57,3 +57,18 @@ sends a real Escape key. `make test-vi` exercises serial and physical VGA memory
 with PS/2 input: insert, line motion, deletion/single undo, search, save/reopen,
 read-only write rejection, unchanged view contents and restored shell modes at
 16/128 MiB. No modern vi extensions or UTF-8 behavior are implied.
+
+Task 383 ports the release preservation/recovery helpers over private V7
+fixed-record directory adapters. Header checks bound line counts, names and block
+locations and require regular files whose owner matches the recorded uid.
+Preserved files use mode 0600 in root-owned /var/preserve (0755); only expreserve
+needs setuid root, while exrecover runs as its caller. Recovery/helper failures
+and signal deaths propagate failure to ex. Native qsort is a separate libc
+archive member so recovery can retain the release's sbrk/pool allocator.
+
+`make test-vi-recovery` edits as uid 100, sends SIGHUP, checks private ownership,
+boots the same disposable disk again, lists saved buffers using vi -r, rejects
+uid 101, recovers every byte as uid 100 and rejects malformed input at 16/128 MiB.
+If /bin/mail is absent, preservation skips the optional mail notification; it
+still saves the buffer successfully. When mail is installed, the release's
+notification path remains available with a controlled MAILRC environment.

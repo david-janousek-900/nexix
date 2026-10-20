@@ -365,7 +365,7 @@
     {
       "source": "reference/v7/usr/src/libc/gen/qsort.c",
       "native": [
-        "libc/malloc.c"
+        "libc/qsort.c"
       ],
       "note": "Native implementation; public records and widths use the Nexix ABI."
     },

@@ -2087,3 +2087,18 @@ test-ex: build/nexix-multi.iso build/vi-dev.elf stage
 test-vi: build/nexix-multi.iso build/vi-dev.elf stage
 	$(PYTHON) tools/vi_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/vi_smoke.py $(QEMU) build/nexix-multi.iso 128M
+build/vi-expreserve.elf: build/crt0.o build/vi-expreserve.o build/vi-directory.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+build/vi-exrecover.elf: build/crt0.o build/vi-exrecover.o build/vi-directory.o build/vi-native.o build/vi-malloc.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+# Recovery uses qsort with the release's private allocator.
+LIBC_OBJECTS += build/libc_qsort.o
+build/libc.a: build/libc_qsort.o
+build/vi-preserve.o: tests/vi-preserve.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/vi-preserve.elf: build/crt0.o build/vi-preserve.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+.PHONY: test-vi-recovery
+test-vi-recovery: build/nexix-multi.iso build/vi-dev.elf build/vi-expreserve.elf build/vi-exrecover.elf build/vi-preserve.elf stage
+	$(PYTHON) tools/vi_recovery_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/vi_recovery_smoke.py $(QEMU) build/nexix-multi.iso 128M
