@@ -19,8 +19,8 @@ The inventory accounts for **223 components, 2,144 distribution files and
 4 partial, 1 prototype and 151 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **388 tracking tasks: 176 done, 0 in progress
-and 212 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 253, 264–269, 281–282, 286–287, 295, 357, 362–388** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **411 tracking tasks: 177 done, 0 in progress
+and 234 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 253, 264–269, 281–282, 286–287, 295, 357, 362–388, 410** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -692,3 +692,37 @@ Traditional Vi 050325 is an additional 0.1.0 component; see [port contract](vi-p
 |---:|---|---|---|
 | 387 | Add uptime and scheduler load averages | Done | Monotonic boot ticks, utmp sessions and real 1/5/15-minute kernel load; `make test-uptime` at 16/128 MiB; Git history |
 | 388 | Add navigable manual/text pager | Done | VGA/ANSI pages, lines, arrows, search/repeat, start/end, checked formatter/pager status and interrupt restoration; `make test-pager` at 16/128 MiB; Git history |
+
+### Compatibility closure and reference-review follow-up
+
+Completed initial ports retain their historical evidence. Tasks 389–408 resolve
+recorded audit obligations; they do not assert that every command has a defect.
+Each closure compares reference behavior and native dependencies, implements any
+confirmed gaps, tests them and commits independently. Task 409 requires the
+service ports before startup integration. IDs do not imply execution order.
+
+| Task | Description | Status | Evidence / notes / acceptance |
+|---:|---|---|---|
+| 389 | Close cat V7 compatibility audit | To do | Binary/stdin concatenation, -u, multiple files and read/write failures; compare supplied source with active port, resolve API/ABI/runtime dependencies, add missing behavior tests and document native adaptations; implement/test/commit independently |
+| 390 | Close cp V7 compatibility audit | To do | Overwrite modes, directory destinations, same-inode rejection, permissions and failed copies; compare supplied source with active port, resolve API/ABI/runtime dependencies, add missing behavior tests and document native adaptations; implement/test/commit independently |
+| 391 | Close echo V7 compatibility audit | To do | V7 -n prefix handling, literal backslashes, empty arguments and pipeline output; compare supplied source with active port, resolve API/ABI/runtime dependencies, add missing behavior tests and document native adaptations; implement/test/commit independently |
+| 392 | Close getty V7 compatibility audit | To do | Speed tables, erase/kill, parity/case, EOF, long names and login handoff on each terminal; compare supplied source with active port, resolve API/ABI/runtime dependencies, add missing behavior tests and document native adaptations; implement/test/commit independently |
+| 393 | Close init V7 compatibility audit | To do | rc/single-user transitions, signal handling, reaping, tty reload and getty respawn; compare supplied source with active port, resolve API/ABI/runtime dependencies, add missing behavior tests and document native adaptations; implement/test/commit independently |
+| 394 | Close ln V7 compatibility audit | To do | Directory destinations, existing targets, same-inode cases, permissions and hard-link lifetime; compare supplied source with active port, resolve API/ABI/runtime dependencies, add missing behavior tests and document native adaptations; implement/test/commit independently |
+| 395 | Close login V7 compatibility audit | To do | Authentication retries, empty/locked passwords, credentials, home/shell environment and failure cleanup; compare supplied source with active port, resolve API/ABI/runtime dependencies, add missing behavior tests and document native adaptations; implement/test/commit independently |
+| 396 | Close ls V7 compatibility audit | To do | All reference flags, sorting, directory operands, ownership, time selection and failures; compare supplied source with active port, resolve API/ABI/runtime dependencies, add missing behavior tests and document native adaptations; implement/test/commit independently |
+| 397 | Close mesg V7 compatibility audit | To do | Reference mode/exit status, descriptor selection, non-TTY and ownership failures; compare supplied source with active port, resolve API/ABI/runtime dependencies, add missing behavior tests and document native adaptations; implement/test/commit independently |
+| 398 | Close newgrp V7 compatibility audit | To do | Membership/password rules, credential changes, environment, shell exec and failures; compare supplied source with active port, resolve API/ABI/runtime dependencies, add missing behavior tests and document native adaptations; implement/test/commit independently |
+| 399 | Close passwd V7 compatibility audit | To do | Caller authorization, password checks, database replacement/metadata and failed-update recovery; compare supplied source with active port, resolve API/ABI/runtime dependencies, add missing behavior tests and document native adaptations; implement/test/commit independently |
+| 400 | Close pwd V7 compatibility audit | To do | Root/nested paths, directory traversal permissions, renamed directories and errors; compare supplied source with active port, resolve API/ABI/runtime dependencies, add missing behavior tests and document native adaptations; implement/test/commit independently |
+| 401 | Close rm V7 compatibility audit | To do | Reference options, recursion, prompting, directories, permissions and open/hard-linked files; compare supplied source with active port, resolve API/ABI/runtime dependencies, add missing behavior tests and document native adaptations; implement/test/commit independently |
+| 402 | Close sh V7 compatibility audit | To do | Grammar, expansion, redirection, builtins, pipelines, traps, scripts and login-shell behavior; compare supplied source with active port, resolve API/ABI/runtime dependencies, add missing behavior tests and document native adaptations; implement/test/commit independently |
+| 403 | Close stty V7 compatibility audit | To do | Every reference operand/query, atomic settings, raw/cooked transitions and non-TTY/errors; compare supplied source with active port, resolve API/ABI/runtime dependencies, add missing behavior tests and document native adaptations; implement/test/commit independently |
+| 404 | Close su V7 compatibility audit | To do | Root/non-root authentication, identity/group changes, environment and shell-exec failures; compare supplied source with active port, resolve API/ABI/runtime dependencies, add missing behavior tests and document native adaptations; implement/test/commit independently |
+| 405 | Close tty V7 compatibility audit | To do | Reference -s, descriptor selection, output/status and non-TTY failures; compare supplied source with active port, resolve API/ABI/runtime dependencies, add missing behavior tests and document native adaptations; implement/test/commit independently |
+| 406 | Close wall V7 compatibility audit | To do | User/session selection, message framing, write permissions and unavailable terminals; compare supplied source with active port, resolve API/ABI/runtime dependencies, add missing behavior tests and document native adaptations; implement/test/commit independently |
+| 407 | Close who V7 compatibility audit | To do | utmp/wtmp formats, who am i, alternate files, time display and malformed records; compare supplied source with active port, resolve API/ABI/runtime dependencies, add missing behavior tests and document native adaptations; implement/test/commit independently |
+| 408 | Close write V7 compatibility audit | To do | Recipient/terminal selection, permissions, message/EOF framing, signals and disconnects; compare supplied source with active port, resolve API/ABI/runtime dependencies, add missing behavior tests and document native adaptations; implement/test/commit independently |
+| 409 | Integrate V7 background services into multi-user startup | To do | After 237/238/242–245: integrate update/cron in rc, install a native crontab and service ownership, exercise scheduled atrun and calendar/dmesg consumers, cold boot and single-user/re-entry without duplicate daemons; preserve native configuration during upgrades |
+| 410 | Require task ownership for unresolved inventory work | Done | Explicit unresolved_tasks validated against pending component owners; scope_notes separate agreed limits; negative regression tests and make test-inventory; Git history |
+| 411 | Reconcile reference review and roadmap documentation | To do | Correct stale counts/completion claims, publish audit findings and new task mappings, and test documentation consistency against canonical inventory/roadmap data |

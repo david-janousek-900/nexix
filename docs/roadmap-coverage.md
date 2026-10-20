@@ -85,3 +85,19 @@ formats are distinct; adding a declaration does not complete its feature owner.
 Schema version 2 renames `step_count` to `task_count`. Kernel and header
 coverage also use schema version 2, with `tasks` and `task` ownership fields.
 Consumers must migrate these field names; numeric IDs retain their meaning.
+
+Task 410 adds explicit obligation ownership without changing coverage schema 2.
+A component or requirement with nonempty `unresolved` must declare a nonempty
+`unresolved_tasks` array. Every owner must be sorted, unique, present in that
+record's coverage mapping and still To do or In progress. Completing an owner
+requires resolving/reassigning its obligations, not simply marking the row Done.
+Clear `unresolved_tasks` when clearing the last obligation. Component status may
+remain implemented while a compatibility audit is pending; initial acceptance
+and complete compatibility closure are different claims.
+
+Use `scope_notes` for documented, agreed native adaptations or excluded modern
+features. It is a list of nonempty strings, not a way to waive a newly discovered
+V7 requirement. Text alone cannot prove behavior equivalence: reviewers must
+check evidence when moving or resolving an obligation. Tasks 389–408 retain
+separate source/API/runtime closure for the twenty initial command ports with
+pending audit notes. Task 409 owns later startup-service integration explicitly.

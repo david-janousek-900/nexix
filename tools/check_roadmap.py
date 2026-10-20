@@ -77,6 +77,26 @@ def validate_roadmap(manifest, coverage, roadmap_text):
             for task in tasks:
                 need(task in states, f'{identifier}: unknown roadmap task {task}')
             referenced.update(tasks)
+            if identifier in records:
+                record = records[identifier]
+                obligations = record.get('unresolved', [])
+                owners = record.get('unresolved_tasks', [])
+                valid = (isinstance(owners, list) and
+                         all(type(task) is int and task in tasks for task in owners))
+                need(valid, f'{identifier}: unresolved_tasks must reference mapped owner tasks')
+                if valid:
+                    need(owners == sorted(set(owners)),
+                         f'{identifier}: unresolved task owners must be sorted and unique')
+                    if obligations:
+                        need(bool(owners), f'{identifier}: unresolved work needs explicit pending task owners')
+                    else:
+                        need(not owners, f'{identifier}: unresolved task owners without unresolved work')
+                    for task in owners:
+                        need(states.get(task) in {'To do', 'In progress'},
+                             f'{identifier}: unresolved work cannot have completed owner {task}')
+                notes = record.get('scope_notes', [])
+                need(isinstance(notes, list) and all(isinstance(note, str) and note.strip() for note in notes),
+                     f'{identifier}: scope_notes must be nonempty text entries')
             if field == 'components' and identifier in records:
                 status = records[identifier].get('status')
                 if status == 'implemented':

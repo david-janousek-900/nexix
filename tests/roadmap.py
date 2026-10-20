@@ -29,6 +29,46 @@ class Roadmap(unittest.TestCase):
     def test_current_coverage(self):
         self.assertEqual(validate_roadmap(self.manifest, self.coverage, self.roadmap_text), [])
 
+    def test_unresolved_work_needs_explicit_owners(self):
+        entry = next(e for e in self.manifest['entries'] if e['id'] == 'cmd.cat')
+        del entry['unresolved_tasks']
+        self.reject('cmd.cat: unresolved work needs explicit pending task owners')
+
+    def test_unresolved_work_cannot_use_done_owner(self):
+        entry = next(e for e in self.manifest['entries'] if e['id'] == 'cmd.cat')
+        entry['unresolved_tasks'] = [16]
+        self.reject('cmd.cat: unresolved work cannot have completed owner 16')
+
+    def test_unresolved_owner_must_belong_to_component(self):
+        entry = next(e for e in self.manifest['entries'] if e['id'] == 'cmd.cat')
+        for value in [[174], [True], '389', [None]]:
+            with self.subTest(value=value):
+                entry['unresolved_tasks'] = value
+                self.reject('cmd.cat: unresolved_tasks must reference mapped owner tasks')
+
+    def test_unresolved_owners_must_be_sorted_and_unique(self):
+        entry = next(e for e in self.manifest['entries'] if e['id'] == 'cmd.cat')
+        entry['unresolved_tasks'] = [389, 389]
+        self.reject('cmd.cat: unresolved task owners must be sorted and unique')
+
+    def test_clearing_obligation_also_clears_owners(self):
+        entry = next(e for e in self.manifest['entries'] if e['id'] == 'cmd.cat')
+        entry['unresolved'] = []
+        self.reject('cmd.cat: unresolved task owners without unresolved work')
+
+    def test_scope_limits_are_not_unfinished_work(self):
+        entry = next(e for e in self.manifest['entries'] if e['id'] == 'cmd.date')
+        self.assertTrue(entry['scope_notes'])
+        self.assertFalse(entry['unresolved'])
+        self.assertEqual(validate_roadmap(self.manifest, self.coverage, self.roadmap_text), [])
+        entry['scope_notes'] = [None]
+        self.reject('cmd.date: scope_notes must be nonempty text entries')
+
+    def test_requirements_also_need_obligation_owners(self):
+        entry = next(e for e in self.manifest['requirements'] if e['id'] == 'manual-pages')
+        entry['unresolved'] = ['A newly discovered consumer gap.']
+        self.reject('manual-pages: unresolved work needs explicit pending task owners')
+
     def test_missing_component_mapping(self):
         del self.coverage['components']['script.man']
         self.reject('unmapped roadmap components: script.man')

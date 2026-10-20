@@ -955,6 +955,9 @@
           "path": "/bin/ac",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        239
       ]
     },
     {
@@ -1030,6 +1033,9 @@
           "path": "/etc/accton",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        240
       ]
     },
     {
@@ -1229,6 +1235,11 @@
           "path": "/bin/adb",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        258,
+        259,
+        260
       ]
     },
     {
@@ -1335,6 +1346,9 @@
           "path": "/bin/ar",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        179
       ]
     },
     {
@@ -1423,6 +1437,9 @@
           "path": "/bin/arcv",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        180
       ]
     },
     {
@@ -1556,6 +1573,12 @@
           "path": "/lib/as2",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        181,
+        182,
+        183,
+        184
       ]
     },
     {
@@ -1670,6 +1693,9 @@
           "path": "/bin/at",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        242
       ]
     },
     {
@@ -1790,6 +1816,10 @@
           "path": "/usr/lib/atrun",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        243,
+        409
       ]
     },
     {
@@ -1992,6 +2022,11 @@
           "path": "/bin/awk",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        174,
+        175,
+        176
       ]
     },
     {
@@ -2060,6 +2095,9 @@
           "path": "/bin/bas",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        215
       ]
     },
     {
@@ -2243,6 +2281,9 @@
           "path": "/bin/bc",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        209
       ]
     },
     {
@@ -2280,6 +2321,9 @@
       ],
       "acceptance": [
         "Read fixture input and report read block sizes; document that the original infinite EOF loop requires an explicit porting decision."
+      ],
+      "unresolved_tasks": [
+        256
       ]
     },
     {
@@ -2481,6 +2525,12 @@
           "path": "/lib/c2",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        197,
+        198,
+        199,
+        200
       ]
     },
     {
@@ -2630,6 +2680,10 @@
           "path": "/usr/lib/calendar",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        245,
+        409
       ]
     },
     {
@@ -2717,6 +2771,9 @@
           "path": "/bin/cat",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        389
       ]
     },
     {
@@ -2792,6 +2849,9 @@
           "path": "/bin/cb",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        166
       ]
     },
     {
@@ -2914,6 +2974,9 @@
           "path": "/bin/cc",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        201
       ]
     },
     {
@@ -2989,6 +3052,9 @@
           "path": "/bin/checkeq",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        271
       ]
     },
     {
@@ -3380,6 +3446,9 @@
           "path": "/bin/clri",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        227
       ]
     },
     {
@@ -3547,6 +3616,9 @@
           "path": "/bin/col",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        140
       ]
     },
     {
@@ -3622,6 +3694,9 @@
           "path": "/bin/comm",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        141
       ]
     },
     {
@@ -3709,6 +3784,9 @@
           "path": "/bin/cp",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        390
       ]
     },
     {
@@ -3809,6 +3887,9 @@
           "path": "/lib/cpp",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        178
       ]
     },
     {
@@ -3935,6 +4016,10 @@
           "path": "/etc/cron",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        244,
+        409
       ]
     },
     {
@@ -4019,6 +4104,9 @@
           "path": "/bin/crypt",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        247
       ]
     },
     {
@@ -4113,6 +4201,9 @@
           "path": "/bin/cu",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        298
       ]
     },
     {
@@ -4204,9 +4295,7 @@
         }
       ],
       "blockers": [],
-      "unresolved": [
-        "Supported TZ grammar and native date year window are documented in docs/time.md; broader timezone database support is outside task 24."
-      ],
+      "unresolved": [],
       "acceptance": [
         "Display fixed RTC-derived dates in UTC/local time; permit root clock setting only.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -4220,6 +4309,9 @@
           "path": "/bin/date",
           "artifact": "historical_binary"
         }
+      ],
+      "scope_notes": [
+        "Supported TZ grammar and native date year window are documented in docs/time.md; broader timezone database support is outside task 24."
       ]
     },
     {
@@ -4308,6 +4400,9 @@
           "path": "/bin/dc",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        208
       ]
     },
     {
@@ -4426,6 +4521,9 @@
           "path": "/bin/dcheck",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        228
       ]
     },
     {
@@ -4507,6 +4605,9 @@
           "path": "/bin/dd",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        225
       ]
     },
     {
@@ -4582,6 +4683,9 @@
           "path": "/bin/deroff",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        272
       ]
     },
     {
@@ -4682,6 +4786,9 @@
           "path": "/bin/df",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        223
       ]
     },
     {
@@ -4790,6 +4897,9 @@
           "path": "/bin/diff",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        143
       ]
     },
     {
@@ -4865,6 +4975,9 @@
           "path": "/usr/lib/diff3",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        144
       ]
     },
     {
@@ -4958,6 +5071,9 @@
           "path": "/usr/lib/diffh",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        142
       ]
     },
     {
@@ -5149,6 +5265,9 @@
           "path": "/bin/du",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        224
       ]
     },
     {
@@ -5280,6 +5399,9 @@
           "path": "/bin/dump",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        232
       ]
     },
     {
@@ -5411,6 +5533,9 @@
           "path": "/bin/dumpdir",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        233
       ]
     },
     {
@@ -5486,6 +5611,9 @@
           "path": "/bin/echo",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        391
       ]
     },
     {
@@ -5665,6 +5793,9 @@
           "path": "/bin/egrep",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        147
       ]
     },
     {
@@ -6241,6 +6372,12 @@
           "path": "/lib/f77pass1",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        203,
+        204,
+        205,
+        206
       ]
     },
     {
@@ -6325,6 +6462,9 @@
           "path": "/bin/factor",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        210
       ]
     },
     {
@@ -6400,6 +6540,9 @@
           "path": "/bin/fgrep",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        148
       ]
     },
     {
@@ -6592,6 +6735,9 @@
           "path": "/bin/find",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        149
       ]
     },
     {
@@ -6680,6 +6826,9 @@
           "path": "/etc/getty",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        392
       ]
     },
     {
@@ -6792,6 +6941,9 @@
           "path": "/bin/graph",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        294
       ]
     },
     {
@@ -7002,6 +7154,9 @@
           "path": "/bin/icheck",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        229
       ]
     },
     {
@@ -7106,6 +7261,10 @@
         "user/v7/cmd/init.c",
         "user/v7/hostname-file.h",
         "user/v7/session.c"
+      ],
+      "unresolved_tasks": [
+        393,
+        409
       ]
     },
     {
@@ -7181,6 +7340,9 @@
           "path": "/bin/iostat",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        252
       ]
     },
     {
@@ -7256,6 +7418,9 @@
           "path": "/bin/join",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        150
       ]
     },
     {
@@ -7431,6 +7596,11 @@
           "path": "/bin/ld",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        185,
+        186,
+        187
       ]
     },
     {
@@ -7646,6 +7816,11 @@
           "path": "/usr/lib/learn/tee",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        283,
+        284,
+        285
       ]
     },
     {
@@ -7803,6 +7978,11 @@
           "path": "/lib/libln.a",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        171,
+        172,
+        173
       ]
     },
     {
@@ -7970,6 +8150,10 @@
           "path": "/usr/lib/lint2",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        261,
+        262
       ]
     },
     {
@@ -8057,6 +8241,9 @@
           "path": "/bin/ln",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        394
       ]
     },
     {
@@ -8189,6 +8376,9 @@
           "path": "/bin/login",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        395
       ]
     },
     {
@@ -8277,6 +8467,9 @@
           "path": "/bin/look",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        151
       ]
     },
     {
@@ -8384,6 +8577,9 @@
           "path": "/bin/ls",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        396
       ]
     },
     {
@@ -8466,6 +8662,9 @@
           "path": "/bin/m4",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        167
       ]
     },
     {
@@ -8597,6 +8796,9 @@
           "path": "/bin/mail",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        248
       ]
     },
     {
@@ -8886,6 +9088,9 @@
           "path": "/usr/lib/makekey",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        246
       ]
     },
     {
@@ -8973,6 +9178,9 @@
           "path": "/bin/mesg",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        397
       ]
     },
     {
@@ -9211,7 +9419,10 @@
         "reference/v7/usr/src/cmd/mip/trees.c",
         "reference/v7/usr/src/cmd/mip/xdefs.c"
       ],
-      "source_availability": "supplied"
+      "source_availability": "supplied",
+      "unresolved_tasks": [
+        192
+      ]
     },
     {
       "id": "cmd.mkdir",
@@ -9422,6 +9633,9 @@
           "path": "/etc/mkfs",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        222
       ]
     },
     {
@@ -9497,6 +9711,9 @@
           "path": "/etc/mknod",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        219
       ]
     },
     {
@@ -9579,6 +9796,9 @@
           "path": "/etc/mount",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        220
       ]
     },
     {
@@ -9802,6 +10022,9 @@
           "path": "/bin/ncheck",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        230
       ]
     },
     {
@@ -10058,6 +10281,9 @@
           "path": "/bin/newgrp",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        398
       ]
     },
     {
@@ -10239,6 +10465,9 @@
           "path": "/bin/nm",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        188
       ]
     },
     {
@@ -10501,6 +10730,9 @@
           "path": "/bin/passwd",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        399
       ]
     },
     {
@@ -10643,6 +10875,12 @@
           "path": "/usr/lib/ccom",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        193,
+        194,
+        195,
+        196
       ]
     },
     {
@@ -10811,6 +11049,9 @@
           "path": "/bin/vplot",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        293
       ]
     },
     {
@@ -10904,6 +11145,9 @@
           "path": "/bin/pr",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        153
       ]
     },
     {
@@ -11001,6 +11245,9 @@
           "path": "/bin/prep",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        277
       ]
     },
     {
@@ -11085,6 +11332,9 @@
           "path": "/bin/primes",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        211
       ]
     },
     {
@@ -11201,6 +11451,9 @@
           "path": "/bin/prof",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        257
       ]
     },
     {
@@ -11459,6 +11712,9 @@
           "path": "/bin/pstat",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        254
       ]
     },
     {
@@ -11555,6 +11811,9 @@
           "path": "/bin/ptx",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        273
       ]
     },
     {
@@ -11648,6 +11907,9 @@
           "path": "/bin/pwd",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        400
       ]
     },
     {
@@ -11766,6 +12028,9 @@
           "path": "/bin/quot",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        231
       ]
     },
     {
@@ -11850,6 +12115,9 @@
           "path": "/bin/random",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        212
       ]
     },
     {
@@ -11944,6 +12212,9 @@
           "path": "/bin/ranlib",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        191
       ]
     },
     {
@@ -12065,6 +12336,9 @@
           "path": "/bin/ratfor",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        216
       ]
     },
     {
@@ -12443,6 +12717,10 @@
           "path": "/usr/lib/refer/mkey",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        274,
+        275
       ]
     },
     {
@@ -12580,6 +12858,9 @@
           "path": "/bin/restor",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        234
       ]
     },
     {
@@ -12655,6 +12936,9 @@
           "path": "/bin/rev",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        154
       ]
     },
     {
@@ -12748,6 +13032,9 @@
           "path": "/bin/rm",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        401
       ]
     },
     {
@@ -12935,6 +13222,9 @@
           "path": "/bin/roff",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        263
       ]
     },
     {
@@ -13035,6 +13325,9 @@
           "path": "/bin/sa",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        241
       ]
     },
     {
@@ -13121,6 +13414,9 @@
           "path": "/bin/sed",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        155
       ]
     },
     {
@@ -13416,6 +13712,9 @@
         "user/v7/sh/string.c",
         "user/v7/sh/word.c",
         "user/v7/sh/xec.c"
+      ],
+      "unresolved_tasks": [
+        402
       ]
     },
     {
@@ -13504,6 +13803,9 @@
           "path": "/bin/size",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        189
       ]
     },
     {
@@ -13677,6 +13979,9 @@
           "path": "/bin/sort",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        156
       ]
     },
     {
@@ -13752,6 +14057,9 @@
           "path": "/bin/sp",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        157
       ]
     },
     {
@@ -13896,6 +14204,10 @@
           "path": "/usr/lib/spell",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        278,
+        279
       ]
     },
     {
@@ -13978,6 +14290,9 @@
           "path": "/bin/spline",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        213
       ]
     },
     {
@@ -14053,6 +14368,9 @@
           "path": "/bin/split",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        158
       ]
     },
     {
@@ -14408,6 +14726,15 @@
           "path": "/usr/lib/libsa.a",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        344,
+        345,
+        346,
+        347,
+        348,
+        349,
+        350
       ]
     },
     {
@@ -14496,6 +14823,9 @@
           "path": "/bin/strip",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        190
       ]
     },
     {
@@ -14851,6 +15181,10 @@
           "path": "/usr/lib/struct/structure",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        217,
+        218
       ]
     },
     {
@@ -14932,6 +15266,9 @@
           "path": "/bin/stty",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        403
       ]
     },
     {
@@ -15024,6 +15361,9 @@
       ],
       "native_sources": [
         "user/v7/cmd/su.c"
+      ],
+      "unresolved_tasks": [
+        404
       ]
     },
     {
@@ -15099,6 +15439,9 @@
           "path": "/bin/sum",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        226
       ]
     },
     {
@@ -15254,6 +15597,9 @@
           "path": "/bin/tabs",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        159
       ]
     },
     {
@@ -15468,6 +15814,9 @@
           "path": "/bin/tar",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        235
       ]
     },
     {
@@ -15621,6 +15970,9 @@
           "path": "/bin/tbl",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        270
       ]
     },
     {
@@ -15800,6 +16152,9 @@
           "path": "/bin/tee",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        161
       ]
     },
     {
@@ -15998,6 +16353,9 @@
           "path": "/bin/time",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        255
       ]
     },
     {
@@ -16086,6 +16444,9 @@
           "path": "/bin/tk",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        296
       ]
     },
     {
@@ -16164,9 +16525,7 @@
         }
       ],
       "blockers": [],
-      "unresolved": [
-        "Preserve reference touch diagnostics and read/rewrite semantics; modern touch options are not implemented."
-      ],
+      "unresolved": [],
       "acceptance": [
         "Update file times and verify stat plus cold-boot persistence.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -16180,6 +16539,9 @@
           "path": "/bin/touch",
           "artifact": "historical_binary"
         }
+      ],
+      "scope_notes": [
+        "Preserve reference touch diagnostics and read/rewrite semantics; modern touch options are not implemented."
       ]
     },
     {
@@ -16304,6 +16666,9 @@
           "path": "/bin/tp",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        236
       ]
     },
     {
@@ -16379,6 +16744,9 @@
           "path": "/bin/tr",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        162
       ]
     },
     {
@@ -17463,6 +17831,9 @@
           "path": "/bin/tsort",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        163
       ]
     },
     {
@@ -17531,6 +17902,9 @@
           "path": "/bin/tty",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        405
       ]
     },
     {
@@ -17606,6 +17980,9 @@
           "path": "/etc/umount",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        221
       ]
     },
     {
@@ -17687,6 +18064,9 @@
           "path": "/bin/uniq",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        164
       ]
     },
     {
@@ -17776,6 +18156,9 @@
           "path": "/bin/units",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        214
       ]
     },
     {
@@ -17851,6 +18234,10 @@
           "path": "/etc/update",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        237,
+        409
       ]
     },
     {
@@ -18303,6 +18690,14 @@
           "path": "/usr/lib/uucp/uuxqt",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        299,
+        300,
+        301,
+        302,
+        303,
+        304
       ]
     },
     {
@@ -18390,6 +18785,9 @@
           "path": "/usr/lib/vpr",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        297
       ]
     },
     {
@@ -18471,6 +18869,9 @@
           "path": "/etc/wall",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        406
       ]
     },
     {
@@ -18651,6 +19052,9 @@
           "path": "/bin/who",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        407
       ]
     },
     {
@@ -18750,6 +19154,9 @@
           "path": "/bin/write",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        408
       ]
     },
     {
@@ -18938,6 +19345,10 @@
           "path": "/bin/xsend",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        249,
+        250
       ]
     },
     {
@@ -19032,6 +19443,11 @@
           "path": "/bin/yacc",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        169,
+        170,
+        173
       ]
     },
     {
@@ -19135,6 +19551,9 @@
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
+      ],
+      "unresolved_tasks": [
+        351
       ]
     },
     {
@@ -19166,6 +19585,9 @@
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
+      ],
+      "unresolved_tasks": [
+        349
       ]
     },
     {
@@ -19196,6 +19618,12 @@
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
+      ],
+      "unresolved_tasks": [
+        220,
+        221,
+        232,
+        409
       ]
     },
     {
@@ -19221,6 +19649,9 @@
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
+      ],
+      "unresolved_tasks": [
+        359
       ]
     },
     {
@@ -19254,6 +19685,9 @@
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
+      ],
+      "unresolved_tasks": [
+        280
       ]
     },
     {
@@ -19451,6 +19885,9 @@
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
+      ],
+      "unresolved_tasks": [
+        288
       ]
     },
     {
@@ -19510,6 +19947,9 @@
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
+      ],
+      "unresolved_tasks": [
+        305
       ]
     },
     {
@@ -19886,6 +20326,9 @@
         "kernel/clock.c",
         "docs/kernel-coverage.json",
         "docs/kernel-timing.md"
+      ],
+      "unresolved_tasks": [
+        358
       ]
     },
     {
@@ -19938,6 +20381,18 @@
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
+      ],
+      "unresolved_tasks": [
+        170,
+        171,
+        173,
+        214,
+        270,
+        274,
+        278,
+        285,
+        304,
+        409
       ]
     },
     {
@@ -20261,9 +20716,7 @@
       "dependencies": [],
       "reference_includes": [],
       "blockers": [],
-      "unresolved": [
-        "Audit native API/format compatibility and remaining transitive dependencies."
-      ],
+      "unresolved": [],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
       ]
@@ -20319,6 +20772,11 @@
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
+      ],
+      "unresolved_tasks": [
+        238,
+        304,
+        409
       ]
     },
     {
@@ -20390,7 +20848,10 @@
       "source_files": [
         "reference/v7/usr/src/games/arithmetic.c"
       ],
-      "source_availability": "supplied"
+      "source_availability": "supplied",
+      "unresolved_tasks": [
+        306
+      ]
     },
     {
       "id": "game.backgammon",
@@ -20461,7 +20922,10 @@
       "source_files": [
         "reference/v7/usr/src/games/backgammon.c"
       ],
-      "source_availability": "supplied"
+      "source_availability": "supplied",
+      "unresolved_tasks": [
+        307
+      ]
     },
     {
       "id": "game.banner",
@@ -20495,6 +20959,10 @@
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
+      ],
+      "unresolved_tasks": [
+        318,
+        319
       ]
     },
     {
@@ -20529,6 +20997,10 @@
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
+      ],
+      "unresolved_tasks": [
+        320,
+        321
       ]
     },
     {
@@ -20563,6 +21035,10 @@
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
+      ],
+      "unresolved_tasks": [
+        322,
+        323
       ]
     },
     {
@@ -20597,6 +21073,10 @@
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
+      ],
+      "unresolved_tasks": [
+        324,
+        325
       ]
     },
     {
@@ -20737,7 +21217,11 @@
         "reference/v7/usr/src/games/chess/wmove.s",
         "reference/v7/usr/src/games/chess/wplay.c"
       ],
-      "source_availability": "supplied"
+      "source_availability": "supplied",
+      "unresolved_tasks": [
+        313,
+        314
+      ]
     },
     {
       "id": "game.ching",
@@ -20819,6 +21303,9 @@
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
+      ],
+      "unresolved_tasks": [
+        316
       ]
     },
     {
@@ -20853,6 +21340,10 @@
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
+      ],
+      "unresolved_tasks": [
+        326,
+        327
       ]
     },
     {
@@ -20887,6 +21378,10 @@
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
+      ],
+      "unresolved_tasks": [
+        328,
+        329
       ]
     },
     {
@@ -20958,7 +21453,10 @@
       "source_files": [
         "reference/v7/usr/src/games/fish.c"
       ],
-      "source_availability": "supplied"
+      "source_availability": "supplied",
+      "unresolved_tasks": [
+        308
+      ]
     },
     {
       "id": "game.fortune",
@@ -21036,7 +21534,10 @@
       "source_files": [
         "reference/v7/usr/src/games/fortune.c"
       ],
-      "source_availability": "supplied"
+      "source_availability": "supplied",
+      "unresolved_tasks": [
+        309
+      ]
     },
     {
       "id": "game.hangman",
@@ -21126,7 +21627,10 @@
       "source_files": [
         "reference/v7/usr/src/games/hangman.c"
       ],
-      "source_availability": "supplied"
+      "source_availability": "supplied",
+      "unresolved_tasks": [
+        310
+      ]
     },
     {
       "id": "game.maze",
@@ -21160,6 +21664,10 @@
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
+      ],
+      "unresolved_tasks": [
+        330,
+        331
       ]
     },
     {
@@ -21194,6 +21702,10 @@
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
+      ],
+      "unresolved_tasks": [
+        332,
+        333
       ]
     },
     {
@@ -21228,6 +21740,10 @@
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
+      ],
+      "unresolved_tasks": [
+        334,
+        335
       ]
     },
     {
@@ -21262,6 +21778,10 @@
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
+      ],
+      "unresolved_tasks": [
+        336,
+        337
       ]
     },
     {
@@ -21346,7 +21866,10 @@
       "source_files": [
         "reference/v7/usr/src/games/quiz.c"
       ],
-      "source_availability": "supplied"
+      "source_availability": "supplied",
+      "unresolved_tasks": [
+        311
+      ]
     },
     {
       "id": "game.reversi",
@@ -21380,6 +21903,10 @@
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
+      ],
+      "unresolved_tasks": [
+        338,
+        339
       ]
     },
     {
@@ -21414,6 +21941,10 @@
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
+      ],
+      "unresolved_tasks": [
+        340,
+        341
       ]
     },
     {
@@ -21497,6 +22028,9 @@
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
+      ],
+      "unresolved_tasks": [
+        315
       ]
     },
     {
@@ -21531,6 +22065,10 @@
       ],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
+      ],
+      "unresolved_tasks": [
+        342,
+        343
       ]
     },
     {
@@ -21595,7 +22133,10 @@
       "source_files": [
         "reference/v7/usr/src/games/wump.c"
       ],
-      "source_availability": "supplied"
+      "source_availability": "supplied",
+      "unresolved_tasks": [
+        312
+      ]
     },
     {
       "id": "lib.libF77",
@@ -21954,6 +22495,12 @@
           "path": "/usr/lib/libF77.a",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        112,
+        113,
+        114,
+        118
       ]
     },
     {
@@ -22184,6 +22731,12 @@
           "path": "/usr/lib/libI77.a",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        115,
+        116,
+        117,
+        118
       ]
     },
     {
@@ -22980,6 +23533,9 @@
           "path": "/usr/lib/libdbm.a",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        111
       ]
     },
     {
@@ -23357,6 +23913,10 @@
           "path": "/usr/lib/libmp.a",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        109,
+        110
       ]
     },
     {
@@ -23519,6 +24079,12 @@
           "path": "/lib/libt450.a",
           "artifact": "historical_binary"
         }
+      ],
+      "unresolved_tasks": [
+        289,
+        290,
+        291,
+        292
       ]
     },
     {
@@ -23583,6 +24149,9 @@
       ],
       "acceptance": [
         "Run the original script with reference-compatible arguments; verify helper execution, output and failures."
+      ],
+      "unresolved_tasks": [
+        317
       ]
     },
     {
@@ -23683,6 +24252,9 @@
       ],
       "acceptance": [
         "Run the original script with reference-compatible arguments; verify helper execution, output and failures."
+      ],
+      "unresolved_tasks": [
+        245
       ]
     },
     {
@@ -23765,6 +24337,9 @@
       ],
       "acceptance": [
         "Run the original script with reference-compatible arguments; verify helper execution, output and failures."
+      ],
+      "unresolved_tasks": [
+        144
       ]
     },
     {
@@ -23875,6 +24450,9 @@
       ],
       "acceptance": [
         "Run the original script with reference-compatible arguments; verify helper execution, output and failures."
+      ],
+      "unresolved_tasks": [
+        262
       ]
     },
     {
@@ -23930,6 +24508,9 @@
       ],
       "acceptance": [
         "Run the original script with reference-compatible arguments; verify helper execution, output and failures."
+      ],
+      "unresolved_tasks": [
+        276
       ]
     },
     {
@@ -24012,6 +24593,9 @@
       ],
       "acceptance": [
         "Run the original script with reference-compatible arguments; verify helper execution, output and failures."
+      ],
+      "unresolved_tasks": [
+        202
       ]
     },
     {
@@ -24287,6 +24871,9 @@
       ],
       "acceptance": [
         "Run the original script with reference-compatible arguments; verify helper execution, output and failures."
+      ],
+      "unresolved_tasks": [
+        196
       ]
     },
     {
@@ -24342,6 +24929,9 @@
       ],
       "acceptance": [
         "Run the original script with reference-compatible arguments; verify helper execution, output and failures."
+      ],
+      "unresolved_tasks": [
+        293
       ]
     },
     {
@@ -24433,6 +25023,9 @@
       ],
       "acceptance": [
         "Run the original script with reference-compatible arguments; verify helper execution, output and failures."
+      ],
+      "unresolved_tasks": [
+        279
       ]
     },
     {
@@ -24506,6 +25099,9 @@
       ],
       "acceptance": [
         "Run the original script with reference-compatible arguments; verify helper execution, output and failures."
+      ],
+      "unresolved_tasks": [
+        218
       ]
     },
     {
