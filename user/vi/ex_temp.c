@@ -111,7 +111,7 @@ fileinit(void)
 	struct stat stbuf;
 	register int i, j;
 	pid_t mypid = getpid();
-	char *tfend;
+	char *tfend, *newname;
 	int attempts = 0;
 
 	CLOBBGRD(attempts);
@@ -128,7 +128,9 @@ fileinit(void)
 	iblock = -1;
 	iblock2 = -1;
 	oblock = -1;
-	tfname = realloc(tfname, strlen(svalue(DIRECTORY)) + 14);
+	newname = realloc(tfname, strlen(svalue(DIRECTORY)) + 14);
+	if (!newname) { errno=ENOMEM; filioerr(svalue(DIRECTORY)); }
+	tfname = newname;
 	CP(tfname, svalue(DIRECTORY));
 	if (stat(tfname, &stbuf)) {
 dumbness:
@@ -314,7 +316,8 @@ blkio(bloc b, char *buf, ssize_t (*iofcn)(int, void *, size_t))
 	} else if (stilinc)
 		tflush();
 #endif
-	lseek(tfile, (off_t) ((b & BLKMSK) * BUFSIZ), SEEK_SET);
+	if (lseek(tfile, (off_t) ((b & BLKMSK) * BUFSIZ), SEEK_SET)<0)
+		filioerr(tfname);
 	if ((*iofcn)(tfile, buf, BUFSIZ) != BUFSIZ)
 		filioerr(tfname);
 }
@@ -334,7 +337,8 @@ tflush(void)
 	bbloc i = stilinc;
 
 	stilinc = 0;
-	lseek(tfile, (off_t) 0, SEEK_SET);
+	if (lseek(tfile, (off_t) 0, SEEK_SET)<0)
+		filioerr(tfname);
 	if (write(tfile, pagrnd(incorb[1]), i * BUFSIZ) != (i * BUFSIZ))
 		filioerr(tfname);
 }
@@ -382,7 +386,8 @@ synctmp(void)
 			oblock = *bp + 1;
 			bp[1] = -1;
 		}
-		lseek(tfile, (off_t) ((*bp & BLKMSK) * BUFSIZ), SEEK_SET);
+		if (lseek(tfile, (off_t) ((*bp & BLKMSK) * BUFSIZ), SEEK_SET)<0)
+			goto oops;
 		cnt = ((dol - a) + 2) * sizeof (line);
 		if (cnt > BUFSIZ)
 			cnt = BUFSIZ;
@@ -394,7 +399,8 @@ oops:
 		*zero = 0;
 	}
 	flines = lineDOL();
-	lseek(tfile, (off_t) 0, SEEK_SET);
+	if (lseek(tfile, (off_t) 0, SEEK_SET)<0)
+		filioerr(tfname);
 	if (write(tfile, (char *) &H, sizeof H) != sizeof H)
 		goto oops;
 #ifdef notdef
@@ -468,13 +474,15 @@ void
 regio(short b, ssize_t (*iofcn)(int, void *, size_t))
 {
 	register char *p;
-	char *rfend;
+	char *rfend, *newname;
 	int attempts = 0;
 	register int i, j;
 	pid_t mypid = getpid();
 
 	if (rfile == -1) {
-		rfname = realloc(rfname, strlen(svalue(DIRECTORY)) + 14);
+		newname = realloc(rfname, strlen(svalue(DIRECTORY)) + 14);
+		if (!newname) { errno=ENOMEM; filioerr(svalue(DIRECTORY)); }
+		rfname = newname;
 		CP(rfname, tfname);
 		rfend = strend(rfname);
 #ifdef	notdef	/* GR */
@@ -496,7 +504,8 @@ regio(short b, ssize_t (*iofcn)(int, void *, size_t))
 oops:
 			filioerr(rfname);
 	}
-	lseek(rfile, (off_t) ((b & BLKMSK) * BUFSIZ), SEEK_SET);
+	if (lseek(rfile, (off_t) ((b & BLKMSK) * BUFSIZ), SEEK_SET)<0)
+		filioerr(rfname);
 	if ((*iofcn)(rfile, rbuf, BUFSIZ) != BUFSIZ)
 		goto oops;
 	rblock = b;

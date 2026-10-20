@@ -226,6 +226,7 @@ void
 filioerr(char *cp)
 {
 	register int oerrno = errno;
+	failed = 1; /* Storage errors must survive a later q! in batch mode. */
 
 	lprintf("\"%s\"", cp);
 	errno = oerrno;

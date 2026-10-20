@@ -2071,3 +2071,11 @@ test-vi-native: build/nexix-multi.iso build/vi-dev.elf build/vi-native.elf stage
 	$(PYTHON) tools/vi_native_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 -include $(VI_OBJECTS:.o=.d) build/vi-native-check.d build/vi-native-adapter.d
+build/vi-storage.o: tests/vi-storage.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/vi-storage.elf: build/crt0.o build/vi-storage.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+.PHONY: test-vi-storage
+test-vi-storage: build/nexix-multi.iso build/vi-dev.elf build/vi-storage.elf stage
+	$(PYTHON) tools/vi_storage_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/vi_storage_smoke.py $(QEMU) build/nexix-multi.iso 128M

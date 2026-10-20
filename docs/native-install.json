@@ -2422,6 +2422,22 @@
         "path": "dev-include/termcap.h"
       },
       "format": "data"
+    },
+    {
+      "path": "/var",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config"
+    },
+    {
+      "path": "/var/tmp",
+      "type": "directory",
+      "mode": "1777",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config"
     }
   ]
 }

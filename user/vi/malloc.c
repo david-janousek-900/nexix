@@ -144,16 +144,18 @@ poolsbrk(intptr_t inc)
 	intptr_t os, ns;
 
 	if (pool == NULL)
-		if ((pool = sbrk(POOL)) == (char *)-1)
-			error(catgets(catd, 1, 241,
-				"No memory pool"));
+		if ((pool = sbrk(POOL)) == (char *)-1) {
+			/* main reserves this pool before establishing resetlab. */
+			write(2,"ex: no memory pool\n",19);
+			_exit(1);
+		}
 	if (inc == 0)
 		return pool + ps;
 	os = ps;
-	ns = ps + inc;
-	if (ns >= POOL)
+	if (inc < 0 || inc >= POOL-ps)
 		error(catgets(catd, 1, 242,
 				"Memory pool exhausted"));
+	ns = ps + inc;
 	ps = ns;
 	return pool + os;
 }

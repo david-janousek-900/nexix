@@ -25,6 +25,20 @@ addmac's copy.
 
 `make test-vi-native` checks repeated signal dispatch, old dispositions, error and
 directory adapters, plus linked ex startup/quit on private 16/128 MiB guests.
-Those startup tests create private /var/tmp and an inline dumb terminal entry;
-production storage, interactive operations, recovery and installation have their
-own following tasks. The development editor ELF is not installed by this task.
+Those startup tests use an inline dumb terminal entry; interactive operations,
+recovery and editor installation have their own following tasks. The development editor ELF is not installed by this task.
+
+
+Task 380 installs the /var/tmp directory and keeps the native line references
+separate from the initial 32 KiB libc allocation pool. Pool growth is checked
+before arithmetic; failure of the initial reservation exits without jumping to
+an uninitialized error context. Temporary-name allocation and seeks are checked.
+Existing exclusive-create names and mode 0600 protect pre-existing candidates;
+storage failures retain a nonzero exit status through batch q!.
+
+`make test-vi-storage` runs the real editor as uid 100, loads 6,000 lines (528 KiB),
+checks a live temporary file's owner/mode and name-collision behavior, saves and
+compares every byte, then fills the disposable filesystem and checks an ENOSPC
+error, nonzero exit, removal of the editor's temporary file and unchanged saved
+content. It runs at 16/128 MiB. V7 directory permissions remain V7 permissions;
+this task does not introduce POSIX sticky-directory semantics.
