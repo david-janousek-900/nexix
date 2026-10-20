@@ -7624,6 +7624,19 @@
         "root": "programs",
         "path": "v7-troff.elf"
       }
+    },
+    {
+      "path": "/bin/eqn",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.eqn",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-eqn.elf"
+      }
     }
   ]
 }

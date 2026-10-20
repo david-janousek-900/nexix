@@ -45,3 +45,11 @@ C/A/T typesetter bytes to standard output. Mounted fonts use the regenerated
 224-byte width files without an object header. `make test-troff` checks ASCII
 output, mounted fonts, size changes, original manual macros and independently
 validated C/A/T initialization/stop/padding/flush framing at 16/128 MiB.
+
+The original `eqn` grammar and equation-layout code are ported under `user/eqn`.
+Semantic values can hold native pointers as well as register numbers. Diagnostics
+use native varargs; movement arguments and an unsequenced parenthesis calculation
+are corrected. The parser is regenerated with a host-only bootstrap of the V7
+yacc sources (`tools/v7-yacc`); the native yacc tasks remain separate. Equation
+acceptance covers fractions, roots, powers, sums, delimiters, matrices, definitions,
+inline equations, movement and formatter integration at both memory sizes.
