@@ -11,7 +11,7 @@ The [inventory](v7-userland-manifest.json) points to that map through
 Coverage schema version 2 contains the release version, task-list/inventory paths,
 task count, policy and two mappings: `components` and `requirements`. Mapping
 keys are inventory IDs; values are nonempty, sorted, unique arrays of task IDs.
-All 221 components, all 36 requirements and all 386 tasks must be accounted for.
+All components, requirements and tasks counted in [tasks.md](tasks.md) must be accounted for.
 There is no name-based inference or fallback assigning omitted work to a generic
 release task. New components and requirements require explicit mappings.
 
@@ -101,3 +101,10 @@ V7 requirement. Text alone cannot prove behavior equivalence: reviewers must
 check evidence when moving or resolving an obligation. Tasks 389–408 retain
 separate source/API/runtime closure for the twenty initial command ports with
 pending audit notes. Task 409 owns later startup-service integration explicitly.
+
+Task 411 adds `tools/check_reference_docs.py` to `make test-inventory`. Keep the
+reference-review totals synchronized when task counts/statuses change. The
+marked supporting-requirement table in porting-inventory.md must match each
+manifest requirement's ID, input state and description exactly; update both
+when recording implementation progress. These are read-only consistency checks,
+not generated completion claims or replacements for runtime acceptance.

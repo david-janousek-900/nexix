@@ -89,8 +89,8 @@
     {
       "id": "floating-point",
       "category": "kernel",
-      "status": "partial",
-      "description": "Native x87/MMX/SSE state isolation, signal FP contexts, binary64 helpers, decimal conversion/formatting and retained libm C sources are implemented; full libc coverage and installed math headers/archive remain pending.",
+      "status": "supplied",
+      "description": "Native x87/MMX/SSE process/signal state, binary64 helpers, conversion/formatting, libc/libm archives and public math headers are installed/tested; later language/compiler consumers retain their own tasks.",
       "evidence": [
         "docs/floating-point.md",
         "kernel/arch/x86_64/fpu.c",
@@ -195,7 +195,7 @@
       "id": "kernel-information",
       "category": "kernel",
       "status": "supplied",
-      "description": "Versioned privileged native process/file/inode/text/mount/memory/I/O snapshots replace historical kernel-memory layouts. Diagnostic command ports remain pending.",
+      "description": "Native pointer-free kernel snapshots support installed ps and uptime; pstat/iostat and debugger consumers retain their own tasks.",
       "evidence": [
         "reference/v7/usr/src/cmd/ps.c",
         "reference/v7/usr/src/cmd/iostat.c",
@@ -253,7 +253,7 @@
       "id": "historical-devices",
       "category": "hardware",
       "status": "pending_assessment",
-      "description": "PDP-11 disks/tapes, plotters and printer protocols require native equivalents or individually documented exceptions.",
+      "description": "Native disk/tape/DECtape, TTY/modem/packet and typesetter/printer/plotter equivalents exist; remaining command consumers and final device-node dispositions stay with their owners and task 359.",
       "evidence": [
         "reference/v7/usr/src/cmd/standalone/makefile",
         "reference/v7/usr/src/cmd/plot/makefile",
@@ -290,7 +290,7 @@
       "id": "yacc-skeleton",
       "category": "data",
       "status": "supplied",
-      "description": "Original inputs are supplied in the full archive. Native integration, generated formats and functional acceptance remain pending.",
+      "description": "Original yaccpar is installed unchanged by task 281; native yacc generation remains tasks 169/170/173.",
       "evidence": [
         "reference/v7/usr/lib/yaccpar"
       ],
@@ -329,7 +329,7 @@
       "id": "lint-descriptions",
       "category": "data",
       "status": "supplied",
-      "description": "Original inputs are supplied in the full archive. Native integration, generated formats and functional acceptance remain pending.",
+      "description": "Original llib-lc, llib-lm and llib-port are installed unchanged by task 281; native lint consumers remain tasks 261/262.",
       "evidence": [
         "reference/v7/usr/lib/llib-lc",
         "reference/v7/usr/lib/llib-lm",
@@ -423,7 +423,7 @@
       "id": "formatter-tables",
       "category": "data",
       "status": "generated",
-      "description": "Build font and nroff terminal tables from supplied C sources, adapting native object layout. Historical installed forms are also supplied; regenerate architecture-dependent formats for native consumers.",
+      "description": "Native terminal/font tables are regenerated and tested with nroff/troff by tasks 265\u2013267; historical binary table layouts are not installed as native objects.",
       "evidence": [
         "reference/v7/usr/src/cmd/troff/font/makefile",
         "reference/v7/usr/src/cmd/troff/term/makefile"
@@ -438,7 +438,7 @@
       "id": "formatter-macros",
       "category": "data",
       "status": "supplied",
-      "description": "Original tmac macro files are installed byte-for-byte and exercised by native nroff/troff manual rendering.",
+      "description": "Original tmac macros are installed unchanged and exercised by native nroff/troff; task 281 complete.",
       "evidence": [
         "reference/v7/usr/lib/tmac"
       ],
@@ -535,7 +535,7 @@
       "id": "v7-source-archives",
       "category": "format",
       "status": "supplied",
-      "description": "libplot backends contain source in historical .c.a archives; bootstrap extraction must support the historical archive format.",
+      "description": "All twelve historical source/lesson archives are extracted and round-trip tested by task 87; plotting/learn consumers retain tasks 283\u2013285/289\u2013293.",
       "evidence": [
         "reference/v7/usr/src/libplot/makefile"
       ],
@@ -571,8 +571,8 @@
     {
       "id": "man-command",
       "category": "program",
-      "status": "generated",
-      "description": "Installed original man script with native formatter/pager adapter, checked lookup status and preserved formatter modes; tested on VGA and serial login sessions.",
+      "status": "supplied",
+      "description": "Original man script is installed with a native formatter/pager adapter; lookup, modes, errors and serial/VGA navigation are tested by tasks 287/388.",
       "evidence": [
         "rootfs/bin/man",
         "tools/man_smoke.py",
@@ -600,7 +600,7 @@
       "id": "manual-pages",
       "category": "data",
       "status": "supplied",
-      "description": "Original inputs are supplied in the full archive. Install manual sections 0\u20138 with native-port annotations and formatting support.",
+      "description": "All 307 original manual files are installed unchanged with separate native annotations and formatter/lookup acceptance; tasks 286/287 are complete.",
       "evidence": [
         "reference/v7/usr/man"
       ],

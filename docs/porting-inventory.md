@@ -200,51 +200,54 @@ lex → yacc and scanner skeletons; PCC/lint → shared mip sources;
 xsend/xget/enroll → libmp; beautify → libln; spell hashes → spellin and dictionaries.
 Host tools bootstrap generator cycles; native compiler retargeting is still required.
 
-Kernel adaptations are required for independent TTYs, authenticated credentials,
-remaining device interfaces. Profiling sampling/startup/monitor records exist.
+Independent TTYs, authenticated credentials and the planned kernel device
+equivalents are implemented; remaining program consumers retain their tasks. Profiling sampling/startup/monitor records exist.
 Kernel exit accounting and parent/child tracing with native register access,
 debugger writes, single-step and profil sampling are implemented.
 Block/raw files and the multi-volume mount/unmount namespace are implemented.
 Programs such as ps/pstat/iostat inspect historical kernel layouts; compiling
 their sources alone does not provide a working native equivalent.
 
+<!-- requirements:start -->
 | Requirement | State | Supplied inputs / remaining work |
 |---|---|---|
 | `native-build-tools` | supplied | Host GCC/binutils bootstrap native Nexix ELF builds; retained native tools remain unported. |
-| `headers` | partial | Native public ABI headers are installed/tested. Seven application-owned format headers retain explicit consumer tasks in header-coverage.json. |
-| `kernel-abi` | supplied | Native V7 syscall/device behavior and architecture equivalents through tasks 76–82 are implemented and tested; later applications retain consumer acceptance. |
-| `floating-point` | partial | Native FP process/signal state, binary64 helpers, decimal formatting and retained libm C sources are implemented; complete libc coverage and installed math headers/archive remain pending. |
-| `wall-clock` | supplied | RTC initializes the UTC system clock; inode timestamps and sync superblock time use that clock and persist in the existing V7 disk encoding. |
-| `timezone` | supplied | Native time conversion and configurable TZ support fixed offsets, one-hour DST, explicit M rules and historical V7 US defaults; see time.md for the supported grammar. |
-| `accounts` | supplied | Native passwd/group, owned homes/profiles, shared temporary files, DES authentication, automatic getty/login and passwd/su/newgrp installed and tested; [configuration](multi-user.md) |
-| `multi-tty` | supplied | Independent COM1/COM2, controlling terminals, signals/flow isolation and repeated two-shell resource recovery; production login supervision tracked separately. |
-| `accounting` | partial | Kernel exit accounting and privileged acct control exist; native login/logout utmp/wtmp integration is tested with concurrent sessions. Accton/sa command ports remain pending. |
-| `kernel-information` | supplied | Versioned privileged native process/file/inode/text/mount/memory/I/O snapshots replace historical kernel-memory layouts. Diagnostic command ports remain pending. |
+| `headers` | partial | Native public headers are installed and tested without host headers. Seven application-owned format headers retain their explicit consumer tasks; see docs/header-coverage.json. |
+| `kernel-abi` | supplied | Native V7 process/filesystem/TTY/device/syscall ABI and architecture equivalents through tasks 76-82 are implemented and tested; later programs retain consumer acceptance. |
+| `floating-point` | supplied | Native x87/MMX/SSE process/signal state, binary64 helpers, conversion/formatting, libc/libm archives and public math headers are installed/tested; later language/compiler consumers retain their own tasks. |
+| `wall-clock` | supplied | UTC wall clock is initialized from RTC at boot; V7 inode timestamps and sync superblock time use the system clock and persist in the existing disk encoding. |
+| `timezone` | supplied | Native gmtime/localtime/asctime/ctime, V7 timezone/ftime, and configurable TZ: fixed offsets, one-hour DST with M rules or historical V7 US defaults; unsupported TZ falls back to GMT. |
+| `accounts` | supplied | Native account databases, DES authentication, owned homes/profiles, shared V7 temporary files, automatic two-line getty/login, passwd, su and newgrp are installed and tested. |
+| `multi-tty` | supplied | Independent COM1/COM2 UARTs, per-line queues/settings, controlling terminals, process groups, signals and flow control pass two-shell acceptance with repeated resource recovery. Getty/login supervision is tracked separately. |
+| `accounting` | partial | Kernel exit accounting and privileged acct control exist. Login/init integrate native per-line utmp and append-only wtmp with concurrent authenticated-session acceptance; accton/sa command ports remain pending. |
+| `kernel-information` | supplied | Native pointer-free kernel snapshots support installed ps and uptime; pstat/iostat and debugger consumers retain their own tasks. |
 | `tracing-profiling` | partial | Native tracing, debugger writes/single-step, profil sampling and monitor/mcount with profiling startup/records exist. ELF64 nlist and shared symbol contracts exist. Symbol consumers and the adb/prof command ports remain pending. |
 | `raw-storage` | partial | Block/raw device files and multi-volume mount/umount routing exist; mounted-device writes are guarded, storage-administration command ports remain pending. |
-| `historical-devices` | pending_assessment | PDP-11 disks/tapes, plotters and printer protocols require native equivalents or individually documented exceptions. |
+| `historical-devices` | pending_assessment | Native disk/tape/DECtape, TTY/modem/packet and typesetter/printer/plotter equivalents exist; remaining command consumers and final device-node dispositions stay with their owners and task 359. |
 | `elf-toolchain` | missing | Retarget retained compiler/assembler/linker and archive/symbol utilities to native x86_64 ELF. |
 | `spool-locks` | missing | Historical spool and UUCP configuration fixtures are supplied; native services, ownership and locking remain pending. |
-| `yacc-skeleton` | supplied | `/usr/lib/yaccpar` |
-| `lex-skeletons` | supplied | Supplied ncform, separately pinned/adapted Ratfor nrform and tested native extended-byte ebcform equivalent; see [support inputs](support-inputs.md). |
-| `lint-descriptions` | supplied | `/usr/lib/llib-lc`, `/usr/lib/llib-port` |
-| `word-dictionary` | supplied | `/usr/dict/words` |
+| `yacc-skeleton` | supplied | Original yaccpar is installed unchanged by task 281; native yacc generation remains tasks 169/170/173. |
+| `lex-skeletons` | supplied | Supplied ncform plus separately pinned/adapted illumos nrform and tested native extended-byte ebcform equivalent. Exact historical ebcform text remains unrecovered; no mode is waived. Full generator/Ratfor/Fortran acceptance stays in consumer tasks. |
+| `lint-descriptions` | supplied | Original llib-lc, llib-lm and llib-port are installed unchanged by task 281; native lint consumers remain tasks 261/262. |
+| `word-dictionary` | supplied | Original inputs are supplied in the full archive. Native integration, generated formats and functional acceptance remain pending. |
 | `spell-lists` | supplied | American/British/local word additions and stop list are supplied in the reference spell directory. |
-| `spell-hashes` | generated | `/usr/dict/hlista`, `/usr/dict/hlistb`, `/usr/dict/hstop` |
-| `learn-lessons` | supplied | `/usr/lib/learn` |
-| `learn-workdirs` | generated | `/usr/lib/learn/play`, `/usr/lib/learn/log` |
-| `formatter-tables` | generated | `/usr/lib/font`, `/usr/lib/term` |
-| `formatter-macros` | supplied | `/usr/lib/tmac` |
-| `bibliography-data` | supplied | `/usr/dict/papers/Ind`, `/usr/lib/eign`, `/usr/dict/lookall/All` |
-| `units-data` | supplied | `/usr/lib/units` |
-| `bc-math` | supplied | Historical V6 source-lineage lib.b recovered separately; six math functions supplied, native bc/dc acceptance remains task 209. |
-| `fortune-data` | supplied | `/usr/games/lib/fortunes` |
-| `quiz-data` | supplied | `/usr/games/quiz.k/index` |
-| `v7-source-archives` | supplied | libplot backends contain source in historical .c.a archives; bootstrap extraction must support the historical archive format. |
-| `v6-compatibility` | supplied | Every V6 wrapper maps to native V7 APIs; see [runtime equivalents](runtime-equivalents.md). V6 binary compatibility is not an ABI. |
-| `pdp11-assembly` | partial | Native compiler helpers, machine code and FP equivalents are mapped/tested; later assembly application/toolchain ports retain their tasks. |
-| `man-command` | supplied | Original inputs are supplied in the full archive. The original bin/man shell script is inventoried as script.man and remains unported. |
-| `manual-pages` | supplied | Original inputs are supplied in the full archive. Install manual sections 0–8 with native-port annotations and formatting support. |
+| `spell-hashes` | generated | Generate hlist/hlista/hlistb/hstop from dictionaries using spellin. Historical installed forms are also supplied; regenerate architecture-dependent formats for native consumers. |
+| `learn-lessons` | supplied | Original inputs are supplied in the full archive. Native integration, generated formats and functional acceptance remain pending. |
+| `learn-workdirs` | generated | Create learn play/log directories and install private tee/lcount helpers. |
+| `formatter-tables` | generated | Native terminal/font tables are regenerated and tested with nroff/troff by tasks 265–267; historical binary table layouts are not installed as native objects. |
+| `formatter-macros` | supplied | Original tmac macros are installed unchanged and exercised by native nroff/troff; task 281 complete. |
+| `bibliography-data` | supplied | Original inputs are supplied in the full archive. Native integration, generated formats and functional acceptance remain pending. |
+| `units-data` | supplied | Original inputs are supplied in the full archive. Native integration, generated formats and functional acceptance remain pending. |
+| `bc-math` | supplied | Historical V6 lib.b recovered separately from the V7 source-history snapshot and retained unchanged; all six math function inputs supplied. Native bc/dc -l installation and numeric acceptance remain task 209. |
+| `fortune-data` | supplied | Original inputs are supplied in the full archive. Native integration, generated formats and functional acceptance remain pending. |
+| `quiz-data` | supplied | Original inputs are supplied in the full archive. Native integration, generated formats and functional acceptance remain pending. |
+| `v7-source-archives` | supplied | All twelve historical source/lesson archives are extracted and round-trip tested by task 87; plotting/learn consumers retain tasks 283–285/289–293. |
+| `v6-compatibility` | supplied | V6-on-V7 application wrapper needs are fulfilled by native V7 interfaces; V6 binary/syscall compatibility is not an application ABI. Every wrapper is mapped in docs/runtime-equivalents.md. |
+| `pdp11-assembly` | partial | Native compiler arithmetic/prologues, syscall stubs, kernel machine code and FP/runtime replacements are mapped and tested. Assembly consumers in later application/compiler/standalone tasks still require their own native ports. |
+| `man-command` | supplied | Original man script is installed with a native formatter/pager adapter; lookup, modes, errors and serial/VGA navigation are tested by tasks 287/388. |
+| `manual-pages` | supplied | All 307 original manual files are installed unchanged with separate native annotations and formatter/lookup acceptance; tasks 286/287 are complete. |
+| `traditional-vi` | supplied | Pinned Traditional Vi 050325 sources and tested native vi/ex/view, terminal/library adapters, preservation/recovery and packaging; tasks 374-385 complete for the documented single-byte fixed-geometry configuration. |
+<!-- requirements:end -->
 
 Items previously called missing from the source subset are supplied by the
 full archive: original headers, yaccpar, the C lex skeleton, lint descriptions,
@@ -262,7 +265,7 @@ Their full consuming-program ports retain their roadmap tasks.
 make TOOLCHAIN_PREFIX= test-inventory
 ```
 
-The read-only checker also validates all 366 roadmap IDs, summary statuses,
+The read-only checker also validates all roadmap IDs, summary statuses,
 component/requirement mappings and task ownership, rejecting omissions and
 misleading completion mappings.
 

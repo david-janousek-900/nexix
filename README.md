@@ -24,6 +24,10 @@ See [manuals and formatter modes](docs/man-pages.md). The native
 [ps](docs/ps.md) command lists processes; [uptime](docs/uptime.md) reports
 elapsed boot time, logged-in sessions and 1/5/15-minute scheduler load.
 
+The [reference review](docs/reference-review.md) records the latest coverage
+audit, including command compatibility tasks 389–408 and startup integration
+task 409. These remain planned work, separate from completed initial ports.
+
 See the [task list](docs/tasks.md) for completed and remaining work, the
 [installation manifest](docs/native-install.json) for installed programs, and the
 [porting inventory](docs/porting-inventory.md) for historical source coverage.

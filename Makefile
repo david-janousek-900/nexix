@@ -486,6 +486,8 @@ test-inventory:
 	$(PYTHON) tools/check_inventory.py
 	$(PYTHON) tests/inventory.py
 	$(PYTHON) tests/roadmap.py
+	$(PYTHON) tools/check_reference_docs.py
+	$(PYTHON) tests/reference-docs.py
 test: test-inventory
 
 # Task 22: boot RTC and shared epoch clock.

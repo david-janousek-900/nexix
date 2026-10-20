@@ -19,8 +19,8 @@ The inventory accounts for **223 components, 2,144 distribution files and
 4 partial, 1 prototype and 151 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **411 tracking tasks: 177 done, 0 in progress
-and 234 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 253, 264–269, 281–282, 286–287, 295, 357, 362–388, 410** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **411 tracking tasks: 178 done, 0 in progress
+and 233 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 253, 264–269, 281–282, 286–287, 295, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -570,7 +570,7 @@ required before native-port acceptance.
 | 356 | Package complete 0.1.0 distribution | To do | Programs, scripts, libraries, headers, source/build inputs, manuals/data and permissions |
 | 357 | Persistent disk upgrade/install tooling | Done | Git history; [offline upgrade contract](disk-upgrades.md); verified staging, exclusive offline locks, mandatory non-overwritten backup, candidate validation and atomic publication; account/config/TZ/data/hard-link/sparse-file/timestamp preservation; failure tests and two cold boots at 16/128 MiB |
 | 358 | Full multi-user/time/storage/userland acceptance | To do | 16/128 MiB baseline; full IDE release at 128 MiB and two terminals; full boot self-test scratch-space exhaustion repaired with a private 1 MiB test volume; 16/128 MiB stress acceptance in `make test-stability`; intermittent freeze remains under investigation ([notes](stability.md)) |
-| 359 | Close all component/source/device blockers | To do | All 221 entries/36 requirements traceable; close historical device-directory node/consumer audit; no hidden omissions |
+| 359 | Close all component/source/device blockers | To do | All 223 entries/36 requirements traceable; close historical device-directory node/consumer audit; no hidden omissions |
 | 360 | Reproducible host-bootstrap build and release provenance | To do | Pin SDK inputs, artifact hashes, licensing and validation evidence |
 | 361 | Finalize 0.1.0 release documentation and tag | To do | Only after all required leaves are implemented, tested and committed |
 
@@ -641,7 +641,7 @@ two terminals.
 
 Release acceptance requires multi-user startup, RTC-derived time and persistent
 V7 timestamps, complete component coverage, native V7 development tools,
-installed manuals/data and resolution of explicit release blockers. All 221
+installed manuals/data and resolution of explicit release blockers. All 223
 components and 36 requirements must be traceable to tested native implementations,
 assets or documented native equivalents. No required feature is silently removed
 to declare the release complete.
@@ -725,4 +725,4 @@ service ports before startup integration. IDs do not imply execution order.
 | 408 | Close write V7 compatibility audit | To do | Recipient/terminal selection, permissions, message/EOF framing, signals and disconnects; compare supplied source with active port, resolve API/ABI/runtime dependencies, add missing behavior tests and document native adaptations; implement/test/commit independently |
 | 409 | Integrate V7 background services into multi-user startup | To do | After 237/238/242–245: integrate update/cron in rc, install a native crontab and service ownership, exercise scheduled atrun and calendar/dmesg consumers, cold boot and single-user/re-entry without duplicate daemons; preserve native configuration during upgrades |
 | 410 | Require task ownership for unresolved inventory work | Done | Explicit unresolved_tasks validated against pending component owners; scope_notes separate agreed limits; negative regression tests and make test-inventory; Git history |
-| 411 | Reconcile reference review and roadmap documentation | To do | Correct stale counts/completion claims, publish audit findings and new task mappings, and test documentation consistency against canonical inventory/roadmap data |
+| 411 | Reconcile reference review and roadmap documentation | Done | Stale counts/completion claims corrected; audit findings and task mappings published; canonical requirement-table/review-total regression checks and make test-inventory; Git history |

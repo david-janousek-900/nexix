@@ -1,6 +1,7 @@
 # V7 reference and task review
 
-Reviewed against implementation commit `fa6076d` and the locally preserved
+Original review baseline: `fa6076d`. Follow-up reviewed the implementation at
+`7bc7c55` and obligation-ownership changes at `c16f201`, against the locally preserved
 Henry Spencer V7 distribution. The reference is pinned by
 [distribution.json](../reference/distribution.json) to archive SHA-256
 `e0fd7bdd046e17de177f5d997acf8123fa43c57b46b032c7337f7666ab69a07e`.
@@ -10,8 +11,8 @@ archives contain additional or recovered sources.
 ## Distribution coverage
 
 The inventory and provenance checks verify every one of the 2,144 preserved
-files, including byte hashes, against the distribution index. All 217 inventory
-components and 35 supporting requirements have explicit task owners. The
+files, including byte hashes, against the distribution index. All historical and native inventory components and supporting requirements
+have explicit task owners. The
 installed-program index accounts for 213 historical program paths; this includes
 scripts, aliases, helpers and binary-only inputs, not 213 completed native ports.
 No unowned distribution file or component was found.
@@ -28,7 +29,7 @@ No unowned distribution file or component was found.
 | Recipes, packaging, manuals, documents and runtime data | 83–88, 286–288, 352–361 | Full distribution installation and native rebuild acceptance remain required |
 
 The original `bin/man` is owned by `script.man`; formatting and installation
-remain task 287. All 307 manual files remain owned separately by tasks 286–287,
+are complete under task 287. All 307 manual files are installed and owned by completed tasks 286–287,
 and the 174 document files by task 288. Lesson archives, formatter tables,
 macros, dictionaries, game data and spool/account configuration are represented
 in inventory components and supporting requirements.
@@ -77,3 +78,27 @@ preserved. The pristine reference and the technical debugger term
 and status totals, kernel syscall/source ownership, isolated headers and ABI
 records, stdio adapter inputs and the negative audit fixtures. This change
 does not modify kernel or libc runtime behavior.
+
+## Follow-up measures (tasks 389–411)
+
+Reference audit totals: **2,144 files; 223 components; 36 requirements; 411 tasks (178 done, 0 in progress, 233 to do).**
+
+No unowned reference component was found. Twenty implemented command components
+still declared pending API/ABI/transitive-dependency audits with only completed
+owners. Tasks 389–408 now give each audit its own implementation/test/commit
+cycle. These records do not establish twenty implementation defects and do not
+invalidate the initial acceptance evidence.
+
+Task 409 explicitly owns the later update/cron startup and native crontab/atrun
+integration required by the reference rc/crontab workflows. It depends on the
+service/administration ports, and remains To do; no daemon is enabled by this
+review. Device consumer closure remains task 359; integration and the reported
+freeze remain task 358; the thirteen binary-only recovery pairs remain 318–343.
+
+Task 410 requires explicit pending owners for actionable unresolved entries.
+The documented date/TZ grammar and reference touch semantics are scope notes,
+not incomplete ports. The stale generic manual audit note is removed because
+tasks 286/287 already test all original manual assets and native consumers.
+Task 411 reconciles completion prose and the supporting-requirement table with
+canonical data. Structural tests establish tracking consistency and archive
+fidelity; they do not prove all V7 behavior or close the remaining ports.
