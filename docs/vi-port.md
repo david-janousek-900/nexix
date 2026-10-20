@@ -78,3 +78,9 @@ cold-boot recovery at 16/128 MiB. `make test-clear` checks the clear command.
 `make test-upgrade` checks adding these programs to a customized existing image
 and booting it twice. VGA/QMP tests need local UNIX socket access. Tests always
 use disposable disks and preserve build/nexix.img.
+
+
+The combined `make test-vi-acceptance` gate passed; see the
+[acceptance report](vi-acceptance.md) for coverage and limits. It checks two
+concurrent editors plus a third login at 16 MiB, and three concurrent editors
+at 128 MiB. The 16 MiB resident kernel can reject a third editor with ENOMEM.

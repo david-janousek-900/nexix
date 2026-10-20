@@ -13,8 +13,8 @@ int main(void)
  int fd=mkstemp(path);assert(fd>=0);
  const char *data="base|alias:co#80:li#030:am:cl=\\E[H\\E[2J:\nchild:li#25:am@:tc=base:\ncycle:tc=cycle:\ncontinued:co#80:\\\n\t:li#24:\n";
  assert(write(fd,data,strlen(data))==(ssize_t)strlen(data));assert(!close(fd));setenv("TERMCAP",path,1);
- assert(tgetent(buffer,"alias")==1 && tgetnum("co")==80 && tgetnum("li")==24 && tgetflag("am"));
- assert(!strcmp(tgetstr("cl",&area),"\033[H\033[2J"));
+ assert(tgetent(buffer,"alias")==1 && tgetnum("coli")==80 && tgetnum("li")==24 && tgetflag("amco"));
+ assert(!strcmp(tgetstr("clcm",&area),"\033[H\033[2J"));
  assert(tgetent(buffer,"child")==1 && tgetnum("li")==25 && !tgetflag("am") && tgetnum("co")==80);
  assert(tgetent(buffer,"cycle")==-1 && errno==EINVAL);
  assert(tgetent(buffer,"continued")==1 && tgetnum("li")==24);

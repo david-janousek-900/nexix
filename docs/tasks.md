@@ -19,8 +19,8 @@ The inventory accounts for **221 components, 2,144 distribution files and
 4 partial, 1 prototype and 159 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **386 tracking tasks: 161 done, 0 in progress
-and 225 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 357, 362–373 are complete**. These counts are a work breakdown, not an
+The expanded roadmap below has **386 tracking tasks: 162 done, 0 in progress
+and 224 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 357, 362–386 are complete**. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -570,7 +570,7 @@ required before native-port acceptance.
 | 356 | Package complete 0.1.0 distribution | To do | Programs, scripts, libraries, headers, source/build inputs, manuals/data and permissions |
 | 357 | Persistent disk upgrade/install tooling | Done | Git history; [offline upgrade contract](disk-upgrades.md); verified staging, exclusive offline locks, mandatory non-overwritten backup, candidate validation and atomic publication; account/config/TZ/data/hard-link/sparse-file/timestamp preservation; failure tests and two cold boots at 16/128 MiB |
 | 358 | Full multi-user/time/storage/userland acceptance | To do | 16/128 MiB baseline; full IDE release at 128 MiB and two terminals; full boot self-test scratch-space exhaustion repaired with a private 1 MiB test volume; 16/128 MiB stress acceptance in `make test-stability`; intermittent freeze remains under investigation ([notes](stability.md)) |
-| 359 | Close all component/source/device blockers | To do | All 219 entries/35 requirements traceable; close historical device-directory node/consumer audit; no hidden omissions |
+| 359 | Close all component/source/device blockers | To do | All 221 entries/36 requirements traceable; close historical device-directory node/consumer audit; no hidden omissions |
 | 360 | Reproducible host-bootstrap build and release provenance | To do | Pin SDK inputs, artifact hashes, licensing and validation evidence |
 | 361 | Finalize 0.1.0 release documentation and tag | To do | Only after all required leaves are implemented, tested and committed |
 
@@ -683,5 +683,5 @@ Traditional Vi 050325 is an additional 0.1.0 component; see [port contract](vi-p
 | 382 | Port interactive vi and view | Done | Native visual vi/view with bounded stack screen buffer; serial and real VGA/PS2 insert/motion/delete/undo/search/save/read-only/restoration pass at 16/128 MiB; Git history |
 | 383 | Port preservation and recovery helpers | Done | Native reference helpers validate owners/header bounds and preserve privately; uid-100 SIGHUP, vi -r listing, cold-boot recovery, uid-101 denial and malformed input pass at 16/128 MiB; Git history |
 | 384 | Package vi, ex, view and documentation | Done | Installed vi/ex/view/helpers, manuals/licenses, native inventory ownership and terminal defaults; package, installed ex/recovery and backed-up upgrade/two-boot tests pass at 16/128 MiB; Git history |
-| 385 | Complete traditional vi acceptance | To do | Real VGA/PS2 and serial edit/save/recovery at 16/128 MiB, session isolation and regressions |
+| 385 | Complete traditional vi acceptance | Done | Combined installed acceptance passes at 16/128 MiB: full-screen VGA/serial, packed/large termcap IDs, interrupt cleanup, concurrent editors, storage/recovery/clear and login/upgrade regressions; docs/vi-acceptance.md; Git history |
 | 386 | Add clear terminal command | Done | Installed termcap-driven clear and ANSI/VGA descriptions; test-clear verifies serial bytes, VGA memory and errors at 16/128 MiB; Git history |

@@ -80,7 +80,7 @@ int tgetent(char *bp,const char *name)
 }
 static const char *capability(char *id)
 {
-    if(!id || strlen(id)!=2){errno=EINVAL;return NULL;}
+    if(!id || !id[0] || !id[1]){errno=EINVAL;return NULL;}
     const char *p=strchr(capabilities,':');if(!p)return NULL;++p;
     while(*p){const char *end=field_end(p);
         if(end-p>=2 && p[0]==id[0] && p[1]==id[1])return p+2;

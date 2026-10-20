@@ -2123,3 +2123,9 @@ build/vi-port.md: docs/vi-port.md | build/.dir
 .PHONY: test-vi-package
 test-vi-package: stage
 	$(PYTHON) tools/check_vi_package.py
+.PHONY: test-vi-multiuser test-vi-acceptance
+test-vi-multiuser: build/nexix-multi.iso rootfs
+	$(PYTHON) tools/vi_multiuser_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/vi_multiuser_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test-vi-acceptance: test-vi-reference test-termcap test-termcap-output test-termcap-guest test-vga-controls test-termios test-vi-native test-vi-storage test-ex test-vi test-vi-recovery test-vi-package test-vi-multiuser test-clear test-vga test-upgrade test-libc-interfaces test-inventory
+test: test-vi-acceptance

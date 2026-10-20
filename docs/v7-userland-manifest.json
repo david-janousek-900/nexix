@@ -622,13 +622,14 @@
     {
       "id": "traditional-vi",
       "category": "userland-extension",
-      "status": "partial",
-      "description": "Pinned Traditional Vi 050325 source, native terminal/editor/recovery ports and packaging; final release-specific acceptance is task 385.",
+      "status": "supplied",
+      "description": "Pinned Traditional Vi 050325 sources and tested native vi/ex/view, terminal/library adapters, preservation/recovery and packaging; tasks 374-385 complete for the documented single-byte fixed-geometry configuration.",
       "evidence": [
         "docs/vi-port.md",
         "reference/ex-vi/provenance.json",
         "user/vi/README.md",
-        "tools/vi_recovery_smoke.py"
+        "tools/vi_recovery_smoke.py",
+        "docs/vi-acceptance.md"
       ],
       "locations": [
         "/bin/vi",

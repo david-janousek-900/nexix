@@ -6,7 +6,8 @@ userland, toolchain and historical-platform equivalents, with multi-user boot. T
 This inventory accounts for the remaining work; it does not implement ports.
 
 The authoritative [manifest](v7-userland-manifest.json) accounts for all
-**2,144 distribution files**, grouped into **217 components**, plus **35 platform
+**2,144 distribution files**, grouped into **217 historical components**.
+Four native additions bring the manifest to **221 components** and **36 platform
 or supporting-input requirements**. The preserved userland source subset still
 contains 1,121 files and its original 174 component records. The full audit adds
 installed scripts, additional games, the root diagnostic source, kernel/boot
@@ -26,7 +27,9 @@ and original metadata to the recorded archive. See [source provenance](../refere
 ## Manifest contract
 
 The reference inventory still covers 217 historical components. Native-only
-additions are recorded separately: `cmd.uname` and `cmd.hostname` bring the total to 219.
+additions are recorded separately: `cmd.uname`, `cmd.hostname`, `cmd.clear` and
+`cmd.vi` bring the total to 221. The additional traditional-vi requirement records
+the separately pinned release and its tested native terminal/editor/recovery port.
 `source_availability: native` requires nonempty `native_sources` outside
 `reference/`, and empty reference `sources`/`source_files`. Native additions
 also require installation outputs, tests and an explicit roadmap mapping.

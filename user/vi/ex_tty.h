@@ -102,11 +102,7 @@
  * before the capability to say 12 milliseconds per affected whatever
  * (currently always line).  Capabilities where this makes sense say P*.
  */
-#ifndef	VMUNIX
-var	char	tspace[256];	/* Space for capability strings */
-#else
-var	char	tspace[1024];	/* Space for capability strings */
-#endif
+var	char	tspace[TCBUFSIZE]; /* A complete set of decoded native capabilities. */
 var	char	*aoftspace;	/* Address of tspace for relocation */
 
 var	char	*AL;		/* P* Add new blank line */
