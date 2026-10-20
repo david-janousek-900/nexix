@@ -7650,6 +7650,53 @@
         "root": "programs",
         "path": "v7-neqn.elf"
       }
+    },
+    {
+      "path": "/usr/pub",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.public"
+    },
+    {
+      "path": "/usr/pub/ascii",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.public",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/pub/ascii"
+      }
+    },
+    {
+      "path": "/usr/pub/greek",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.public",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/pub/greek"
+      }
+    },
+    {
+      "path": "/usr/pub/eqnchar",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.public",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/pub/eqnchar"
+      }
     }
   ]
 }

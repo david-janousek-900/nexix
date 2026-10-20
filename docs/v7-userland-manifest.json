@@ -20281,15 +20281,11 @@
       "source_availability": "not_applicable",
       "outputs": [],
       "priority": 11,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [],
       "reference_includes": [],
-      "blockers": [
-        "Not installed in Nexix; native integration and functional acceptance remain pending."
-      ],
-      "unresolved": [
-        "Audit native API/format compatibility and remaining transitive dependencies."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Integrate supplied inputs into the native port and verify their consuming programs."
       ]

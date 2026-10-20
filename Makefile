@@ -2171,3 +2171,8 @@ test-uptime: test-loadavg-unit test-kinfo-unit build/v7-uptime.elf build/uptime-
 	$(PYTHON) tools/uptime_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-uptime
 include tools/equations.mk
+.PHONY: test-public-data
+test-public-data: build/nexix-multi.iso stage
+	$(PYTHON) tools/public_data_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/public_data_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-public-data

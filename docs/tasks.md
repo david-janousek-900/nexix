@@ -15,12 +15,12 @@ installed; the complete list and destinations are in [the installation manifest]
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
 The inventory accounts for **222 components, 2,144 distribution files and
-36 supporting/platform requirements**. Its component statuses are 63 implemented,
-4 partial, 1 prototype and 154 not ported; importing reference inputs does not
+36 supporting/platform requirements**. Its component statuses are 64 implemented,
+4 partial, 1 prototype and 153 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **387 tracking tasks: 172 done, 0 in progress
-and 215 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 253, 264–269, 281, 286, 357, 362–387** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **387 tracking tasks: 173 done, 0 in progress
+and 214 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 253, 264–269, 281–282, 286, 357, 362–387** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -459,7 +459,7 @@ are accounted for. Final native rebuild acceptance is task 207.
 | 279 | Complete spell command and script | To do | American/British/local/stop inputs and wrapper |
 | 280 | Install dictionaries and bibliography inputs | To do | Validate indexes and consuming programs |
 | 281 | Install formatter macros/parser descriptions/library data | Done | Original tmac packages, yaccpar, ncform and lint descriptions installed intact; native macro rendering at 16/128 MiB; `make test-formatter-macros`; Git history |
-| 282 | Install public ASCII/Greek/equation data | To do | Byte fidelity and format consumers |
+| 282 | Install public ASCII/Greek/equation data | Done | All public tables installed unchanged; eqn/neqn character-definition and formatter consumers at 16/128 MiB; `make test-public-data`; Git history |
 | 283 | Port learn engine | To do | Sessions, workspace isolation and helper execution |
 | 284 | Port learn private tee/lcount helpers | To do | Distinct from /usr/bin/tee |
 | 285 | Install/test lesson archives and learn workdirs | To do | All six archives and representative lesson sessions |
