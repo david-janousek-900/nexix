@@ -206,11 +206,21 @@ make test-man
 make test-pager
 make test-ps
 make test-uptime
+make test-yes-interrupt
 make test-unit
 make test-essential
 make test-vga
 make test-console
 make test-dmesg
+```
+
+`test-yes-interrupt` runs `yes` for one minute on each serial terminal, then
+checks Ctrl-C, shell recovery, a repeated interruption and the other login at
+16 and 128 MiB. It uses disposable disks and continuously drains output. For a
+longer run (duration in seconds per terminal):
+
+```sh
+python3 tools/yes_interrupt_smoke.py qemu-system-x86_64 build/nexix-multi.iso 128M 300
 ```
 
 `test-inventory` checks historical file hashes, source coverage and task mappings.

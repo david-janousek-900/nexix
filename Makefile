@@ -1694,6 +1694,11 @@ test-yes: multi-iso rootfs build/yes-command.elf
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 16M yes
 	$(PYTHON) tools/command_smoke.py $(QEMU) build/nexix-multi.iso 128M yes
 
+.PHONY: test-yes-interrupt
+test-yes-interrupt: multi-iso rootfs
+	$(PYTHON) tools/yes_interrupt_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/yes_interrupt_smoke.py $(QEMU) build/nexix-multi.iso 128M
+
 .PHONY: test-false
 test-false: multi-iso rootfs
 	$(PYTHON) tools/guest_acceptance.py tests/guest/false.json --qemu $(QEMU) --iso build/nexix-multi.iso --ram 16M --report build/false-16M.json
