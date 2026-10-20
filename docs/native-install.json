@@ -7350,6 +7350,230 @@
       }
     },
     {
+      "path": "/usr/man/include",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals"
+    },
+    {
+      "path": "/usr/man/include/a.out.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/include/a.out.h"
+      }
+    },
+    {
+      "path": "/usr/man/include/ar.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/include/ar.h"
+      }
+    },
+    {
+      "path": "/usr/man/include/dumprestor.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/include/dumprestor.h"
+      }
+    },
+    {
+      "path": "/usr/man/include/grp.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/include/grp.h"
+      }
+    },
+    {
+      "path": "/usr/man/include/pwd.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/include/pwd.h"
+      }
+    },
+    {
+      "path": "/usr/man/include/sys",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals"
+    },
+    {
+      "path": "/usr/man/include/sys/acct.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/include/sys/acct.h"
+      }
+    },
+    {
+      "path": "/usr/man/include/sys/dir.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/include/sys/dir.h"
+      }
+    },
+    {
+      "path": "/usr/man/include/sys/fblk.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/include/sys/fblk.h"
+      }
+    },
+    {
+      "path": "/usr/man/include/sys/filsys.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/include/sys/filsys.h"
+      }
+    },
+    {
+      "path": "/usr/man/include/sys/ino.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/include/sys/ino.h"
+      }
+    },
+    {
+      "path": "/usr/man/include/sys/stat.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/include/sys/stat.h"
+      }
+    },
+    {
+      "path": "/usr/man/include/sys/timeb.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/include/sys/timeb.h"
+      }
+    },
+    {
+      "path": "/usr/man/include/sys/types.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/include/sys/types.h"
+      }
+    },
+    {
+      "path": "/usr/man/include/time.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/include/time.h"
+      }
+    },
+    {
+      "path": "/usr/man/include/utmp.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.manuals",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/include/utmp.h"
+      }
+    },
+    {
+      "path": "/bin/nroff",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.troff",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-nroff.elf"
+      }
+    },
+    {
       "path": "/bin/ps",
       "type": "file",
       "mode": "0755",

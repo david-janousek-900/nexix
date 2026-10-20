@@ -16507,9 +16507,10 @@
           "name": "nroff",
           "install": "/bin/nroff",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/troff/makefile"
+            "user/troff/n10.c",
+            "tools/nroff_smoke.py"
           ]
         },
         {

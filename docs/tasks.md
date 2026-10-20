@@ -10,7 +10,7 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 55 native ELF programs are
+to multi-user V7 login with persistent IDE storage. 57 native ELF programs are
 installed; the complete list and destinations are in [the installation manifest](native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
@@ -19,8 +19,8 @@ The inventory accounts for **221 components, 2,144 distribution files and
 5 partial, 1 prototype and 156 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **386 tracking tasks: 167 done, 0 in progress
-and 219 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 357, 362–386 are complete**. These counts are a work breakdown, not an
+The expanded roadmap below has **386 tracking tasks: 168 done, 0 in progress
+and 218 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 253, 264–266, 281, 286, 357, 362–386** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -443,7 +443,7 @@ are accounted for. Final native rebuild acceptance is task 207.
 | 263 | Port roff | To do | Retained formatter behavior |
 | 264 | Retarget nroff/troff parsing and layout core | Done | Explicit native saved environments and pointer-sized macro frames; source parser/layout retained; `make test-formatter-core` at 16/128 MiB; Git history |
 | 265 | Regenerate native terminal/font tables | Done | 12 terminal and 25 font tables regenerated without PDP-11 headers; native mkfont/chars; `make test-formatter-table-helpers` at 16/128 MiB; Git history |
-| 266 | Complete nroff terminal output | To do | Readable serial text and formatter fixtures |
+| 266 | Complete nroff terminal output | Done | Installed source-based nroff with portable terminal data; all 301 section 1–8 files render at 16/128 MiB; archived manual header excerpts; `make test-nroff`; Git history |
 | 267 | Complete troff typesetter output | To do | Captured protocol and font/layout fixtures |
 | 268 | Port eqn | To do | Equation parsing and troff integration |
 | 269 | Port neqn | To do | Terminal equation formatting |

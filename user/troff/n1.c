@@ -141,6 +141,18 @@ int ms[] = {31,28,31,30,31,30,31,31,30,31,30,31};
 int acctf;
 #endif
 
+static int historical_manual;
+static int include_open(char *name)
+{
+    char archived[NS];
+    if(historical_manual && !strncmp(name,"/usr/include/",13)){
+        if(strlen(name+13)+18>=sizeof(archived))return -1;
+        strcpy(archived,"/usr/man/include/");strcat(archived,name+13);
+        return open(archived,0);
+    }
+    return open(name,0);
+}
+
 main(argc,argv)
 int argc;
 char **argv;
@@ -190,6 +202,7 @@ options:
 			vlist[findr(argv[0][2])] = cnum(&argv[0][3]);
 			continue;
 		case 'm':
+            if(!strcmp(argv[0]+2,"an"))historical_manual=1;
 			p = &nextf[nfi];
 			q = &argv[0][2];
 			while((*p++ = *q++) != 0);
@@ -848,7 +861,7 @@ caseso(){
 
 	lgf++;
 	nextf[0] = 0;
-	if(skip() || !getname() || ((i=open(nextf,0)) <0) || (ifi >= NSO)) {
+	if(skip() || !getname() || ((i=include_open(nextf)) <0) || (ifi >= NSO)) {
 		prstr("can't open file ");
 		prstr(nextf);
 		prstr("\n");

@@ -31,3 +31,11 @@ Task 281 installs the original tmac macro packages, yacc parser template, lex
 scanner template and lint library descriptions without changing their contents.
 The parser-generator, scanner-generator and lint implementation tasks still own
 retargeting those descriptions for their future native consumers.
+
+`nroff` defaults to the line-printer table (`-Tlp`) for readable VGA/ANSI output;
+all original terminal tables remain selectable with `-Tname`. All 301 files in
+manual sections 1–8 are rendered in the native acceptance test at 16/128 MiB.
+When using `-man`, includes of historical `/usr/include/...` text are resolved
+from unchanged archival excerpts under `/usr/man/include`. These excerpts are
+historical documentation, not native development headers. Other formatter use
+continues to read the requested include paths normally.

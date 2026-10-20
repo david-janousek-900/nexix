@@ -18,3 +18,8 @@ test-formatter-macros: build/v7-nroff.elf build/nexix-multi.iso
 	$(PYTHON) tools/formatter_macros_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/formatter_macros_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-formatter-macros
+.PHONY: test-nroff
+test-nroff: build/v7-nroff.elf build/nexix-multi.iso
+	$(PYTHON) tools/nroff_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/nroff_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-nroff
