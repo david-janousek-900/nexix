@@ -28,7 +28,7 @@ static int child_run(int full)
   close(input[1]);close(output[0]);dup2(input[0],0);dup2(output[1],1);dup2(output[1],2);close(input[0]);close(output[1]);
   if(setgid(100)||setuid(100))_exit(91);
   char *args[]={"ex","-",0};char *env[]={"HOME=/home/alice","PATH=/bin","TERM=dumb","TERMCAP=dumb:co#80:li#24:",0};
-  execve("/tmp/ex",args,env);_exit(92);
+  execve("/bin/ex",args,env);_exit(92);
  }
  close(input[0]);close(output[1]);close(gate[0]);
  snprintf(collision,sizeof(collision),"/var/tmp/Ex%010d",child);

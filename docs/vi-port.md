@@ -12,9 +12,9 @@ remains available. No external curses or Berkeley DB library is required: the
 release includes libterm, historical regex and its own editor line storage.
 
 The actual release uses termios, not sgtty directly. A checked native adapter
-must map the supported terminal operations to Nexix; unsupported flags cannot
-silently succeed. VGA currently needs screen-control parsing, and both terminal
-families need appropriate termcap entries, geometry and TERM defaults.
+maps supported operations to Nexix and rejects unsupported settings. VGA has
+bounded screen-control parsing; both terminal families have termcap entries,
+fixed geometry and TERM defaults. See [the adapter contract](termios.md).
 
 Source audit/build choices: retain LISPCODE, CHDIR, FASTTAG, UCVISUAL and BIT8;
 select ISO8859_1 without MB/UXRE and retain the historical regex engine. Use the
@@ -42,3 +42,39 @@ expansion supports BSD d/2/3/./+/r/i/n/>/B/D/% operations with a bounded native
 result and correction buffer. Invalid formats/coordinates return OOPS with
 errno; excessive padding returns an error before output. Callback failures are
 propagated. Unsupported output speed selectors retain the BSD no-padding policy.
+
+
+## Installed use
+
+Build with `make build`, then boot with `make run`. Log in and run `vi file`,
+`ex file`, `view file` or `clear`. In vi, press `i` to insert, Escape to return to
+command mode, `:wq` to save/quit or `:q!` to discard. Use `/pattern` to search and
+`u` for single-level undo. View rejects normal writes; an explicit `:w!` has the
+traditional force-write behavior when filesystem permissions permit it.
+
+VGA defaults to TERM=nexix (25x80), serial to TERM=ansi (24x80). Override TERM
+only for a matching terminal description. The initial build is single-byte;
+modern vi extensions, Unicode/UTF-8 and resize/job-control signals are not supplied.
+
+After an interrupted session, `vi -r` lists your saved buffers. Use
+`vi -r filename`, inspect the result and save it. Preservation uses mode-0600
+files in /var/preserve; expreserve is the checked setuid helper and exrecover
+runs without privilege. If mail is not installed, recovery works without the
+optional mail notification. See [native port notes](../user/vi/README.md).
+Manual sources are installed in /usr/man/man1 and license/port notes in
+/usr/doc/vi. The repository's V7 man/formatter port remains separate work.
+
+An existing build/nexix.img is preserved by normal builds. Stop QEMU, run
+`make upgrade-preview`, then `make upgrade-disk` to install the new files with
+an offline backup. The upgrader preserves existing nonexecutable configuration,
+including /etc/termcap; merge new terminal entries if that file was customized.
+A fresh disposable disk receives all entries automatically.
+
+## Checks
+
+`make test-vi-native test-vi-storage test-ex test-vi test-vi-recovery` covers
+native dependencies, storage limits, ex commands, visual editing and private
+cold-boot recovery at 16/128 MiB. `make test-clear` checks the clear command.
+`make test-upgrade` checks adding these programs to a customized existing image
+and booting it twice. VGA/QMP tests need local UNIX socket access. Tests always
+use disposable disks and preserve build/nexix.img.

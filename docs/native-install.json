@@ -2454,6 +2454,181 @@
       "uid": 0,
       "gid": 0,
       "component": "distribution.config"
+    },
+    {
+      "path": "/bin/vi",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.vi",
+      "source": {
+        "root": "programs",
+        "path": "v7-vi.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/ex",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.vi",
+      "source": {
+        "root": "programs",
+        "path": "v7-ex.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/view",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.vi",
+      "source": {
+        "root": "programs",
+        "path": "v7-view.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/usr/libexec/expreserve",
+      "type": "file",
+      "mode": "4755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.vi",
+      "source": {
+        "root": "programs",
+        "path": "v7-expreserve.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/usr/libexec/exrecover",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.vi",
+      "source": {
+        "root": "programs",
+        "path": "v7-exrecover.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/usr/man",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.vi"
+    },
+    {
+      "path": "/usr/man/man1",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.vi"
+    },
+    {
+      "path": "/usr/doc",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.vi"
+    },
+    {
+      "path": "/usr/doc/vi",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.vi"
+    },
+    {
+      "path": "/usr/man/man1/vi.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.vi",
+      "source": {
+        "root": "programs",
+        "path": "vi-man-vi"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/usr/man/man1/view.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.vi",
+      "source": {
+        "root": "programs",
+        "path": "vi-man-vi"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/usr/man/man1/ex.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.vi",
+      "source": {
+        "root": "programs",
+        "path": "vi-man-ex"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/usr/doc/vi/LICENSE",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.vi",
+      "source": {
+        "root": "programs",
+        "path": "vi-license"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/usr/doc/vi/NOTICE",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.vi",
+      "source": {
+        "root": "programs",
+        "path": "vi-notice"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/usr/doc/vi/PORT.md",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.vi",
+      "source": {
+        "root": "programs",
+        "path": "vi-port.md"
+      },
+      "format": "data"
     }
   ]
 }

@@ -25,6 +25,8 @@ def main():
         replace('/etc/hostname',b'upgrade.example.test\n')
         profile=b'PATH=/bin\nHOME=/root\nTZ=CET-1\nexport PATH HOME TZ\n'
         replace('/root/.profile',profile)
+        new_programs=['/bin/vi','/bin/ex','/bin/view','/bin/clear','/usr/libexec/expreserve','/usr/libexec/exrecover']
+        for name in new_programs:paths.pop(name)
         saved=replace('/root/keep',b'PRESERVED_DATA\n',REG|0o640);paths['/root/alias']=saved
         data=build_upgrade(source,paths,1700000000);write_image(disk,data)
         if hasattr(data,'close'):data.close()
@@ -39,10 +41,16 @@ def main():
             assert old.hash(a)==after.hash(b),name
         assert after.paths['/root/keep'] is after.paths['/root/alias']
         assert after.hash(after.paths['/bin/echo'])==source.hash(source.paths['/bin/echo'])
+        for name in new_programs:
+            assert after.hash(after.paths[name])==source.hash(source.paths[name])
+            assert after.paths[name].mode==source.paths[name].mode
+        assert after.paths['/usr/libexec/expreserve'].mode&0o4000
         for boot in range(2):
             guest=Guest(qemu,iso,disk,ram)
             try:
                 login(guest,'root','nexix')
+                guest.command('echo q! | ex -')
+                guest.command('clear && echo',stdout='\033[H\033[2J\n')
                 guest.command('echo UPGRADED_OK',stdout='UPGRADED_OK\n')
                 guest.command('echo $TZ',stdout='CET-1\n')
                 guest.command('hostname',stdout='upgrade.example.test\n')

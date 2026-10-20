@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   char *listargs[]={"vi","-r",0};
   char *saveargs[]={"ex","-","/tmp/lost",0};char *recoverargs[]={"ex","-","-r","/tmp/lost",0};
   char *env[]={"HOME=/home/alice","PATH=/bin","TERM=dumb",0};
-  execve("/tmp/ex",listing?listargs:saving?saveargs:recoverargs,env);_exit(91);
+  execve("/bin/ex",listing?listargs:saving?saveargs:recoverargs,env);_exit(91);
  }
  close(input[0]);close(output[1]);
  const char *commands=listing?"":saving?"a\nunsaved recovery text\n.\n!echo RECOVERY_READY\n":denied?"q!\n":"w /tmp/recovered\nq!\n";

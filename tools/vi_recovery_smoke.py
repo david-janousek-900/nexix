@@ -4,10 +4,9 @@ from private_guest import private_guest
 from guest_acceptance import Guest
 qemu,iso,ram=sys.argv[1:4]
 Path('build/vi-corrupt').write_bytes(bytes(4096))
-artifacts={'/tmp/vipreserve':'vi-preserve.elf','/tmp/ex':'vi-dev.elf','/usr/libexec/expreserve':'vi-expreserve.elf','/usr/libexec/exrecover':'vi-exrecover.elf','/tmp/corrupt':'vi-corrupt'}
+artifacts={'/tmp/vipreserve':'vi-preserve.elf','/tmp/corrupt':'vi-corrupt'}
 with private_guest(qemu,iso,ram,'vi-preserve',artifacts) as guest:
  guest.expect(r'root@nexix.localdomain# ')
- guest.command('chmod 4755 /usr/libexec/expreserve')
  guest.command('/usr/libexec/expreserve < /tmp/corrupt 2>/tmp/error',status=1)
  guest.command('/tmp/vipreserve save',stdout='VI_PRESERVED\n')
  disk=guest.disk;guest.process.terminate();guest.process.wait(timeout=3)

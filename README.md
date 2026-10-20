@@ -8,13 +8,15 @@ ELF64 executables; Nexix does not emulate PDP-11 binaries.
 
 The current development version is **0.1.0**. It boots in QEMU to multi-user login
 on a VGA/PS/2 console by default, with optional serial mode. It provides persistent
-IDE storage, the V7 Bourne shell and 49 native programs. The kernel provides protected process
+IDE storage, the V7 Bourne shell and 55 native ELF programs. The kernel provides protected process
 address spaces, scheduling, fork/exec, signals, pipes, permissions and filesystem
 operations. Native libc, libm, startup objects and headers support the ported
 programs. The complete V7 port and guest self-hosting are still unfinished.
 TCP/IP networking is planned for **0.2.0**; it is not currently available.
 
-Traditional BSD vi is being added through [tasks 374–385](docs/vi-port.md).
+Traditional BSD `vi`, `ex` and read-only `view` are installed alongside V7 `ed`.
+See [vi usage, recovery and tests](docs/vi-port.md). The `clear` command clears
+the VGA or ANSI serial terminal.
 
 See the [task list](docs/tasks.md) for completed and remaining work, the
 [installation manifest](docs/native-install.json) for installed programs, and the

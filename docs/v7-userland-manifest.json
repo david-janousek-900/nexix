@@ -623,10 +623,12 @@
       "id": "traditional-vi",
       "category": "userland-extension",
       "status": "partial",
-      "description": "Additional BSD ex/vi 050325 source imported and indexed; native terminal/library/editor/recovery ports remain tasks 375-385.",
+      "description": "Pinned Traditional Vi 050325 source, native terminal/editor/recovery ports and packaging; final release-specific acceptance is task 385.",
       "evidence": [
         "docs/vi-port.md",
-        "reference/ex-vi/provenance.json"
+        "reference/ex-vi/provenance.json",
+        "user/vi/README.md",
+        "tools/vi_recovery_smoke.py"
       ],
       "locations": [
         "/bin/vi",
@@ -24683,6 +24685,142 @@
       "reference_includes": [],
       "acceptance": [
         "Verify native VGA clearing, exact serial bytes and missing TERM/capability/output failures at 16/128 MiB."
+      ]
+    },
+    {
+      "id": "cmd.vi",
+      "kind": "command",
+      "summary": "Additional Traditional BSD vi/ex/view and preservation/recovery helpers",
+      "sources": [],
+      "source_files": [],
+      "source_availability": "native",
+      "native_sources": [
+        "user/vi/README.md",
+        "user/vi/config.h",
+        "user/vi/directory.c",
+        "user/vi/dirent.h",
+        "user/vi/ex.c",
+        "user/vi/ex.h",
+        "user/vi/ex_addr.c",
+        "user/vi/ex_argv.h",
+        "user/vi/ex_cmds.c",
+        "user/vi/ex_cmds2.c",
+        "user/vi/ex_cmdsub.c",
+        "user/vi/ex_data.c",
+        "user/vi/ex_extern.c",
+        "user/vi/ex_get.c",
+        "user/vi/ex_io.c",
+        "user/vi/ex_proto.h",
+        "user/vi/ex_put.c",
+        "user/vi/ex_re.c",
+        "user/vi/ex_re.h",
+        "user/vi/ex_set.c",
+        "user/vi/ex_subr.c",
+        "user/vi/ex_tagio.c",
+        "user/vi/ex_temp.c",
+        "user/vi/ex_temp.h",
+        "user/vi/ex_tty.c",
+        "user/vi/ex_tty.h",
+        "user/vi/ex_tune.h",
+        "user/vi/ex_unix.c",
+        "user/vi/ex_v.c",
+        "user/vi/ex_vadj.c",
+        "user/vi/ex_vars.h",
+        "user/vi/ex_version.c",
+        "user/vi/ex_vget.c",
+        "user/vi/ex_vis.h",
+        "user/vi/ex_vmain.c",
+        "user/vi/ex_voper.c",
+        "user/vi/ex_vops.c",
+        "user/vi/ex_vops2.c",
+        "user/vi/ex_vops3.c",
+        "user/vi/ex_vput.c",
+        "user/vi/ex_vwind.c",
+        "user/vi/expreserve.c",
+        "user/vi/exrecover.c",
+        "user/vi/libterm/libterm.h",
+        "user/vi/malloc.c",
+        "user/vi/native.c",
+        "user/vi/printf.c",
+        "user/vi/recovery-check.h",
+        "user/vi/regexp.h"
+      ],
+      "outputs": [
+        {
+          "name": "vi",
+          "install": "/bin/vi",
+          "role": "installed",
+          "status": "implemented",
+          "evidence": [
+            "user/vi/README.md",
+            "docs/vi-port.md",
+            "Makefile"
+          ]
+        },
+        {
+          "name": "ex",
+          "install": "/bin/ex",
+          "role": "installed",
+          "status": "implemented",
+          "evidence": [
+            "user/vi/README.md",
+            "docs/vi-port.md",
+            "Makefile"
+          ]
+        },
+        {
+          "name": "view",
+          "install": "/bin/view",
+          "role": "installed",
+          "status": "implemented",
+          "evidence": [
+            "user/vi/README.md",
+            "docs/vi-port.md",
+            "Makefile"
+          ]
+        },
+        {
+          "name": "expreserve",
+          "install": "/usr/libexec/expreserve",
+          "role": "installed",
+          "status": "implemented",
+          "evidence": [
+            "user/vi/README.md",
+            "docs/vi-port.md",
+            "Makefile"
+          ]
+        },
+        {
+          "name": "exrecover",
+          "install": "/usr/libexec/exrecover",
+          "role": "installed",
+          "status": "implemented",
+          "evidence": [
+            "user/vi/README.md",
+            "docs/vi-port.md",
+            "Makefile"
+          ]
+        }
+      ],
+      "priority": 4,
+      "status": "implemented",
+      "dependencies": [
+        {
+          "target": "lib.libc",
+          "phase": "runtime",
+          "certainty": "confirmed",
+          "evidence": [
+            "libc/termcap.c",
+            "libc/termios.c"
+          ],
+          "note": "Checked native terminal/library adapters; historical regexp and private pool allocator."
+        }
+      ],
+      "blockers": [],
+      "unresolved": [],
+      "reference_includes": [],
+      "acceptance": [
+        "Native ex, visual vi/view, storage failures, private SIGHUP/cold-boot recovery and installed/upgrade acceptance on VGA and serial at 16/128 MiB."
       ]
     }
   ],

@@ -2102,3 +2102,24 @@ build/vi-preserve.elf: build/crt0.o build/vi-preserve.o build/libc.a user/user.l
 test-vi-recovery: build/nexix-multi.iso build/vi-dev.elf build/vi-expreserve.elf build/vi-exrecover.elf build/vi-preserve.elf stage
 	$(PYTHON) tools/vi_recovery_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/vi_recovery_smoke.py $(QEMU) build/nexix-multi.iso 128M
+
+build/v7-vi.elf build/v7-ex.elf build/v7-view.elf: build/vi-dev.elf
+	cp $< $@
+build/v7-expreserve.elf: build/vi-expreserve.elf
+	cp $< $@
+build/v7-exrecover.elf: build/vi-exrecover.elf
+	cp $< $@
+build/vi-man-vi: reference/ex-vi/050325/vi.1 | build/.dir
+	cp $< $@
+build/vi-man-ex: reference/ex-vi/050325/ex.1 | build/.dir
+	cp $< $@
+build/vi-license: reference/ex-vi/050325/LICENSE | build/.dir
+	cp $< $@
+build/vi-notice: THIRD_PARTY_NOTICES.md | build/.dir
+	cp $< $@
+build/vi-port.md: docs/vi-port.md | build/.dir
+	cp $< $@
+-include build/vi-expreserve.d build/vi-exrecover.d build/vi-directory.d build/vi-preserve.d build/vi-storage.d build/termios-guest.d build/termcap-guest.d
+.PHONY: test-vi-package
+test-vi-package: stage
+	$(PYTHON) tools/check_vi_package.py

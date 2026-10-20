@@ -11,17 +11,17 @@ files={
  'writebad': 'a\nkeep\n.\nw /absent/result\nq!\n',
  'filecommands': 'w /tmp/reopened\nq!\n',
 }
-artifacts={'/tmp/ex':'vi-dev.elf'}
+artifacts={}
 for name,content in files.items():
  artifact='ex-test-'+name;Path('build',artifact).write_text(content);artifacts['/tmp/'+name]=artifact
 with private_guest(qemu,iso,ram,'ex',artifacts) as guest:
  guest.expect(r'root@nexix.localdomain# ')
- guest.command('/tmp/ex - < /tmp/commands > /tmp/exlog')
+ guest.command('/bin/ex - < /tmp/commands > /tmp/exlog')
  guest.command('cat /tmp/result',stdout='ALPHA\nextra\nALPHA\n')
  guest.command('cat /tmp/exlog',stdout='ALPHA\nextra\nALPHA\nEX_SHELL\n')
- guest.command('/tmp/ex - /tmp/result < /tmp/filecommands > /tmp/exlog')
+ guest.command('/bin/ex - /tmp/result < /tmp/filecommands > /tmp/exlog')
  guest.command('cmp /tmp/result /tmp/reopened')
  for case in ['bad','nomatch','writebad']:
-  guest.command(f'/tmp/ex - < /tmp/{case} > /tmp/exlog',status=1)
+  guest.command(f'/bin/ex - < /tmp/{case} > /tmp/exlog',status=1)
  guest.command('cat /tmp/result',stdout='ALPHA\nextra\nALPHA\n')
 print(f'PASS: {ram} native ex append/substitute/global/read/write/reopen/shell/errors/status')
