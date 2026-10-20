@@ -7710,6 +7710,45 @@
         "root": "programs",
         "path": "v7-tc.elf"
       }
+    },
+    {
+      "path": "/bin/more",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.more",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-more.elf"
+      }
+    },
+    {
+      "path": "/usr/libexec/manfmt",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.more",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-manfmt.elf"
+      }
+    },
+    {
+      "path": "/usr/man/man1/more.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.more",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/more.1"
+      }
     }
   ]
 }

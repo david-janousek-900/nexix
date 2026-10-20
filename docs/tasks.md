@@ -10,17 +10,17 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 62 native ELF programs are
+to multi-user V7 login with persistent IDE storage. 64 native ELF programs are
 installed; the complete list and destinations are in [the installation manifest](native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
-The inventory accounts for **222 components, 2,144 distribution files and
-36 supporting/platform requirements**. Its component statuses are 65 implemented,
+The inventory accounts for **223 components, 2,144 distribution files and
+36 supporting/platform requirements**. Its component statuses are 66 implemented,
 4 partial, 1 prototype and 152 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **387 tracking tasks: 174 done, 0 in progress
-and 213 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 253, 264–269, 281–282, 286, 295, 357, 362–387** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **388 tracking tasks: 175 done, 0 in progress
+and 213 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 253, 264–269, 281–282, 286, 295, 357, 362–388** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -691,3 +691,4 @@ Traditional Vi 050325 is an additional 0.1.0 component; see [port contract](vi-p
 | Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 387 | Add uptime and scheduler load averages | Done | Monotonic boot ticks, utmp sessions and real 1/5/15-minute kernel load; `make test-uptime` at 16/128 MiB; Git history |
+| 388 | Add navigable manual/text pager | Done | VGA/ANSI pages, lines, arrows, search/repeat, start/end, checked formatter/pager status and interrupt restoration; `make test-pager` at 16/128 MiB; Git history |

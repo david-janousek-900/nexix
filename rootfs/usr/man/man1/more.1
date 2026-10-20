@@ -1,0 +1,29 @@
+.TH MORE 1 Nexix
+.SH NAME
+more \- read text a screen at a time
+.SH SYNOPSIS
+.B more
+[ file ]
+.SH DESCRIPTION
+Display a text file or standard input on the terminal.
+Use space, f or control-F for the next page; b or control-B for the previous
+page; j, return or down-arrow for the next line; k or up-arrow for the
+previous line; d/control-D and u/control-U for half-page movement.
+Use g/home to return to the beginning and G/end to reach the last page.
+Page-up and page-down keys are also accepted.
+.PP
+Type / followed by text and return to search forward, or ? to search backward.
+Searches are literal and case-sensitive. An empty search repeats the previous
+pattern. Use n to repeat in the same direction and N for the opposite direction.
+Escape cancels search entry. Type q to quit, or h for a reminder of the keys.
+.PP
+When standard output is redirected, copy the input without screen controls.
+Interactive display removes nroff overstrikes, expands tabs, wraps long lines
+and renders document control bytes harmlessly. Terminal state is restored on
+quit, input/output errors and catchable termination signals.
+Input and decoded text are limited to 4 MiB; allocation failures are reported.
+.PP
+The terminal must provide cursor motion and clearing through termcap.
+Unsupported terminals receive plain output.
+.SH SEE ALSO
+man(1), clear(1)

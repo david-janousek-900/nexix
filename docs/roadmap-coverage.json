@@ -916,6 +916,9 @@
     ],
     "cmd.uptime": [
       387
+    ],
+    "cmd.more": [
+      388
     ]
   },
   "requirements": {
@@ -1119,7 +1122,8 @@
       281
     ],
     "man-command": [
-      287
+      287,
+      388
     ],
     "manual-pages": [
       286,
@@ -1290,5 +1294,5 @@
       386
     ]
   },
-  "task_count": 387
+  "task_count": 388
 }

@@ -24896,6 +24896,62 @@
       "acceptance": [
         "Verify monotonic uptime, actual scheduler load, login-session accounting and ordinary users at 16/128 MiB."
       ]
+    },
+    {
+      "id": "cmd.more",
+      "kind": "command",
+      "summary": "Native navigable text pager and checked manual formatter/pager adapter",
+      "sources": [],
+      "source_files": [],
+      "source_availability": "native",
+      "native_sources": [
+        "user/v7/cmd/more.c",
+        "user/v7/cmd/manfmt.c",
+        "rootfs/usr/man/man1/more.1"
+      ],
+      "outputs": [
+        {
+          "name": "more",
+          "install": "/bin/more",
+          "role": "installed",
+          "status": "implemented",
+          "evidence": [
+            "user/v7/cmd/more.c",
+            "tools/pager_smoke.py",
+            "docs/pager.md"
+          ]
+        },
+        {
+          "name": "manfmt",
+          "install": "/usr/libexec/manfmt",
+          "role": "helper",
+          "status": "implemented",
+          "evidence": [
+            "user/v7/cmd/manfmt.c",
+            "tools/pager_smoke.py",
+            "docs/pager.md"
+          ]
+        }
+      ],
+      "priority": 11,
+      "status": "implemented",
+      "dependencies": [
+        {
+          "target": "lib.libc",
+          "phase": "runtime",
+          "certainty": "confirmed",
+          "evidence": [
+            "libc/termcap.c"
+          ],
+          "note": "Uses native termcap, terminal modes, process and I/O interfaces."
+        }
+      ],
+      "blockers": [],
+      "unresolved": [],
+      "reference_includes": [],
+      "acceptance": [
+        "Verify VGA/serial paging and search, document controls, input/output failures, child statuses and terminal restoration at 16/128 MiB."
+      ]
     }
   ],
   "historical_source_archives": [

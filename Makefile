@@ -2181,3 +2181,13 @@ test-tc: build/v7-tc.elf build/formatter-protocol.elf build/nexix-multi.iso
 	$(PYTHON) tools/tc_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/tc_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-tc
+# Native pager uses C11 declarations and the public terminal interfaces.
+build/v7-more.o: user/v7/cmd/more.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/v7-manfmt.o: user/v7/cmd/manfmt.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+.PHONY: test-pager
+test-pager: build/v7-more.elf build/v7-manfmt.elf build/nexix-multi.iso
+	$(PYTHON) tools/pager_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/pager_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-pager
