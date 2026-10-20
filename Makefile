@@ -2048,3 +2048,26 @@ test-termios: build/tty-unit-test build/nexix-multi.iso build/termios-guest.elf 
 	./build/tty-unit-test
 	$(PYTHON) tools/termios_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/termios_smoke.py $(QEMU) build/nexix-multi.iso 128M
+
+# Traditional Vi native working sources; preserved release inputs stay immutable.
+VI_NAMES = ex ex_addr ex_cmds ex_cmds2 ex_cmdsub ex_data ex_extern ex_get ex_io ex_put ex_re ex_set ex_subr ex_tagio ex_temp ex_tty ex_unix ex_v ex_vadj ex_vget ex_vmain ex_voper ex_vops ex_vops2 ex_vops3 ex_vput ex_vwind printf ex_version malloc native
+VI_OBJECTS = $(addprefix build/vi-,$(addsuffix .o,$(VI_NAMES)))
+VI_CFLAGS = $(V7_CFLAGS) -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -Werror=pointer-to-int-cast -Werror=int-to-pointer-cast -Iuser/vi -DLISPCODE -DCHDIR -DFASTTAG -DUCVISUAL -DBIT8 -DISO8859_1 -DVMUNIX -DLONG_BIT=64 -DEXRECOVER='"/usr/libexec/exrecover"' -DEXPRESERVE='"/usr/libexec/expreserve"' -DPRESERVEDIR='"/var/preserve"'
+build/vi-%.o: user/vi/%.c $(wildcard user/vi/*.h) | build/.dir
+	$(CC) $(VI_CFLAGS) -c $< -o $@
+.PHONY: vi-objects
+vi-objects: $(VI_OBJECTS)
+build/vi-dev.elf: build/crt0.o $(VI_OBJECTS) build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+build/vi-native-check.o: tests/vi-native.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/vi-native.elf: build/crt0.o build/vi-native-check.o build/vi-native-adapter.o build/vi-printf.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+build/vi-native-adapter.o: user/vi/native.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+.PHONY: test-vi-native
+test-vi-native: build/nexix-multi.iso build/vi-dev.elf build/vi-native.elf stage
+	$(PYTHON) tools/vi_native_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/vi_native_smoke.py $(QEMU) build/nexix-multi.iso 128M
+
+-include $(VI_OBJECTS:.o=.d) build/vi-native-check.d build/vi-native-adapter.d
