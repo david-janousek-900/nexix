@@ -4,8 +4,8 @@ Task 192 remains **in progress**. Native shared services now cover types,
 operators, bounded IR, traversal/copying, a checked binary pass interface,
 variadic diagnostics, table matching/expansion and generic register/temporary
 allocation. They are exercised by private native compiler consumers, including
-an as/ld executable pipeline. PCC/lint/alternate-backend consumer integration is
-still required. There is no installed C compiler yet. Linker tasks 185–187 are
+an as/ld executable pipeline. The retained PCC semantic front end now consumes these contracts (task 193);
+machine-code and alternate/shared-consumer integration is still required. There is no installed C compiler yet. Linker tasks 185–187 are
 complete; compiler front ends/backends retain tasks 193–201 and 207.
 
 The reference tree remains unchanged. The code in `user/mip` adapts the supplied

@@ -1,0 +1,31 @@
+/* PCC front-end view of the shared native mip manifest and types. */
+#ifndef NX_PCC_MANIFEST_H
+#define NX_PCC_MANIFEST_H
+#include "../mip/mip.h"
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>
+#undef SYMTSZ
+#undef DIMTABSZ
+#undef TREESZ
+#undef NCHNAM
+#define SYMTSZ 1024
+#define DIMTABSZ 4096
+#define TREESZ 1024
+#define NCHNAM (MIP_NAME_MAX+1)
+typedef mip_type TWORD;
+typedef struct pcc_node NODE;
+struct pcc_node {
+    int op, rall, su, cdim, csiz, rval, label, stsize, stalign;
+    TWORD type;
+    NODE *left, *right;
+    CONSZ lval;
+    double dval;
+    char name[NCHNAM];
+};
+extern NODE *NIL, *lastfree;
+extern int nerrors, dope[];
+extern char *opst[];
+#endif

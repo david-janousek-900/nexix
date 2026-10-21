@@ -10892,7 +10892,7 @@
         }
       ],
       "priority": 6,
-      "status": "not_ported",
+      "status": "partial",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -10976,7 +10976,7 @@
         "Complete native ABI/API and data-asset audit before porting."
       ],
       "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
+        "Tasks 193\u2013196: native extended type/header closure, x86_64 integer/floating/call/aggregate backend and installed driver/alternate targets remain."
       ],
       "acceptance": [
         "Compile native C fixtures through shared mip and target backend, then assemble/link/run.",
@@ -11001,6 +11001,27 @@
         194,
         195,
         196
+      ],
+      "native_sources": [
+        "user/pcc/cgram.y",
+        "user/pcc/common.c",
+        "user/pcc/ir.c",
+        "user/pcc/local.c",
+        "user/pcc/macdefs",
+        "user/pcc/manifest",
+        "user/pcc/mfile1",
+        "user/pcc/numbers.c",
+        "user/pcc/optim.c",
+        "user/pcc/pftn.c",
+        "user/pcc/prototypes.h",
+        "user/pcc/scan.c",
+        "user/pcc/trace.c",
+        "user/pcc/trees.c",
+        "user/pcc/xdefs.c"
+      ],
+      "port_notes": "docs/pcc.md",
+      "scope_notes": [
+        "Retained PCC/mip front-end sources parse native-width declarations/control/aggregates and lower to shared mip IR; private native cpp/frontend consumption passes at 16/128 MiB. No complete compiler is claimed."
       ]
     },
     {

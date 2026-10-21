@@ -2280,3 +2280,5 @@ test-manuals: test-man-pages test-formatter-table-helpers test-formatter-core te
 include tools/mip.mk
 
 include tools/linker.mk
+
+include tools/pcc.mk
