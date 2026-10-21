@@ -1,0 +1,4 @@
+# Preserve pinned upstream bytes, including historical whitespace and line endings.
+/reference/bsd-lite2/source/** -text -whitespace
+/reference/bsd-lite2/berkeley-license.html -text -whitespace
+/LICENSES/BSD-4.4-Lite2.txt -text -whitespace

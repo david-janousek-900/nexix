@@ -1,0 +1,731 @@
+{
+  "schema_version": 1,
+  "release": "4.4BSD-Lite2",
+  "repository": "https://github.com/sergev/4.4BSD-Lite2",
+  "commit": "50587b00e922225c62f1706266587f435898126d",
+  "archive_url": "https://codeload.github.com/sergev/4.4BSD-Lite2/tar.gz/50587b00e922225c62f1706266587f435898126d",
+  "archive_sha256": "5a851582c4c3a5053ef2f4f41df347996969a95c3c7236b0b9e99319ff02c3ef",
+  "archive_prefix": "4.4BSD-Lite2-50587b00e922225c62f1706266587f435898126d/",
+  "reference_root": "reference/bsd-lite2/source",
+  "license_document": {
+    "path": "berkeley-license.html",
+    "url": "https://www.freebsd.org/copyright/license/",
+    "sha256": "aa202f7c044300bbceb792f4cd0080002c8ee3dabe0fb7bd562c13bf13f9b23f"
+  },
+  "files": [
+    {
+      "path": "COPYRIGHT",
+      "size": 3425,
+      "sha256": "6cbb374937211c1699b5cc8e6fabad0e7e05a98076de838017728062fec17f9e",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/i386/include/cpu.h",
+      "size": 3970,
+      "sha256": "fcf5449a12055c2323822db8100f2a038e912ea6f1708da7915f1b5e0f78bb51",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/i386/include/param.h",
+      "size": 6759,
+      "sha256": "4630ec3bf5336c1c8f65a32472e859bf09e8c9858f2eb46babcfc77f086e280d",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/i386/include/types.h",
+      "size": 2537,
+      "sha256": "132e78988eb3cddf62c0e99acb6d98e85882c756284e9e1807942368c153eef4",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/kern/uipc_domain.c",
+      "size": 5840,
+      "sha256": "cae133a21b13f66c30caaf621382934c379c5705a848622cf87612122e1d9705",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/kern/uipc_mbuf.c",
+      "size": 13812,
+      "sha256": "b0184aa6bc67027df5d184798d91a8b50d364f6d7b8e48a9f0762fa4c50e24fc",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/kern/uipc_proto.c",
+      "size": 2747,
+      "sha256": "f71d9daca221dc6246627d0926cc05c681c88ecf104f44366d1b66ec3f54c782",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/kern/uipc_socket.c",
+      "size": 25096,
+      "sha256": "d743c928f84427fcaea25aa5fd162885c7e4072d2352bd586ba388de89b7a57e",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/kern/uipc_socket2.c",
+      "size": 19722,
+      "sha256": "ac82198fe570ef55d86eedceba6df516b39b8c08c1fa3282343a82b6a4eeb30e",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/kern/uipc_syscalls.c",
+      "size": 29561,
+      "sha256": "17eecf0e88ea27fb06c3eaea4d8cb6b249d07c82118a3e7fbe137e197a13ff25",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/net/if.c",
+      "size": 16493,
+      "sha256": "702f0fdc36d485fc20cd05bb28d762dc448d9e615ae0bc77eac7c3442474f47c",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/net/if.h",
+      "size": 13671,
+      "sha256": "e21dcc58a19c1cbb9461b1f8627e869f96512820336509cd9a35b9f699be109c",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/net/if_arp.h",
+      "size": 3828,
+      "sha256": "97b74655d22d4aa1d1a3a384e235101ef3729aa8309cc01c95cfc7d594aba140",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/net/if_dl.h",
+      "size": 3504,
+      "sha256": "fbad3b133c001e216b23e9a8c04b96055a95bc8f2530be30c2038f8ff34f5785",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/net/if_ethersubr.c",
+      "size": 17190,
+      "sha256": "c423e02592e5e78691ce1fc58c49cafa29e91af05035a5471e10cdd18fbeeb85",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/net/if_llc.h",
+      "size": 4284,
+      "sha256": "3b0cd14197b2835a7535ef534788dfd2fba8e9422d525ae834885c4856b3e1bd",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/net/if_loop.c",
+      "size": 5616,
+      "sha256": "381cca832439be3dd4bc638143920751d60c7694efaad0459215cc5a4f575bf4",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/net/if_types.h",
+      "size": 4117,
+      "sha256": "ff7e671f7b6c0b51ef2ecea447fa5229840fc06e9c234ed3af79436aba57be22",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/net/netisr.h",
+      "size": 3318,
+      "sha256": "18d6dc96a89bd2f70984201257d504087c6b66c41e77a6c55a7b997f771b2408",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/net/radix.c",
+      "size": 24176,
+      "sha256": "b654697b697040f167869e70018743c26faccd29b2617b64b5029062cc85d9c8",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/net/radix.h",
+      "size": 6536,
+      "sha256": "b0921be7f66b0f0010725eef6b909791d495b83dfe48b60c5805778aeb4ed0bc",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/net/raw_cb.c",
+      "size": 3986,
+      "sha256": "b4464caab217b230c5af7920f6c179d4984b440205abe2e74bd57617bd36569c",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/net/raw_cb.h",
+      "size": 2919,
+      "sha256": "af1629131dc0652dc95d73fafa788fb32508a5c1e3b7953ab0030349a15cabf7",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/net/raw_usrreq.c",
+      "size": 7011,
+      "sha256": "01572d4473e9d469ff367c7ec8acccf01aa5d6e30d7f61f06247e608796155c1",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/net/route.c",
+      "size": 13616,
+      "sha256": "d112e79daf6944106399f8d7e3643bd9f20a3bab6c03cad85ccf01219b8f098f",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/net/route.h",
+      "size": 10584,
+      "sha256": "03b4c6368f017ee7cfd93cadbdd6aab0583db3527165e39be895464a309bbfc3",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/net/rtsock.c",
+      "size": 20903,
+      "sha256": "2aa81ead805d590511359d2728424ad0d7476b2d9770f5f5fb8e1bec93d341dd",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/icmp_var.h",
+      "size": 2856,
+      "sha256": "2d6b1accb2d7fdbe4a20849ed28887d134cc7a8bed22744fce75288270cfe3e3",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/if_ether.c",
+      "size": 16495,
+      "sha256": "fe4492e1fd9778f6fb18a6c2a527d3a1270a9a8fa16dbc133fc0e6b7405b1ffd",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/if_ether.h",
+      "size": 7764,
+      "sha256": "bb141ea6360f30ee3dc03a0ef3de0878462e3a53657fc41340766d6343048b8c",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/igmp.c",
+      "size": 8111,
+      "sha256": "52c24e528ab3ddb1921d8e10342a5059554c8502498da00e34d1a1652e1c0e41",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/igmp.h",
+      "size": 2753,
+      "sha256": "5fa56be866414ed5ef2ba4b6bb5eb74491ff91558bfba53d2917314977e14e08",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/igmp_var.h",
+      "size": 3580,
+      "sha256": "defcf7e9f5845d5a89124a3e12c323ec9d08c1d86bf2f9b983abe1f1010dcf11",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/in.c",
+      "size": 16284,
+      "sha256": "323b78b5d7f5cb53106ad8e62279dc94eb2987881cd31ba88f1190ebf87dfc71",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/in.h",
+      "size": 8082,
+      "sha256": "96ed38f3a81db25d2f4bb441a9be5d2f8ec5f5c4c68e289b491f7a8273031dcc",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/in_cksum.c",
+      "size": 4380,
+      "sha256": "2e15074be080cbd3c4785bec46499a9e5dbcbb6a47be99ceaad8d7983fa89a58",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/in_pcb.c",
+      "size": 14048,
+      "sha256": "706617780399ccd1227ac2c92fd83e9399547c6a168d2c72227f3171960d2d02",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/in_pcb.h",
+      "size": 4090,
+      "sha256": "0e4d2e6c0b665b5437ac322fa1fa67d4499ed18f4c38cbea8a1758d31d4bce4f",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/in_proto.c",
+      "size": 5363,
+      "sha256": "1a5e1392bbc36bf729d69d061c71a36b2aa410251f3232a73f6c55808ef5d54f",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/in_systm.h",
+      "size": 2482,
+      "sha256": "80218c921ebd80701139bb231b9b6a6b876b981a0c75bcc396e8b47f7b4ed668",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/in_var.h",
+      "size": 6983,
+      "sha256": "9e158639f04706af5f61293985a6d146c43077b4f2ac2463615b1bee24766985",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/ip.h",
+      "size": 5773,
+      "sha256": "62a5c3f0f2794f753b8863fef1e1fa8c437f61195f9bca6db3466a095246d45d",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/ip_icmp.c",
+      "size": 15359,
+      "sha256": "eae77b5c4dd9646b4595756c110a0d4082f909b930f4a9a3ec80c07761ff4233",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/ip_icmp.h",
+      "size": 6488,
+      "sha256": "e265a872af6a3f87dba32504cd53e9f35cba242a85f19d7b99feec9714acb90d",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/ip_input.c",
+      "size": 29027,
+      "sha256": "04ca87dc417c2ddad1f7ec9c3fe2933bd6c3e6cb23d1397be22503922e4f7706",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/ip_mroute.c",
+      "size": 20846,
+      "sha256": "a6521dab43ae18635eabcb4c638306a863c91a72e0afa71947cfef588c4fb78e",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/ip_mroute.h",
+      "size": 5996,
+      "sha256": "1ab07cbb798300ecc12f32f454e2b01bf74f0cc655b228e11d6b17fef075c7e8",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/ip_output.c",
+      "size": 26139,
+      "sha256": "0fcda608983e0e9fd5839545c01d117facdc399e44bad133b244b435b80756c7",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/ip_var.h",
+      "size": 7510,
+      "sha256": "2d7eaa5ee5c3975bcf20db3a16cb5666fb10bd20cccdb6bbaa3eb5e4a71fc588",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/raw_ip.c",
+      "size": 9386,
+      "sha256": "65d5c0646932671650e845bde225b560d3720a97b2de72d92a5b7718039c1aa2",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/tcp.h",
+      "size": 3639,
+      "sha256": "6760d16f7b0e94d839d2925aacaaabb62ec0672f7ef5e4806f0cc2da67abb90d",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/tcp_debug.c",
+      "size": 4529,
+      "sha256": "90e2509e831858032038497695a9c724c74a0d942b0dbc9eea4c037082580857",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/tcp_debug.h",
+      "size": 2305,
+      "sha256": "13b57bebede07cd22e838cc9d754b89924c436524ac7b0dba416752c8faca5c9",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/tcp_fsm.h",
+      "size": 3595,
+      "sha256": "ef7d414b8f139dae51572d78a5c30c77728996af127a245dd89396987b8f69a6",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/tcp_input.c",
+      "size": 47365,
+      "sha256": "56dac029e00605dad5100fbb407601d7d4237785e9239189dada72fd8389f87b",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/tcp_output.c",
+      "size": 17550,
+      "sha256": "425adb61b34c5a444b1d7e44cc2a2f43ed4fae3d87ce76c8aa6a03844e8bcd16",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/tcp_seq.h",
+      "size": 3171,
+      "sha256": "b96c4a90188279ca80e8326b9b721963b90b77640ffea5dd9c14eef1075011e3",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/tcp_subr.c",
+      "size": 12775,
+      "sha256": "ee953a31a38f2b953c81a660a91b31559c7a82421d2d6125b3e98739e2c2db97",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/tcp_timer.c",
+      "size": 9943,
+      "sha256": "1193c0d36dbbafc4ebf427913f559c56c10ad6ce46ab80097735616faa5ac94e",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/tcp_timer.h",
+      "size": 5734,
+      "sha256": "f030b379dbdedef273318470055507a289cb2b5309cb3b714f1e30d4d3341db0",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/tcp_usrreq.c",
+      "size": 12942,
+      "sha256": "272687d019762ea162463ba2fd6088372ab1b4d232f4af11d661e53258003ed5",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/tcp_var.h",
+      "size": 12211,
+      "sha256": "a19ddca84583b02a2d604d34aa529cd41eb3780431f2d3407d6ba2ef91e3c04d",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/tcpip.h",
+      "size": 2524,
+      "sha256": "b654695cd532bd2fdebe803252c6b054276d721f3d2628419c8deafa0df688c3",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/udp.h",
+      "size": 2113,
+      "sha256": "1be1df946700d4095c1a934bc0243b35d2b2787d44e3af6a579f266ebcd2b76d",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/udp_usrreq.c",
+      "size": 15498,
+      "sha256": "a7c23ca4771301d38567a93db9c7c2196d472f2201239d8cf1fe02cac2293f95",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/netinet/udp_var.h",
+      "size": 3580,
+      "sha256": "bf24f3bad569e4f76bea1acf55d43e47b9e1152d8676b89bb68c0e23002beaec",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/cdefs.h",
+      "size": 4715,
+      "sha256": "d687364bfedc493ee0d346376ca6047eabea10ee15325e169a3ca3b276aee4f2",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/domain.h",
+      "size": 2614,
+      "sha256": "347741d6bc60f22d43c90ad53a52c0db26b2742d03c0a96bf3cc9ab1f8ebfef2",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/errno.h",
+      "size": 7152,
+      "sha256": "0bbcf3b730be77a7eb07127d93437945fee413638139e22e0776a2cd913bb421",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/fcntl.h",
+      "size": 6994,
+      "sha256": "efe3f40e425d633216ed5f1f541987c5b8c2f219c718b1068231df96addc7959",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/file.h",
+      "size": 3197,
+      "sha256": "9c74f35f86be6f1fb149bdc923b514aecce9d61df174977de6bb3e59a5dd87d0",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/filedesc.h",
+      "size": 4125,
+      "sha256": "c598e0eed48cc79dcc9de956e2cfa8f58e7975b46e0a5388146defc980aa737f",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/filio.h",
+      "size": 2758,
+      "sha256": "7f4046e12548938e48cb9a44b93fa735038a17141f5b9bbe1413068646abf501",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/ioccom.h",
+      "size": 3197,
+      "sha256": "61565eab36a92c3dc05f71da0c49f007168479d20bbe6ecc43699eb94d1377b2",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/ioctl.h",
+      "size": 3131,
+      "sha256": "3515f1dc54094c2cdf80b56b543c41cba1659e3adbc225400e1aa3dd67d31328",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/kernel.h",
+      "size": 2773,
+      "sha256": "c9676d3cc973d44543e4342fa272d892645877b14e654c918cd92edd87ddd70c",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/lock.h",
+      "size": 8355,
+      "sha256": "f99135e9712c14dd20ec851b182d46f01bf22bbdd892baef2451e7f551c7ebd0",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/malloc.h",
+      "size": 11412,
+      "sha256": "33dd6e6024e93463b3d8fdb023dc435353bee73e188d4ef029e2ad03ff2291d9",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/map.h",
+      "size": 3821,
+      "sha256": "b0330f3b24486f543d8bfc4417d91226ec8d0aa668e78d7300a615b605537da1",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/mbuf.h",
+      "size": 13263,
+      "sha256": "bfbdd8cd7e0b68c978d5288c2605e29493da9bdfc573da1bdb1933a3ec5ce7df",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/param.h",
+      "size": 8103,
+      "sha256": "d49a52a256b2a49b96883e741398b09064141066f1e7aefabbee558a4ee4ee01",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/proc.h",
+      "size": 11012,
+      "sha256": "a581f901cf43d53efe1c0d94a76bbf759f6fcc4b62f7b077591be75aa311130b",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/protosw.h",
+      "size": 9006,
+      "sha256": "381a8ee8f0c459fcf36d5cac9da69716bfe26423d3765f01c866828f5d05f411",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/queue.h",
+      "size": 9136,
+      "sha256": "edf8015142c44192b9572cb48684943ed58a4bc5860869f364f9c12356f0efbb",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/resource.h",
+      "size": 4225,
+      "sha256": "5f28022231ce8792c1fbd918cd8f5bdf082783d5ac81c25306ef514ac35e0faa",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/resourcevar.h",
+      "size": 3807,
+      "sha256": "3af40c8215b1823d92e50f7ff3e5a7fa83cbcb769522e09083a47ca475904568",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/select.h",
+      "size": 2347,
+      "sha256": "81b6d94376b6faa8fcda4e44fd112729b8a9997d8262aba654c2156f880f1e5d",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/signal.h",
+      "size": 6880,
+      "sha256": "1d9dc28f6ee757cb09608d7e105b87852e08e08b48a214d21f7f9099df515653",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/signalvar.h",
+      "size": 6091,
+      "sha256": "d61454981ce39405d722334c074139bd6cbdc85a758cbb578b0a19a9532e0e40",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/socket.h",
+      "size": 11632,
+      "sha256": "8f36cb7b9dca45c017946aea85c8372a097edde58f75f7e97aab958c6c8f3f2d",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/socketvar.h",
+      "size": 10769,
+      "sha256": "43066b3b6182be8673c7203ce17aa952c2148a922f2bbce8a6dd87f21f0e3e5a",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/sockio.h",
+      "size": 4221,
+      "sha256": "a6dd055d7deb64dc4a1a17f9c9d7824f927fa56b9af84c272e656e293b066cd7",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/sysctl.h",
+      "size": 12780,
+      "sha256": "894c938a7b5ac4f4fe1b90cee11225989c326f102f2100fd28dc9c6bb2d43e5f",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/syslimits.h",
+      "size": 2966,
+      "sha256": "93b8d3c45f9008bff4ba1ff84991ddbc2e4a06c06d5abf565afe0649e9918466",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/syslog.h",
+      "size": 6854,
+      "sha256": "efcdf7bc04f011cb571ece92a93c2048cf4397a9876edbb251cc05d6763e5c4b",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/systm.h",
+      "size": 7065,
+      "sha256": "886f782b66ce16c388e11ed41048f01aeb418a4a9ff2df07fa38c3f294380462",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/time.h",
+      "size": 4470,
+      "sha256": "18e9f5386980ad4ad4c761adec1f0ce3608a08bb04b3772ac8964832d84bdfaf",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/types.h",
+      "size": 5536,
+      "sha256": "f99dd29da9ec8d010ac4523993d037e94df4ef6e452b714b005ef7ab97b6ed9f",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/ucred.h",
+      "size": 2596,
+      "sha256": "2e67afd58ee55ffb8684325958f7d5c81816a57f9a3d790259b59b2eede9b2a1",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/uio.h",
+      "size": 2804,
+      "sha256": "8473516d5fc6d9e1b071816335e03aacd6e9a5bf80b400b2ec7d4937882829d5",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/un.h",
+      "size": 3004,
+      "sha256": "74bfe4aa3df8a2450be8f78366343ebbfade80ce143c1f778777f41a9555a536",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sys/sys/unistd.h",
+      "size": 4475,
+      "sha256": "9ac9dad1d85ae92931206830135c92c25b9b8eb98869098350832807ec3009ac",
+      "mode": 436,
+      "type": "file"
+    }
+  ]
+}

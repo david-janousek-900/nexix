@@ -39,3 +39,13 @@ contents against that committed index.
 The historical UNIX license is retained as `Caldera-license.pdf` alongside this
 file. Its terms apply to the historical distribution; do not assume that
 provenance grants a license for unrelated additions.
+
+## BSD networking reference
+
+`bsd-lite2/source/` separately preserves 102 selected networking/support files
+from a pinned 4.4BSD-Lite2 mirror snapshot. Its provenance index records the
+immutable commit, full archive SHA-256 and per-file hashes. The retained
+Berkeley license document is separately hash-pinned. These sources are not
+part of the V7 archive and are not compiled into Nexix yet.
+See the [baseline and dependency/LP64 audit](../docs/bsd-networking-audit.md).
+Run `make test-bsd-reference` for offline integrity and rejection tests.

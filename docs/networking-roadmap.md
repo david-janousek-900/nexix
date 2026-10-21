@@ -1,10 +1,13 @@
 # Nexix 0.2.0 networking roadmap
 
 Agreed direction: directly adapt **4.4BSD-Lite2** networking to Nexix. This
-replaces the previous lwIP proposal. All milestones below are **To do**;
-this document records planned work, not implemented capabilities. Numbered implementation tasks **412–431** in
+replaces the previous lwIP proposal. Task **412 is done**: the source baseline
+and dependency/LP64 audit are
+[recorded here](bsd-networking-audit.md). Tasks **413–431 remain To do**;
+networking is not implemented yet. Numbered implementation tasks **412–431** in
 [tasks.md](tasks.md#tcpip-implementation-020) track these milestones and count
-toward roadmap totals, separately from V7 inventory component ownership. Each milestone requires implementation, focused tests,
+toward roadmap totals, separately from V7 inventory component ownership.
+Each milestone requires implementation, focused tests,
 affected regressions, documentation and a commit before completion.
 
 ## Implementation milestones

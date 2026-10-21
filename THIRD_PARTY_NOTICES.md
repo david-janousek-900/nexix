@@ -31,6 +31,22 @@ permission. BSD-3-Clause contributions can coexist with these terms, but cannot
 remove the advertising condition. A blanket BSD-3-Clause claim for all repository
 contents would be incorrect.
 
+## 4.4BSD-Lite2 networking reference
+
+`reference/bsd-lite2/source/` retains 102 selected upstream files from mirror
+commit `50587b00e922225c62f1706266587f435898126d`, with archive/per-file hashes
+in its provenance index. The UC Regents notices remain unchanged. The original
+distribution copyright is also preserved in [LICENSES/BSD-4.4-Lite2.txt](LICENSES/BSD-4.4-Lite2.txt).
+These references are not compiled or installed into guest images by task 412.
+
+The [Berkeley copyright amendment](https://www.freebsd.org/copyright/license/)
+removes the UC Berkeley advertising clause; its hash-pinned reproduction is
+retained in `reference/bsd-lite2/berkeley-license.html`. Source/binary notice,
+disclaimer and non-endorsement conditions remain; the amendment does not change
+other contributors' conditions or Nexix's Caldera obligations. File-specific
+notices take precedence. See the [dependency and licensing audit](docs/bsd-networking-audit.md).
+Future binary ports must package applicable notices and license materials.
+
 ## Ratfor lex skeleton: CDDL-1.0
 
 `reference/supplemental/illumos/nrform` and its active adaptation

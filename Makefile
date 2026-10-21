@@ -527,6 +527,14 @@ test-inventory:
 	$(PYTHON) tests/reference-docs.py
 test: test-inventory
 
+# Task 412: pinned BSD networking reference, without compiling upstream code.
+.PHONY: test-bsd-reference
+test-bsd-reference:
+	$(PYTHON) tools/bsd_reference.py
+	$(PYTHON) tests/bsd_reference.py
+test-inventory: test-bsd-reference
+test-unit: test-bsd-reference
+
 # Task 22: boot RTC and shared epoch clock.
 build/rtc.o: kernel/arch/x86_64/rtc.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@

@@ -1,0 +1,4036 @@
+{
+  "schema_version": 1,
+  "scope": "Lexical includes, including disabled feature branches; not a compilable dependency closure.",
+  "files": [
+    {
+      "path": "usr/src/sys/i386/include/cpu.h",
+      "tasks": [
+        413
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "machine/frame.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "machine/segments.h",
+          "disposition": "native-adapter",
+          "reference": null
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/i386/include/param.h",
+      "tasks": [
+        413
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/i386/include/types.h",
+      "tasks": [
+        413
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/kern/uipc_domain.c",
+      "tasks": [
+        413,
+        414,
+        415,
+        424,
+        425,
+        426
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "imp.h",
+          "disposition": "deferred-feature",
+          "reference": null
+        },
+        {
+          "include": "sys/domain.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/domain.h"
+        },
+        {
+          "include": "sys/kernel.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/kernel.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/proc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/proc.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/sysctl.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/sysctl.h"
+        },
+        {
+          "include": "sys/systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/systm.h"
+        },
+        {
+          "include": "sys/time.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/time.h"
+        },
+        {
+          "include": "vm/vm.h",
+          "disposition": "native-adapter",
+          "reference": null
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/kern/uipc_mbuf.c",
+      "tasks": [
+        413,
+        414,
+        415,
+        424,
+        425,
+        426
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "sys/domain.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/domain.h"
+        },
+        {
+          "include": "sys/kernel.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/kernel.h"
+        },
+        {
+          "include": "sys/malloc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/malloc.h"
+        },
+        {
+          "include": "sys/map.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/map.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/proc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/proc.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/syslog.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/syslog.h"
+        },
+        {
+          "include": "sys/systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/systm.h"
+        },
+        {
+          "include": "vm/vm.h",
+          "disposition": "native-adapter",
+          "reference": null
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/kern/uipc_proto.c",
+      "tasks": [
+        413,
+        414,
+        415,
+        424,
+        425,
+        426
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "sys/domain.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/domain.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/kern/uipc_socket.c",
+      "tasks": [
+        413,
+        414,
+        415,
+        424,
+        425,
+        426
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "sys/domain.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/domain.h"
+        },
+        {
+          "include": "sys/file.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/file.h"
+        },
+        {
+          "include": "sys/kernel.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/kernel.h"
+        },
+        {
+          "include": "sys/malloc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/malloc.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/proc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/proc.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/resourcevar.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/resourcevar.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/socketvar.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socketvar.h"
+        },
+        {
+          "include": "sys/systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/systm.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/kern/uipc_socket2.c",
+      "tasks": [
+        413,
+        414,
+        415,
+        424,
+        425,
+        426
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "sys/buf.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/file.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/file.h"
+        },
+        {
+          "include": "sys/malloc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/malloc.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/proc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/proc.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/socketvar.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socketvar.h"
+        },
+        {
+          "include": "sys/systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/systm.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/kern/uipc_syscalls.c",
+      "tasks": [
+        413,
+        414,
+        415,
+        424,
+        425,
+        426
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "sys/buf.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/file.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/file.h"
+        },
+        {
+          "include": "sys/filedesc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/filedesc.h"
+        },
+        {
+          "include": "sys/ktrace.h",
+          "disposition": "deferred-feature",
+          "reference": null
+        },
+        {
+          "include": "sys/malloc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/malloc.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/mount.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/proc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/proc.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/socketvar.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socketvar.h"
+        },
+        {
+          "include": "sys/syscallargs.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/systm.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/net/if.c",
+      "tasks": [
+        418,
+        419,
+        427
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "net/if.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if.h"
+        },
+        {
+          "include": "net/if_dl.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if_dl.h"
+        },
+        {
+          "include": "net/if_types.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if_types.h"
+        },
+        {
+          "include": "net/route.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/route.h"
+        },
+        {
+          "include": "sys/ioctl.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/ioctl.h"
+        },
+        {
+          "include": "sys/kernel.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/kernel.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/proc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/proc.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/socketvar.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socketvar.h"
+        },
+        {
+          "include": "sys/systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/systm.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/net/if.h",
+      "tasks": [
+        418,
+        419,
+        427
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "net/if_arp.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if_arp.h"
+        },
+        {
+          "include": "sys/time.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/time.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/net/if_arp.h",
+      "tasks": [
+        418,
+        419,
+        427
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/net/if_dl.h",
+      "tasks": [
+        418,
+        419,
+        427
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "sys/cdefs.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/cdefs.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/net/if_ethersubr.c",
+      "tasks": [
+        418,
+        419,
+        427
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "machine/cpu.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/i386/include/cpu.h"
+        },
+        {
+          "include": "net/if.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if.h"
+        },
+        {
+          "include": "net/if_dl.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if_dl.h"
+        },
+        {
+          "include": "net/if_llc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if_llc.h"
+        },
+        {
+          "include": "net/if_types.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if_types.h"
+        },
+        {
+          "include": "net/netisr.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/netisr.h"
+        },
+        {
+          "include": "net/route.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/route.h"
+        },
+        {
+          "include": "netccitt/dll.h",
+          "disposition": "deferred-feature",
+          "reference": null
+        },
+        {
+          "include": "netccitt/llc_var.h",
+          "disposition": "deferred-feature",
+          "reference": null
+        },
+        {
+          "include": "netinet/if_ether.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/if_ether.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "netinet/in_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_var.h"
+        },
+        {
+          "include": "netiso/argo_debug.h",
+          "disposition": "deferred-feature",
+          "reference": null
+        },
+        {
+          "include": "netiso/iso.h",
+          "disposition": "deferred-feature",
+          "reference": null
+        },
+        {
+          "include": "netiso/iso_snpac.h",
+          "disposition": "deferred-feature",
+          "reference": null
+        },
+        {
+          "include": "netiso/iso_var.h",
+          "disposition": "deferred-feature",
+          "reference": null
+        },
+        {
+          "include": "netns/ns.h",
+          "disposition": "deferred-feature",
+          "reference": null
+        },
+        {
+          "include": "netns/ns_if.h",
+          "disposition": "deferred-feature",
+          "reference": null
+        },
+        {
+          "include": "sys/errno.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/errno.h"
+        },
+        {
+          "include": "sys/ioctl.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/ioctl.h"
+        },
+        {
+          "include": "sys/kernel.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/kernel.h"
+        },
+        {
+          "include": "sys/malloc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/malloc.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/syslog.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/syslog.h"
+        },
+        {
+          "include": "sys/systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/systm.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/net/if_llc.h",
+      "tasks": [
+        418,
+        419,
+        427
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/net/if_loop.c",
+      "tasks": [
+        418,
+        419,
+        427
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "bpfilter.h",
+          "disposition": "deferred-feature",
+          "reference": null
+        },
+        {
+          "include": "machine/cpu.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/i386/include/cpu.h"
+        },
+        {
+          "include": "net/bpf.h",
+          "disposition": "deferred-feature",
+          "reference": null
+        },
+        {
+          "include": "net/if.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if.h"
+        },
+        {
+          "include": "net/if_types.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if_types.h"
+        },
+        {
+          "include": "net/netisr.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/netisr.h"
+        },
+        {
+          "include": "net/route.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/route.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "netinet/in_systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_systm.h"
+        },
+        {
+          "include": "netinet/in_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_var.h"
+        },
+        {
+          "include": "netinet/ip.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip.h"
+        },
+        {
+          "include": "netiso/iso.h",
+          "disposition": "deferred-feature",
+          "reference": null
+        },
+        {
+          "include": "netiso/iso_var.h",
+          "disposition": "deferred-feature",
+          "reference": null
+        },
+        {
+          "include": "netns/ns.h",
+          "disposition": "deferred-feature",
+          "reference": null
+        },
+        {
+          "include": "netns/ns_if.h",
+          "disposition": "deferred-feature",
+          "reference": null
+        },
+        {
+          "include": "sys/errno.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/errno.h"
+        },
+        {
+          "include": "sys/ioctl.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/ioctl.h"
+        },
+        {
+          "include": "sys/kernel.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/kernel.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/systm.h"
+        },
+        {
+          "include": "sys/time.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/time.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/net/if_types.h",
+      "tasks": [
+        418,
+        419,
+        427
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/net/netisr.h",
+      "tasks": [
+        418,
+        419,
+        427
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/net/radix.c",
+      "tasks": [
+        418,
+        419,
+        427
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "net/radix.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/radix.h"
+        },
+        {
+          "include": "stdlib.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/domain.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/domain.h"
+        },
+        {
+          "include": "sys/malloc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/malloc.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/syslog.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/syslog.h"
+        },
+        {
+          "include": "sys/systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/systm.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/net/radix.h",
+      "tasks": [
+        418,
+        419,
+        427
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/net/raw_cb.c",
+      "tasks": [
+        418,
+        419,
+        427
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "net/if.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if.h"
+        },
+        {
+          "include": "net/raw_cb.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/raw_cb.h"
+        },
+        {
+          "include": "net/route.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/route.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "sys/domain.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/domain.h"
+        },
+        {
+          "include": "sys/errno.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/errno.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/socketvar.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socketvar.h"
+        },
+        {
+          "include": "sys/systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/systm.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/net/raw_cb.h",
+      "tasks": [
+        418,
+        419,
+        427
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/net/raw_usrreq.c",
+      "tasks": [
+        418,
+        419,
+        427
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "net/if.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if.h"
+        },
+        {
+          "include": "net/netisr.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/netisr.h"
+        },
+        {
+          "include": "net/raw_cb.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/raw_cb.h"
+        },
+        {
+          "include": "net/route.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/route.h"
+        },
+        {
+          "include": "sys/domain.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/domain.h"
+        },
+        {
+          "include": "sys/errno.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/errno.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/socketvar.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socketvar.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/net/route.c",
+      "tasks": [
+        418,
+        419,
+        427
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "net/if.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if.h"
+        },
+        {
+          "include": "net/raw_cb.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/raw_cb.h"
+        },
+        {
+          "include": "net/route.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/route.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "netinet/in_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_var.h"
+        },
+        {
+          "include": "netns/ns.h",
+          "disposition": "deferred-feature",
+          "reference": null
+        },
+        {
+          "include": "sys/domain.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/domain.h"
+        },
+        {
+          "include": "sys/ioctl.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/ioctl.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/proc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/proc.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/socketvar.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socketvar.h"
+        },
+        {
+          "include": "sys/systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/systm.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/net/route.h",
+      "tasks": [
+        418,
+        419,
+        427
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "net/radix.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/radix.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/net/rtsock.c",
+      "tasks": [
+        418,
+        419,
+        427
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "net/if.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if.h"
+        },
+        {
+          "include": "net/raw_cb.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/raw_cb.h"
+        },
+        {
+          "include": "net/route.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/route.h"
+        },
+        {
+          "include": "sys/domain.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/domain.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/proc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/proc.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/socketvar.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socketvar.h"
+        },
+        {
+          "include": "sys/systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/systm.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/netinet/icmp_var.h",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/netinet/if_ether.c",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "net/if.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if.h"
+        },
+        {
+          "include": "net/if_dl.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if_dl.h"
+        },
+        {
+          "include": "net/route.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/route.h"
+        },
+        {
+          "include": "netinet/if_ether.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/if_ether.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "netinet/in_systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_systm.h"
+        },
+        {
+          "include": "netinet/in_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_var.h"
+        },
+        {
+          "include": "netinet/ip.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip.h"
+        },
+        {
+          "include": "sys/errno.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/errno.h"
+        },
+        {
+          "include": "sys/ioctl.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/ioctl.h"
+        },
+        {
+          "include": "sys/kernel.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/kernel.h"
+        },
+        {
+          "include": "sys/malloc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/malloc.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/syslog.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/syslog.h"
+        },
+        {
+          "include": "sys/systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/systm.h"
+        },
+        {
+          "include": "sys/time.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/time.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/netinet/if_ether.h",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/netinet/igmp.c",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "net/if.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if.h"
+        },
+        {
+          "include": "net/route.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/route.h"
+        },
+        {
+          "include": "netinet/igmp.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/igmp.h"
+        },
+        {
+          "include": "netinet/igmp_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/igmp_var.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "netinet/in_systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_systm.h"
+        },
+        {
+          "include": "netinet/in_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_var.h"
+        },
+        {
+          "include": "netinet/ip.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip.h"
+        },
+        {
+          "include": "netinet/ip_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip_var.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/netinet/igmp.h",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/netinet/igmp_var.h",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/netinet/in.c",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "net/if.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if.h"
+        },
+        {
+          "include": "net/route.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/route.h"
+        },
+        {
+          "include": "netinet/if_ether.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/if_ether.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "netinet/in_systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_systm.h"
+        },
+        {
+          "include": "netinet/in_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_var.h"
+        },
+        {
+          "include": "sys/errno.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/errno.h"
+        },
+        {
+          "include": "sys/ioctl.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/ioctl.h"
+        },
+        {
+          "include": "sys/malloc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/malloc.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/socketvar.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socketvar.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/netinet/in.h",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/netinet/in_cksum.c",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/netinet/in_pcb.c",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "net/if.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if.h"
+        },
+        {
+          "include": "net/route.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/route.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "netinet/in_pcb.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_pcb.h"
+        },
+        {
+          "include": "netinet/in_systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_systm.h"
+        },
+        {
+          "include": "netinet/in_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_var.h"
+        },
+        {
+          "include": "netinet/ip.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip.h"
+        },
+        {
+          "include": "netinet/ip_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip_var.h"
+        },
+        {
+          "include": "sys/errno.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/errno.h"
+        },
+        {
+          "include": "sys/ioctl.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/ioctl.h"
+        },
+        {
+          "include": "sys/malloc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/malloc.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/proc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/proc.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/socketvar.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socketvar.h"
+        },
+        {
+          "include": "sys/systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/systm.h"
+        },
+        {
+          "include": "sys/time.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/time.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/netinet/in_pcb.h",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/netinet/in_proto.c",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "hy.h",
+          "disposition": "deferred-feature",
+          "reference": null
+        },
+        {
+          "include": "imp.h",
+          "disposition": "deferred-feature",
+          "reference": null
+        },
+        {
+          "include": "net/if.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if.h"
+        },
+        {
+          "include": "net/radix.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/radix.h"
+        },
+        {
+          "include": "net/route.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/route.h"
+        },
+        {
+          "include": "netinet/igmp_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/igmp_var.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "netinet/in_pcb.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_pcb.h"
+        },
+        {
+          "include": "netinet/in_systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_systm.h"
+        },
+        {
+          "include": "netinet/ip.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip.h"
+        },
+        {
+          "include": "netinet/ip_icmp.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip_icmp.h"
+        },
+        {
+          "include": "netinet/ip_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip_var.h"
+        },
+        {
+          "include": "netinet/tcp.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp.h"
+        },
+        {
+          "include": "netinet/tcp_debug.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_debug.h"
+        },
+        {
+          "include": "netinet/tcp_fsm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_fsm.h"
+        },
+        {
+          "include": "netinet/tcp_seq.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_seq.h"
+        },
+        {
+          "include": "netinet/tcp_timer.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_timer.h"
+        },
+        {
+          "include": "netinet/tcp_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_var.h"
+        },
+        {
+          "include": "netinet/tcpip.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcpip.h"
+        },
+        {
+          "include": "netinet/udp.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/udp.h"
+        },
+        {
+          "include": "netinet/udp_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/udp_var.h"
+        },
+        {
+          "include": "sys/domain.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/domain.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/netinet/in_systm.h",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/netinet/in_var.h",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/netinet/ip.h",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/netinet/ip_icmp.c",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "net/if.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if.h"
+        },
+        {
+          "include": "net/route.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/route.h"
+        },
+        {
+          "include": "netinet/icmp_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/icmp_var.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "netinet/in_systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_systm.h"
+        },
+        {
+          "include": "netinet/in_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_var.h"
+        },
+        {
+          "include": "netinet/ip.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip.h"
+        },
+        {
+          "include": "netinet/ip_icmp.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip_icmp.h"
+        },
+        {
+          "include": "sys/kernel.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/kernel.h"
+        },
+        {
+          "include": "sys/malloc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/malloc.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/systm.h"
+        },
+        {
+          "include": "sys/time.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/time.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/netinet/ip_icmp.h",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/netinet/ip_input.c",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "net/if.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if.h"
+        },
+        {
+          "include": "net/route.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/route.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "netinet/in_pcb.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_pcb.h"
+        },
+        {
+          "include": "netinet/in_systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_systm.h"
+        },
+        {
+          "include": "netinet/in_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_var.h"
+        },
+        {
+          "include": "netinet/ip.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip.h"
+        },
+        {
+          "include": "netinet/ip_icmp.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip_icmp.h"
+        },
+        {
+          "include": "netinet/ip_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip_var.h"
+        },
+        {
+          "include": "sys/domain.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/domain.h"
+        },
+        {
+          "include": "sys/errno.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/errno.h"
+        },
+        {
+          "include": "sys/kernel.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/kernel.h"
+        },
+        {
+          "include": "sys/malloc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/malloc.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/systm.h"
+        },
+        {
+          "include": "sys/time.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/time.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/netinet/ip_mroute.c",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "net/if.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if.h"
+        },
+        {
+          "include": "net/raw_cb.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/raw_cb.h"
+        },
+        {
+          "include": "net/route.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/route.h"
+        },
+        {
+          "include": "netinet/igmp.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/igmp.h"
+        },
+        {
+          "include": "netinet/igmp_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/igmp_var.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "netinet/in_pcb.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_pcb.h"
+        },
+        {
+          "include": "netinet/in_systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_systm.h"
+        },
+        {
+          "include": "netinet/in_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_var.h"
+        },
+        {
+          "include": "netinet/ip.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip.h"
+        },
+        {
+          "include": "netinet/ip_mroute.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip_mroute.h"
+        },
+        {
+          "include": "netinet/ip_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip_var.h"
+        },
+        {
+          "include": "sys/errno.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/errno.h"
+        },
+        {
+          "include": "sys/ioctl.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/ioctl.h"
+        },
+        {
+          "include": "sys/malloc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/malloc.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/socketvar.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socketvar.h"
+        },
+        {
+          "include": "sys/time.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/time.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/netinet/ip_mroute.h",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/netinet/ip_output.c",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "machine/mtpr.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "net/if.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if.h"
+        },
+        {
+          "include": "net/route.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/route.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "netinet/in_pcb.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_pcb.h"
+        },
+        {
+          "include": "netinet/in_systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_systm.h"
+        },
+        {
+          "include": "netinet/in_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_var.h"
+        },
+        {
+          "include": "netinet/ip.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip.h"
+        },
+        {
+          "include": "netinet/ip_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip_var.h"
+        },
+        {
+          "include": "sys/errno.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/errno.h"
+        },
+        {
+          "include": "sys/malloc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/malloc.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/socketvar.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socketvar.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/netinet/ip_var.h",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/netinet/raw_ip.c",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "net/if.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if.h"
+        },
+        {
+          "include": "net/route.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/route.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "netinet/in_pcb.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_pcb.h"
+        },
+        {
+          "include": "netinet/in_systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_systm.h"
+        },
+        {
+          "include": "netinet/ip.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip.h"
+        },
+        {
+          "include": "netinet/ip_mroute.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip_mroute.h"
+        },
+        {
+          "include": "netinet/ip_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip_var.h"
+        },
+        {
+          "include": "sys/errno.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/errno.h"
+        },
+        {
+          "include": "sys/malloc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/malloc.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/socketvar.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socketvar.h"
+        },
+        {
+          "include": "sys/systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/systm.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/netinet/tcp.h",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/netinet/tcp_debug.c",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "net/if.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if.h"
+        },
+        {
+          "include": "net/route.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/route.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "netinet/in_pcb.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_pcb.h"
+        },
+        {
+          "include": "netinet/in_systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_systm.h"
+        },
+        {
+          "include": "netinet/ip.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip.h"
+        },
+        {
+          "include": "netinet/ip_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip_var.h"
+        },
+        {
+          "include": "netinet/tcp.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp.h"
+        },
+        {
+          "include": "netinet/tcp_debug.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_debug.h"
+        },
+        {
+          "include": "netinet/tcp_fsm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_fsm.h"
+        },
+        {
+          "include": "netinet/tcp_seq.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_seq.h"
+        },
+        {
+          "include": "netinet/tcp_timer.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_timer.h"
+        },
+        {
+          "include": "netinet/tcp_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_var.h"
+        },
+        {
+          "include": "netinet/tcpip.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcpip.h"
+        },
+        {
+          "include": "sys/errno.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/errno.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/socketvar.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socketvar.h"
+        },
+        {
+          "include": "sys/systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/systm.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/netinet/tcp_debug.h",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/netinet/tcp_fsm.h",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/netinet/tcp_input.c",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "machine/cpu.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/i386/include/cpu.h"
+        },
+        {
+          "include": "net/if.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if.h"
+        },
+        {
+          "include": "net/route.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/route.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "netinet/in_pcb.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_pcb.h"
+        },
+        {
+          "include": "netinet/in_systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_systm.h"
+        },
+        {
+          "include": "netinet/ip.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip.h"
+        },
+        {
+          "include": "netinet/ip_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip_var.h"
+        },
+        {
+          "include": "netinet/tcp.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp.h"
+        },
+        {
+          "include": "netinet/tcp_debug.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_debug.h"
+        },
+        {
+          "include": "netinet/tcp_fsm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_fsm.h"
+        },
+        {
+          "include": "netinet/tcp_seq.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_seq.h"
+        },
+        {
+          "include": "netinet/tcp_timer.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_timer.h"
+        },
+        {
+          "include": "netinet/tcp_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_var.h"
+        },
+        {
+          "include": "netinet/tcpip.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcpip.h"
+        },
+        {
+          "include": "sys/errno.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/errno.h"
+        },
+        {
+          "include": "sys/malloc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/malloc.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/socketvar.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socketvar.h"
+        },
+        {
+          "include": "sys/systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/systm.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/netinet/tcp_output.c",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "net/route.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/route.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "netinet/in_pcb.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_pcb.h"
+        },
+        {
+          "include": "netinet/in_systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_systm.h"
+        },
+        {
+          "include": "netinet/ip.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip.h"
+        },
+        {
+          "include": "netinet/ip_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip_var.h"
+        },
+        {
+          "include": "netinet/tcp.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp.h"
+        },
+        {
+          "include": "netinet/tcp_debug.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_debug.h"
+        },
+        {
+          "include": "netinet/tcp_fsm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_fsm.h"
+        },
+        {
+          "include": "netinet/tcp_seq.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_seq.h"
+        },
+        {
+          "include": "netinet/tcp_timer.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_timer.h"
+        },
+        {
+          "include": "netinet/tcp_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_var.h"
+        },
+        {
+          "include": "netinet/tcpip.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcpip.h"
+        },
+        {
+          "include": "sys/errno.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/errno.h"
+        },
+        {
+          "include": "sys/malloc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/malloc.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/socketvar.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socketvar.h"
+        },
+        {
+          "include": "sys/systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/systm.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/netinet/tcp_seq.h",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/netinet/tcp_subr.c",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "net/if.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if.h"
+        },
+        {
+          "include": "net/route.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/route.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "netinet/in_pcb.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_pcb.h"
+        },
+        {
+          "include": "netinet/in_systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_systm.h"
+        },
+        {
+          "include": "netinet/ip.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip.h"
+        },
+        {
+          "include": "netinet/ip_icmp.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip_icmp.h"
+        },
+        {
+          "include": "netinet/ip_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip_var.h"
+        },
+        {
+          "include": "netinet/tcp.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp.h"
+        },
+        {
+          "include": "netinet/tcp_fsm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_fsm.h"
+        },
+        {
+          "include": "netinet/tcp_seq.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_seq.h"
+        },
+        {
+          "include": "netinet/tcp_timer.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_timer.h"
+        },
+        {
+          "include": "netinet/tcp_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_var.h"
+        },
+        {
+          "include": "netinet/tcpip.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcpip.h"
+        },
+        {
+          "include": "sys/errno.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/errno.h"
+        },
+        {
+          "include": "sys/malloc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/malloc.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/proc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/proc.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/socketvar.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socketvar.h"
+        },
+        {
+          "include": "sys/systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/systm.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/netinet/tcp_timer.c",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "machine/cpu.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/i386/include/cpu.h"
+        },
+        {
+          "include": "net/if.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if.h"
+        },
+        {
+          "include": "net/route.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/route.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "netinet/in_pcb.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_pcb.h"
+        },
+        {
+          "include": "netinet/in_systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_systm.h"
+        },
+        {
+          "include": "netinet/ip.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip.h"
+        },
+        {
+          "include": "netinet/ip_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip_var.h"
+        },
+        {
+          "include": "netinet/tcp.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp.h"
+        },
+        {
+          "include": "netinet/tcp_fsm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_fsm.h"
+        },
+        {
+          "include": "netinet/tcp_seq.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_seq.h"
+        },
+        {
+          "include": "netinet/tcp_timer.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_timer.h"
+        },
+        {
+          "include": "netinet/tcp_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_var.h"
+        },
+        {
+          "include": "netinet/tcpip.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcpip.h"
+        },
+        {
+          "include": "sys/errno.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/errno.h"
+        },
+        {
+          "include": "sys/malloc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/malloc.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/socketvar.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socketvar.h"
+        },
+        {
+          "include": "sys/systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/systm.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/netinet/tcp_timer.h",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/netinet/tcp_usrreq.c",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "net/if.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if.h"
+        },
+        {
+          "include": "net/route.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/route.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "netinet/in_pcb.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_pcb.h"
+        },
+        {
+          "include": "netinet/in_systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_systm.h"
+        },
+        {
+          "include": "netinet/ip.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip.h"
+        },
+        {
+          "include": "netinet/ip_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip_var.h"
+        },
+        {
+          "include": "netinet/tcp.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp.h"
+        },
+        {
+          "include": "netinet/tcp_debug.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_debug.h"
+        },
+        {
+          "include": "netinet/tcp_fsm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_fsm.h"
+        },
+        {
+          "include": "netinet/tcp_seq.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_seq.h"
+        },
+        {
+          "include": "netinet/tcp_timer.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_timer.h"
+        },
+        {
+          "include": "netinet/tcp_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcp_var.h"
+        },
+        {
+          "include": "netinet/tcpip.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/tcpip.h"
+        },
+        {
+          "include": "sys/errno.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/errno.h"
+        },
+        {
+          "include": "sys/malloc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/malloc.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/socketvar.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socketvar.h"
+        },
+        {
+          "include": "sys/stat.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/systm.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/netinet/tcp_var.h",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/netinet/tcpip.h",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/netinet/udp.h",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/netinet/udp_usrreq.c",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "net/if.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/if.h"
+        },
+        {
+          "include": "net/route.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/net/route.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "netinet/in_pcb.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_pcb.h"
+        },
+        {
+          "include": "netinet/in_systm.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in_systm.h"
+        },
+        {
+          "include": "netinet/ip.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip.h"
+        },
+        {
+          "include": "netinet/ip_icmp.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip_icmp.h"
+        },
+        {
+          "include": "netinet/ip_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/ip_var.h"
+        },
+        {
+          "include": "netinet/udp.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/udp.h"
+        },
+        {
+          "include": "netinet/udp_var.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/udp_var.h"
+        },
+        {
+          "include": "sys/errno.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/errno.h"
+        },
+        {
+          "include": "sys/malloc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/malloc.h"
+        },
+        {
+          "include": "sys/mbuf.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/mbuf.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/protosw.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/protosw.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/socketvar.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socketvar.h"
+        },
+        {
+          "include": "sys/stat.h",
+          "disposition": "native-adapter",
+          "reference": null
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/netinet/udp_var.h",
+      "tasks": [
+        419,
+        420,
+        421,
+        422,
+        423
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/sys/cdefs.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/sys/domain.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/sys/errno.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/sys/fcntl.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "sys/cdefs.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/cdefs.h"
+        },
+        {
+          "include": "sys/types.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/types.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/sys/file.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "sys/fcntl.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/fcntl.h"
+        },
+        {
+          "include": "sys/queue.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/queue.h"
+        },
+        {
+          "include": "sys/unistd.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/unistd.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/sys/filedesc.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/sys/filio.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "sys/ioccom.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/ioccom.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/sys/ioccom.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/sys/ioctl.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "sys/cdefs.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/cdefs.h"
+        },
+        {
+          "include": "sys/filio.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/filio.h"
+        },
+        {
+          "include": "sys/ioccom.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/ioccom.h"
+        },
+        {
+          "include": "sys/ioctl_compat.h",
+          "disposition": "deferred-feature",
+          "reference": null
+        },
+        {
+          "include": "sys/sockio.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/sockio.h"
+        },
+        {
+          "include": "sys/ttycom.h",
+          "disposition": "native-adapter",
+          "reference": null
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/sys/kernel.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/sys/lock.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/sys/malloc.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/sys/map.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/sys/mbuf.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "sys/malloc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/malloc.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/sys/param.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "machine/limits.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "machine/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/i386/include/param.h"
+        },
+        {
+          "include": "sys/cdefs.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/cdefs.h"
+        },
+        {
+          "include": "sys/errno.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/errno.h"
+        },
+        {
+          "include": "sys/resource.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/resource.h"
+        },
+        {
+          "include": "sys/signal.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/signal.h"
+        },
+        {
+          "include": "sys/syslimits.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/syslimits.h"
+        },
+        {
+          "include": "sys/time.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/time.h"
+        },
+        {
+          "include": "sys/types.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/types.h"
+        },
+        {
+          "include": "sys/ucred.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/ucred.h"
+        },
+        {
+          "include": "sys/uio.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/uio.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/sys/proc.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "machine/proc.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/queue.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/queue.h"
+        },
+        {
+          "include": "sys/select.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/select.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/sys/protosw.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/sys/queue.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/sys/resource.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "sys/cdefs.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/cdefs.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/sys/resourcevar.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/sys/select.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/sys/signal.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "machine/signal.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/cdefs.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/cdefs.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/sys/signalvar.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/sys/socket.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "sys/cdefs.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/cdefs.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/sys/socketvar.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "sys/select.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/select.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/sys/sockio.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "sys/ioccom.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/ioccom.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/sys/sysctl.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "sys/cdefs.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/cdefs.h"
+        },
+        {
+          "include": "sys/proc.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/proc.h"
+        },
+        {
+          "include": "sys/time.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/time.h"
+        },
+        {
+          "include": "sys/ucred.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/ucred.h"
+        },
+        {
+          "include": "vm/vm.h",
+          "disposition": "native-adapter",
+          "reference": null
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/sys/syslimits.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/sys/syslog.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "machine/ansi.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/cdefs.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/cdefs.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/sys/systm.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "libkern/libkern.h",
+          "disposition": "native-adapter",
+          "reference": null
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/sys/time.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "sys/cdefs.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/cdefs.h"
+        },
+        {
+          "include": "sys/types.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/types.h"
+        },
+        {
+          "include": "time.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/time.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/sys/types.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "machine/ansi.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "machine/endian.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "machine/types.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/i386/include/types.h"
+        },
+        {
+          "include": "sys/cdefs.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/cdefs.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/sys/ucred.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/sys/uio.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "sys/cdefs.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/cdefs.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/sys/sys/un.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/sys/sys/unistd.h",
+      "tasks": [
+        413,
+        414,
+        424,
+        425
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    }
+  ]
+}
