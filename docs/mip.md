@@ -11,19 +11,21 @@ of this shared infrastructure task and are not claimed as installed tools.
 
 The reference tree remains unchanged. The code in `user/mip` adapts the supplied
 manifest/common/mfile2 interfaces; [toolchain ABI version 1](toolchain-abi.md)
-defines the native machine contract. All 74 `common` operator entries retain
-their exact numbers, names and flags. Checked lookups replace unchecked global
+defines the native machine contract. All 74 original `common` operator entries retain
+their exact numbers, names and flags. Native variadic and floating-predicate
+operators extend that table. Checked lookups replace unchecked global
 array indexing. Legacy macros remain for source comparison; consumers use the
 checked APIs rather than anonymous node overlays or pointer/integer casts.
 
 ## Types and IR
 
-Types retain the original four basic-type bits and two bits per pointer,
+Types retain the five basic-type bits and two bits per pointer,
 function or array modifier in a 64-bit word. Operations reject holes, invalid
-modifiers and overflow beyond thirty levels. Scalar layouts follow LP64:
-char 1, short 2, int/enum/float 4, long/pointer/double 8 bytes. Arrays, aggregates
-and function layout need front-end context. Long-long/long-double language
-extensions remain with task 193. Constants retain all 64 bits; offsets are signed
+modifiers and overflow beyond twenty-nine levels. Scalar layouts follow LP64:
+char 1, short 2, int/enum/float 4, long/long-long/pointer/double 8, long double 16 (alignment 16), and bool 1
+byte. Void has no object layout. Arrays, aggregates and function layout require
+front-end context. The original basic codes remain 0–15; extension codes 16–20
+represent signed/unsigned long long, long double, void and bool. Bit 63 is reserved. Constants retain all 64 bits; offsets are signed
 64-bit byte offsets. Exact names may contain up to 255 bytes without truncation.
 
 Explicit nodes hold child indices, source line, register/label identifiers,
@@ -37,14 +39,15 @@ The maximum is 65,536 nodes, subject to actual guest memory availability.
 
 ## Pass format and diagnostics
 
-`NXMIP` version 1 is an explicitly encoded little-endian interface, shared by
+`NXMIP` version 2 is an explicitly encoded little-endian interface, shared by
 one-pass/alternate consumers instead of historical pointer overlays and native
 Fortran `long` records. Its 16-byte header contains eight magic/version bytes,
-32-bit count and root. Each node has 78 fixed bytes followed by its counted name:
-operator32, type64, left32, right32, value64, signed-offset64, IEEE-double bits64,
+32-bit count and root. Each node has 88 fixed bytes followed by its counted name:
+operator32, type64, left32, right32, value64, signed-offset64, IEEE-double bits64, ten little-endian x87 bytes,
 aggregate-size64, alignment32, register32, label32, field-width32, field-shift32,
 source-line32 and name-length16. No padding, native struct sizes or host pointer
-values appear. Decoder checks magic/version, count/root, exact payload length,
+values appear. Version 1 payloads are rejected because their packed types differ;
+the native executable/call ABI remains version 1. Decoder checks magic/version, count/root, exact payload length,
 strings, tree construction and capacity before publishing nodes. Truncated,
 malformed and oversized input leaves arena/output unchanged. Limit: 32 MiB.
 
@@ -77,7 +80,7 @@ Target-specific register tables and spill/order decisions remain with backends.
 ## Streaming consumer interface
 
 `pass.h`/`reader.c` replace the supplied reader/fort native-long records with an
-explicit stream. `NXMPS` version 1 starts with a 16-byte header: eight magic/version
+explicit stream. `NXMPS` version 2 starts with a 16-byte header: eight magic/version
 bytes, little-endian native ABI ID 1, and a zero reserved word. Each record has
 three little-endian 32-bit fields: kind, initializer width and payload length.
 Kinds are END (0), literal target text (1), expression (2) and initializer (3).
@@ -111,9 +114,9 @@ driver promised by task 196.
 | Supplied files | Native adaptation / remaining owner |
 |---|---|
 | `manifest`, `common`, `comm1.c`, `fcomm2.c` | `manifest.h`, `mip.h`, `common.c` provide native type/operator/arena contracts; `trees.c` traversal/copy and `diagnostics.c` replace overlays and stack-vararg shortcuts. Real PCC and independent analysis consumers share these services. |
-| `mfile1`, `mfile2`, `xdefs.c` | Explicit IR/resource/context contracts replace shared anonymous overlays. PCC parser symbol/scope/dimension state stays in task 193, outside the pass interface. |
+| `mfile1`, `mfile2`, `xdefs.c` | Explicit IR/resource/context contracts replace shared anonymous overlays. PCC parser symbol/scope/dimension state belongs to the frontend (193), outside the pass interface. |
 | `allo.c`, `match.c`, `reader.c` | `allo.c`, `match.c`, `trees.c`, `reader.c` implement checked resources, template selection/expansion, tree encoding and streaming consumption. Physical ordering/spilling remains a target responsibility (194–196). |
-| `cgram.y`, `scan.c`, `pftn.c`, `trees.c`, `optim.c` | Retained native working copies in `user/pcc` consume shared types/IR. Full native language/header closure remains 193. |
+| `cgram.y`, `scan.c`, `pftn.c`, `trees.c`, `optim.c` | Retained native working copies in `user/pcc` consume shared types/IR. Native types, typed signatures and the explicit native-header profile are complete in 193. |
 | `makefile`, `convert` | `tools/mip.mk` builds reusable native objects and private consumers. `user/pcc/output.c` selects direct or encoded consumption explicitly, replacing destructive one-pass conversion edits; full compiler build/install recipes remain 196. |
 | `fort.c`, `fallo.c`, `fmatch.c`, `freader.c`, `fcomm2.c`, `flocal2.c`, `forder.c`, `ftable.c`, `fconvert` | Shared encoded streams/resources replace binary native-long overlays and source-include duplication. The independent producer checks this parser-free interface. Actual Fortran front end, machine target and driver are still owned by 196 and 203–206; no Fortran compiler is claimed by the interface test. |
 | `g`, `INDEX` | Developer search/index aids, not shared runtime services; prototype/build-helper reconciliation remains 196. |

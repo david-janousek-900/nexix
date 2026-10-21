@@ -52,6 +52,11 @@ optim(p) register NODE *p; {
         NODE *constant=p->left;p->op=FREE;return clocal(makety(constant,p->type,p->cdim,p->csiz));
     }
 
+    if(o==QUEST && p->left->op==ICON && p->right->op==COLON) {
+        NODE *arms=p->right,*chosen=p->left->lval?arms->left:arms->right;
+        tfree(p->left->lval?arms->right:arms->left);p->left->op=arms->op=p->op=FREE;
+        return clocal(makety(chosen,p->type,p->cdim,p->csiz));
+    }
 	/* collect constants */
 
 	switch(o){

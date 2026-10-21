@@ -12,7 +12,7 @@ int mip_operator_match(unsigned op,unsigned pattern) {
     return (flags&(masks[i]|ASGFLG))==masks[i];
 }
 int mip_type_match(mip_type t,unsigned mask) {
-    static const unsigned types[16]={0,0,TCHAR,TSHORT,TINT,TLONG,TFLOAT,TDOUBLE,TSTRUCT,TSTRUCT,TINT,0,TUCHAR,TUSHORT,TUNSIGNED,TULONG};
+    static const unsigned types[21]={0,0,TCHAR,TSHORT,TINT,TLONG,TFLOAT,TDOUBLE,TSTRUCT,TSTRUCT,TINT,0,TUCHAR,TUSHORT,TUNSIGNED,TULONG,TLLONG,TULLONG,TLDOUBLE,0,TUCHAR};
     if(!mip_type_valid(t))return 0;
     if(mask&TANY)return 1;
     if((t&TMASK)==PTR && (mask&TPTRTO)) {

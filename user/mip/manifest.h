@@ -88,6 +88,14 @@
 # define CM 56
 # define SM 57
 # define ASSIGN 58
+# define ELLIPSIS 112
+# define VA_START 113
+# define VA_END 114
+# define VA_COPY 115
+# define VA_ARG 116
+# define FP_NAN 118
+# define FP_FINITE 119
+# define FP_SIGN 120
 
 /*	END OF YACC */
 
@@ -146,7 +154,7 @@
 # define BITYPE 010
 
 	/* DSIZE is the size of the dope array */
-# define DSIZE CAST+1
+# define DSIZE FP_SIGN+1
 
 /*	type names, used in symbol table building */
 # define TNULL PTR    /* pointer to UNDEF */
@@ -166,6 +174,12 @@
 # define USHORT 13
 # define UNSIGNED 14
 # define ULONG 15
+# define LLONG 16
+# define ULLONG 17
+# define LDOUBLE 18
+# define VOID 19
+# define BOOL 20
+# define SIGNED 21 /* declaration specifier, not an object type */
 
 # define ASG 1+
 # define UNARY 2+
@@ -177,27 +191,27 @@
 
 /* type modifiers */
 
-# define PTR  020
-# define FTN  040
-# define ARY  060
+# define PTR  040
+# define FTN  0100
+# define ARY  0140
 
 /* type packing constants */
 
-# define TMASK 060
-# define TMASK1 0300
-# define TMASK2  0360
-# define BTMASK 017
-# define BTSHIFT 4
+# define TMASK 0140
+# define TMASK1 0600
+# define TMASK2  0740
+# define BTMASK 037
+# define BTSHIFT 5
 # define TSHIFT 2
 
 /*	macros	*/
 
 # define MODTYPE(x,y) x = (x&(~BTMASK))|y  /* set basic type of x to y */
 # define BTYPE(x)  (x&BTMASK)   /* basic type of x */
-# define ISUNSIGNED(x) ((x)<=ULONG&&(x)>=UCHAR)
-# define UNSIGNABLE(x) ((x)<=LONG&&(x)>=CHAR)
-# define ENUNSIGN(x) ((x)+(UNSIGNED-INT))
-# define DEUNSIGN(x) ((x)+(INT-UNSIGNED))
+# define ISUNSIGNED(x) (((x)<=ULONG&&(x)>=UCHAR)||(x)==ULLONG||(x)==BOOL)
+# define UNSIGNABLE(x) (((x)<=LONG&&(x)>=CHAR)||(x)==LLONG)
+# define ENUNSIGN(x) ((x)==LLONG?ULLONG:(x)+(UNSIGNED-INT))
+# define DEUNSIGN(x) ((x)==ULLONG?LLONG:(x)+(INT-UNSIGNED))
 # define ISPTR(x) ((x&TMASK)==PTR)
 # define ISFTN(x)  ((x&TMASK)==FTN)  /* is x a function type */
 # define ISARY(x)   ((x&TMASK)==ARY)   /* is x an array type */

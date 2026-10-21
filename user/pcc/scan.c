@@ -41,6 +41,7 @@
 # define AR_S 3		/* struct */
 # define AR_U 4		/* union */
 # define AR_E 5		/* enum */
+# define AR_FP 7
 # define AR_A 6		/* asm */
 
 	/* text buffer */
@@ -111,7 +112,8 @@ mainp1( argc, argv ) int argc; char *argv[]; {  /* control multiple files */
 	dimtab[UNSIGNED] = SZINT;
 	dimtab[ULONG] = SZLONG;
 	/* starts past any of the above */
-	curdim = 16;
+	dimtab[LLONG]=dimtab[ULLONG]=64;dimtab[LDOUBLE]=128;dimtab[BOOL]=8;
+    curdim = 32;
 	reached = 1;
 
 	yyparse();
@@ -462,6 +464,7 @@ yylex(){
 			if( sp->sclass == TYPEDEF && !stwart ){
 				stwart = instruct;
 				yylval.nodep = mkty( sp->stype, sp->dimoff, sp->sizoff );
+                yylval.nodep->prototype=sp->prototype;
 				return( TYPE );
 				}
 			stwart = (stwart&SEENAME) ? instruct : 0;
@@ -473,6 +476,7 @@ yylex(){
         case A_DOT:
             lxchar=getchar();
             if(isdigit(lxchar)) {ungetc(lxchar,stdin);return pcc_number('.');}
+            if(lxchar=='.') {if(getchar()=='.')return ELLIPSIS;uerror("invalid ellipsis");return 0;}
             stwart=FUNNYNAME;goto onechar;
 
 		case A_STR:
@@ -579,6 +583,10 @@ yylex(){
 
 		case A_EQ:
 			/* = */
+            if(pcc_native_source) {
+                lxchar=getchar();if(lxchar!='=') {ungetc(lxchar,stdin);return yylval.intval=ASSIGN;}
+                yylval.intval=EQ;return EQUOP;
+            }
 			switch( lxchar = getchar() ){
 
 			case '=':
@@ -664,7 +672,17 @@ struct lxrdope {
 	short lxrval;	/* value to be returned */
 	} lxrdope[] = {
 
-	"asm",		AR_A,	0,
+	"__builtin_inf",AR_FP,0,
+    "__builtin_nan",AR_FP,1,
+    "__builtin_isnan",AR_RW,FP_NAN,
+    "__builtin_isfinite",AR_RW,FP_FINITE,
+    "__builtin_signbit",AR_RW,FP_SIGN,
+    "__attribute__",AR_RW,117,
+    "__builtin_va_start",AR_RW,VA_START,
+    "__builtin_va_end",AR_RW,VA_END,
+    "__builtin_va_copy",AR_RW,VA_COPY,
+    "__builtin_va_arg",AR_RW,VA_ARG,
+    "asm",		AR_A,	0,
 	"auto",		AR_CL,	AUTO,
 	"break",	AR_RW,	BREAK,
 	"char",		AR_TY,	CHAR,
@@ -683,6 +701,9 @@ struct lxrdope {
 	"if",		AR_RW,	IF,
 	"int",		AR_TY,	INT,
 	"long",		AR_TY,	LONG,
+    "signed",AR_TY,SIGNED,
+    "void",AR_TY,VOID,
+    "_Bool",AR_TY,BOOL,
 	"return",	AR_RW,	RETURN,
 	"register",	AR_CL,	REGISTER,
 	"switch",	AR_RW,	SWITCH,
@@ -705,49 +726,11 @@ lxres() {
 	register c, ch;
 	register struct lxrdope *p;
 
-	ch = yytext[0];
-
-	if( !islower(ch) ) return( -1 );
-
-	switch( ch ){
-
-	case 'a':
-		c=0; break;
-	case 'b':
-		c=2; break;
-	case 'c':
-		c=3; break;
-	case 'd':
-		c=6; break;
-	case 'e':
-		c=9; break;
-	case 'f':
-		c=12; break;
-	case 'g':
-		c=15; break;
-	case 'i':
-		c=16; break;
-	case 'l':
-		c=18; break;
-	case 'r':
-		c=19; break;
-	case 's':
-		c=21; break;
-	case 't':
-		c=26; break;
-	case 'u':
-		c=27; break;
-	case 'w':
-		c=29; break;
-
-	default:
-		return( -1 );
-		}
-
-	for( p= lxrdope+c; p->lxrch[0] == ch; ++p ){
+    for(p=lxrdope;*p->lxrch;++p){
 		if( !strcmp( yytext, p->lxrch ) ){ /* match */
 			switch( p->lxract ){
 
+            case AR_FP:return pcc_special_real(p->lxrval);
 			case AR_TY:
 				/* type word */
 				stwart = instruct;

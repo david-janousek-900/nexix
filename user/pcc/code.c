@@ -31,14 +31,14 @@ int defnam(struct symtab *p) {
 }
 int bfcode(int *args,int count) {
     struct symtab *function=stab+curftn;TWORD result=DECREF(function->stype);struct mip_layout layout;
-    if(mip_scalar_layout(result,&layout)) {uerror("function result requires aggregate backend");return 0;}
+    if(result==LDOUBLE || (result!=VOID && mip_scalar_layout(result,&layout))) {uerror("function result requires aggregate backend");return 0;}
     frame_size=0;autooff=0;locctr(PROG);
     if(function->sclass==EXTDEF)printf(".globl %s\n",function->sname);
     printf(".type %s,@function\n%s:\n pushq %%rbp\n movq %%rsp,%%rbp\n subq $.F%d,%%rsp\n",function->sname,function->sname,ftnno);
     retlab=getlab();static const char *gp[]={"rdi","rsi","rdx","rcx","r8","r9"};int i;unsigned ngp=0,nsse=0,stack=16;
     for(i=0;i<count;i++) {
         struct symtab *p=stab+args[i];
-        if(mip_scalar_layout(p->stype,&layout)) {uerror("parameter requires aggregate backend");continue;}
+        if(p->stype==LDOUBLE || mip_scalar_layout(p->stype,&layout)) {uerror("parameter requires aggregate backend");continue;}
         autooff+=64;p->offset=-autooff;p->sclass=PARAM;
         if((p->stype==FLOAT || p->stype==DOUBLE) && nsse<8)printf(" mov%s %%xmm%u,%d(%%rbp)\n",p->stype==FLOAT?"ss":"sd",nsse++,p->offset/8);
         else if(p->stype!=FLOAT && p->stype!=DOUBLE && ngp<6)printf(" movq %%%s,%d(%%rbp)\n",gp[ngp++],p->offset/8);
@@ -83,24 +83,27 @@ int vfdzero(int bits) {
     if(bits>=32) {printf(".zero %u\n",(unsigned)bits/32*4);bits%=32;}
     initial_bits+=(unsigned)bits;return 0;
 }
-int fincode(double value,int bits) {
+int fincode(long double value,int bits) {
     if(bits==32) {float f=(float)value;uint32_t v;memcpy(&v,&f,4);printf(".long %u\n",v);}
-    else if(bits==64) {uint64_t v;memcpy(&v,&value,8);printf(".quad %lu\n",(unsigned long)v);}
+    else if(bits==64) {uint64_t v;double d=(double)value;memcpy(&v,&d,8);printf(".quad %lu\n",(unsigned long)v);}
+    else if(bits==128) {uint64_t lo;unsigned short hi;memcpy(&lo,&value,8);memcpy(&hi,(char *)&value+8,2);printf(".quad %lu\n.short %u\n.zero 6\n",(unsigned long)lo,(unsigned)hi);}
     else cerror("invalid floating initializer width");
     inoff+=bits;return 0;
 }
 int ecode(NODE *tree) {
     if(nerrors)return 0;
-    struct mip_node *nodes=calloc(TREESZ,sizeof(*nodes));if(!nodes)cerror("no memory for target IR");
-    struct mip_arena arena={nodes,0,TREESZ};uint32_t root=pcc_lower(tree,&arena);
+    unsigned capacity=pcc_ir_capacity(tree);
+    struct mip_node *nodes=calloc(capacity,sizeof(*nodes));if(!nodes)cerror("no memory for target IR");
+    struct mip_arena arena={nodes,0,capacity};uint32_t root=pcc_lower(tree,&arena);
     if(pcc_output_tree(&arena,root,0))cerror("expression pass output failed");
     free(nodes);return 0;
 }
 int cinit(NODE *tree,int bits) {
     if(nerrors)return 0;
     if(initial_bits)cerror("unaligned scalar initializer");
-    struct mip_node *nodes=calloc(TREESZ,sizeof(*nodes));if(!nodes)cerror("no memory for initializer IR");
-    struct mip_arena arena={nodes,0,TREESZ};uint32_t root=pcc_lower(tree,&arena);
+    unsigned capacity=pcc_ir_capacity(tree);
+    struct mip_node *nodes=calloc(capacity,sizeof(*nodes));if(!nodes)cerror("no memory for initializer IR");
+    struct mip_arena arena={nodes,0,capacity};uint32_t root=pcc_lower(tree,&arena);
     if(pcc_output_tree(&arena,root,(unsigned)bits))cerror("initializer pass output failed");
     inoff+=bits;free(nodes);return 0;
 }
@@ -108,6 +111,7 @@ int main(int argc,char **argv) {
     unsigned emit=0,read=0;int source=1;
     if(argc>1 && !strcmp(argv[1],"--emit-pass")) {emit=1;source++;}
     else if(argc>1 && !strcmp(argv[1],"--read-pass")) {read=1;source++;}
+    if(argc>source && !strcmp(argv[source],"--native-source")) {pcc_native_source=1;source++;}
     if(argc>source+1) {fprintf(stderr,"usage: pcc-backend [--emit-pass|--read-pass] [input]\n");return 2;}
     if(argc>source && strcmp(argv[source],"-")) {if(!freopen(argv[source],"r",stdin))return 1;snprintf(ftitle,sizeof(ftitle),"%s",argv[source]);}
     if(read) {

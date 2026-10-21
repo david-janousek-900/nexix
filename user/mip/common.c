@@ -1,7 +1,7 @@
 /* Native adaptation of V7 mip/manifest and common operator/tree services. */
 #include "mip.h"
 
-static const struct dopest { int op; char name[8]; int flags; } operators[] = {
+static const struct dopest { int op; char name[12]; int flags; } operators[] = {
 
     { NAME, "NAME", LTYPE },
     { STRING, "STRING", LTYPE },
@@ -78,6 +78,13 @@ static const struct dopest { int op; char name[8]; int flags; } operators[] = {
     { STCALL, "STCALL", BITYPE|CALLFLG },
     { UNARY STCALL, "USTCALL", UTYPE|CALLFLG },
 
+    { VA_START, "VA_START", BITYPE },
+    { VA_END, "VA_END", UTYPE },
+    { VA_COPY, "VA_COPY", BITYPE },
+    { VA_ARG, "VA_ARG", UTYPE },
+    { FP_NAN, "FP_NAN", UTYPE },
+    { FP_FINITE, "FP_FINITE", UTYPE },
+    { FP_SIGN, "FP_SIGN", UTYPE },
     { -1, "", 0 }
 };
 
@@ -92,7 +99,8 @@ const char *mip_op_name(unsigned op) {
     return 0;
 }
 int mip_type_valid(mip_type type) {
-    /* Each modifier occupies two bits above the four-bit basic type. No holes. */
+    /* Five basic-type bits, twenty-nine modifiers, top bit reserved. */
+    if((type>>63) || (type&BTMASK)>BOOL)return 0;
     for (type >>= BTSHIFT; type; type >>= TSHIFT)
         if (!(type & 3)) return 0;
     return 1;
@@ -100,7 +108,7 @@ int mip_type_valid(mip_type type) {
 int mip_type_add(mip_type type, unsigned modifier, mip_type *out) {
     if (!out || !mip_type_valid(type) ||
         (modifier!=PTR && modifier!=FTN && modifier!=ARY) ||
-        (type >> 62)) return -1;
+        (type >> 61)) return -1;
     *out = ((type & ~(mip_type)BTMASK)<<TSHIFT) | modifier | (type&BTMASK);
     return 0;
 }
@@ -110,7 +118,7 @@ int mip_type_remove(mip_type type, mip_type *out) {
     return 0;
 }
 int mip_scalar_layout(mip_type type, struct mip_layout *out) {
-    static const unsigned char sizes[16] = {0,0,1,2,4,8,4,8,0,0,4,0,1,2,4,8};
+    static const unsigned char sizes[21] = {0,0,1,2,4,8,4,8,0,0,4,0,1,2,4,8,8,8,16,0,1};
     unsigned n;
     if (!out || !mip_type_valid(type)) return -1;
     if ((type & TMASK)==PTR) n=8;

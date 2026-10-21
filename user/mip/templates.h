@@ -71,6 +71,9 @@
 # define TULONG 02000
 # define TPTRTO 04000  /* pointer to one of the above */
 # define TANY 010000  /* matches anything within reason */
+# define TLLONG 040000
+# define TULLONG 0100000
+# define TLDOUBLE 0200000
 # define TSTRUCT 020000   /* structure or union */
 
 	/* reclamation cookies */

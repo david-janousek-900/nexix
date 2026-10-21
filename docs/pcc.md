@@ -1,177 +1,134 @@
 # Native PCC compiler implementation
 
-Task 193 is **in progress**. `user/pcc` adapts the supplied mip grammar, scanner,
-semantic tables, tree builder and optimizer to native LP64 and the checked shared
-mip interface. The private front-end consumer runs after installed cpp and emits
-semantic/IR inspection records. A separate private backend produces native
-assembly and completes integer/pointer/control task 194. Scalar float/double and
-call generation are implemented increments of task 195; aggregate, long-double
-and variadic-definition ABI work remains. Installed command/alternate-target
-integration remains task 196. Native header adapters and required extended language types are not yet
-complete, so task 193 is not marked done.
+Task 193 is **complete**. The retained frontend and integer/pointer/control
+backend (194) use
+native LP64 and the shared mip contracts. Task 195 includes implemented scalar
+float/double code, calls and aggregate assignment; aggregate argument/result
+classification, x87 machine operations and variadic definitions remain open.
+The installed compiler/alternate drivers remain task 196, and complete supported
+V7 source rebuild acceptance remains 207. The private executables are not yet
+installed compiler commands.
 
-## Implemented adaptations
+## Retained frontend and native types
 
-- Retain and generate `cgram.y` with the V7 host yacc bootstrap and the checked
-  native yacc parser skeleton. The grammar still reports seven shift/reduce
-  conflicts. The source grammar/reference tree remains preserved separately.
-- Use the shared native mip type word/operator definitions. Replace anonymous
-  overlapping NODE structures with explicit fields and real native interfaces
-  for pointer/wide returns and arguments. Short/int/long/pointer widths are
-  16/32/64/64 bits; scalar/structure/union/array alignment follows native LP64.
-- Keep complete identifiers through 255 bytes. Packed declarators use checked
-  modifier insertion through thirty levels. Dimension, initializer, object-size,
-  frame/alignment and scanner/line-marker limits fail with diagnostics.
-- Give tags a separate lookup namespace and each structure/union its own member
-  namespace. Resolve member references against the selected type, not the first
-  matching global field spelling. Preserve member identities when symbol-table
-  rehashing moves entries. Duplicate members are rejected.
-- Parse native-width decimal/octal/hex integers and U/L suffixes. Fold integer
-  operations through unsigned bit storage, with explicit signed comparisons/
-  division, native width normalization and checked division/shift failures.
-  Usual arithmetic conversions preserve signed long when combined with unsigned
-  int; unsigned narrow arithmetic wraps to its declared width. Plain char is
-  signed. `sizeof` produces native unsigned-long values.
-- Preserve native pointer widths through indexing, element scaling and pointer
-  differences. Integer-to-floating constant conversion honors unsigned values.
-  Parameter names, scopes, declarations, initializers, labels, control flow,
-  structure operations and literal data retain the supplied semantic machinery.
-- Replace stack-varargs diagnostics with real native varargs. Syntax errors stop
-  immediately rather than executing semantic actions on an invalid recovery
-  stack. This changes diagnostic recovery, while retaining error status and
-  avoiding invalid initializer-state access. Correctly parse initial cpp line
-  markers before tokenization; reject oversized filenames and line overflow.
+`cgram.y`, `scan.c`, `pftn.c`, `trees.c`, `optim.c` and `xdefs.c` retain the supplied
+parser and semantic machinery. The checked V7 yacc generator and parser skeleton
+produce the working grammar (eight shift/reduce conflicts). The original
+reference files remain unchanged. Explicit nodes, native prototypes and real
+varargs replace anonymous overlays and PDP-11 pointer/stack shortcuts.
 
-The mutable front-end pool currently permits 1024 symbols, 1024 expression nodes,
-4096 dimensions, 128 initializer levels and the reference parameter/switch/control
-limits. Individual size/frame tables retain checked signed-int bit offsets;
-64-bit constant/type/size calculations are not narrowed silently. Large valid
-objects may still exceed the frozen native loader's 8 MiB executable limit.
+Types distinguish signed/unsigned long long, long double, void and `_Bool` as
+well as all sixteen original basic codes. Layout is native LP64: char/bool 1,
+short 2, int/enum/float 4, long/long long/pointer/double 8, and x87 long double 16
+bytes with 16-byte alignment. Natural structure/union layout, arrays and fields
+use these sizes. `sizeof` returns unsigned long. Void objects and value uses are
+rejected; casts, void calls and void return expressions retain their effects.
+Boolean conversion tests the full original scalar value, including fractional
+floating values. Long-long arithmetic has its own rank; signed long long plus
+unsigned long produces unsigned long long on this ABI.
 
-## Shared IR and source ownership
+`numbers.c` checks integer bases, overflow and U/L/LL suffix ordering/spelling.
+Unsigned bit storage handles folding without signed host overflow. Pointer
+arithmetic and differences retain 64-bit intermediates. `real.c` parses decimal
+and hexadecimal literals as bounded integer ratios and rounds directly to
+binary24/53/64 with ties to even and gradual underflow. It does not parse an x87
+literal through binary64. Constant conversion, floating data and shared IR retain
+its binary80 significand/sign/exponent; padding is zeroed in emitted objects.
+Native math-header infinity/NaN and classification builtins preserve their types
+and effects, including signed zero and unordered comparisons.
 
-`ir.c` lowers retained front-end trees through an iterative postorder walk into
-`user/mip`'s bounded arena. It carries exact names, storage class, byte offsets,
-field descriptors, aggregate size/alignment and source line without pointer
-serialization. The private consumer encodes each expression using the checked
-mip pass format and inspects the resulting tree. Backend consumers will use the
-same bridge; no separate test-only parser implements C semantics.
+Tags, ordinary identifiers and members have distinct namespaces. Each aggregate
+has its own member identities; references resolve against the selected type.
+Rehashing preserves member and function-signature metadata. Exact identifiers
+through 255 bytes, initializer bounds, object/frame sizes, line-marker names and
+source-line overflow are checked. Constant bounds and native `offsetof`
+assertions fold before validation; failed assertions reject the translation.
 
-| Reference input | Working adaptation |
-|---|---|
-| mip `cgram.y`, `scan.c` | `user/pcc/cgram.y`, `scan.c`, native numeric token handling in `numbers.c`, generator `tools/pcc_generate.py` |
-| mip `pftn.c`, `trees.c`, `optim.c`, `xdefs.c` | Retained working copies with native widths, conversion/bounds and member-namespace adaptations |
-| mip `manifest`, `mfile1`, `common`, `comm1.c` | Shared `user/mip` contracts plus `manifest`, `mfile1`, `prototypes.h` and native mutable-tree/diagnostic adapter `common.c` |
-| pcc `macdefs`, `local.c` | `macdefs` and `local.c`: native target sizes, pointer/scalar conversion and offset helpers; no PDP-11 name prefixes or short/int collapsing |
-| pcc `code.c`, `local2.c`, `order.c`, `table.c`, `mac2defs` | `trace.c` enables semantic tests; `code.c`/`local2.c` emit native scalar code through shared mip templates; aggregate/variadic/extended floating work remains 195 |
-| pcc makefile/prototype/fort targets | Native front-end rules in `tools/pcc.mk`; complete installed command and alternate consumers remain 196 |
+## Function signatures and source profiles
 
-## Acceptance evidence and remaining work
+`declarations.c` records typed and variadic prototypes, unnamed parameters,
+array/function parameter adjustments and nested function-pointer signatures.
+Definitions bind named parameters in function scope. Redeclarations, duplicate
+parameter names, argument counts, callback signatures and promoted K&R
+parameters are checked. Calls convert fixed arguments to their declared types
+and default-promote unprototyped/variadic arguments. A typed float parameter uses
+the native float ABI rather than the legacy promoted-double entry convention.
 
-`make TOOLCHAIN_PREFIX= test-pcc-front` checks retained production parsing and
-semantics under host ASan/UBSan. An independent GCC program verifies scalar,
-structure, union, array, pointer and member-offset values plus conversion and
-constant-fold results. Fixtures cover control flow, K&R parameters, aggregate
-assignment/return IR, exact long names, maximum declarators, repeated field
-spellings, tag namespaces, duplicate members, source bounds and deterministic
-malformed-source mutations. At 16/128 MiB, root and ordinary users run installed
-cpp into the native front end, compare exact semantic/shared-IR records, and
-check error diagnostics. No machine-code acceptance is claimed by these tests.
+The default source profile retains V7 identifier-list typedef shadowing and
+old assignment spellings. `--native-source` selects typedef-led parameter lists
+and modern assignment tokenization (`p=&object`, `n=-3`); normal compound
+assignments work in both profiles. This is an explicit compatibility profile,
+not a claim of complete C11 or GNU C conformance.
 
-Task 193 still needs the extended native type/header contracts required by ABI
-version 1 and their backend integration. Aggregate, variadic-definition,
-long-double and installed driver acceptance stay open in 193–196;
-full supported-tool rebuild remains 207. Task 192 shared consumer integration is recorded in [mip.md](mip.md); complete
-lint/Fortran commands retain their own tasks. Commit/test evidence
-is recorded in Git history.
+For installed native headers, preprocess the application with
+`user/pcc/native.h` included first and select `--native-source`. The adapter
+supplies native `offsetof`, checked static assertions and the SysV 24-byte
+`va_list` representation. It erases const/volatile/restrict/inline/noreturn
+header hints; it does not provide a qualifier-checking language mode. Public
+headers and their ABI records are unchanged. The retained compiler emits
+conservative loads/stores and does not exploit those erased optimization hints.
+The used `returns_twice` attribute is conservative; aggregate `aligned(n)`
+attributes actually update size/alignment and validate power-of-two bounds.
+Task 196 owns packaging this profile with the installed driver.
 
-## Integer/pointer/control backend (task 194)
+`va_start`, `va_end`, `va_copy` and typed `va_arg` parse and check their operands.
+Start requires a variadic definition and its last named parameter; argument
+requests reject void/array/function types. Explicit shared IR nodes carry these
+operations, including aggregate size/alignment. Their runtime lowering and
+register-save-area behavior remain task 195; unsupported machine operations
+fail rather than becoming implicit external helper calls.
 
-`code.c`, `local2.c` and `backend.h` implement the native replacement for the
-PDP-11 code/local2/order/table target. The retained front end lowers real C
-expressions into shared mip IR; ordered templates and the generic resource
-allocator select checked integer operations. The initial target conservatively
-spills live values, using RAX/RCX/RDX scratch registers and preserving callee-saved
-registers. Frames and incoming GP/stack parameters follow SysV AMD64; frame size
-tracks block high-water marks and stays 16-byte aligned. This is a private backend
-consumer until task 196 installs the compiler command.
+The bounded implementation permits 1024 symbols, 1024 expression nodes, 4096
+dimension cells, 128 initializer levels, 150 parameters per function, 1024
+signature descriptors, 2048 parameter descriptors and 64 KiB of parameter-name
+storage. Packed types allow 29 modifiers. Parameter storage is allocated after
+startup and names share a bounded arena. IR allocation follows actual tree size;
+this keeps the same frontend usable at the 16 MiB baseline. Object/frame tables
+have checked signed-int bit offsets; the kernel's 8 MiB executable image limit
+is unchanged.
 
-Integer generation covers native-width loads/stores/conversions, arithmetic,
-signed/unsigned division/remainder, bit operations/shifts, comparisons, unary
-operations, conditional/comma/short-circuit expressions, assignments and pre/post
-updates. Compound lvalue addresses are evaluated once. Narrow compound operations
-use promoted arithmetic types before narrowing; unsigned bitfield values promote
-correctly, and stores preserve neighboring objects. Pointer indexing/differences
-retain 64-bit intermediates. Global addresses use full-width relocations and
-local address additions avoid host signed overflow.
+## Shared IR and machine consumers
 
-Labels, if/loops, break/continue, goto and 64-bit switch cases emit native control
-flow. Data hooks emit integer initializers, symbolic pointers, strings, zeroes,
-commons and static locals in native sections without PDP-11 symbol prefixes or
-runtime helpers. Floating values, aggregate copying/classification, call
-instructions and variadic handling remain task 195; extended types/header and
-public driver gates remain 193/196. Unsupported remaining operations fail rather
-than emitting placeholder code.
+`ir.c` iteratively lowers retained trees to checked mip nodes with exact names,
+byte offsets, field descriptors, native aggregate layout and source lines.
+Version 2 tree/stream formats carry the expanded types and ten explicit x87
+bytes; they reject version 1 instead of reinterpreting its type packing. The
+native object/call ABI remains version 1. See [shared mip](mip.md).
 
-`make TOOLCHAIN_PREFIX= test-pcc-integer test-pcc-front test-mip-infra
- test-inventory` checks production front-end/backend code under host sanitizers.
-A separately compiled GCC caller and a GCC build of the same C functions verify
-GP/overflow-stack arguments, signed/unsigned arithmetic, pointer/field stores,
-byte-sized field boundaries, compound promotions, short-circuiting, loops,
-switch/goto, static data and symbolic addresses above 4 GiB. Native 16/128 MiB
-acceptance runs cpp -> private PCC -> installed as -> installed ld -> execution
-as root and an ordinary user, comparing exact host/native assembly. It also
-compiles a complete C main program and executes it with native crt0/libc.
-Fixtures use ordinary separate translation units to keep assembler working sets
-within the 16 MiB baseline; larger complete-tool rebuilds remain the 128 MiB
-acceptance gate. This completes task 194, not the remaining compiler family.
+`output.c` selects direct consumption or `--emit-pass`/`--read-pass` in separate
+processes. The backend needs no parser symbol/dimension state. Parser and backend
+label sequences are independent. Both paths produce identical assembly and
+diagnostics. A separate analysis executable links only shared mip services and
+consumes the same real compiler passes.
 
+`code.c` and `local2.c` implement native target hooks, checked template/resource
+consumption, RAX/RCX/RDX integer operations and stack spills. Frames preserve the
+ABI and stay aligned. Calls independently allocate six GP and eight SSE
+registers, then ordered stack overflow slots; variadic callees receive the SSE
+count in AL. Integer widths, full-width addresses, field stores, short-circuit
+control, switch/goto, static data and scalar floating conversions are executed
+against independent GCC callers/callees. Exact-size aggregate copies evaluate
+addresses once and preserve neighboring objects. General aggregate calls and
+long-double operations still require task 195.
 
-Task 195 integer call increment implements direct and indirect calls through the
-shared IR. Caller arguments use six GP registers followed by ordered stack
-slots, with 16-byte call alignment even inside spilled expressions. Reserved
-argument slots keep nested evaluations and the function pointer intact. Return
-values are normalized to the declared native width. Integer ABI tests include
-nine arguments, a separately compiled GCC callback, recursion, zero-argument
-calls and nested calls. `make TOOLCHAIN_PREFIX= test-pcc-integer` passes host
-ASan/UBSan/GCC oracles and native root/user 16/128 MiB execution. Floating,
-aggregate and variadic call classification remain pending; task 195 is open.
+## Acceptance
 
+`make TOOLCHAIN_PREFIX= test-pcc-front test-pcc-integer test-mip test-mip-infra
+ test-mip-pass test-inventory` checks production parsing, semantics and shared
+consumption under ASan/UBSan and native root/ordinary-user execution at 16/128 MiB.
+Every one of the 49 libc headers is separately preprocessed and consumed in both
+native configurations using the explicit adapter. A combined header/type fixture
+checks prototypes, callbacks, assertions, alignment, void/bool, extended types,
+math and variadic IR. Binary80 literals, including subnormals and tie cases, are
+compared with GCC's independently emitted bit patterns. Malformed syntax,
+invalid bounds/types/signatures/suffixes, source limits and deterministic source
+mutations must fail safely.
 
-Task 195 scalar floating increment adds SSE float/double loads, stores,
-arithmetic, negation, comparisons (including unordered NaNs), truth tests,
-compound assignments and conversions to/from native integer widths. Unsigned
-64-bit conversions handle the range above INT64_MAX. Static floating data is
-emitted as exact bit patterns. Calls and parameter entry independently allocate
-six GP/eight SSE registers, then ordered overflow stack slots, and set AL to the
-SSE argument count for calls into variadic callees. Default argument promotions
-apply to unprototyped calls. The retained K&R parameter model is still in use;
-ANSI prototypes and extended native types remain part of task 193.
-
-`make TOOLCHAIN_PREFIX= test-pcc-integer test-pcc-front` verifies independent GCC
-callers/callees, including a GCC variadic consumer, mixed GP/SSE register
-exhaustion, nested floating calls, float rounding/stores, NaNs/signed zero and
-unsigned conversion boundaries. Host sanitizer/oracle and native root/user
-16/128 MiB gates run the same cases. Aggregate argument/result classification,
-long-double support and variadic function definitions remain open; this scalar
-increment does not complete task 195.
-
-
-The next task 195 increment implements STASG as an exact-size byte copy, leaving
-the destination address as the aggregate expression value. Aggregate lvalues
-retain their addresses rather than passing through scalar loads. The native
-copy uses only caller-saved registers, evaluates each address once, supports
-self-assignment and copies complete nested arrays and padding. GCC/native tests
-cover a three-byte struct with a neighboring guard byte and a larger structure
-containing a native-long array. This closes aggregate assignment only; argument
-and result ABI classification remains open.
-
-
-Task 192 now supplies the real split-pass integration used by this private
-compiler. `--emit-pass` runs the retained frontend and emits checked text/IR
-records; `--read-pass` consumes them in a fresh backend process without parser
-symbol/dimension tables. A separate analysis executable links only shared mip
-services and consumes the same PCC output. `test-pcc-integer` compares direct
-and split assembly and diagnostics and assembles/links/executes the split result
-at 16/128 MiB as root and ordinary user, including 255-byte symbols. Full native
-language/header, machine ABI and installed driver gates remain 193/195/196.
+Native execution checks typed float calls, long-long rank/arithmetic, boolean
+conversions, math predicates and existing integer/floating/call/aggregate-copy
+cases through cpp -> PCC -> as -> ld, including direct/split-pass equivalence.
+Ordinary translation units bound native assembler working sets. Short `ld -r`
+groups keep final link commands within the terminal line limit while preserving
+all execution cases. These checks complete the frontend contract, not remaining
+machine ABI, installed driver or full V7 rebuild work. Git history records the
+implementation and test evidence.

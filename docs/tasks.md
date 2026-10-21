@@ -19,8 +19,8 @@ The inventory accounts for **223 components, 2,144 distribution files and
 7 partial, 0 prototype and 134 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **411 tracking tasks: 204 done, 2 in progress
-and 205 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–170, 177–192, 194, 202, 219, 223, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **411 tracking tasks: 205 done, 1 in progress
+and 205 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–170, 177–194, 202, 219, 223, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -345,7 +345,7 @@ are accounted for. Final native rebuild acceptance is task 207.
 | 190 | Port strip | Done | Git history; [native ELF/archive stripping](archives.md); make test-strip test-ar test-arcv test-ranlib test-inventory test-install-unit; sanitizer/mutated ELF, ELF/PIE execution, preservation/idempotence and native execution at 16/128 MiB |
 | 191 | Port ranlib | Done | Git history; [native ELF archive indexes](archives.md); make test-ranlib test-inventory test-install-unit; independent big-endian index/offset checks, linked C execution, malformed ELF preservation, 16/128 MiB installed acceptance |
 | 192 | Retarget shared mip compiler infrastructure | Done | Git history; [native shared services and consumer ownership](mip.md); `make test-mip test-mip-infra test-mip-pass test-pcc-front test-pcc-integer test-inventory`; sanitizer/independent stream oracle, real direct/split PCC compilation, alternate producer and independent analysis consumption at 16/128 MiB as root/user; full compiler/lint/Fortran commands retain separate tasks |
-| 193 | Retarget PCC front end | In progress | Retained grammar/scanner/semantics use LP64 and shared mip IR; `make test-pcc-front` sanitizer/GCC oracle and native cpp/private front-end records at 16/128 MiB; [scope and remaining native type/header work](pcc.md); no installed compiler yet |
+| 193 | Retarget PCC front end | Done | Git history; [retained frontend and native header profile](pcc.md); `make test-pcc-front test-pcc-integer test-mip test-mip-infra test-mip-pass test-inventory`; typed/K&R signatures, native extended types/literals, all 49 libc headers, safe failures and scalar execution/oracles at 16/128 MiB as root/user; remaining machine ABI/driver/rebuild work is 195/196/207 |
 | 194 | PCC integer/pointer/control-flow backend | Done | Git history; [native integer backend](pcc.md); `make test-pcc-integer test-pcc-front test-mip-infra test-inventory`; sanitizer/GCC execution oracle, GP/stack ABI, exact native assembly and cpp/PCC/as/ld execution as root/user at 16/128 MiB; calls/floating/aggregate remain 195 |
 | 195 | PCC calls, structures and floating-point backend | In progress | Integer and float/double code/calls, mixed GP/SSE overflow and GCC variadic callees tested with native 16/128 MiB execution; aggregate/long-double/variadic definitions remain; [evidence](pcc.md) |
 | 196 | Complete PCC driver and supplied alternate targets | To do | pcc script/ccom/fort; native program acceptance |

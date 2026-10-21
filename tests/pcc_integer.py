@@ -54,6 +54,14 @@ int copy_triplet(p,q) struct triplet *p,*q;{*p = *q;return p->c;}
 struct fields {unsigned a:3;int b:5;unsigned c:9;};
 int fields_less(p) struct fields *p;{return p->a < -1;}
 int fields_update(p) struct fields *p;{p->a=7;p->b= -9;p->c=300;return p->a+p->b+p->c;}
+long long native_ll(a,b) long long a;unsigned b;{return a+b;}
+unsigned long long native_ull(a,b) unsigned long long a,b;{return a/b;}
+_Bool native_bool(a) long a;{return (_Bool)a;}
+_Bool native_float_bool(a) double a;{return (_Bool)a;}
+float native_float(float a,float b){return a+b;}
+float native_float_call(float (*fn)(float,float)){return fn(1.25,2.5);}
+int native_predicates(double x){return __builtin_isnan(x)+2*__builtin_isfinite(x)+4*__builtin_signbit(x);}
+void native_store(int *p){*p=7;return;}
 double fp_math(a,b) double a,b;{double x;x=(a+b)*(a-b);x/=b;return -x;}
 float fp_float(a,b) double a,b;{static float scale=1.0;float x;x=a*scale;x+=b;return x++;}
 unsigned long fp_to_unsigned(a) double a;{return (unsigned long)a;}
@@ -83,6 +91,11 @@ struct fields {unsigned a:3;int b:5;unsigned c:9;};extern int fields_update(stru
 long callback_target(long a,long b,long c,long d,long e,long f,long g,long h,long i){return a+2*b+3*c+4*d+5*e+6*f+7*g+8*h+9*i;}
 struct bundle {char tag;long values[3];char tail;};extern int copy_bundle(struct bundle *,struct bundle *);
 struct triplet {char a,b,c;};extern int copy_triplet(struct triplet *,struct triplet *);
+extern long long native_ll(long long,unsigned);
+extern unsigned long long native_ull(unsigned long long,unsigned long long);
+extern _Bool native_bool(long),native_float_bool(double);
+extern float native_float(float,float),native_float_call(float (*)(float,float));
+extern void native_store(int *);extern int native_predicates(double);
 extern long callback_call(long (*)(),long);
 extern double fp_math(double,double),unsigned_to_fp(unsigned long),fp_callback(double (*)(),double);
 extern float fp_float(double,double);
@@ -99,6 +112,13 @@ int main(void){
  CHECK(copy_bundle(&to,&to)==10);}
  {struct {struct triplet v;char guard;} to={{0,0,0},99};struct triplet from={1,2,3};
  CHECK(copy_triplet(&to.v,&from)==3 && to.v.a==1 && to.v.b==2 && to.guard==99);}
+ CHECK(native_ll(-1LL,0xffffffffU)==4294967294LL);
+ CHECK(native_ull(~0ULL,3ULL)==0x5555555555555555ULL);
+ CHECK(native_bool(256) && !native_bool(0) && native_bool(-1));
+ CHECK(native_float_bool(0.5) && !native_float_bool(-0.0));
+ CHECK(native_float(1.25f,2.5f)==3.75f && native_float_call(native_float)==3.75f);
+ CHECK(native_predicates(-0.0)==6 && native_predicates(__builtin_nan(""))==1 && native_predicates(1.0/0.0)==0);
+ native_store(p);CHECK(p[0]==7);p[0]=10;
  CHECK(callback_call(callback_target,1)==292);
  p[0]= -7;CHECK(fp_int_compound(p,2.5)== -2 && p[0]== -2);p[0]=10;
  CHECK(fp_math(7.5,2.5)== -20.0);CHECK(fp_float(1.25,2.5)==3.75f);
@@ -181,7 +201,7 @@ with tempfile.TemporaryDirectory(prefix='nx-pcc-integer-') as tmp:
     for name in ('common','trees','match','allo','reader'):
         obj=d/('mip-'+name+'.o');mip.append(str(obj))
         subprocess.run([f.replace('-std=gnu89','-std=c11') for f in flags]+['-c','user/mip/'+name+'.c','-o',str(obj)],cwd=ROOT,check=True)
-    files=['scan','pftn','trees','optim','xdefs','common','local','numbers','ir','code','local2','output']
+    files=['scan','pftn','trees','optim','xdefs','common','local','numbers','ir','declarations','real','code','local2','output']
     subprocess.run(flags+[f'user/pcc/{n}.c' for n in files]+['build/gen-pcc/cgram.c',*mip,'-o',str(binary)],cwd=ROOT,check=True)
     def compile(name):
         p=subprocess.run([str(binary),str(OUT/(name+'.c'))],capture_output=True,env=ENV,timeout=10)

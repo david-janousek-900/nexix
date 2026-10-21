@@ -25,19 +25,25 @@ int bycode(int t,int i) {printf("string-byte %d %d\n",i,t);return 0;}
 int zecode(int n) {printf("zero %d\n",n*SZINT/8);inoff+=(OFFSZ)n*SZINT;return 0;}
 int vfdzero(int n) {printf("zero-bits %d\n",n);inoff+=n;return 0;}
 int incode(NODE *p,int size) {printf("integer-bits %d %lu\n",size,(unsigned long)p->lval);inoff+=size;return 0;}
-int fincode(double d,int size) {printf("floating-bits %d %.17g\n",size,d);inoff+=size;return 0;}
+int fincode(long double d,int size) {
+    if(size==128) {uint64_t lo;unsigned short hi;memcpy(&lo,&d,8);memcpy(&hi,(char *)&d+8,2);printf("extended-bits %016lx %04x\n",(unsigned long)lo,(unsigned)hi);}
+    else printf("floating-bits %d %.17g\n",size,(double)d);inoff+=size;return 0;
+}
 int cinit(NODE *p,int size) {ecode(p);inoff+=size;return 0;}
 int ecode(NODE *p) {
     if(nerrors)return 0;
-    struct mip_node *nodes=calloc(TREESZ,sizeof(*nodes));if(!nodes)cerror("no memory for shared IR");
-    struct mip_arena a={nodes,0,TREESZ};uint32_t root=pcc_lower(p,&a);unsigned char *wire=NULL;size_t size=0;
+    unsigned capacity=pcc_ir_capacity(p);
+    struct mip_node *nodes=calloc(capacity,sizeof(*nodes));if(!nodes)cerror("no memory for shared IR");
+    struct mip_arena a={nodes,0,capacity};uint32_t root=pcc_lower(p,&a);unsigned char *wire=NULL;size_t size=0;
     if(mip_encode(&a,root,&wire,&size))cerror("cannot encode shared IR");
     printf("expression root=%u count=%u bytes=%lu\n",root,a.count,(unsigned long)size);
     unsigned i;for(i=0;i<a.count;i++)printf("node %u %s type=%lu value=%ld offset=%ld name=%s left=%u right=%u\n",i,mip_op_name(nodes[i].op),(unsigned long)nodes[i].type,(long)nodes[i].value,(long)nodes[i].offset,nodes[i].name,nodes[i].left,nodes[i].right);
     free(wire);free(nodes);return 0;
 }
 int main(int argc,char **argv) {
-    if(argc>2) {fprintf(stderr,"usage: pcc-front [preprocessed-source]\n");return 2;}
-    if(argc==2) {if(!freopen(argv[1],"r",stdin))return 1;snprintf(ftitle,sizeof(ftitle),"%s",argv[1]);}
+    int source=1;
+    if(argc>1 && !strcmp(argv[1],"--native-source")) {pcc_native_source=1;source++;}
+    if(argc>source+1) {fprintf(stderr,"usage: pcc-front [preprocessed-source]\n");return 2;}
+    if(argc>source) {if(!freopen(argv[source],"r",stdin))return 1;snprintf(ftitle,sizeof(ftitle),"%s",argv[source]);}
     printf("pcc-front abi=1\n");return mainp1(1,argv);
 }

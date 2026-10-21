@@ -36,9 +36,18 @@ static int run(FILE *assembly,FILE *pass,FILE *scratch) {
     CHECK(mip_copy(&a,root,&short_arena,&id)==-1 && !short_arena.count && id==99);
     CHECK(mip_copy(&a,root,&a,&id)==-1);
     unsigned char *wire=NULL;size_t length=0;
-    CHECK(!mip_encode(&a,root,&wire,&length) && length==250);
+    CHECK(!mip_encode(&a,root,&wire,&length) && length==280);
     CHECK(!mip_decode(wire,length,&c,&id) && id==root && c.count==3);
     CHECK(c.nodes[0].value==19 && c.nodes[1].value==23 && c.nodes[0].source_line==42);
+    /* Version 2 carries binary80 bits independently of the binary64 slot. */
+    b.nodes[0].type=LDOUBLE;b.nodes[0].extended[0]=1;b.nodes[0].extended[7]=0x80;
+    b.nodes[0].extended[8]=0xff;b.nodes[0].extended[9]=0x3f;
+    unsigned char *extended=NULL;size_t extended_size=0;
+    CHECK(!mip_encode(&b,root,&extended,&extended_size));
+    CHECK(!memcmp(extended+60,b.nodes[0].extended,10));
+    mip_arena_init(&c,decoded,16);
+    CHECK(!mip_decode(extended,extended_size,&c,&id) && c.nodes[0].type==LDOUBLE && !memcmp(c.nodes[0].extended,b.nodes[0].extended,10));
+    free(extended);mip_arena_init(&c,decoded,16);CHECK(!mip_decode(wire,length,&c,&id));
     unsigned char *again=NULL;size_t other=0;CHECK(!mip_encode(&c,id,&again,&other) && other==length && !memcmp(wire,again,length));free(again);
     for(size_t i=0;i<length;i++) {
         struct mip_arena truncated={decoded,0,16};id=123;

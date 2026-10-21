@@ -58,6 +58,7 @@ extern char *scnames();
 struct symtab {
 	char sname[NCHNAM];
 	int member_owner;
+    unsigned prototype;
 	TWORD stype;  /* type word */
 
 	char sclass;  /* storage class */
@@ -83,7 +84,7 @@ extern int ftnno;
 extern int blevel;
 extern int instruct, stwart;
 
-extern int lineno, nerrors;
+extern int lineno, nerrors,pcc_native_source;
 typedef union {
 	int intval;
 	NODE * nodep;
@@ -91,7 +92,8 @@ typedef union {
 extern YYSTYPE yylval;
 
 extern CONSZ lastcon;
-extern double dcon;
+extern long double dcon;
+extern TWORD fcon_type;
 
 extern char ftitle[1024];
 extern struct symtab stab[];

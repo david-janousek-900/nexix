@@ -20,7 +20,9 @@ static unsigned width(TWORD type) {
     return (unsigned)l.size;
 }
 static void normalize(TWORD type) {
-    if(floating(type) || aggregate(type))return;
+    if(type==VOID || floating(type) || aggregate(type))return;
+    if(type==LDOUBLE)cerror("long double machine operations require task 195");
+    if(type==BOOL) {puts(" testq %rax,%rax\n setne %al\n movzbq %al,%rax");return;}
     unsigned n=width(type);int uns=ISUNSIGNED(type);
     if(n==1)puts(uns?" movzbq %al,%rax":" movsbq %al,%rax");
     else if(n==2)puts(uns?" movzwq %ax,%rax":" movswq %ax,%rax");
@@ -108,11 +110,14 @@ static void binary_instruction(unsigned op,TWORD type) {
 struct binary_context {unsigned op;TWORD type;};
 static void spill_float(void) {puts(" subq $8,%rsp\n movq %xmm0,(%rsp)");depth++;}
 static void restore_float(void) {puts(" movq (%rsp),%xmm0\n addq $8,%rsp");depth--;}
+static void truth(TWORD);
 static void scalar_convert(TWORD from,TWORD to) {
+    if(to==VOID)return;
+    if(to==BOOL && floating(from)) {truth(from);return;}
     if(from==to)return;
     if(floating(from) && floating(to)) {puts(to==FLOAT?" cvtsd2ss %xmm0,%xmm0":" cvtss2sd %xmm0,%xmm0");return;}
     if(floating(to)) {
-        if(from==ULONG) {
+        if(from==ULONG || from==ULLONG) {
             int ordinary=target_label(),end=target_label();
             printf(" testq %%rax,%%rax\n jns .L%d\n movq %%rax,%%rcx\n andl $1,%%eax\n shrq $1,%%rcx\n orq %%rcx,%%rax\n",ordinary);
             printf(" cvtsi2%sq %%rax,%%xmm0\n add%s %%xmm0,%%xmm0\n jmp .L%d\n",to==FLOAT?"ss":"sd",to==FLOAT?"ss":"sd",end);
@@ -122,7 +127,7 @@ static void scalar_convert(TWORD from,TWORD to) {
     }
     if(floating(from)) {
         const char *s=from==FLOAT?"ss":"sd";
-        if(to==ULONG) {
+        if(to==ULONG || to==ULLONG) {
             int small=target_label(),end=target_label();uint64_t bits=from==FLOAT?UINT64_C(0x5f000000):UINT64_C(0x43e0000000000000);
             printf(" movq $%lu,%%rax\n movq %%rax,%%xmm1\n ucomi%s %%xmm1,%%xmm0\n jb .L%d\n sub%s %%xmm1,%%xmm0\n cvtt%s2siq %%xmm0,%%rax\n movq $-9223372036854775808,%%rcx\n xorq %%rcx,%%rax\n jmp .L%d\n",(unsigned long)bits,s,small,s,s,end);
             deflab(small);printf(" cvtt%s2siq %%xmm0,%%rax\n",s);deflab(end);
@@ -256,6 +261,16 @@ static void generate(uint32_t root,unsigned nesting) {
         address(n->left,nesting+1);push("rax");generate(n->right,nesting+1);
         puts(" movq %rax,%rsi");pop("rdi");
         printf(" movq %%rdi,%%r10\n movq $%lu,%%rcx\n cld\n rep movsb\n movq %%r10,%%rax\n",(unsigned long)n->aggregate_size);break;
+    case FP_NAN:case FP_FINITE:case FP_SIGN: {
+        TWORD type=node_at(n->left)->type;generate(n->left,nesting+1);
+        if(op==FP_NAN)printf(" ucomi%s %%xmm0,%%xmm0\n setp %%al\n movzbq %%al,%%rax\n",type==FLOAT?"ss":"sd");
+        else {
+            puts(" movq %xmm0,%rax");
+            if(op==FP_SIGN)printf(" shrq $%u,%%rax\n andl $1,%%eax\n",type==FLOAT?31:63);
+            else printf(" shrq $%u,%%rax\n andl $%u,%%eax\n cmpl $%u,%%eax\n setne %%al\n movzbq %%al,%%rax\n",type==FLOAT?23:52,type==FLOAT?255:2047,type==FLOAT?255:2047);
+        }
+        break;
+    }
     case FCON: {
         uint64_t bits;
         if(n->type==FLOAT) {float f=(float)n->floating;uint32_t v;memcpy(&v,&f,4);bits=v;}

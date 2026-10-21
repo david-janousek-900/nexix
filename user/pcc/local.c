@@ -8,13 +8,26 @@ NODE *clocal(NODE *p) {
         if(ISPTR(p->left->type) || ISPTR(p->right->type))p->op+=ULT-LT;
         break;
     case PCONV:case SCONV:
-        if(q->op==FCON && (p->type==FLOAT || p->type==DOUBLE)) {
-            if(p->type==FLOAT)q->dval=(double)(float)q->dval;
+        if(q->op==FCON && !mip_scalar_layout(p->type,&to) && p->type!=FLOAT && p->type!=DOUBLE && p->type!=LDOUBLE) {
+            long double v=q->dval,upper=1,lower;unsigned bits=(unsigned)to.size*8,i;
+            if(p->type==BOOL)q->lval=v!=0;
+            else {
+                for(i=0;i<(ISUNSIGNED(p->type)?bits:bits-1);i++)upper*=2;
+                lower=ISUNSIGNED(p->type)?0:-upper;
+                if(!(v>lower-1 && v<upper)) {uerror("floating constant outside integer range");q->lval=0;}
+                else q->lval=ISUNSIGNED(p->type)?(int64_t)(uint64_t)v:(int64_t)v;
+            }
+            q->op=ICON;q->rval=NONAME;q->type=p->type;q->csiz=p->csiz;p->op=FREE;return q;
+        }
+        if(q->op==FCON && (p->type==FLOAT || p->type==DOUBLE || p->type==LDOUBLE)) {
+            if(p->type==FLOAT)q->dval=(long double)(float)q->dval;
+            else if(p->type==DOUBLE)q->dval=(long double)(double)q->dval;
             q->type=p->type;q->cdim=p->cdim;q->csiz=p->csiz;p->op=FREE;return q;
         }
         if(!mip_scalar_layout(p->type,&to) && !mip_scalar_layout(q->type,&from) &&
-           p->type!=FLOAT && p->type!=DOUBLE && q->type!=FLOAT && q->type!=DOUBLE) {
+           p->type!=FLOAT && p->type!=DOUBLE && p->type!=LDOUBLE && q->type!=FLOAT && q->type!=DOUBLE && q->type!=LDOUBLE) {
             if(q->op==ICON) {
+                if(p->type==BOOL)q->lval=q->lval!=0;
                 uint64_t bits=(uint64_t)q->lval;
                 if(to.size<8) {
                     unsigned width=(unsigned)to.size*8;uint64_t mask=(UINT64_C(1)<<width)-1;
@@ -22,7 +35,7 @@ NODE *clocal(NODE *p) {
                 }
                 q->lval=(int64_t)bits;q->type=p->type;q->cdim=p->cdim;q->csiz=p->csiz;p->op=FREE;return q;
             }
-            if(q->op!=FLD && to.size==from.size && (p->type&TMASK)==(q->type&TMASK)) {
+            if(p->type!=BOOL && q->op!=FLD && to.size==from.size && (p->type&TMASK)==(q->type&TMASK)) {
                 q->type=p->type;q->cdim=p->cdim;q->csiz=p->csiz;p->op=FREE;return q;
             }
         }
@@ -39,7 +52,7 @@ NODE *clocal(NODE *p) {
     }
     return p;
 }
-TWORD ctype(TWORD type) {return type;}
+TWORD ctype(TWORD type) {return type==SIGNED?INT:type;}
 NODE *offcon(OFFSZ off,TWORD type,int d,int s) {
     NODE *p=bcon(0);(void)type;(void)d;(void)s;p->lval=off/SZCHAR;
     if(p->lval<INT32_MIN || p->lval>INT32_MAX)p->type=p->csiz=LONG;

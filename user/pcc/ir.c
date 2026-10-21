@@ -14,7 +14,8 @@ static uint32_t child(NODE *p) {
 static int lower_node(NODE *p) {
     unsigned index=slot(p);if(current_bridge->map[index]!=MIP_NO_NODE)return 0;
     struct mip_node n={0};uint32_t id;unsigned kind=(unsigned)optype(p->op);
-    n.op=(unsigned)p->op;n.type=p->type;n.left=n.right=MIP_NO_NODE;n.value=(uint64_t)p->lval;n.floating=p->dval;n.source_line=(unsigned)lineno;
+    n.op=(unsigned)p->op;n.type=p->type;n.left=n.right=MIP_NO_NODE;n.value=(uint64_t)p->lval;n.floating=(double)p->dval;
+    if(p->type==LDOUBLE)memcpy(n.extended,&p->dval,10);n.source_line=(unsigned)lineno;
     if(kind!=LTYPE)n.left=child(p->left);
     if(kind==BITYPE)n.right=child(p->right);
     if(p->op==REG)n.reg=(unsigned)p->rval;
@@ -28,8 +29,8 @@ static int lower_node(NODE *p) {
         } else if(p->rval<0)snprintf(n.name,sizeof(n.name),".L%d",-p->rval);
     }
     if(p->op==FLD) {n.field_size=UPKFSZ(p->rval);n.field_shift=UPKFOFF(p->rval);}
-    if(p->op==STASG || p->op==STARG || p->op==STCALL || p->op==UNARY STCALL) {
-        n.aggregate_size=(uint64_t)tsize(STRTY,p->left->cdim,p->left->csiz)/8;n.aggregate_alignment=(unsigned)talign(STRTY,p->left->csiz)/8;
+    if((p->op==VA_ARG && (p->type==STRTY || p->type==UNIONTY)) || p->op==STASG || p->op==STARG || p->op==STCALL || p->op==UNARY STCALL) {
+        n.aggregate_size=(uint64_t)tsize(STRTY,p->op==VA_ARG?p->cdim:p->left->cdim,p->op==VA_ARG?p->csiz:p->left->csiz)/8;n.aggregate_alignment=(unsigned)talign(STRTY,p->op==VA_ARG?p->csiz:p->left->csiz)/8;
     }
     if(mip_node_add(current_bridge->arena,&n,&id))cerror("cannot lower front-end node %d",p->op);
     current_bridge->map[index]=id;return 0;
@@ -39,3 +40,7 @@ uint32_t pcc_lower(NODE *p,struct mip_arena *arena) {
     ctx->arena=arena;unsigned i;for(i=0;i<TREESZ;i++)ctx->map[i]=MIP_NO_NODE;
     current_bridge=ctx;walkf(p,lower_node);uint32_t root=ctx->map[slot(p)];current_bridge=NULL;free(ctx);return root;
 }
+
+static unsigned required_nodes;
+static int count_node(NODE *p) {(void)p;if(++required_nodes>TREESZ)cerror("IR tree too large");return 0;}
+unsigned pcc_ir_capacity(NODE *p) {required_nodes=0;walkf(p,count_node);return required_nodes;}

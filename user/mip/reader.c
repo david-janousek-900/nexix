@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 enum {END=0,TEXT=1,EXPRESSION=2,INITIALIZER=3};
-static const unsigned char signature[16]={'N','X','M','P','S',0,1,0,1,0,0,0,0,0,0,0};
+static const unsigned char signature[16]={'N','X','M','P','S',0,2,0,1,0,0,0,0,0,0,0};
 static void put32(unsigned char *p,uint32_t v) {for(unsigned i=0;i<4;i++)p[i]=(unsigned char)(v>>(8*i));}
 static uint32_t get32(const unsigned char *p) {uint32_t v=0;for(unsigned i=0;i<4;i++)v|=(uint32_t)p[i]<<(8*i);return v;}
 static int bits_valid(unsigned bits) {return bits==8 || bits==16 || bits==32 || bits==64 || bits==128;}
@@ -58,7 +58,7 @@ int mip_pass_read(FILE *file,const struct mip_pass_consumer *consumer,void *cont
             if(!has_zero(data,n))status=consumer->text(context,data,n);
         } else if(n>=16) {
             uint32_t count=get32(data+8);
-            if(count && count<=MIP_NODE_LIMIT && count<=(n-16)/78) {
+            if(count && count<=MIP_NODE_LIMIT && count<=(n-16)/MIP_WIRE_NODE_SIZE) {
                 struct mip_node *nodes=calloc(count,sizeof(*nodes));
                 if(nodes) {
                     struct mip_arena arena={nodes,0,count};uint32_t root;

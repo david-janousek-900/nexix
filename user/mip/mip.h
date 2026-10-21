@@ -10,7 +10,7 @@ typedef int64_t mip_offset; /* byte offsets; never an int holding a pointer */
 typedef uint64_t mip_constant; /* two's-complement bits, including ULONG */
 #define MIP_NO_NODE UINT32_MAX
 #define MIP_NAME_MAX 255
-#define MIP_MAX_MODIFIERS 30
+#define MIP_MAX_MODIFIERS 29
 
 /* The original sixteen basic types retain their manifest numbers. */
 struct mip_layout { uint64_t size; unsigned alignment; };
@@ -34,6 +34,7 @@ struct mip_node {
     mip_constant value;
     mip_offset offset;
     double floating;
+    unsigned char extended[10]; /* canonical little-endian x87 significand/sign-exponent */
     uint64_t aggregate_size;
     unsigned aggregate_alignment;
     unsigned reg, label, field_size, field_shift, source_line;
@@ -48,6 +49,7 @@ void mip_arena_init(struct mip_arena *, struct mip_node *, uint32_t capacity);
 int mip_node_valid(const struct mip_arena *, const struct mip_node *);
 int mip_node_add(struct mip_arena *, const struct mip_node *, uint32_t *out);
 #define MIP_NODE_LIMIT 65536U
+#define MIP_WIRE_NODE_SIZE 88U
 #define MIP_WIRE_LIMIT (32UL*1024*1024)
 typedef int (*mip_visitor)(const struct mip_node *, uint32_t, void *);
 int mip_walk(const struct mip_arena *, uint32_t root, mip_visitor, void *);

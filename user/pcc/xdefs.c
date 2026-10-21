@@ -3,10 +3,12 @@
 /*	communication between lexical routines	*/
 
 char	ftitle[1024] = "";   	/* title of the file */
+int pcc_native_source;
 int	lineno;		/* line number of the input file */
 
 CONSZ lastcon;  /* the last constant read by the lexical analyzer */
-double dcon;   /* the last double read by the lexical analyzer */
+long double dcon;
+TWORD fcon_type=DOUBLE;   /* the last double read by the lexical analyzer */
 
 
 /*	symbol table maintainence */

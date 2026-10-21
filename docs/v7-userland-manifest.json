@@ -9470,15 +9470,15 @@
         }
       ],
       "blockers": [
-        "Shared services are reusable native modules, not an installed user command. Complete comp/fort prototypes and build/helper outputs remain tasks 193/195/196."
+        "Complete the remaining native machine ABI and installed compiler/alternate-target integration under tasks 195/196."
       ],
       "unresolved": [
-        "Tasks 193/195/196: complete native frontend type/header contracts, remaining aggregate/long-double/variadic-definition ABI and installed compiler/alternate-target/build-helper integration. Shared services and their direct/split-pass/analysis consumers are complete under task 192."
+        "Tasks 195/196: aggregate argument/result classification, long-double machine operations, variadic-definition runtime lowering, and installed compiler/alternate-target/build-helper integration remain. Task 193 completes retained frontend native types, typed/K&R signatures, literal precision, builtin IR and the explicitly tested native-header source profile."
       ],
       "acceptance": [
         "make test-mip test-mip-infra test-mip-pass tests shared native contracts, serialization, streaming failures and independent producer/analysis consumers under sanitizers and at 16/128 MiB.",
         "make test-pcc-front test-pcc-integer verifies real retained PCC source consumption, identical direct/split-pass assembly/diagnostics and native as/ld execution as root and ordinary user at 16/128 MiB.",
-        "Keep incomplete compiler prototypes and installed outputs under tasks 193/195/196; full lint and Fortran ports retain their separate component tasks."
+        "Keep incomplete compiler prototypes and installed outputs under tasks 195/196; full lint and Fortran ports retain their separate component tasks."
       ],
       "source_files": [
         "reference/v7/usr/src/cmd/mip/allo.c",
@@ -9505,7 +9505,6 @@
       ],
       "source_availability": "supplied",
       "unresolved_tasks": [
-        193,
         195,
         196
       ],
@@ -9526,7 +9525,7 @@
       "port_notes": "docs/mip.md",
       "scope_notes": [
         "Task 192 shared types/operators/IR, traversal/copy, diagnostics, templates/resources and tree/stream interfaces are consumed by actual retained-PCC compilation and a parser-independent analysis client. Independent alternate-producer fixtures validate the same interface without claiming a Fortran compiler or full lint pass.",
-        "Native one/two-pass contexts replace convert/fconvert source-edit instructions. The complete compiler prototypes and their remaining output/helper reconciliation are explicitly owned by tasks 193/195/196."
+        "Native one/two-pass contexts replace convert/fconvert source-edit instructions. Task 193 completes frontend type/header contracts; remaining compiler prototype output/helper reconciliation is explicitly owned by tasks 195/196."
       ]
     },
     {
@@ -10983,14 +10982,15 @@
         }
       ],
       "blockers": [
-        "Complete native ABI/API and data-asset audit before porting."
+        "Complete the remaining native machine ABI and installed compiler/alternate-target integration under tasks 195/196."
       ],
       "unresolved": [
-        "Tasks 193/195/196: native extended type/header closure, aggregate/long-double/variadic-definition ABI and installed driver/alternate targets remain; integer and float/double scalar calls are tested."
+        "Tasks 195/196: aggregate argument/result classification, long-double machine operations, variadic-definition runtime lowering, and installed compiler/alternate-target/build-helper integration remain. Task 193 completes retained frontend native types, typed/K&R signatures, literal precision, builtin IR and the explicitly tested native-header source profile."
       ],
       "acceptance": [
         "Compile native C fixtures through shared mip and target backend, then assemble/link/run.",
-        "Verify each installed output and its documented behavior; test helpers through their consuming pipeline."
+        "Verify each installed output and its documented behavior; test helpers through their consuming pipeline.",
+        "make test-pcc-front validates all installed libc headers with user/pcc/native.h and --native-source, extended literal bits, prototype/builtin constraints and malformed-source paths at 16/128 MiB; test-pcc-integer executes typed-float/long-long/bool/math cases through native direct/split cpp/PCC/as/ld pipelines."
       ],
       "source_files": [
         "reference/v7/usr/src/cmd/pcc/code.c",
@@ -11007,7 +11007,6 @@
         }
       ],
       "unresolved_tasks": [
-        193,
         195,
         196
       ],
@@ -11029,11 +11028,15 @@
         "user/pcc/scan.c",
         "user/pcc/trace.c",
         "user/pcc/trees.c",
-        "user/pcc/xdefs.c"
+        "user/pcc/xdefs.c",
+        "user/pcc/declarations.c",
+        "user/pcc/real.c",
+        "user/pcc/native.h",
+        "user/pcc/output.c"
       ],
       "port_notes": "docs/pcc.md",
       "scope_notes": [
-        "Retained PCC/mip front-end sources parse native-width declarations/control/aggregates and lower to shared mip IR; private native cpp/frontend consumption passes at 16/128 MiB. No complete compiler is claimed.",
+        "Task 193 retained frontend closure: extended native types/layouts and binary80 literal precision, typed and legacy parameter semantics, checked variadic/math IR and all 49 libc headers with an explicit source adapter pass sanitizer/GCC and native 16/128 MiB tests as root and ordinary user. Full compiler/driver and machine ABI completion are not claimed.",
         "Task 194 integer/pointer/control emission passes shared mip template/resource consumption, GCC ABI/execution oracles and complete native cpp/PCC/as/ld execution at 16/128 MiB as root and ordinary user."
       ]
     },

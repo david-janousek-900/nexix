@@ -13,11 +13,11 @@ with tempfile.TemporaryDirectory(prefix='nx-mip-') as tmp:
         '-fsanitize=address,undefined','-fno-pie','-no-pie','-Iuser/mip',
         'user/mip/common.c','user/mip/trees.c','user/mip/match.c','user/mip/allo.c','user/mip/diagnostics.c','tests/mip-infrastructure.c','-o',str(binary)],cwd=ROOT,check=True)
     subprocess.run([str(binary),str(OUT/'generated.s'),str(OUT/'pass.ir'),str(Path(tmp)/'diag')],env=ENV,check=True)
-    data=(OUT/'pass.ir').read_bytes();assert data[:8]==b'NXMIP\0\1\0'
+    data=(OUT/'pass.ir').read_bytes();assert data[:8]==b'NXMIP\0\2\0'
     assert struct.unpack_from('<II',data,8)==(3,2)
     fields=[];offset=16
     for i in range(3):
-        f=struct.unpack_from('<IQIIQQQQIIIIIIH',data,offset);offset+=78+f[-1];fields.append(f)
+        f=struct.unpack_from('<IQIIQQQ10sQIIIIIIH',data,offset);offset+=88+f[-1];fields.append(f)
     assert offset==len(data) and fields[0][0:5]==(4,5,0xffffffff,0xffffffff,19)
     assert fields[1][4]==23 and fields[2][0:4]==(6,5,0,1) and fields[0][-2]==42
     expected='''.text

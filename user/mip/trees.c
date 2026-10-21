@@ -53,28 +53,29 @@ static uint64_t get(struct bytes *b,unsigned n) {uint64_t v=0;for(unsigned i=0;i
 int mip_encode(const struct mip_arena *a,uint32_t root,unsigned char **out,size_t *length) {
     if(!out || !length || valid(a,root))return -1;
     size_t size=16;
-    for(uint32_t i=0;i<a->count;i++) {size_t n=strlen(a->nodes[i].name);if(n+78>MIP_WIRE_LIMIT-size)return -1;size+=78+n;}
+    for(uint32_t i=0;i<a->count;i++) {size_t n=strlen(a->nodes[i].name);if(n+MIP_WIRE_NODE_SIZE>MIP_WIRE_LIMIT-size)return -1;size+=MIP_WIRE_NODE_SIZE+n;}
     struct bytes b={malloc(size),0};if(!b.p)return -1;
-    memcpy(b.p,"NXMIP\0\1\0",8);b.n=8;put(&b,a->count,4);put(&b,root,4);
+    memcpy(b.p,"NXMIP\0\2\0",8);b.n=8;put(&b,a->count,4);put(&b,root,4);
     for(uint32_t i=0;i<a->count;i++) {
         const struct mip_node *n=a->nodes+i;uint64_t fp;memcpy(&fp,&n->floating,8);
         put(&b,n->op,4);put(&b,n->type,8);put(&b,n->left,4);put(&b,n->right,4);put(&b,n->value,8);put(&b,(uint64_t)n->offset,8);put(&b,fp,8);
+        memcpy(b.p+b.n,n->extended,10);b.n+=10;
         put(&b,n->aggregate_size,8);put(&b,n->aggregate_alignment,4);put(&b,n->reg,4);put(&b,n->label,4);put(&b,n->field_size,4);put(&b,n->field_shift,4);put(&b,n->source_line,4);
         size_t len=strlen(n->name);put(&b,len,2);memcpy(b.p+b.n,n->name,len);b.n+=len;
     }
     *out=b.p;*length=b.n;return 0;
 }
 int mip_decode(const unsigned char *data,size_t length,struct mip_arena *out,uint32_t *result) {
-    if(!data || !out || !result || !out->nodes || out->count || length<16 || length>MIP_WIRE_LIMIT || memcmp(data,"NXMIP\0\1\0",8))return -1;
+    if(!data || !out || !result || !out->nodes || out->count || length<16 || length>MIP_WIRE_LIMIT || memcmp(data,"NXMIP\0\2\0",8))return -1;
     struct bytes b={(unsigned char *)data,8};uint32_t count=(uint32_t)get(&b,4),root=(uint32_t)get(&b,4);
-    if(!count || count>MIP_NODE_LIMIT || count>out->capacity || root>=count || count>(length-16)/78)return -1;
+    if(!count || count>MIP_NODE_LIMIT || count>out->capacity || root>=count || count>(length-16)/MIP_WIRE_NODE_SIZE)return -1;
     struct mip_node *nodes=calloc(count,sizeof(*nodes));if(!nodes)return -1;
     struct mip_arena tmp={nodes,0,count};int status=-1;
     for(uint32_t i=0;i<count;i++) {
-        if(length-b.n<78)goto done;
+        if(length-b.n<MIP_WIRE_NODE_SIZE)goto done;
         struct mip_node n={0};uint64_t fp,offset;uint32_t id;
         n.op=(unsigned)get(&b,4);n.type=get(&b,8);n.left=(uint32_t)get(&b,4);n.right=(uint32_t)get(&b,4);n.value=get(&b,8);offset=get(&b,8);memcpy(&n.offset,&offset,8);
-        fp=get(&b,8);memcpy(&n.floating,&fp,8);n.aggregate_size=get(&b,8);n.aggregate_alignment=(unsigned)get(&b,4);n.reg=(unsigned)get(&b,4);n.label=(unsigned)get(&b,4);
+        fp=get(&b,8);memcpy(&n.floating,&fp,8);memcpy(n.extended,data+b.n,10);b.n+=10;n.aggregate_size=get(&b,8);n.aggregate_alignment=(unsigned)get(&b,4);n.reg=(unsigned)get(&b,4);n.label=(unsigned)get(&b,4);
         n.field_size=(unsigned)get(&b,4);n.field_shift=(unsigned)get(&b,4);n.source_line=(unsigned)get(&b,4);size_t len=(size_t)get(&b,2);
         if(len>MIP_NAME_MAX || len>length-b.n)goto done;
         for(size_t j=0;j<len;j++)if(!data[b.n+j])goto done;

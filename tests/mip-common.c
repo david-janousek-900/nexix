@@ -6,13 +6,14 @@ int main(void) {
     struct mip_layout l;
     mip_type t=ULONG, u=0;
     uint64_t aligned;
-    static const unsigned expected[16]={0,0,1,2,4,8,4,8,0,0,4,0,1,2,4,8};
-    for(unsigned i=0;i<16;i++) {
+    static const unsigned expected[21]={0,0,1,2,4,8,4,8,0,0,4,0,1,2,4,8,8,8,16,0,1};
+    for(unsigned i=0;i<21;i++) {
         int r=mip_scalar_layout(i,&l);
         CHECK(expected[i] ? (!r && l.size==expected[i] && l.alignment==expected[i]) : r==-1);
         CHECK(!mip_type_add(i,PTR,&u));
         CHECK(!mip_scalar_layout(u,&l) && l.size==8 && l.alignment==8);
     }
+    CHECK(!mip_type_valid(SIGNED) && !mip_type_valid(UINT64_C(1)<<63));
     for(unsigned i=0;i<MIP_MAX_MODIFIERS;i++) CHECK(!mip_type_add(t,i%2?ARY:PTR,&t));
     u=123; CHECK(mip_type_add(t,PTR,&u)==-1 && u==123);
     for(unsigned i=0;i<MIP_MAX_MODIFIERS;i++) CHECK(!mip_type_remove(t,&t));

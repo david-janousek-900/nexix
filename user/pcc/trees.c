@@ -125,14 +125,15 @@ buildtree( o, l, r ) register NODE *l, *r; {
 		case MINUS:
 		case MUL:
 		case DIV:
+			TWORD real_type=pcc_arithmetic(l->type,r->type);
 			if( l->op == ICON ){
-				l->dval = ISUNSIGNED(l->type)?(double)(uint64_t)l->lval:(double)l->lval;
+				l->dval = ISUNSIGNED(l->type)?(long double)(uint64_t)l->lval:(long double)l->lval;
 				}
 			if( r->op == ICON ){
-				r->dval = ISUNSIGNED(r->type)?(double)(uint64_t)r->lval:(double)r->lval;
+				r->dval = ISUNSIGNED(r->type)?(long double)(uint64_t)r->lval:(long double)r->lval;
 				}
 			l->op = FCON;
-			l->type = l->csiz = DOUBLE;
+			l->type = l->csiz = real_type;
 			r->op = FREE;
 			switch(o){
 			case PLUS:
@@ -158,6 +159,16 @@ buildtree( o, l, r ) register NODE *l, *r; {
         l=makety(l,INT,0,INT);
     if(r && r->op==FLD && r->type==UNSIGNED && UPKFSZ(r->rval)<SZINT)r=makety(r,INT,0,INT);
     p = block( o, l, r, INT, 0, INT );
+
+    if(o==CAST && l->type==VOID) {p->right=block(SCONV,r,NIL,VOID,0,VOID);p->type=VOID;p->csiz=VOID;return p;}
+    if(o==RETURN && l->type==VOID) {if(r->type!=VOID)uerror("value returned from void function");return p;}
+    if((l && l->type==VOID) || (r && r->type==VOID)) {
+        if(o==COMOP || (o==COLON && l->type==VOID && r->type==VOID) || (o==QUEST && r->type==VOID && l->type!=VOID) || (o==FORCE && l->type==VOID)) {
+            NODE *value=(o==FORCE)?l:r;p->type=value->type;p->cdim=value->cdim;p->csiz=value->csiz;return p;
+        }
+        uerror("void expression has no value");return p;
+    }
+
 
 	actions = opact(p);
 
@@ -217,6 +228,7 @@ buildtree( o, l, r ) register NODE *l, *r; {
 				break;
 				}
 			p->type = sp->stype;
+            p->prototype=sp->prototype;
 			p->cdim = sp->dimoff;
 			p->csiz = sp->sizoff;
 			p->lval = 0;
@@ -249,9 +261,9 @@ buildtree( o, l, r ) register NODE *l, *r; {
 		case FCON:
 			p->lval = 0;
 			p->rval = 0;
-			p->type = DOUBLE;
+			p->type = fcon_type;
 			p->cdim = 0;
-			p->csiz = DOUBLE;
+			p->csiz = fcon_type;
 			break;
 
 		case STREF:
@@ -370,8 +382,10 @@ buildtree( o, l, r ) register NODE *l, *r; {
 			break;
 
 		case CALL:
-			p->right = r = strargs( p->right );
+			p->right = r = strargs(pcc_call_arguments(l,p->right));
 		case UNARY CALL:
+            if(o==UNARY CALL)pcc_call_arguments(l,NIL);
+            p->prototype=pcc_proto_result(l->prototype);
 			if( !ISPTR(l->type)) uerror("illegal function");
 			p->type = DECREF(l->type);
 			if( !ISFTN(p->type)) uerror("illegal function");
@@ -423,8 +437,8 @@ strargs( p ) register NODE *p;  { /* rewrite structure flavored arguments */
 		p->left = buildtree( UNARY AND, p->left, NIL );
 		p = clocal(p);
 		}
-	else if( p->type == FLOAT ) p = makety(p,DOUBLE,0,DOUBLE);
-	else if( p->type == CHAR || p->type == UCHAR || p->type == SHORT || p->type == USHORT ) p = makety(p,INT,0,INT);
+	else if( !p->fixed_argument && p->type == FLOAT ) p = makety(p,DOUBLE,0,DOUBLE);
+	else if( !p->fixed_argument && (p->type == CHAR || p->type == UCHAR || p->type == SHORT || p->type == USHORT) ) p = makety(p,INT,0,INT);
 	return( p );
 	}
 
@@ -565,6 +579,7 @@ stref( p ) register NODE *p; {
 	if( off != 0 ) p = clocal( block( PLUS, p, offcon( off, t, d, s ), t, d, s ) );
 
 	p = buildtree( UNARY MUL, p, NIL );
+    p->prototype=q->prototype;
 
 	/* if field, build field info */
 
@@ -845,10 +860,10 @@ makety( p, t, d, s ) register NODE *p; TWORD t; {
 		}
 
 	if( p->op == ICON ){
-		if( t==DOUBLE||t==FLOAT ){
+		if( t==DOUBLE||t==FLOAT||t==LDOUBLE ){
 			p->op = FCON;
 			if( ISUNSIGNED(p->type) ){
-				p->dval = (double)(uint64_t)p->lval;
+				p->dval = (long double)(uint64_t)p->lval;
 				}
 			else {
 				p->dval = p->lval;
@@ -872,6 +887,7 @@ block( o, l, r, t, d, s ) register NODE *l, *r; TWORD t; {
 	p->op = o;
 	p->left = l;
 	p->right = r;
+    p->prototype=l?l->prototype:0;
 	p->type = t;
 	p->cdim = d;
 	p->csiz = s;
@@ -1086,12 +1102,12 @@ moditype( ty ) TWORD ty; {
 	case USHORT:
 		return( MINT|MDBI );
 	case UNSIGNED:
-	case ULONG:
+	case ULONG:case LLONG:case ULLONG:case BOOL:
 	case INT:
 	case LONG:
 		return( MINT|MDBI|MPTI );
 	case FLOAT:
-	case DOUBLE:
+	case DOUBLE:case LDOUBLE:
 		return( MDBI );
 	default:
 		return( MPTR|MPTI );
@@ -1132,12 +1148,11 @@ prtdcon( p ) register NODE *p; {
 
 	if( p->op == FCON ){
 		locctr( DATA );
-		defalign( ALDOUBLE );
+		defalign(talign(p->type,p->csiz));
 		deflab( i = getlab() );
-		fincode( p->dval, SZDOUBLE );
+		fincode(p->dval,(int)tsize(p->type,p->cdim,p->csiz));
 		p->lval = 0;
 		p->rval = -i;
-		p->type = DOUBLE;
 		p->op = NAME;
 		}
 	}

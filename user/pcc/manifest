@@ -20,9 +20,10 @@ typedef struct pcc_node NODE;
 struct pcc_node {
     int op, rall, su, cdim, csiz, rval, label, stsize, stalign;
     TWORD type;
+    unsigned prototype, base_prototype, fixed_argument;
     NODE *left, *right;
     CONSZ lval;
-    double dval;
+    long double dval;
     char name[NCHNAM];
 };
 extern NODE *NIL, *lastfree;

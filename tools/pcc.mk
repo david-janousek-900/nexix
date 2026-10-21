@@ -1,5 +1,5 @@
 # Retained PCC front end, privately inspected until native backend/driver closure.
-PCC_FRONT_NAMES = scan pftn trees optim xdefs common local numbers ir
+PCC_FRONT_NAMES = scan pftn trees optim xdefs common local numbers ir declarations real
 PCC_FRONT_OBJECTS = $(addprefix build/pcc-,$(addsuffix .o,$(PCC_FRONT_NAMES)))
 PCC_CFLAGS = $(V7_CFLAGS) -Iuser/pcc -Wno-comment -Wno-return-mismatch -Werror=pointer-to-int-cast -Werror=int-to-pointer-cast
 build/gen-pcc/cgram.c: user/pcc/cgram.y tools/pcc_generate.py rootfs/usr/lib/yaccpar build/host-v7-yacc

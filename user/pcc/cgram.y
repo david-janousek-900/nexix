@@ -80,6 +80,15 @@
 %term CM  56
 %term SM  57
 %term ASSIGN  58
+%term ELLIPSIS 112
+%term VA_START 113
+%term VA_END 114
+%term VA_COPY 115
+%term VA_ARG 116
+%term ATTRIBUTE 117
+%term FP_NAN 118
+%term FP_FINITE 119
+%term FP_SIGN 120
 
 /* at last count, there were 7 shift/reduce, 1 reduce/reduce conflicts
 /* these involved:
@@ -112,7 +121,7 @@
 %start ext_def_list
 
 %type <intval> con_e ifelprefix ifprefix whprefix forprefix doprefix switchpart
-		enum_head str_head name_lp
+		enum_head str_head name_lp proto_open proto_list attribute
 %type <nodep> e .e term attributes oattributes type enum_dcl struct_dcl
 		cast_type null_decl funct_idn declarator fdeclarator nfdeclarator
 		elist
@@ -143,7 +152,9 @@ data_def:
 		|  oattributes init_dcl_list  SM
 			={  $1->op = FREE; }
 		|  oattributes fdeclarator {
-				defid( tymerge($1,$2), curclass==STATIC?STATIC:EXTDEF );
+				NODE *definition=tymerge($1,$2);
+                defid(definition,curclass==STATIC?STATIC:EXTDEF);
+                pcc_proto_definition(definition->prototype);
 				}  function_body
 			={
 			    if( blevel ) cerror( "function level error" );
@@ -206,6 +217,10 @@ type:		   TYPE
 			={  $1->type = types( $1->type, $2->type, $3->type );
 			    $2->op = $3->op = FREE;
 			    }
+        | TYPE TYPE TYPE TYPE
+            ={ $1->type=types(types($1->type,$2->type,UNDEF),$3->type,$4->type);
+               $2->op=$3->op=$4->op=FREE; }
+
 		|  struct_dcl
 		|  enum_dcl
 		;
@@ -234,6 +249,9 @@ moe:		   NAME
 
 struct_dcl:	   str_head LC type_dcl_list optsemi RC
 			={ $$ = dclstruct($1);  }
+        | str_head LC type_dcl_list optsemi RC attribute
+            ={ $$=dclstruct($1);pcc_align_type($$,$6); }
+
 		|  STRUCT NAME
 			={  $$ = rstruct($2,$1); }
 		;
@@ -297,13 +315,15 @@ nfdeclarator:	   MUL nfdeclarator
 				$$ = bdty( UNARY MUL, $2, 0 ); }
 		|  nfdeclarator  LP   RP
 			={  uftn:
-				$$ = bdty( UNARY CALL, $1, 0 );  }
+				$$ = bdty( UNARY CALL, $1, 0 ); $$->prototype=pcc_proto_empty(); }
+        | nfdeclarator LP proto_open proto_list RP
+            ={ $$=bdty(UNARY CALL,$1,0);$$->prototype=pcc_proto_end(); }
 		|  nfdeclarator LB RB
 			={  uary:
 				$$ = bdty( LB, $1, 0 );  }
 		|  nfdeclarator LB con_e RB
 			={  bary:
-				if( (int)$3 <= 0 ) werror( "zero or negative subscript" );
+				if($3<0)uerror("negative array bound");else if(!$3)werror("zero array bound");
 				$$ = bdty( LB, $1, $3 );  }
 		|  NAME
 			={  $$ = bdty( NAME, NIL, $1 );  }
@@ -314,6 +334,8 @@ fdeclarator:	   MUL fdeclarator
 			={  goto umul; }
 		|  fdeclarator  LP   RP
 			={  goto uftn; }
+        | fdeclarator LP proto_open proto_list RP
+            ={ $$=bdty(UNARY CALL,$1,0);$$->prototype=pcc_proto_end(); }
 		|  fdeclarator LB RB
 			={  goto uary; }
 		|  fdeclarator LB con_e RB
@@ -324,21 +346,36 @@ fdeclarator:	   MUL fdeclarator
 			={
 				if( blevel!=0 ) uerror("function declaration in bad context");
 				$$ = bdty( UNARY CALL, bdty(NAME,NIL,$1), 0 );
+                $$->prototype=pcc_proto_empty();
 				stwart = 0;
 				}
+        | name_lp proto_open proto_list RP
+            ={ $$=bdty(UNARY CALL,bdty(NAME,NIL,$1),0);$$->prototype=pcc_proto_end();stwart=0; }
+
 		|  name_lp RP
 			={
 				$$ = bdty( UNARY CALL, bdty(NAME,NIL,$1), 0 );
+                $$->prototype=pcc_proto_empty();
 				stwart = 0;
 				}
 		;
 
 name_lp:	  NAME LP
 			={
-				/* turn off typedefs for argument names */
-				stwart = SEENAME;
+				/* Keep V7 identifier-list shadowing outside the native profile. */
+                stwart = pcc_native_source?0:SEENAME;
 				}
 		;
+
+proto_open: /* empty */ ={ $$=pcc_proto_begin(); } ;
+proto_list: parameter ={ $$=0; }
+        | proto_list CM parameter
+        | proto_list CM ELLIPSIS ={ pcc_proto_variadic(); }
+        ;
+parameter: type nfdeclarator ={ pcc_proto_parameter($1,$2); }
+        | type fdeclarator ={ pcc_proto_parameter($1,$2); }
+        | type null_decl ={ pcc_proto_parameter($1,$2); }
+        ;
 
 name_list:	   NAME
 			={ ftnarg( $1 );  stwart = SEENAME; }
@@ -363,6 +400,9 @@ init_declarator:   nfdeclarator
 		|  fdeclarator
 			={  defid( tymerge($<nodep>0,$1), uclass(curclass) );
 			}
+        | fdeclarator attribute
+            ={ defid(tymerge($<nodep>0,$1),uclass(curclass)); }
+
 		|  xnfdeclarator optasgn e
 			%prec CM
 			={  doinit( $3 );
@@ -381,6 +421,12 @@ initializer:	   e
 		|  ibrace init_list optcomma RC
 			={  irbrace(); }
 		;
+
+attribute: ATTRIBUTE LP LP NAME RP RP
+            ={ if(strcmp(stab[$4].sname,"returns_twice"))uerror("unsupported attribute");$$=0; }
+        | ATTRIBUTE LP LP NAME LP con_e RP RP RP
+            ={ if(strcmp(stab[$4].sname,"aligned"))uerror("unsupported attribute");$$=$6; }
+        ;
 
 optcomma	:	/* VOID */
 		|  CM
@@ -588,7 +634,7 @@ switchpart:	   SWITCH  LP  e  RP
 /*	EXPRESSIONS	*/
 con_e:		   { $<intval>$=instruct; stwart=instruct=0; } e
 			%prec CM
-			={  $$ = icons( $2 );  instruct=$<intval>1; }
+			={  $$ = icons(optim($2));  instruct=$<intval>1; }
 		;
 .e:		   e
 		|
@@ -710,6 +756,14 @@ term:		   term INCOP
 			    idname = $3;
 			    $$ = buildtree( STREF, $1, buildtree( NAME, NIL, NIL ) );
 			    }
+        | FP_NAN LP e RP ={ $$=pcc_predicate(FP_NAN,$3); }
+        | FP_FINITE LP e RP ={ $$=pcc_predicate(FP_FINITE,$3); }
+        | FP_SIGN LP e RP ={ $$=pcc_predicate(FP_SIGN,$3); }
+        | VA_START LP e CM e RP %prec CM ={ $$=pcc_vararg(VA_START,$3,$5,NIL); }
+        | VA_END LP e RP ={ $$=pcc_vararg(VA_END,$3,NIL,NIL); }
+        | VA_COPY LP e CM e RP %prec CM ={ $$=pcc_vararg(VA_COPY,$3,$5,NIL); }
+        | VA_ARG LP e CM cast_type RP %prec CM ={ $$=pcc_vararg(VA_ARG,$3,NIL,$5); }
+
 		|  NAME
 			={  idname = $1;
 			    /* recognize identifiers in initializations */
@@ -753,6 +807,10 @@ null_decl:	   /* empty */
 			={ $$ = bdty( UNARY CALL, bdty(NAME,NIL,-1),0); }
 		|  LP null_decl RP LP RP
 			={  $$ = bdty( UNARY CALL, $2, 0 ); }
+        | LP null_decl RP LP proto_open proto_list RP
+            ={ $$=bdty(UNARY CALL,$2,0);$$->prototype=pcc_proto_end(); }
+        | LP proto_open proto_list RP
+            ={ $$=bdty(UNARY CALL,bdty(NAME,NIL,-1),0);$$->prototype=pcc_proto_end(); }
 		|  MUL null_decl
 			={  goto umul; }
 		|  null_decl LB RB
@@ -792,8 +850,9 @@ bdty( op, p, v ) NODE *p; {
 	switch( op ){
 
 	case UNARY MUL:
-	case UNARY CALL:
 		break;
+    case UNARY CALL:
+        q->prototype=0;break;
 
 	case LB:
 		q->right = bcon(v);

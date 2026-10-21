@@ -2,7 +2,7 @@
 #include "mfile1"
 #include <ctype.h>
 TWORD pcc_promote(TWORD t) {
-    if(t==CHAR || t==SHORT || t==UCHAR || t==USHORT || t==ENUMTY || t==MOETY)return INT;
+    if(t==BOOL || t==CHAR || t==SHORT || t==UCHAR || t==USHORT || t==ENUMTY || t==MOETY)return INT;
     return t;
 }
 TWORD pcc_value_type(NODE *n) {
@@ -11,14 +11,18 @@ TWORD pcc_value_type(NODE *n) {
 }
 TWORD pcc_arithmetic(TWORD a,TWORD b) {
     a=pcc_promote(a);b=pcc_promote(b);
+    if(a==LDOUBLE || b==LDOUBLE)return LDOUBLE;
     if(a==DOUBLE || b==DOUBLE)return DOUBLE;
     if(a==FLOAT || b==FLOAT)return FLOAT;
+    if(a==ULLONG || b==ULLONG)return ULLONG;
+    if(a==LLONG || b==LLONG)return a==ULONG || b==ULONG?ULLONG:LLONG;
     if(a==ULONG || b==ULONG)return ULONG;
     if(a==LONG || b==LONG)return LONG; /* unsigned int fits signed native long */
     if(a==UNSIGNED || b==UNSIGNED)return UNSIGNED;
     return INT;
 }
 uint64_t pcc_integer_bits(uint64_t value,TWORD t) {
+    if(t==BOOL)return value!=0;
     struct mip_layout l;if(mip_scalar_layout(t,&l) || l.size==8)return value;
     unsigned width=(unsigned)l.size*8;uint64_t mask=(UINT64_C(1)<<width)-1;
     value&=mask;if(!ISUNSIGNED(t) && (value&(UINT64_C(1)<<(width-1))))value|=~mask;
@@ -48,7 +52,7 @@ int pcc_conval(NODE *p,int op,NODE *q) {
         }
         break;
     case LS:case RS: {
-        unsigned width=type==LONG || type==ULONG || ISPTR(type)?64:32;
+        unsigned width=type==LONG || type==ULONG || type==LLONG || type==ULLONG || ISPTR(type)?64:32;
         if((uint64_t)q->lval>=width) {uerror("invalid constant shift");return 0;}
         result=op==LS?a<<(unsigned)q->lval:uns?a>>(unsigned)q->lval:(uint64_t)((int64_t)a>>(unsigned)q->lval);break;
     }
@@ -83,8 +87,7 @@ int pcc_number(int first) {
     if(c!=EOF)ungetc(c,stdin);text[count]=0;
     int floating=0;size_t i;for(i=0;i<count;i++)if(text[i]=='.' || (!hex && (text[i]=='e' || text[i]=='E')) || (hex && (text[i]=='p' || text[i]=='P')))floating=1;
     if(floating) {
-        char *end;dcon=strtod(text,&end);if((*end=='f' || *end=='F') && !end[1])end++;
-        if(*end)uerror("invalid floating constant");return FCON;
+        dcon=pcc_real(text,&fcon_type);return FCON;
     }
     unsigned base=10;size_t start=0;
     if(hex) {base=16;start=2;}else if(text[0]=='0')base=8;
@@ -97,14 +100,14 @@ int pcc_number(int first) {
         value=value*base+d;digits++;
     }
     unsigned u=0,l=0;
-    for(;i<count;i++) {
-        if((text[i]=='u' || text[i]=='U') && !u)u++;
-        else if((text[i]=='l' || text[i]=='L') && l<2)l++;
-        else {uerror("invalid integer constant suffix");break;}
-    }
+    if(text[i]=='u' || text[i]=='U') {u=1;i++;}
+    if(text[i]=='l' || text[i]=='L') {char letter=text[i++];l=1;if(text[i]==letter) {l=2;i++;}}
+    if(!u && (text[i]=='u' || text[i]=='U')) {u=1;i++;}
+    if(text[i])uerror("invalid integer constant suffix");
     if(!digits)uerror("integer constant has no digits");
     TWORD type;
-    if(u)type=l || value>UINT32_MAX?ULONG:UNSIGNED;
+    if(l==2)type=u || value>INT64_MAX?ULLONG:LLONG;
+    else if(u)type=l || value>UINT32_MAX?ULONG:UNSIGNED;
     else if(l)type=value>INT64_MAX?ULONG:LONG;
     else if(value<=INT32_MAX)type=INT;
     else if(base!=10 && value<=UINT32_MAX)type=UNSIGNED;

@@ -52,6 +52,10 @@ defid( q, class )  NODE *q; {
 
 	type = q->type;
 	class = fixclass( class, type );
+    if(p->stype!=UNDEF && p->stype!=FARG && type==p->stype && blevel==p->slevel) {
+        if(!pcc_proto_compatible(p->prototype,q->prototype))uerror("incompatible function prototype");
+        p->prototype=pcc_proto_merge(p->prototype,q->prototype);
+    }
     if((class==MOS || class==MOU || (class&FIELD)) && p->stype!=UNDEF && p->member_owner==member_owner) {
         uerror("duplicate member %s",p->sname);return 0;
     }
@@ -88,8 +92,8 @@ defid( q, class )  NODE *q; {
 	/* test (and possibly adjust) dimensions */
 	dsym = p->dimoff;
 	ddef = q->cdim;
-	for( temp=type; temp&TMASK; temp = DECREF(temp) ){
-		if( ISARY(temp) ){
+	for( stp=type; stp&TMASK; stp = DECREF(stp) ){
+		if( ISARY(stp) ){
 			if( dimtab[dsym] == 0 ) dimtab[dsym] = dimtab[ddef];
 			else if( dimtab[ddef]!=0 && dimtab[dsym] != dimtab[ddef] ){
 				goto mismatch;
@@ -220,7 +224,7 @@ defid( q, class )  NODE *q; {
 		p = &stab[idp];
 		goto enter;
 		}
-	uerror( "redeclaration of %.8s", p->sname );
+	uerror("redeclaration of %s",p->sname);
 	if( class==EXTDEF && ISFTN(type) ) curftn = idp;
 	return;
 
@@ -228,6 +232,7 @@ defid( q, class )  NODE *q; {
 
 	if( ddebug ) printf( "	new entry made\n" );
 	p->stype = type;
+    p->prototype=q->prototype;
 	p->sclass = class;
 	p->slevel = blevel;
 	p->offset = NOOFFSET;
@@ -359,7 +364,8 @@ dclargs(){
 			}
 		oalloc( p, &argoff );  /* always set aside space, even for register arguments */
 		}
-	cendarg();
+	pcc_check_definition(paramstk,paramno);
+    cendarg();
 	locctr(PROG);
 	defalign(ALINT);
 	++ftnno;
@@ -590,14 +596,17 @@ talign( ty, s) TWORD ty; register s; {
 	case STRTY:
 		return( dimtab[ s+2 ] );
 	case CHAR:
-	case UCHAR:
+	case UCHAR:case BOOL:
 		return( ALCHAR );
 	case FLOAT:
 		return( ALFLOAT );
+	case LDOUBLE:
+        return 128;
 	case DOUBLE:
 		return( ALDOUBLE );
 	case LONG:
 	case ULONG:
+    case LLONG:case ULLONG:
 		return( ALLONG );
 	case SHORT:
 	case USHORT:
@@ -1202,64 +1211,32 @@ nidcl( p ) NODE *p; { /* handle unitialized declarations */
 	}
 
 TWORD
-types( t1, t2, t3 ) TWORD t1, t2, t3; {
-	/* return a basic type from basic types t1, t2, and t3 */
-
-	TWORD t[3], noun, adj, unsg;
-	register i;
-
-	t[0] = t1;
-	t[1] = t2;
-	t[2] = t3;
-
-	unsg = INT;  /* INT or UNSIGNED */
-	noun = UNDEF;  /* INT, CHAR, or FLOAT */
-	adj = INT;  /* INT, LONG, or SHORT */
-
-	for( i=0; i<3; ++i ){
-		switch( t[i] ){
-
-		default:
-		bad:
-			uerror( "illegal type combination" );
-			return( INT );
-
-		case UNDEF:
-			continue;
-
-		case UNSIGNED:
-			if( unsg != INT ) goto bad;
-			unsg = UNSIGNED;
-			continue;
-
-		case LONG:
-		case SHORT:
-			if( adj != INT ) goto bad;
-			adj = t[i];
-			continue;
-
-		case INT:
-		case CHAR:
-		case FLOAT:
-			if( noun != UNDEF ) goto bad;
-			noun = t[i];
-			continue;
-			}
-		}
-
-	/* now, construct final type */
-	if( noun == UNDEF ) noun = INT;
-	else if( noun == FLOAT ){
-		if( unsg != INT || adj == SHORT ) goto bad;
-		return( adj==LONG ? DOUBLE : FLOAT );
-		}
-	else if( noun == CHAR && adj != INT ) goto bad;
-
-	/* now, noun is INT or CHAR */
-	if( adj != INT ) noun = adj;
-	if( unsg == UNSIGNED ) return( noun + (UNSIGNED-INT) );
-	else return( noun );
-	}
+types(TWORD a,TWORD b,TWORD c) {
+    TWORD t[3]={a,b,c},base=UNDEF;unsigned longs=0,shorts=0,uns=0,sign=0;
+    int i;
+    for(i=0;i<3;i++) {
+        TWORD v=t[i];if(v==UNDEF)continue;
+        if(v==UNSIGNED) {if(uns++ || sign)goto bad;continue;}
+        if(v==SIGNED) {if(sign++ || uns)goto bad;continue;}
+        if(v==LONG) {longs++;continue;}
+        if(v==LLONG || v==ULLONG) {longs+=2;if(v==ULLONG)uns++;continue;}
+        if(v==ULONG) {longs++;uns++;continue;}
+        if(v==SHORT) {shorts++;continue;}
+        if(v==LDOUBLE) {longs++;v=DOUBLE;}
+        if(base!=UNDEF)goto bad;base=v;
+    }
+    if(longs>2 || shorts>1 || (longs && shorts) || uns>1)goto bad;
+    if(base==UNDEF)base=INT;
+    if(base==DOUBLE || base==FLOAT) {
+        if(uns || sign || shorts || longs>1)goto bad;
+        return longs?(base==FLOAT?DOUBLE:LDOUBLE):base;
+    }
+    if(base==CHAR) {if(longs || shorts)goto bad;return uns?UCHAR:CHAR;}
+    if(base!=INT) {if(longs || shorts || sign || uns)goto bad;return base;}
+    base=longs==2?LLONG:longs?LONG:shorts?SHORT:INT;
+    return uns?ENUNSIGN(base):base;
+bad:uerror("illegal type combination");return INT;
+}
 
 NODE *
 tymerge( typ, idp ) NODE *typ, *idp; {
@@ -1274,8 +1251,9 @@ tymerge( typ, idp ) NODE *typ, *idp; {
 
 	if( ddebug > 2 ) fwalk( idp, eprint, 0 );
 
-	idp->type = typ->type;
+	idp->type = typ->type==SIGNED?INT:typ->type;
 	idp->cdim = curdim;
+    idp->base_prototype=typ->prototype;
 	tyreduce( idp );
 	idp->csiz = typ->csiz;
 
@@ -1304,7 +1282,7 @@ tyreduce( p ) register NODE *p; {
 	o = p->op;
 	p->op = FREE;
 
-	if( o == NAME ) return;
+	if( o == NAME ) {p->prototype=p->base_prototype;return;}
 
 	if(mip_type_add(p->type,PTR,&t))cerror("declarator nesting too deep");
 	if( o == UNARY CALL ) t += (FTN-PTR);
@@ -1315,12 +1293,18 @@ tyreduce( p ) register NODE *p; {
 		}
 
 	p->left->type = t;
+    if(o==UNARY CALL) {
+        if(!p->prototype)p->prototype=pcc_proto_empty();
+        pcc_proto_link(p->prototype,p->base_prototype);
+        p->left->base_prototype=p->prototype;
+    } else p->left->base_prototype=p->base_prototype;
 	tyreduce( p->left );
 
 	if( o == LB ) dstash( temp );
 
 	p->rval = p->left->rval;
 	p->type = p->left->type;
+    p->prototype=p->left->prototype;
 
 	}
 
@@ -1349,7 +1333,7 @@ fixtype( p, class ) register NODE *p; {
 
 	if( class==SNULL && blevel==1 && !(instruct&(INSTRUCT|INUNION)) ) class = PARAM;
 	if( class == PARAM || ( class==REGISTER && blevel==1 ) ){
-		if( type == FLOAT ) type = DOUBLE;
+		if( type == FLOAT && !pcc_typed_definition()) type = DOUBLE;
 		else if( ISARY(type) ){
 			++p->cdim;
 			type += (PTR-ARY);
@@ -1625,6 +1609,7 @@ movestab( p, q ) register struct symtab *p, *q; {
         for(i=0;i<curdim;i++)if(member_dimension[i] && dimtab[i]==old)dimtab[i]=now;
     }
     p->member_owner=q->member_owner;
+    p->prototype=q->prototype;
     p->stype = q->stype;
     p->sclass = q->sclass;
 	p->slevel = q->slevel;

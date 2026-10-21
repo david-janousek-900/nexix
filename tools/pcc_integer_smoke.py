@@ -22,7 +22,11 @@ with private_guest(qemu,iso,ram,'pcc-integer',artifacts,terminals=2,single_user=
         guest.command('/tmp/pccc --read-pass /tmp/pass > /tmp/split.s')
         guest.command(f'cmp /tmp/split.s /tmp/p{i}.s')
         guest.command(f'as -o /tmp/p{i}.o /tmp/split.s')
-    objects=' '.join(f'/tmp/p{i}.o' for i in range(len(modules)))
+    groups=[]
+    for start in range(0,len(modules),4):
+        group=f'/tmp/r{start//4}.o';groups.append(group)
+        guest.command('ld -r -o '+group+' '+' '.join(f'/tmp/p{i}.o' for i in range(start,min(start+4,len(modules)))))
+    objects=' '.join(groups)
     guest.command('ld -o /tmp/inttest /lib/crt0.o /tmp/caller.o '+objects+' -lc')
     guest.command('/tmp/inttest',stdout='PASS: PCC integer/pointer/control backend\n')
     guest.command('/lib/cpp /tmp/prog.c /tmp/prog.i')
@@ -45,7 +49,11 @@ with private_guest(qemu,iso,ram,'pcc-integer',artifacts,terminals=2,single_user=
         guest.command('/tmp/pccc --read-pass /tmp/bpass > /tmp/bsplit.s',terminal=1)
         guest.command(f'cmp /tmp/bsplit.s /tmp/b{i}.s',terminal=1)
         guest.command(f'as -o /tmp/b{i}.o /tmp/bsplit.s',terminal=1)
-    objects=' '.join(f'/tmp/b{i}.o' for i in range(len(modules)))
+    groups=[]
+    for start in range(0,len(modules),4):
+        group=f'/tmp/u{start//4}.o';groups.append(group)
+        guest.command('ld -r -o '+group+' '+' '.join(f'/tmp/b{i}.o' for i in range(start,min(start+4,len(modules)))),terminal=1)
+    objects=' '.join(groups)
     guest.command('ld -o /tmp/bobtest /lib/crt0.o /tmp/caller.o '+objects+' -lc',terminal=1)
     guest.command('/tmp/bobtest',terminal=1,stdout='PASS: PCC integer/pointer/control backend\n')
 print(f'PASS: {ram} native cpp/PCC/as/ld integer pipeline, exact assembly, mixed ABI execution and ordinary-user compilation')

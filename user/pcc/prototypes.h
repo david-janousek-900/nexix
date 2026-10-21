@@ -20,3 +20,19 @@ int lookup(char *,int),pcc_lookup_owner(char *,int,int),pcc_member(int,const cha
 int pcc_newline(void);
 
 TWORD pcc_value_type(NODE *);
+
+unsigned pcc_proto_begin(void),pcc_proto_end(void),pcc_proto_empty(void),pcc_proto_result(unsigned);
+void pcc_proto_parameter(NODE *,NODE *),pcc_proto_variadic(void),pcc_proto_definition(unsigned);
+int pcc_proto_compatible(unsigned,unsigned),pcc_typed_definition(void);
+NODE *pcc_call_arguments(NODE *,NODE *);
+void pcc_proto_link(unsigned,unsigned);
+
+long double pcc_real(const char *,TWORD *);
+int fincode(long double,int);
+NODE *pcc_vararg(unsigned,NODE *,NODE *,NODE *);
+void pcc_align_type(NODE *,int);
+unsigned pcc_proto_merge(unsigned,unsigned);
+unsigned pcc_ir_capacity(NODE *);
+int pcc_special_real(int);
+NODE *pcc_predicate(unsigned,NODE *);
+void pcc_check_definition(const int *,int);
