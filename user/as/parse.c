@@ -118,7 +118,12 @@ static struct as_expr expression(struct parser *c,int min) {
 }
 static int regname(struct parser *c,char *s,size_t n) {
     blank(c);if(*c->s!='%'){error(c,"expected register");return -1;}c->s++;
-    return identifier(c,s,n);
+    if(identifier(c,s,n))return -1;
+    if(!strcmp(s,"st")&&*c->s=='(') {
+        c->s++;if(*c->s<'0'||*c->s>'7'||c->s[1]!=')'){error(c,"invalid x87 stack register");return -1;}
+        s[2]=*c->s;s[3]=0;c->s+=2;
+    }
+    return 0;
 }
 static void operand(struct parser *c,struct as_operand *o) {
     memset(o,0,sizeof(*o));o->expression=as_absolute(0);o->scale=1;blank(c);
@@ -244,6 +249,11 @@ again:
         struct as_record *r=record(c,AS_EQUATE);if(r){r->symbol=i;r->expression=e;}return;
     }
     if(*name=='.'){directive(c,name);return;}
+    if(!strcmp(name,"rep")) {
+        char next[24];if(identifier(c,next,sizeof(next)))return;
+        if(strlen(next)+5>=32){error(c,"prefixed mnemonic too long");return;}
+        strcpy(name,"rep_");strcat(name,next);
+    }
     if(strlen(name)>=32){error(c,"mnemonic too long");return;}
     struct as_record *r=record(c,AS_INSTRUCTION);if(!r)return;strcpy(r->mnemonic,name);blank(c);
     if(!*c->s||*c->s=='#'||*c->s==';')return;

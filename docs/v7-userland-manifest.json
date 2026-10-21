@@ -1562,10 +1562,10 @@
       ],
       "reference_includes": [],
       "blockers": [
-        "Native instruction encoding, ELF object emission and installed as/as2 integration remain tasks 182\u2013184."
+        "ELF object emission and installed as/as2 integration remain tasks 183\u2013184."
       ],
       "unresolved": [
-        "Complete native x86_64 encoding, ELF relocatable output and assembler helper integration."
+        "Complete ELF relocatable output and assembler helper integration."
       ],
       "acceptance": [
         "Assemble native instructions/labels/relocations, link them and run the result.",
@@ -1603,16 +1603,17 @@
         }
       ],
       "unresolved_tasks": [
-        182,
         183,
         184
       ],
       "native_sources": [
         "user/as/parse.c",
-        "user/as/as.h"
+        "user/as/as.h",
+        "user/as/encode.c",
+        "user/as/encode.h"
       ],
       "scope_notes": [
-        "Task 181 replaces supplied PDP-11 assembly scanning with a native C first pass for documented AT&T x86_64 operands and ELF directives. Only the private parser acceptance consumer runs so far; as/as2 outputs remain unported."
+        "Tasks 181/182 replace supplied PDP-11 assembly with native C first-pass parsing and x86_64 encoding for the documented compiler ISA. Private first-pass and encoding consumers pass; installed as/as2 outputs remain pending tasks 183/184."
       ]
     },
     {

@@ -14,3 +14,25 @@ test-as-parse: test-as-parse-unit build/as-parse-test.elf multi-iso rootfs
 	$(PYTHON) tools/assembler_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-as-parse
 test-unit: test-as-parse-unit
+
+build/as-encode.o: user/as/encode.c user/as/encode.h user/as/as.h | build/.dir
+	$(CC) $(USER_CFLAGS) -Iuser/as -c $< -o $@
+build/as-encode-test.o: tests/as-encode.c user/as/encode.h user/as/as.h | build/.dir
+	$(CC) $(USER_CFLAGS) -Iuser/as -c $< -o $@
+build/as-encode-test.elf: build/crt0.o build/as-parse.o build/as-encode.o build/as-encode-test.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+build/as-encoded-code.o: build/fixtures-as/encoded.S | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/as-code-runtime.o: tests/as-code-runtime.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/as-code-runtime.elf: build/crt0.o build/as-code-runtime.o build/as-encoded-code.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+-include build/as-encode.d build/as-encode-test.d build/as-code-runtime.d
+.PHONY: test-as-encode-unit test-as-encode
+test-as-encode-unit:
+	$(PYTHON) tests/as_encoding.py
+test-as-encode: test-as-encode-unit build/as-encode-test.elf build/as-code-runtime.elf multi-iso rootfs
+	$(PYTHON) tools/as_encoding_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/as_encoding_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-as-encode
+test-unit: test-as-encode-unit

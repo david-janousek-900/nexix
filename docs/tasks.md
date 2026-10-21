@@ -19,8 +19,8 @@ The inventory accounts for **223 components, 2,144 distribution files and
 6 partial, 1 prototype and 136 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **411 tracking tasks: 196 done, 0 in progress
-and 215 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–170, 177–181, 188–191, 202, 219, 223, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **411 tracking tasks: 197 done, 0 in progress
+and 214 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–170, 177–182, 188–191, 202, 219, 223, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -333,8 +333,8 @@ are accounted for. Final native rebuild acceptance is task 207.
 | 178 | Port cpp | Done | Git history; native V7 scanner, LP64 lazy expressions, includes and generated-source fixtures; `make test-cpp` at 16/128 MiB; [port notes](cpp.md) |
 | 179 | Port ar | Done | Git history; [native archive commands and formats](archives.md); make test-ar test-inventory test-install-unit; sanitizer, GNU linker/execution, failure preservation and 16/128 MiB guest fixtures |
 | 180 | Port arcv | Done | Git history; [historical conversion](archives.md); make test-arcv test-inventory test-install-unit; V6/V7 metadata/payload preservation, malformed-input rejection, installed nm consumption at 16/128 MiB |
-| 181 | Port assembler parser, symbols and directives | Done | Git history; [native first-pass model](assembler.md); make test-as-parse test-inventory test-install-unit; GNU syntax oracle, sanitizer, operands/expressions/symbols/directives and private native consumer at 16/128 MiB; encoding/object/pipeline remain 182–184 |
-| 182 | Implement x86_64 instruction encoding | To do | Instructions required by native C/Fortran output |
+| 181 | Port assembler parser, symbols and directives | Done | Git history; [native first-pass model](assembler.md); make test-as-parse test-inventory test-install-unit; GNU syntax oracle, sanitizer, operands/expressions/symbols/directives and private native consumer at 16/128 MiB; encoding completed in 182; object/pipeline remain 183–184 |
+| 182 | Implement x86_64 instruction encoding | Done | Git history; [native integer/SSE2/x87 encoder](assembler.md); make test-as-encode test-as-parse test-inventory test-install-unit; production sanitizers, GNU byte/relocation oracle, randomized addressing and encoded System V functions at 16/128 MiB |
 | 183 | Implement assembler ELF relocatable output | To do | Sections, symbol tables and relocations |
 | 184 | Complete assembler pass/helper integration | To do | as/as2 equivalent outputs and native assembly acceptance |
 | 185 | Port linker symbol/archive resolution | To do | Retained ld logic adapted to ELF64 |
