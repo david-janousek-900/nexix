@@ -2,41 +2,41 @@
 
 Agreed direction: directly adapt **4.4BSD-Lite2** networking to Nexix. This
 replaces the previous lwIP proposal. All milestones below are **To do**;
-this document records planned work, not implemented capabilities. They are
-future-release milestones outside the numbered 0.1.0 inventory task totals in
-[tasks.md](tasks.md). Each milestone requires implementation, focused tests,
+this document records planned work, not implemented capabilities. Numbered implementation tasks **412–431** in
+[tasks.md](tasks.md#tcpip-implementation-020) track these milestones and count
+toward roadmap totals, separately from V7 inventory component ownership. Each milestone requires implementation, focused tests,
 affected regressions, documentation and a commit before completion.
 
 ## Implementation milestones
 
 Implement in dependency order; driver work can proceed alongside stack adaptation.
 
-- **Source baseline and compatibility layer:** pin the upstream source snapshot,
+- **Source baseline and compatibility layer (412–413):** pin the upstream source snapshot,
   origin and hashes; preserve an untouched reference copy and keep active ports
   outside it. Retain file-specific licenses and document the
   [Berkeley license amendment](https://www.freebsd.org/copyright/license/).
   Audit integer/pointer widths, alignment, wire layouts and byte order for LP64.
-- **Packet memory and execution:** adapt mbufs and socket buffers using bounded,
+- **Packet memory and execution (414–415):** adapt mbufs and socket buffers using bounded,
   page-backed pools with explicit allocation failures and drop counters. Serialize
   stack operations using Nexix's single-core interrupt discipline. Interrupt
   handlers acknowledge hardware, queue bounded work and wake a schedulable kernel
   worker; adapt BSD protocol timers without sleeping in interrupt callbacks.
-- **PCI and e1000:** discover QEMU's e1000 device; implement MMIO mappings, DMA
+- **PCI and e1000 (416–417):** discover QEMU's e1000 device; implement MMIO mappings, DMA
   rings, interrupts, link state and bounded receive/transmit queues. Boot normally
   when no supported NIC is present.
-- **IPv4 protocols and routing:** adapt Ethernet, loopback, ARP, ICMP echo/errors,
+- **IPv4 protocols and routing (418–423):** adapt Ethernet, loopback, ARP, ICMP echo/errors,
   IPv4 fragmentation/reassembly, UDP and TCP, including protocol control blocks
   and retransmission timers. Support static addresses/netmasks, connected routes
   and one configurable default gateway.
-- **Socket descriptors:** integrate BSD socket state with Nexix file descriptors
+- **Socket descriptors and ABI (424–426):** integrate BSD socket state with Nexix file descriptors
   and interruptible sleep/wakeup. Preserve fork/dup sharing, close-on-exec,
   final-close cleanup, partial transfers, EOF, half-close and SIGPIPE behavior.
-- **Configuration and tools:** add root-controlled socket ioctls, `ifconfig`,
+- **Configuration and tools (427–429):** add root-controlled socket ioctls, `ifconfig`,
   `route`, numeric-address `ping` and a small TCP/UDP `nc`. Raw ICMP sockets
   require root. Read optional `/etc/netstart` during startup; its absence leaves
   external networking unconfigured. Install commands, headers and documentation
   through the existing manifest and staging system.
-- **QEMU integration and acceptance:** provide an explicit e1000 user-network
+- **QEMU integration and acceptance (429–431):** provide an explicit e1000 user-network
   profile with configurable host forwarding. Document setup, limits and test
   commands; complete the acceptance scenarios below before declaring support.
 

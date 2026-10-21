@@ -29,6 +29,24 @@ class Roadmap(unittest.TestCase):
     def test_current_coverage(self):
         self.assertEqual(validate_roadmap(self.manifest, self.coverage, self.roadmap_text), [])
 
+    def test_extension_tasks_need_ownership(self):
+        del self.coverage['extensions']
+        self.reject('unowned roadmap task: 412')
+
+    def test_invalid_extension_mapping(self):
+        self.coverage['extensions'] = []
+        self.reject('roadmap extensions mapping must be an object')
+
+    def test_invalid_extension_references(self):
+        for value in [[], [True], [432], '412']:
+            with self.subTest(value=value):
+                self.coverage['extensions'] = {'tcp-ip-0.2.0': value}
+                self.reject('extension tasks must be a nonempty list of known task IDs')
+
+    def test_extension_references_must_be_sorted_and_unique(self):
+        self.coverage['extensions']['tcp-ip-0.2.0'] = [413, 412, 412]
+        self.reject('extension references must be sorted and unique')
+
     def test_unresolved_work_needs_explicit_owners(self):
         entry = next(e for e in self.manifest['entries'] if e['id'] == 'cmd.cat')
         del entry['unresolved_tasks']

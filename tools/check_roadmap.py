@@ -105,6 +105,18 @@ def validate_roadmap(manifest, coverage, roadmap_text):
                 else:
                     need(any(states.get(task) in {'To do', 'In progress'} for task in tasks),
                          f'{identifier}: unfinished component cannot map only to completed tasks')
+    extensions = coverage.get('extensions', {})
+    if not isinstance(extensions, dict):
+        errors.append('roadmap extensions mapping must be an object')
+    else:
+        for name, tasks in extensions.items():
+            need(isinstance(name, str) and bool(name.strip()), 'missing extension scope name')
+            if (not isinstance(tasks, list) or not tasks or
+                    not all(type(task) is int and task in states for task in tasks)):
+                errors.append(f'{name}: extension tasks must be a nonempty list of known task IDs')
+                continue
+            need(tasks == sorted(set(tasks)), f'{name}: extension references must be sorted and unique')
+            referenced.update(tasks)
     for task in sorted(set(states) - referenced):
         errors.append(f'unowned roadmap task: {task}')
     return errors

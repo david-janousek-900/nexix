@@ -19,8 +19,8 @@ The inventory accounts for **223 components, 2,144 distribution files and
 6 partial, 1 prototype and 136 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **411 tracking tasks: 198 done, 0 in progress
-and 213 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–170, 177–183, 188–191, 202, 219, 223, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **431 tracking tasks: 198 done, 0 in progress
+and 233 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–170, 177–183, 188–191, 202, 219, 223, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -655,8 +655,9 @@ Version **0.2.0** adds PCI/e1000 and a direct **4.4BSD-Lite2** IPv4/TCP/IP
 port, blocking BSD-style sockets and static network configuration. This replaces
 the earlier lwIP proposal. The [0.2.0 networking roadmap](networking-roadmap.md)
 records implementation milestones, public interfaces and acceptance criteria.
-Those future-release milestones are separate from the numbered 0.1.0 tasks
-and their inventory/status totals above; networking is not yet implemented.
+Tasks **412–431** track this future-release work and are included in the overall
+status totals; they do not expand the V7 inventory scope. Networking is not yet
+implemented.
 
 Start with single-core QEMU i440fx, VGA/PS/2 (or selected serial console), and IDE storage. SMP,
 physical hardware, UEFI, IPv6, secure remote access, and complete Nexix self-hosting follow
@@ -730,3 +731,34 @@ service ports before startup integration. IDs do not imply execution order.
 | 409 | Integrate V7 background services into multi-user startup | To do | After 237/238/242–245: integrate update/cron in rc, install a native crontab and service ownership, exercise scheduled atrun and calendar/dmesg consumers, cold boot and single-user/re-entry without duplicate daemons; preserve native configuration during upgrades |
 | 410 | Require task ownership for unresolved inventory work | Done | Explicit unresolved_tasks validated against pending component owners; scope_notes separate agreed limits; negative regression tests and make test-inventory; Git history |
 | 411 | Reconcile reference review and roadmap documentation | Done | Stale counts/completion claims corrected; audit findings and task mappings published; canonical requirement-table/review-total regression checks and make test-inventory; Git history |
+
+### TCP/IP implementation (0.2.0)
+
+All tasks follow the [networking contract](networking-roadmap.md), including
+single-core QEMU/e1000, static IPv4 and blocking sockets. Dependencies below
+identify prerequisite capabilities; driver and ABI work can proceed independently
+where dependencies permit. DHCP, DNS, IPv6, nonblocking sockets and select/poll
+remain deferred. Each task requires focused tests, affected regressions and a commit.
+
+| Task | Description | Status | Evidence / notes / acceptance |
+|---:|---|---|---|
+| 412 | Pin and audit 4.4BSD-Lite2 networking sources | To do | Record source origin, immutable snapshot and hashes; preserve pristine reference inputs, retain file-specific licenses and Berkeley amendment, identify imported dependencies and LP64 adaptations; verify provenance and reference byte fidelity |
+| 413 | Adapt BSD networking types and compatibility primitives | To do | After 412: isolate BSD kernel dependencies behind Nexix adapters; audit pointer widths, alignment, byte order, packet layouts and checksums; host tests and sanitizer coverage for wire encoding and compatibility primitives |
+| 414 | Implement bounded mbuf and socket-buffer pools | To do | After 413: page-backed packet/socket pools with explicit limits, ownership and drop/allocation counters; exercise exhaustion, rollback, chain operations and leak-free teardown at 16/128 MiB |
+| 415 | Add serialized network worker and protocol timers | To do | After 414: schedulable kernel worker, bounded work queues, IRQ-safe wakeup and BSD timer adaptation; no sleeping in IRQ callbacks; verify timer cancellation/expiry, queue overflow and progress while socket callers sleep |
+| 416 | Add PCI discovery for QEMU e1000 | To do | Enumerate supported PCI functions, decode BARs and interrupt routing, map device MMIO safely and enable required PCI command bits; QEMU discovery and no-NIC boot acceptance |
+| 417 | Implement e1000 DMA transmit and receive | To do | After 414–416: reset/init, MAC/link state, bounded DMA rings, IRQ acknowledgement and worker handoff; exercise RX/TX, ring wrap, full queues, malformed lengths and resource cleanup on QEMU |
+| 418 | Port Ethernet and loopback interfaces | To do | After 413–415: adapt BSD interface attachment, Ethernet framing/demultiplexing and loopback; integrate e1000 after 417; verify frame bounds, interface state and loopback packet ownership |
+| 419 | Port static IPv4 routing and ARP | To do | After 418: addresses/netmasks, connected routes, one default gateway, ARP resolution/cache expiry and bounded pending packets; verify on-link/gateway delivery, unreachable peers and invalid configuration |
+| 420 | Port IPv4 input/output and fragment handling | To do | After 419: header/checksum/length validation, forwarding-disabled local delivery, fragmentation and bounded reassembly; sanitizer tests for malformed/overlapping fragments, expiry and allocation failure |
+| 421 | Port ICMP and privileged raw echo sockets | To do | After 420: ICMP echo/errors and root-only raw ICMP socket access; verify checksums, error propagation, malformed input and unprivileged denial; expose raw operations through tasks 424–426 |
+| 422 | Port UDP protocol control blocks and datagrams | To do | After 420: bind/demultiplex, ephemeral ports, datagram send/receive and ICMP errors; verify checksums, zero-length/truncated datagrams, port conflicts and bounded queue exhaustion |
+| 423 | Port TCP state machine and retransmission | To do | After 415/420/421: connection setup/listen queues, stream buffering, sequence/window handling, retransmission, FIN/RST and TIME_WAIT; deterministic packet tests cover loss, reordering, timeout and teardown |
+| 424 | Define native socket ABI and libc interfaces | To do | After 413: append syscall/errno assignments without renumbering existing ABI; fixed-width socket addresses, public headers, byte-order/address helpers and wrappers for socket/bind/listen/accept/connect/shutdown/send/recv/sendto/recvfrom/getsockname/getpeername/setsockopt/getsockopt; header/layout and invalid-pointer tests |
+| 425 | Integrate sockets with native file descriptors | To do | After 414/424: socket allocation, checked user copies and read/write/close dispatch; preserve fork/dup sharing, close-on-exec, process-exit/final-close cleanup, EOF and SIGPIPE; meaningful descriptor lifecycle and exhaustion tests |
+| 426 | Complete blocking socket operations and options | To do | After 421–425: expose TCP/UDP/raw operations, interruptible waits, partial transfers and half-close; SO_REUSEADDR, buffer sizes, SO_ERROR and send/receive timeouts; reject unsupported families/options/flags; verify EINTR, bad addresses, reset, refusal and timeout |
+| 427 | Add privileged interface and route configuration tools | To do | After 419/424/425: root-controlled socket ioctls plus installed ifconfig/route commands; address/netmask, up/down, connected/default route configuration and queries; test authorization, malformed settings and rollback |
+| 428 | Add numeric-address ping and TCP/UDP nc | To do | After 426/427: install ping and a small nc client/listener with documented supported syntax; verify echo, TCP/UDP payloads, EOF, timeout, signal handling and command failures |
+| 429 | Integrate optional network startup and QEMU profile | To do | After 417/427: optional /etc/netstart, absent configuration leaves external networking unconfigured; explicit e1000 user-network profile and configurable host forwarding; test cold boot, no NIC, no netstart and configuration preservation during upgrades |
+| 430 | Complete networking host robustness tests | To do | After 414/415/420–426: consolidate sanitizer and deterministic packet tests for malformed input, fragments, retransmission, timer expiry, pool exhaustion and teardown; check bounded memory and allocation counters return to baseline after protocol timers expire |
+| 431 | Complete TCP/IP guest acceptance and documentation | To do | After 428–430: disposable 16/128 MiB QEMU guests cover loopback, static IPv4, ARP, ping, UDP, outbound TCP and inbound host-forwarded TCP against isolated host services; verify signals/fork/dup/cleanup and no-NIC boot, affected build/inventory/syscall/process/file/signal/console regressions; publish setup, ABI, limits, installed manifests and evidence |

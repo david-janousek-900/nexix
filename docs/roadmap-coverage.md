@@ -1,6 +1,6 @@
 # Roadmap coverage and status contract (task 37)
 
-[tasks.md](tasks.md) is the authoritative numbered 0.1.0 roadmap.
+[tasks.md](tasks.md) is the authoritative numbered roadmap for 0.1.0 and planned 0.2.0 work.
 [roadmap-coverage.json](roadmap-coverage.json) maps every inventory component
 and platform/supporting requirement to its owning or supporting task IDs.
 The [inventory](v7-userland-manifest.json) points to that map through
@@ -11,6 +11,9 @@ The [inventory](v7-userland-manifest.json) points to that map through
 Coverage schema version 2 contains the release version, task-list/inventory paths,
 task count, policy and two mappings: `components` and `requirements`. Mapping
 keys are inventory IDs; values are nonempty, sorted, unique arrays of task IDs.
+An optional `extensions` mapping owns future-release work outside the V7 inventory;
+its keys name extension scopes and its values follow the same task-ID rules.
+The `version` remains the V7 inventory baseline, not the release of every task.
 All components, requirements and tasks counted in [tasks.md](tasks.md) must be accounted for.
 There is no name-based inference or fallback assigning omitted work to a generic
 release task. New components and requirements require explicit mappings.
