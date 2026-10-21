@@ -19128,13 +19128,17 @@
       "dependencies": [],
       "reference_includes": [],
       "blockers": [
-        "Not installed in Nexix; native integration and functional acceptance remain pending."
+        "Historical images are preserved provenance only; native standalone disk/tape boot acceptance remains task 349."
       ],
-      "unresolved": [
-        "Audit native API/format compatibility and remaining transitive dependencies."
-      ],
+      "unresolved": [],
       "acceptance": [
-        "Integrate supplied inputs into the native port and verify their consuming programs."
+        "Task 351: make test-boot-artifacts verifies all six images against archive hashes/sizes and explicit native role associations; historical images are never native executables.",
+        "Task 349: implement and test native standalone boot paths before claiming native boot functionality for this component."
+      ],
+      "native_sources": [
+        "docs/boot-kernel-artifacts.json",
+        "docs/boot-kernel-artifacts.md",
+        "tools/check_boot_artifacts.py"
       ]
     },
     {

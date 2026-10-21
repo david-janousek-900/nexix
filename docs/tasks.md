@@ -19,8 +19,8 @@ The inventory accounts for **223 components, 2,144 distribution files and
 4 partial, 1 prototype and 151 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **388 tracking tasks: 176 done, 0 in progress
-and 212 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 253, 264–269, 281–282, 286–287, 295, 357, 362–388** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **388 tracking tasks: 177 done, 0 in progress
+and 211 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -557,7 +557,7 @@ required before native-port acceptance.
 | 348 | Standalone restor | To do | Restore into disposable media with standalone runtime |
 | 349 | Native boot/mtboot equivalents | To do | Disk/tape startup paths and controlled QEMU acceptance |
 | 350 | Port standalone maketape/build helpers | To do | cc+ld-stand/cpgroup and media creation |
-| 351 | Account for historical boot/kernel binaries | To do | Preserve provenance; associate native outputs, never claim old binaries execute |
+| 351 | Account for historical boot/kernel binaries | Done | Git history; [six-image provenance/native-role map](boot-kernel-artifacts.md); make test-boot-artifacts test-inventory; hashes/sizes, exact ownership and negative false-execution/path/omission fixtures; standalone boot remains 349 |
 
 ### Rebuild, upgrades and release acceptance
 

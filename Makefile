@@ -482,6 +482,11 @@ test-unit: build/ide-test
 
 # Task 21: read-only source inventory and coverage checks.
 .PHONY: test-inventory
+.PHONY: test-boot-artifacts
+test-boot-artifacts:
+	$(PYTHON) tools/check_boot_artifacts.py
+	$(PYTHON) tests/boot_artifacts.py
+test-inventory: test-boot-artifacts
 test-inventory:
 	$(PYTHON) tools/check_inventory.py
 	$(PYTHON) tests/inventory.py
