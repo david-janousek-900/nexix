@@ -298,6 +298,37 @@ static int bmap(struct v7fs *fs, struct v7fs_inode *inode, uint32_t logical, boo
     *result = block;
     return 0;
 }
+/* Lookup without allocation. A hole reports how many logical blocks its
+ * missing pointer covers, so gap scans skip unallocated subtrees whole. */
+static int lookup_extent(struct v7fs *fs, const struct v7fs_inode *inode, uint32_t logical, uint32_t *result, uint32_t *skip)
+{
+    if (logical >= V7FS_MAX_FILE_BLOCKS) return -NX_EFBIG;
+    unsigned slot, depth = 0;
+    uint32_t index = 0, span = 1;
+    if (logical < 10) slot = logical;
+    else {
+        index = logical - 10;
+        for (depth = 1; depth <= 3; ++depth) {
+            span *= V7_NINDIR;
+            if (index < span) break;
+            index -= span;
+        }
+        slot = 9 + depth;
+    }
+    uint32_t block = inode->addr[slot];
+    while (depth && block) {
+        if (!data_block(fs, block)) return -NX_EIO;
+        uint8_t pointers[V7_BSIZE];
+        int error = read_block(fs, block, pointers);
+        if (error) return error;
+        span /= V7_NINDIR;
+        block = v7_disk_u32(pointers + index / span * 4);
+        index %= span; --depth;
+    }
+    if (block && !data_block(fs, block)) return -NX_EIO;
+    *result = block; *skip = block ? 1 : span - index;
+    return 0;
+}
 static int read_file(struct v7fs *fs, v7_ino_t number, int64_t offset, void *buffer, size_t count, size_t *done)
 {
     if (!done) return -NX_EINVAL;
@@ -356,10 +387,10 @@ static int write_file(struct v7fs *fs, v7_ino_t number, int64_t offset, const vo
     /* Failed metadata publication can leave allocated whole blocks beyond
      * EOF after remount. Zero every allocated byte exposed by a later gap. */
     for(uint64_t gap=inode.size;count && gap<(uint64_t)offset;){
-        uint32_t tail;
-        error=bmap(fs,&inode,gap/V7_BSIZE,false,&tail);if(error)return error;
+        uint32_t tail,skip;
+        error=lookup_extent(fs,&inode,gap/V7_BSIZE,&tail,&skip);if(error)return error;
         unsigned start=gap%V7_BSIZE;
-        size_t n=V7_BSIZE-start;
+        uint64_t n=(uint64_t)skip*V7_BSIZE-start;
         if(n>(uint64_t)offset-gap)n=(uint64_t)offset-gap;
         if(tail){
             error=read_block(fs,tail,bytes);if(error)return error;
