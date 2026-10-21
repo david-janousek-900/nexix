@@ -1,2 +1,2 @@
-# Nexix 0.1.0 single-user startup; getty/login are not installed.
-echo 'Nexix 0.1.0' > /dev/console
+# Nexix 0.2.0 single-user startup; getty/login are not installed.
+echo 'Nexix 0.2.0' > /dev/console

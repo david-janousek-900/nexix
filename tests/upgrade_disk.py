@@ -56,7 +56,7 @@ class Upgrade(unittest.TestCase):
         add('/dev/console','character','0600',device=256)
         records.append(dict(path='/dev/ttyS0',type='link',target='/dev/console',component='distribution.devices'))
         add('/dev/new','character','0600',device=257)
-        self.manifest=self.root/'manifest.json';self.manifest.write_text(json.dumps(dict(schema_version=1,version='0.1.0',inventory='docs/v7-userland-manifest.json',entries=records)))
+        self.manifest=self.root/'manifest.json';self.manifest.write_text(json.dumps(dict(schema_version=1,version='0.2.0',inventory='docs/v7-userland-manifest.json',entries=records)))
         stage_tree(self.stage,self.manifest,self.programs,self.config)
 
     def run_upgrade(self,apply=True):

@@ -168,7 +168,7 @@ class Roadmap(unittest.TestCase):
 
     def test_schema_and_version_drift(self):
         self.coverage['schema_version'] = 99
-        self.coverage['version'] = '0.2.0'
+        self.coverage['version'] = '0.3.0'
         self.reject('unsupported roadmap coverage schema')
         self.reject('roadmap version drift')
 

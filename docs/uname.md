@@ -8,7 +8,7 @@ option order; duplicates print a field once. `-a` selects all five fields.
 | --- | --- | --- |
 | `-s` | Kernel name | `Nexix` |
 | `-n` | Node name | `nexix.localdomain` on fresh installations |
-| `-r` | Kernel release | `0.1.0` |
+| `-r` | Kernel release | `0.2.0` |
 | `-v` | Kernel version | `development` |
 | `-m` | Machine architecture | `x86_64` |
 

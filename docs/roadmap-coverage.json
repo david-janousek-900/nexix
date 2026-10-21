@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "roadmap": "docs/tasks.md",
   "inventory": "docs/v7-userland-manifest.json",
   "policy": "Every component and requirement has explicit owning/supporting roadmap tasks; mappings establish planned coverage, not implementation or symbol-level compatibility. Task-list statuses and manifest implementation/input statuses are distinct.",

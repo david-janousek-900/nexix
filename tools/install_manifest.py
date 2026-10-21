@@ -83,7 +83,7 @@ def validate_entries(entries):
 
 def load(path=MANIFEST):
     data = json.loads(Path(path).read_text())
-    if data['schema_version'] != 1 or data['version'] != '0.1.0' or data['inventory'] != 'docs/v7-userland-manifest.json':
+    if data['schema_version'] != 1 or data['version'] != '0.2.0' or data['inventory'] != 'docs/v7-userland-manifest.json':
         raise ValueError('unsupported installation manifest')
     entries = validate_entries(data['entries'])
     owners = {e['id']: e for e in json.loads(INVENTORY.read_text())['entries']}

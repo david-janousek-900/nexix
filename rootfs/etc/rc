@@ -1,2 +1,2 @@
-# Nexix 0.1.0 startup. Init owns terminal startup and session supervision.
-echo 'Nexix 0.1.0' > /dev/console
+# Nexix 0.2.0 startup. Init owns terminal startup and session supervision.
+echo 'Nexix 0.2.0' > /dev/console

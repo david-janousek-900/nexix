@@ -23,7 +23,7 @@ def check(qemu, ram, mode):
             if mode=='vga':
                 text=screen.expect('login: ')
                 assert 'x86_64 kernel entered' in text, text
-                assert 'Nexix 0.1.0' in text, text
+                assert 'Nexix 0.2.0' in text, text
                 screen.type('root\n');screen.expect('Password:')
                 screen.type('nexix\n');screen.expect('# ')
                 assert re.search(r'\[ *[0-9]+\.[0-9]{6}\] x86_64 kernel entered',text),text
@@ -50,7 +50,7 @@ def check(qemu, ram, mode):
                 guest.command('echo $HOME',stdout='/root\n')
                 guest.send('echo BAD\x7f\x7f\x7fOK\n');guest.expect('\r\nOK\r\nroot@[A-Za-z0-9.-]+# ')
                 guest.send('echo BAD\x08\x08\x08OK\n');guest.expect('\r\nOK\r\nroot@[A-Za-z0-9.-]+# ')
-                assert b'Nexix 0.1.0' in guest.buffers[0]
+                assert b'Nexix 0.2.0' in guest.buffers[0]
                 guest.command('echo SERIAL_SELECTED',stdout='SERIAL_SELECTED\n')
                 guest.command('echo CONSOLE_DEVICE > /dev/console',stdout='CONSOLE_DEVICE\n')
                 guest.send('\x04');guest.expect('login: ')

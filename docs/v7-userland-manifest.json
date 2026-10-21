@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "reference_root": "reference/v7",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "scope": "Complete pinned Henry Spencer V7 distribution: sources, installed scripts, supporting assets, kernel/boot references and historical binaries. Native ports remain separate from preserved reference inputs.",
   "coverage": "Every one of the 2144 distribution files is explicitly owned by a component and checked against the archive provenance index. Source availability is separate from inventory coverage and native implementation status.",
   "dependency_policy": "Confirmed edges have local evidence; inferred edges and unresolved audits are explicit. Cycles are allowed for toolchain bootstrap and runtime generators. This is not a completed symbol-level compatibility audit.",

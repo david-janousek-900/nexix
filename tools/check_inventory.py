@@ -50,7 +50,7 @@ def validate(manifest, root=ROOT):
         errors.extend(check_reference(index, root))
     except (OSError, ValueError, TypeError, KeyError) as error:
         errors.append(f'invalid distribution provenance: {error}')
-    need(manifest.get('version') == '0.1.0', 'unexpected release scope')
+    need(manifest.get('version') == '0.2.0', 'unexpected release scope')
     for key in ('scope', 'coverage', 'dependency_policy', 'timestamp_policy'):
         need(isinstance(manifest.get(key), str) and bool(manifest[key]), f'missing {key}')
     need(isinstance(manifest.get('exceptions'), list), 'exceptions must be explicit')

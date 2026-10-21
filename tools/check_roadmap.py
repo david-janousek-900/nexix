@@ -18,7 +18,7 @@ def validate_roadmap(manifest, coverage, roadmap_text):
     if not isinstance(coverage, dict):
         return ['roadmap coverage must be an object']
     need(coverage.get('schema_version') == 2, 'unsupported roadmap coverage schema')
-    need(coverage.get('version') == manifest.get('version') == '0.1.0', 'roadmap version drift')
+    need(coverage.get('version') == manifest.get('version') == '0.2.0', 'roadmap version drift')
     need(coverage.get('roadmap') == 'docs/tasks.md', 'unexpected roadmap path')
     need(coverage.get('inventory') == 'docs/v7-userland-manifest.json', 'unexpected roadmap inventory path')
     need(isinstance(coverage.get('policy'), str) and bool(coverage['policy']), 'missing roadmap coverage policy')

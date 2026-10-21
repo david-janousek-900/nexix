@@ -21,7 +21,7 @@ def main():
         guest.send('probe\n');start=password('alice');guest.expect('LOGIN_IDENTITY_OK\r\nroot@[A-Za-z0-9.-]+# ');hidden(start,'alice')
         # The real shell must run in its own home with the unprivileged prompt.
         guest.send('/bin/login alice\n');guest.expect('/bin/login alice\r\n')
-        start=password('alice');guest.expect('Nexix 0.1.0 development system\r\n'+re.escape('alice@nexix.localdomain$ '));hidden(start,'alice')
+        start=password('alice');guest.expect('Nexix 0.2.0 development system\r\n'+re.escape('alice@nexix.localdomain$ '));hidden(start,'alice')
         guest.command('echo $HOME',stdout='/home/alice\n',prompt=re.escape('$ '))
         guest.command('pwd',stdout='/home/alice\n',prompt=re.escape('$ '))
         guest.command('echo owned > mine; cat mine; rm mine',stdout='owned\n',prompt=re.escape('$ '))
