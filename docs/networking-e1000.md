@@ -4,8 +4,9 @@
 builds on [PCI discovery](networking-pci.md), the
 [packet pools](networking-pools.md) and the
 [network worker](networking-worker.md). It is a fresh native implementation
-under Nexix's root BSD-3-Clause license. Nothing starts it during normal boot
-yet. Task 418 attaches it as an interface.
+under Nexix's root BSD-3-Clause license. Task 418 attaches it as the
+[`em0` interface](networking-interfaces.md); nothing starts the stack during
+normal boot yet.
 
 ## Start and stop
 

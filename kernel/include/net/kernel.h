@@ -19,4 +19,14 @@ struct nx_net_kernel_limits nx_net_kernel_limits(size_t total_pages);
 
 /* Boot self-test of pools against the real page allocator. */
 void net_pool_selftest(void);
+
+/* Live stack (task 418). net_start runs in process context after proc_init:
+ * it creates the packet pool, starts the worker (whose parent is the caller)
+ * and attaches lo0 (up) and, when an e1000 exists, em0 (down). net_stop
+ * detaches every interface, stops and reaps nothing (the parent reaps the
+ * worker) and destroys the pool. */
+bool net_start(void);
+void net_stop(void);
+struct nx_net_mbuf_pool *net_pool(void);
+void net_stack_selftest(void);
 #endif

@@ -205,6 +205,7 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
     net_pool_selftest();
     net_worker_selftest();
     e1000_selftest();
+    net_stack_selftest();
     v7_userland_selftest();
     rootfs_selftest();
     root_exec_selftest();

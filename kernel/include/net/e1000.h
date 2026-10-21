@@ -87,7 +87,7 @@ static inline void e1000_write(const struct e1000_device *nic, uint32_t offset, 
  * which takes ownership, in network-worker context. */
 typedef void (*e1000_input_fn)(void *context, struct nx_net_mbuf *frame);
 
-/* Process context with the network worker running. Resets the adapter, reads
+/* Process or worker context with the worker running. Resets the adapter, reads
  * its MAC, allocates rings/buffers, programs RX/TX and attaches its IRQ. On
  * failure everything acquired is released and false returned. */
 bool e1000_start(struct nx_net_mbuf_pool *pool, e1000_input_fn input, void *context);
