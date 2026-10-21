@@ -17,7 +17,7 @@ struct ld_input {
 struct ld_symbol {
     const char *name;
     size_t object, symbol;
-    uint64_t size, alignment;
+    uint64_t size, alignment, value;
     unsigned bind;
     int defined, common, required;
 };
@@ -38,5 +38,7 @@ int ld_add_file(struct ld_state *, const char *path);
 int ld_require(struct ld_state *, const char *name);
 size_t ld_lookup(const struct ld_state *, const char *name);
 int ld_check(struct ld_state *);
+/* On success returns caller-owned ELF64 bytes; outputs stay unchanged on error. */
+int ld_executable(struct ld_state *, const char *entry, unsigned char **, size_t *);
 const char *ld_symbol_name(const struct ld_input *, size_t);
 #endif

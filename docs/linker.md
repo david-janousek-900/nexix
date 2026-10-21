@@ -47,3 +47,40 @@ ELF. The same resolver consumes the exact fixtures as root and an ordinary user
 at 16/128 MiB, including reversed-order and malformed-input failures. Task 185
 commit evidence and test commands are recorded in Git history. Remaining command,
 relocation, output/install and consuming-program gates stay with 186–187.
+
+## Static executable output (task 186)
+
+`user/ld/output.c` emits ELF64 ET_EXEC at virtual address `0x40000000`.
+File-backed read-only/code sections are concatenated into RX `.text`, writable
+sections into RW `.data`, and NOBITS/commons into RW `.bss`. Each input section's
+natural alignment is preserved. Data starts on a distinct 4096-byte page;
+PT_GNU_STACK requests a nonexecutable stack. No segment is writable/executable.
+The mapped image is bounded to the loader's 8 MiB maximum. Allocated TLS, groups,
+unknown section types/flags, writable executable sections and read-only NOBITS
+are rejected. Notes, comments, debug and `.eh_frame` data are discarded rather
+than mapped as runtime data. Merge/string sections are concatenated without
+optional deduplication. Static constructors/dynamic linking are not implemented.
+
+Relocations support R_X86_64_NONE, 64, PC32, PLT32, 32 and 32S, with explicit
+RELA addends. Target/offset/symbol/entry-size validation precedes every applied
+write. Narrow results must reproduce the complete modulo-64-bit result after
+zero/sign extension. Unsupported relocations, REL tables, NOBITS writes and
+overflows fail. Relocations into discarded debug/unwind sections are validated
+structurally and discarded. Local/absolute/global/common and unresolved-weak
+values use the resolution pass; required unresolved symbols fail. Entry must
+resolve inside executable text. Referenced `__nx_text_end`, `etext`, `_etext`,
+`edata`, `_edata`, `end` and `_end` receive native boundary values unless defined
+by an input. Output includes checked local/global symbols and string tables for
+nm, size, strip and debugger consumption. The same state emits repeatable bytes.
+The API returns caller-owned bytes only after success; command writing and
+installation remain task 187.
+
+`make TOOLCHAIN_PREFIX= test-ld-output test-ld-resolve test-inventory` covers exact
+relocation bytes against independently fixed GNU linker addresses, Linux-host
+execution of a syscall-only result, signed/unsigned overflow, weak-zero pointers,
+common/BSS allocation, segment permissions, malformed relocation tables and
+sanitizer fuzz inputs. The private producer links a bootstrap-compiled C program
+with native crt0/libc and executes it in Nexix at 16/128 MiB as root and an ordinary
+user. Guests compare exact host/native output, consume installed native assembler
+output and verify failure preservation. This completes layout/relocation work;
+installed command/options and broader native acceptance remain task 187.
