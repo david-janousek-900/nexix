@@ -26,7 +26,7 @@ with private_guest(qemu,iso,ram,'ls',{'/tmp/alpha':'ls-content','/tmp/beta':'ls-
     guest.command('chgrp 65533 beta')
     def long_listing(command):
         guest.send(command+'\n');guest.expect(re.escape(command+'\r\n'))
-        output,_=guest.expect('# ')
+        output,_=guest.expect(r'root@[A-Za-z0-9.-]+# ')
         return output.replace(b'\r\n',b'\n').decode()
     output=long_listing('ls -ld alpha beta dir')
     rows=output.splitlines()
