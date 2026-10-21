@@ -199,6 +199,12 @@ static int text_write_check(struct fs_node ino)
     int error=text_evict(inode);if(error)return error;
     return inode->i_count&&(inode->i_flag&V7_ITEXT)?-NX_ETXTBSY:0;
 }
+/* V7 reports ETXTBSY before permission; this probe evicts nothing. */
+static bool text_write_busy(struct fs_node ino)
+{
+    struct inode *inode=cached_inode(ino);
+    return inode&&(inode->i_flag&V7_ITEXT)&&text_active(inode);
+}
 static int image_text(struct fs_node ino,struct exec_image *image)
 {
     struct v7fs_inode disk;int error=node_inode_get(ino,&disk);if(error)return error;
@@ -353,6 +359,7 @@ static int open_path(struct user *u, uintptr_t address, uint64_t flags, uint64_t
     struct v7fs_inode disk={0};
     if (!error) error = node_inode_get(ino, &disk);
     unsigned access = flags & NX_O_ACCMODE;
+    if(!error&&access&&(disk.mode&V7_IFMT)==V7_IFREG&&text_write_busy(ino))error=-NX_ETXTBSY;
     if (!error && !created && !v7fs_access(&disk, u->u_uid, u->u_gid, access == 0 ? 4 : access == 1 ? 2 : 6)) error = -NX_EACCES;
     /* Only a permitted writer may evict unused sticky text. */
     if(!error&&access&&(disk.mode&V7_IFMT)==V7_IFREG){
@@ -491,8 +498,8 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
             if(write && copyin(vm,address+done,bytes,n))return done?(int64_t)done:-NX_EFAULT;
             error=storage_transfer(f->f_private,start+done,bytes,n,write,&moved);
             if(!write && moved && copyout(vm,address+done,bytes,moved))panic("storage output mapping changed");
-            /* Raw transfers start on a block boundary; keep the offset in step with them. */
-            done+=moved;f->f_offset=(int64_t)(start+done);
+            /* V7 rdwr advances the offset by bytes moved, even when raw I/O starts on the block boundary. */
+            done+=moved;f->f_offset+=moved;
             if(error||moved<n)break;
         }
         return done?(int64_t)done:error;
@@ -623,6 +630,7 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
         if (error) return error;
         if (access) {
             if ((args[1] & 2) && node_volume(ino)->read_only) return -NX_EROFS;
+            if ((args[1] & 2) && text_write_busy(ino)) return -NX_ETXTBSY;
             if (!v7fs_access(&disk, u->u_ruid, u->u_rgid, args[1])) return -NX_EACCES;
             return (args[1] & 2) ? text_write_check(ino) : 0;
         }
