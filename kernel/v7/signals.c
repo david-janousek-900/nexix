@@ -33,6 +33,8 @@ void signal_post(struct proc *p, unsigned n)
     if (p->p_stat == V7_SSLEEP && p->p_interruptible) {
         p->p_wchan = NULL; p->p_timed_sleep = false; p->p_stat = V7_SRUN;
     }
+    /* SIGKILL ends a trace stop; the tracer cannot continue it away. */
+    if (n == NX_SIGKILL && p->p_stat == V7_SSTOP) p->p_stat = V7_SRUN;
 }
 void signal_group(v7_pid_t group, unsigned n)
 {
@@ -80,8 +82,11 @@ void signal_deliver(struct interrupt_frame *frame)
 {
     struct proc *p = proc_current();
     if (!p || (frame->cs & 3) != 3 || !signal_pending(p)) return;
+    const uint32_t kill = 1U << (NX_SIGKILL - 1);
+    if (p->p_sig & kill) proc_exit(NX_SIGKILL);
     if(p->p_flag&V7_STRC){
         proc_trace_stop();
+        if (p->p_sig & kill) proc_exit(NX_SIGKILL);
         /* Continue replaces the pending set, including suppression with 0.
          * Deliver the selected replacement once without stopping again. */
         if(!p->p_sig)return;

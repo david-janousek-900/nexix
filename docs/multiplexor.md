@@ -244,7 +244,10 @@ owns further historical modes). Malformed M_IOCTL lengths return EINVAL.
 A group M_IOCTL directed at a TTY applies a SET/FLUSH immediately; a GET queues
 an M_IOCTL reply for the group. Endpoint ioctls on connected channels apply to
 the output TTY, falling back to the input TTY, and notify the group with the resulting payload. Notification capacity
-is reserved before changing terminal state. An unconnected endpoint instead
+is reserved before changing terminal state. SET, FLUSH and other non-GET endpoint
+ioctls require a writable endpoint (EBADF otherwise). The bridged terminal's file
+stays referenced while a terminal ioctl sleeps, so a concurrent disconnect or group
+close cannot close the line underneath it. An unconnected endpoint instead
 queues the request and waits interruptibly for the owner to write a matching
 M_IOCTL response. A GET then copies the returned payload to its caller; SET and
 FLUSH return after acknowledgement. Calls are serialized per channel. Copy and

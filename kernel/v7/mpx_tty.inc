@@ -93,6 +93,13 @@ static int mx_connect(struct user *u,const struct nx_mx_args *a,bool disconnect)
     return 0;
 }
 static int64_t mx_output(struct mx_channel *c,uintptr_t address,size_t count,bool nonblocking);
+/* tty_control may sleep, so pin the bridged terminal's file until the request ends. */
+static struct file *mx_tty_pin(struct mx_channel *c,struct tty *t)
+{
+    struct file *f=c->port?c->port_file:t==c->output_tty?c->output_file:c->input_file;
+    if(f)++f->f_count;
+    return f;
+}
 static int mx_ioctl_control(struct mx_channel *c,const struct nx_mx_ioctl *control)
 {
     if(c->closing)return -NX_ENXIO;
@@ -108,7 +115,8 @@ static int mx_ioctl_control(struct mx_channel *c,const struct nx_mx_ioctl *contr
             if(c->closing || generation!=c->generation)return -NX_ENXIO;
             if(t!=c->output_tty && t!=c->input_tty)return -NX_ENXIO;
         }
-        int error=tty_control(t,control->command,&data);if(error)return error;
+        struct file *pin=mx_tty_pin(c,t);
+        int error=tty_control(t,control->command,&data);if(pin)(void)file_put(pin);if(error)return error;
         if(get){
             struct nx_mx_ioctl response={.code=NX_M_IOCTL,.command=control->command};
             for(unsigned i=0;i<sizeof(response.data);++i)response.data[i]=((uint8_t *)&data)[i];
@@ -129,6 +137,8 @@ static int mx_endpoint_ioctl(struct file *f,struct address_space *vm,uint64_t re
     bool get;int size=tty_control_size(request,&get);
     if(size<0)return size;
     if(size>8)return -NX_ENOTTY;
+    /* Changing the server's terminal requires a writable endpoint. */
+    if(!get && !(f->f_flag&V7_FWRITE))return -NX_EBADF;
     if(!user_access_ok(vm,address,size,get))return -NX_EFAULT;
     struct nx_mx_ioctl event={.code=NX_M_IOCTL,.command=request};
     if(!get && size){int error=copyin(vm,address,event.data,size);if(error)return error;}
@@ -143,7 +153,8 @@ static int mx_endpoint_ioctl(struct file *f,struct address_space *vm,uint64_t re
         struct tty *t=c->output_tty?c->output_tty:c->input_tty;
         if(t){
             uint64_t data=0;for(unsigned i=0;i<sizeof(event.data);++i)((uint8_t *)&data)[i]=event.data[i];
-            error=tty_control(t,request,&data);
+            struct file *pin=mx_tty_pin(c,t);
+            error=tty_control(t,request,&data);if(pin)(void)file_put(pin);
             if(!error){
                 for(unsigned i=0;i<sizeof(event.data);++i)event.data[i]=((uint8_t *)&data)[i];
                 (void)mx_event_payload(c,&event,sizeof(event));

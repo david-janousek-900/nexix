@@ -6,6 +6,7 @@
 #include "tty_controller.h"
 #include "uaccess.h"
 #include <nexix/errno.h>
+#include <nexix/signal.h>
 static uint8_t wire[32768],buffer[2048];static unsigned size,baud,format,sleeps;static uint64_t ticks;
 static bool blocked,dtr,idle=true;
 static void (*sleep_hook)(void);
@@ -22,7 +23,8 @@ void serial_dtr(bool on){dtr=on;}
 unsigned proc_wakeup(void *p){assert(p);return 0;}
 int proc_sleep_interruptible(void *p,unsigned priority)
 {assert(p && (priority==28 || priority==29));if(sleep_hook){void (*hook)(void)=sleep_hook;sleep_hook=NULL;hook();return 0;}++sleeps;++ticks;tty_timer(ticks);return sleeps>1000?-NX_EINTR:0;}
-void signal_group(v7_pid_t g,unsigned n){(void)g;(void)n;abort();}
+static v7_pid_t signalled;
+void signal_group(v7_pid_t g,unsigned n){assert(n==NX_SIGINT);signalled=g;}
 void mpx_tty_notify(void *p,unsigned n){(void)p;(void)n;}
 void mpx_tty_resume(struct tty *p){(void)p;}
 _Noreturn void panic(const char *s){puts(s);abort();}
@@ -111,6 +113,11 @@ int main(void)
     idle=false;sleep_hook=try_open_during_close;tty_close(t);
     assert(!tty_open_count() && !sleep_hook);
     assert(!tty_open(NX_CONSOLE_DEV,&u,&t));feed("new\n");expect(t,"new\n",4);tty_close(t);
-    puts("PASS: controller plans/parity, source escapes, TANDEM, delayed/blocked output, timer drain/flush, exclusive opens, hangup and profile ownership");
+    /* Background or foreign groups cannot take the terminal from its foreground group. */
+    assert(!tty_open(NX_CONSOLE_DEV,&u,&t));tty_receive(003);assert(signalled==17);
+    tty_set_group(t,99,100,false);tty_receive(003);assert(signalled==17);
+    tty_set_group(t,17,18,false);tty_receive(003);assert(signalled==18);
+    tty_set_group(t,99,100,true);tty_receive(003);assert(signalled==100);tty_close(t);
+    puts("PASS: controller plans/parity, source escapes, TANDEM, delayed/blocked output, timer drain/flush, exclusive opens, hangup, profile ownership and foreground group changes");
     return 0;
 }
