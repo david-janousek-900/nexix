@@ -487,6 +487,11 @@ test-boot-artifacts:
 	$(PYTHON) tools/check_boot_artifacts.py
 	$(PYTHON) tests/boot_artifacts.py
 test-inventory: test-boot-artifacts
+.PHONY: test-sum
+test-sum: multi-iso rootfs
+	$(PYTHON) tools/sum_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/sum_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-sum
 test-inventory:
 	$(PYTHON) tools/check_inventory.py
 	$(PYTHON) tests/inventory.py

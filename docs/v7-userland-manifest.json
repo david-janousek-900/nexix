@@ -15039,37 +15039,46 @@
           "name": "sum",
           "install": "/bin/sum",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/sum.c",
+            "tools/sum_smoke.py",
+            "Makefile"
           ]
         }
       ],
       "priority": 8,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
           "phase": "build",
           "certainty": "confirmed",
           "evidence": [
+            "user/v7/cmd/sum.c",
             "Makefile"
           ],
-          "note": "Existing Nexix bootstrap uses host GCC/binutils."
+          "note": "Native source uses public stdio/stdlib and statically links native libc with host GCC/binutils."
         },
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/sum.c",
+            "Makefile"
+          ],
+          "note": "Native source uses public stdio/stdlib and statically links native libc with host GCC/binutils."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/sum.c",
+            "Makefile"
+          ],
+          "note": "Native source uses public stdio/stdlib and statically links native libc with host GCC/binutils."
         }
       ],
       "reference_includes": [
@@ -15080,15 +15089,10 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
-        "Produce expected checksums and block counts for known files.",
-        "Verify native build, reference options, exit status and malformed-input handling."
+        "make test-sum at 16/128 MiB: independent 16-bit checksum oracle, 512-byte block boundaries, binary/stdin, multiple files, open/read errors and continuation."
       ],
       "source_files": [
         "reference/v7/usr/src/cmd/sum.c"
@@ -15099,6 +15103,9 @@
           "path": "/bin/sum",
           "artifact": "historical_binary"
         }
+      ],
+      "native_sources": [
+        "user/v7/cmd/sum.c"
       ]
     },
     {

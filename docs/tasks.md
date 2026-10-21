@@ -10,17 +10,17 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 64 native ELF programs are
+to multi-user V7 login with persistent IDE storage. 65 native ELF programs are
 installed; the complete list and destinations are in [the installation manifest](native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
 The inventory accounts for **223 components, 2,144 distribution files and
-36 supporting/platform requirements**. Its component statuses are 67 implemented,
-4 partial, 1 prototype and 151 not ported; importing reference inputs does not
+36 supporting/platform requirements**. Its component statuses are 68 implemented,
+4 partial, 1 prototype and 150 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **388 tracking tasks: 177 done, 0 in progress
-and 211 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **388 tracking tasks: 178 done, 0 in progress
+and 210 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 226, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -388,7 +388,7 @@ are accounted for. Final native rebuild acceptance is task 207.
 | 223 | Port df | To do | Disposable storage fixtures; bounds, permissions and error paths |
 | 224 | Port du | To do | Disposable storage fixtures; bounds, permissions and error paths |
 | 225 | Port dd | To do | Disposable storage fixtures; bounds, permissions and error paths |
-| 226 | Port sum | To do | Disposable storage fixtures; bounds, permissions and error paths |
+| 226 | Port sum | Done | Git history; make test-sum at 16/128 MiB; independent 16-bit oracle, empty/binary/stdin inputs, 512-byte boundaries, multiple files, open/read errors and continuation; [contract](storage-commands.md) |
 | 227 | Port clri | To do | Disposable storage fixtures; bounds, permissions and error paths |
 | 228 | Port dcheck | To do | Disposable storage fixtures; bounds, permissions and error paths |
 | 229 | Port icheck | To do | Disposable storage fixtures; bounds, permissions and error paths |

@@ -7788,6 +7788,19 @@
         "root": "config",
         "path": "usr/man/man7/nexix.7"
       }
+    },
+    {
+      "path": "/bin/sum",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.sum",
+      "source": {
+        "root": "programs",
+        "path": "v7-sum.elf"
+      },
+      "format": "elf"
     }
   ]
 }
