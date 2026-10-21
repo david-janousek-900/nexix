@@ -28,6 +28,7 @@ static bool output_file(const struct file *f)
 static struct file table[V7_NFILE];
 static bool closing[V7_NFILE];
 static struct inode inodes[V7_NINODE];
+static bool release_pending[V7_NINODE];
 static struct v7fs *root;
 static bool root_exec;
 static void zero(void *p, size_t n) { uint8_t *b = p; for (size_t i = 0; i < n; ++i) b[i] = 0; }
@@ -99,7 +100,23 @@ int files_inode_put(struct inode *inode)
     struct v7fs_inode disk;
     int error = node_inode_get(inode_node(inode), &disk);
     if (!error && !disk.nlink) error = v7fs_release_inode(node_volume(inode_node(inode)), inode->i_number);
-    zero(inode, sizeof(*inode)); return error;
+    unsigned slot=inode-inodes;
+    if(error){
+        /* Retain cleanup ownership even when exit/text release cannot return
+         * the error. sync retries it and reports continued failure. */
+        inode->i_count=1;release_pending[slot]=true;return error;
+    }
+    release_pending[slot]=false;
+    zero(inode, sizeof(*inode)); return 0;
+}
+static int retry_releases(void)
+{
+    int error=0;
+    for(unsigned i=0;i<V7_NINODE;++i)if(release_pending[i]){
+        release_pending[i]=false;
+        int e=files_inode_put(&inodes[i]);if(!error)error=e;
+    }
+    return error;
 }
 int files_mountpoint_put(struct inode *inode)
 {
@@ -602,7 +619,10 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
         v7_dev_t dev;int error=device_path(u,args[0],&dev);
         return error?error:namespace_unmount(dev);
     }
-    if (number == NX_SYS_SYNC) return namespace_sync(); /* Write-through cache plus V7 superblock time. */
+    if (number == NX_SYS_SYNC) {
+        int error=retry_releases(),sync_error=namespace_sync();
+        return error?error:sync_error;
+    } /* Write-through cache plus V7 superblock time. */
     if (number == NX_SYS_MKNOD) {
         if (!proc_superuser(u)) return -NX_EPERM;
         if (args[1] > UINT16_MAX || args[2] > UINT16_MAX) return -NX_EINVAL;

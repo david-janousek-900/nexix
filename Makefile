@@ -2297,3 +2297,10 @@ test-unit: test-signal-fpu-unit
 test-nmi: multi-iso
 	$(PYTHON) tools/nmi_smoke.py $(QEMU) build/nexix-multi.iso
 .PHONY: test-nmi
+
+build/inode-release-test: tests/inode-release.c kernel/v7/files.c | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -ffunction-sections -fdata-sections -Wl,--gc-sections -Ikernel/include -Iinclude $< -o $@
+test-inode-release-unit: build/inode-release-test
+	./build/inode-release-test
+test-unit: test-inode-release-unit
+.PHONY: test-inode-release-unit

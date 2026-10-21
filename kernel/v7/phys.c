@@ -57,6 +57,8 @@ static bool clone_one(uintptr_t va,uintptr_t pa,unsigned flags,void *argument)
 }
 int phys_exec(const struct address_space *old,struct address_space *next,size_t *bytes)
 {
+    /* Physical windows are a root capability, not ordinary exec data. */
+    if(proc_current()->p_user->u_uid){*bytes=0;return 0;}
     struct clone c={.vm=next};
     if(!vm_walk_user(old,clone_one,&c))return c.error?c.error:-NX_EINVAL;
     *bytes=c.bytes;return 0;
