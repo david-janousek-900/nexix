@@ -7788,6 +7788,71 @@
         "root": "config",
         "path": "usr/man/man7/nexix.7"
       }
+    },
+    {
+      "path": "/bin/sum",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.sum",
+      "source": {
+        "root": "programs",
+        "path": "v7-sum.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/etc/mknod",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.mknod",
+      "source": {
+        "root": "programs",
+        "path": "v7-mknod.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/etc/accton",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.accton",
+      "source": {
+        "root": "programs",
+        "path": "v7-accton.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/etc/update",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.update",
+      "source": {
+        "root": "programs",
+        "path": "v7-update.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/df",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.df",
+      "source": {
+        "root": "programs",
+        "path": "v7-df.elf"
+      },
+      "format": "elf"
     }
   ]
 }

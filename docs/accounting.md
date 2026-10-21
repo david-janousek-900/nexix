@@ -109,3 +109,19 @@ No accounting file or command is installed by this task. accton (task 240),
 sa (task 241), login/utmp/wtmp integration and their end-to-end acceptance remain
 separate roadmap work. Accounting is disabled at boot until privileged code
 selects an existing file.
+
+## Installed accton command (task 240)
+
+`/etc/accton [file]` selects an existing regular file; no operand disables
+accounting. As in V7, only the first operand is used. The active source adapts
+`reference/v7/usr/src/cmd/accton.c` with native declarations and checks the
+syscall return rather than a possibly stale errno. Success returns 0 and syscall
+errors print `accton: <V7 error>` to stderr and return 1. The command never
+creates, truncates or changes ownership of the destination. Root privileges
+are enforced by the kernel; this executable is not set-ID.
+
+`make test-accton` boots installed disposable roots at 16 and 128 MiB. It checks
+missing/nonregular/busy destinations, repeated disabling, ordinary-user denial,
+first-operand handling and real cross-user accounting: a uid-101 sum process
+must appear in complete 40-byte records with zero padding. After disabling,
+further processes leave the record file unchanged. Task 241 still owns sa.

@@ -973,53 +973,65 @@
           "name": "accton",
           "install": "/etc/accton",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/accton.c",
+            "tools/accton_smoke.py",
+            "Makefile"
           ]
         }
       ],
       "priority": 9,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
           "phase": "build",
           "certainty": "confirmed",
           "evidence": [
+            "user/v7/cmd/accton.c",
+            "tools/accton_smoke.py",
             "Makefile"
           ],
-          "note": "Existing Nexix bootstrap uses host GCC/binutils."
+          "note": "Uses public native acct syscall wrapper; installed cross-user accounting records and root control are guest-tested."
         },
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/accton.c",
+            "tools/accton_smoke.py",
+            "Makefile"
+          ],
+          "note": "Uses public native acct syscall wrapper; installed cross-user accounting records and root control are guest-tested."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/accton.c",
+            "tools/accton_smoke.py",
+            "Makefile"
+          ],
+          "note": "Uses public native acct syscall wrapper; installed cross-user accounting records and root control are guest-tested."
         },
         {
           "target": "accounting",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/accton.c",
+            "tools/accton_smoke.py",
+            "Makefile"
+          ],
+          "note": "Uses public native acct syscall wrapper; installed cross-user accounting records and root control are guest-tested."
         }
       ],
       "reference_includes": [],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Enable and disable accounting as root; reject unprivileged changes.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -1034,8 +1046,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        240
+      "native_sources": [
+        "user/v7/cmd/accton.c"
       ]
     },
     {
@@ -4701,44 +4713,56 @@
           "name": "df",
           "install": "/bin/df",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/df.c",
+            "tools/df_smoke.py",
+            "Makefile"
           ]
         }
       ],
       "priority": 8,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
           "phase": "build",
           "certainty": "confirmed",
           "evidence": [
+            "user/v7/cmd/df.c",
             "Makefile"
           ],
-          "note": "Existing Nexix bootstrap uses host GCC/binutils."
+          "note": "Native file/raw device reads, seek and sync; explicit 512-byte V7 disk encodings replace historical C struct overlays."
         },
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/df.c",
+            "Makefile"
+          ],
+          "note": "Native file/raw device reads, seek and sync; explicit 512-byte V7 disk encodings replace historical C struct overlays."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/df.c",
+            "Makefile"
+          ],
+          "note": "Native file/raw device reads, seek and sync; explicit 512-byte V7 disk encodings replace historical C struct overlays."
         },
         {
           "target": "raw-storage",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/df.c",
+            "Makefile"
+          ],
+          "note": "Native file/raw device reads, seek and sync; explicit 512-byte V7 disk encodings replace historical C struct overlays."
         }
       ],
       "reference_includes": [
@@ -4767,12 +4791,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Verify free-space reporting before and after allocation on a disposable mounted volume.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -4787,8 +4807,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        223
+      "native_sources": [
+        "user/v7/cmd/df.c"
       ]
     },
     {
@@ -9651,53 +9671,61 @@
           "name": "mknod",
           "install": "/etc/mknod",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/mknod.c",
+            "tools/mknod_smoke.py",
+            "Makefile"
           ]
         }
       ],
       "priority": 8,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
           "phase": "build",
           "certainty": "confirmed",
           "evidence": [
+            "user/v7/cmd/mknod.c",
             "Makefile"
           ],
-          "note": "Existing Nexix bootstrap uses host GCC/binutils."
+          "note": "Uses native root-only mknod syscall, uint16 device encoding and public libc interfaces; actual node I/O is guest-tested."
         },
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/mknod.c",
+            "Makefile"
+          ],
+          "note": "Uses native root-only mknod syscall, uint16 device encoding and public libc interfaces; actual node I/O is guest-tested."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/mknod.c",
+            "Makefile"
+          ],
+          "note": "Uses native root-only mknod syscall, uint16 device encoding and public libc interfaces; actual node I/O is guest-tested."
         },
         {
           "target": "raw-storage",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/mknod.c",
+            "Makefile"
+          ],
+          "note": "Uses native root-only mknod syscall, uint16 device encoding and public libc interfaces; actual node I/O is guest-tested."
         }
       ],
       "reference_includes": [],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Create supported device nodes as root and reject unprivileged requests.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -9712,8 +9740,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        219
+      "native_sources": [
+        "user/v7/cmd/mknod.c"
       ]
     },
     {
@@ -15379,37 +15407,46 @@
           "name": "sum",
           "install": "/bin/sum",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/sum.c",
+            "tools/sum_smoke.py",
+            "Makefile"
           ]
         }
       ],
       "priority": 8,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
           "phase": "build",
           "certainty": "confirmed",
           "evidence": [
+            "user/v7/cmd/sum.c",
             "Makefile"
           ],
-          "note": "Existing Nexix bootstrap uses host GCC/binutils."
+          "note": "Native source uses public stdio/stdlib and statically links native libc with host GCC/binutils."
         },
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/sum.c",
+            "Makefile"
+          ],
+          "note": "Native source uses public stdio/stdlib and statically links native libc with host GCC/binutils."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/sum.c",
+            "Makefile"
+          ],
+          "note": "Native source uses public stdio/stdlib and statically links native libc with host GCC/binutils."
         }
       ],
       "reference_includes": [
@@ -15420,15 +15457,10 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
-        "Produce expected checksums and block counts for known files.",
-        "Verify native build, reference options, exit status and malformed-input handling."
+        "make test-sum at 16/128 MiB: independent 16-bit checksum oracle, 512-byte block boundaries, binary/stdin, multiple files, open/read errors and continuation."
       ],
       "source_files": [
         "reference/v7/usr/src/cmd/sum.c"
@@ -15440,8 +15472,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        226
+      "native_sources": [
+        "user/v7/cmd/sum.c"
       ]
     },
     {
@@ -18174,37 +18206,46 @@
           "name": "update",
           "install": "/etc/update",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/update.c",
+            "tools/update_smoke.py",
+            "Makefile"
           ]
         }
       ],
       "priority": 8,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
           "phase": "build",
           "certainty": "confirmed",
           "evidence": [
+            "user/v7/cmd/update.c",
             "Makefile"
           ],
-          "note": "Existing Nexix bootstrap uses host GCC/binutils."
+          "note": "Public native fork, directory open, signal/alarm, pause and sync interfaces; real periodic superblock writes are guest-tested."
         },
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/update.c",
+            "Makefile"
+          ],
+          "note": "Public native fork, directory open, signal/alarm, pause and sync interfaces; real periodic superblock writes are guest-tested."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/update.c",
+            "Makefile"
+          ],
+          "note": "Public native fork, directory open, signal/alarm, pause and sync interfaces; real periodic superblock writes are guest-tested."
         }
       ],
       "reference_includes": [
@@ -18215,12 +18256,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Run the periodic sync service and verify clean signal-driven termination.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -18235,9 +18272,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        237,
-        409
+      "native_sources": [
+        "user/v7/cmd/update.c"
       ]
     },
     {
@@ -19544,16 +19580,17 @@
       "dependencies": [],
       "reference_includes": [],
       "blockers": [
-        "Not installed in Nexix; native integration and functional acceptance remain pending."
+        "Historical images are preserved provenance only; native standalone disk/tape boot acceptance remains task 349."
       ],
-      "unresolved": [
-        "Audit native API/format compatibility and remaining transitive dependencies."
-      ],
+      "unresolved": [],
       "acceptance": [
-        "Integrate supplied inputs into the native port and verify their consuming programs."
+        "Task 351: make test-boot-artifacts verifies all six images against archive hashes/sizes and explicit native role associations; historical images are never native executables.",
+        "Task 349: implement and test native standalone boot paths before claiming native boot functionality for this component."
       ],
-      "unresolved_tasks": [
-        351
+      "native_sources": [
+        "docs/boot-kernel-artifacts.json",
+        "docs/boot-kernel-artifacts.md",
+        "tools/check_boot_artifacts.py"
       ]
     },
     {

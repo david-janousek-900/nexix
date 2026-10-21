@@ -10,17 +10,17 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 64 native ELF programs are
+to multi-user V7 login with persistent IDE storage. 69 native ELF programs are
 installed; the complete list and destinations are in [the installation manifest](native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
 The inventory accounts for **223 components, 2,144 distribution files and
-36 supporting/platform requirements**. Its component statuses are 67 implemented,
-4 partial, 1 prototype and 151 not ported; importing reference inputs does not
+36 supporting/platform requirements**. Its component statuses are 72 implemented,
+4 partial, 1 prototype and 146 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **411 tracking tasks: 178 done, 0 in progress
-and 233 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 251, 253, 264–269, 281–282, 286–287, 295, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **411 tracking tasks: 184 done, 0 in progress
+and 227 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 219, 223, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -381,14 +381,14 @@ are accounted for. Final native rebuild acceptance is task 207.
 
 | Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
-| 219 | Port mknod | To do | Disposable storage fixtures; bounds, permissions and error paths |
+| 219 | Port mknod | Done | Git history; make test-mknod at 16/128 MiB; decimal bounds, exact b/c modes, root-only creation, umask, real null I/O, duplicate errors and cold-boot node persistence; [contract](storage-commands.md) |
 | 220 | Port mount | To do | Native /etc/mtab integration; disposable storage fixtures, bounds, permissions and error paths |
 | 221 | Port umount | To do | Shared /etc/mtab lifecycle; disposable storage fixtures, bounds, permissions and error paths |
 | 222 | Port mkfs | To do | Format disposable media; mount and populate |
-| 223 | Port df | To do | Disposable storage fixtures; bounds, permissions and error paths |
+| 223 | Port df | Done | Git history; make test-df at 16/128 MiB; explicit V7 disk encodings, independent free counts, chain/duplicate/cycle/range/read-error fixtures, raw-root access and ordinary-user permissions; [contract](storage-commands.md) |
 | 224 | Port du | To do | Disposable storage fixtures; bounds, permissions and error paths |
 | 225 | Port dd | To do | Disposable storage fixtures; bounds, permissions and error paths |
-| 226 | Port sum | To do | Disposable storage fixtures; bounds, permissions and error paths |
+| 226 | Port sum | Done | Git history; make test-sum at 16/128 MiB; independent 16-bit oracle, empty/binary/stdin inputs, 512-byte boundaries, multiple files, open/read errors and continuation; [contract](storage-commands.md) |
 | 227 | Port clri | To do | Disposable storage fixtures; bounds, permissions and error paths |
 | 228 | Port dcheck | To do | Disposable storage fixtures; bounds, permissions and error paths |
 | 229 | Port icheck | To do | Disposable storage fixtures; bounds, permissions and error paths |
@@ -399,7 +399,7 @@ are accounted for. Final native rebuild acceptance is task 207.
 | 234 | Port restor | To do | Historical archive/media formats and full restore fixtures |
 | 235 | Port tar | To do | Both tar/v6tar; historical header fixtures and native round trips |
 | 236 | Port tp | To do | Native tape equivalent and historical directory format |
-| 237 | Port update | To do | Disposable storage fixtures; bounds, permissions and error paths |
+| 237 | Port update | Done | Git history; make test-update at 16/128 MiB; daemon fork/descriptor handling, real 30-second SIGALRM and persistent V7 superblock clock advancement; [contract](storage-commands.md) |
 
 ### Jobs, mail and accounting
 
@@ -407,7 +407,7 @@ are accounted for. Final native rebuild acceptance is task 207.
 |---:|---|---|---|
 | 238 | Install native spool ownership and locking configuration | To do | Safe native fixtures, not historical user/mail contents |
 | 239 | Port ac | To do | Source-defined service/accounting fixtures |
-| 240 | Port accton | To do | Source-defined service/accounting fixtures |
+| 240 | Port accton | Done | Git history; make test-accton at 16/128 MiB; root enable/disable, error/privilege paths, first-operand compatibility, actual uid-101 process records and stable file after disabling; [contract](accounting.md) |
 | 241 | Port sa | To do | Source-defined service/accounting fixtures |
 | 242 | Port at | To do | Source-defined service/accounting fixtures |
 | 243 | Port atrun | To do | Source-defined service/accounting fixtures |
@@ -557,7 +557,7 @@ required before native-port acceptance.
 | 348 | Standalone restor | To do | Restore into disposable media with standalone runtime |
 | 349 | Native boot/mtboot equivalents | To do | Disk/tape startup paths and controlled QEMU acceptance |
 | 350 | Port standalone maketape/build helpers | To do | cc+ld-stand/cpgroup and media creation |
-| 351 | Account for historical boot/kernel binaries | To do | Preserve provenance; associate native outputs, never claim old binaries execute |
+| 351 | Account for historical boot/kernel binaries | Done | Git history; [six-image provenance/native-role map](boot-kernel-artifacts.md); make test-boot-artifacts test-inventory; hashes/sizes, exact ownership and negative false-execution/path/omission fixtures; standalone boot remains 349 |
 
 ### Rebuild, upgrades and release acceptance
 

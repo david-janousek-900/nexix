@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "component": "distribution.boot-kernels",
+  "task": 351,
+  "policy": "Historical bytes are preserved for provenance only and are never executed or installed as native programs. Native associations describe platform roles, not binary or behavioral equivalence.",
+  "artifacts": [
+    {
+      "source": "reference/v7/boot",
+      "sha256": "b4d01d95cba11475cf4a7d5185b043065374bfabf537d39855989ef339a8f782",
+      "size": 6900,
+      "disposition": "preserved_reference_only",
+      "native_artifact": "build/nexix.iso",
+      "native_sources": [
+        "boot/grub.cfg",
+        "kernel/arch/x86_64/boot.S"
+      ],
+      "historical_evidence": [
+        "reference/v7/usr/src/cmd/standalone/boot.c"
+      ]
+    },
+    {
+      "source": "reference/v7/hphtunix",
+      "sha256": "7eae49cd05dec575b1c8b00fdbbdcd7f772160c3651a5f26116085b4786737d2",
+      "size": 53302,
+      "disposition": "preserved_reference_only",
+      "native_artifact": "build/nexix.elf",
+      "native_sources": [
+        "kernel/main.c",
+        "config/kernel.json",
+        "tools/mkconf.py"
+      ],
+      "historical_evidence": [
+        "reference/v7/usr/sys/conf/makefile",
+        "reference/v7/usr/sys/conf/hphtconf"
+      ]
+    },
+    {
+      "source": "reference/v7/hptmunix",
+      "sha256": "20b47e5a413034d3b7241574c2fe4e659b7d6b1a51d1a8181c8491ec0d7689e8",
+      "size": 52850,
+      "disposition": "preserved_reference_only",
+      "native_artifact": "build/nexix.elf",
+      "native_sources": [
+        "kernel/main.c",
+        "config/kernel.json",
+        "tools/mkconf.py"
+      ],
+      "historical_evidence": [
+        "reference/v7/usr/sys/conf/makefile",
+        "reference/v7/usr/sys/conf/hptmconf"
+      ]
+    },
+    {
+      "source": "reference/v7/rphtunix",
+      "sha256": "d7a89d1c1158565446a28673d81518e385a1ad30b5e3a6ad39bb94898ada4d17",
+      "size": 51790,
+      "disposition": "preserved_reference_only",
+      "native_artifact": "build/nexix.elf",
+      "native_sources": [
+        "kernel/main.c",
+        "config/kernel.json",
+        "tools/mkconf.py"
+      ],
+      "historical_evidence": [
+        "reference/v7/usr/sys/conf/makefile",
+        "reference/v7/usr/sys/conf/rphtconf"
+      ]
+    },
+    {
+      "source": "reference/v7/rptmunix",
+      "sha256": "280384eb41252bcb205badbae8b89adfa099ec2c1b0c93adcc598f2790ce3a4b",
+      "size": 51274,
+      "disposition": "preserved_reference_only",
+      "native_artifact": "build/nexix.elf",
+      "native_sources": [
+        "kernel/main.c",
+        "config/kernel.json",
+        "tools/mkconf.py"
+      ],
+      "historical_evidence": [
+        "reference/v7/usr/sys/conf/makefile",
+        "reference/v7/usr/sys/conf/rptmconf"
+      ]
+    },
+    {
+      "source": "reference/v7/unix",
+      "sha256": "280384eb41252bcb205badbae8b89adfa099ec2c1b0c93adcc598f2790ce3a4b",
+      "size": 51274,
+      "disposition": "preserved_reference_only",
+      "native_artifact": "build/nexix.elf",
+      "native_sources": [
+        "kernel/main.c",
+        "config/kernel.json",
+        "tools/mkconf.py"
+      ],
+      "historical_evidence": [
+        "reference/v7/usr/sys/conf/makefile"
+      ]
+    }
+  ]
+}
