@@ -1,12 +1,13 @@
 # Shared portable compiler infrastructure
 
-Task 192 remains **in progress**. Native shared services now cover types,
-operators, bounded IR, traversal/copying, a checked binary pass interface,
-variadic diagnostics, table matching/expansion and generic register/temporary
-allocation. They are exercised by private native compiler consumers, including
-an as/ld executable pipeline. The retained PCC semantic front end now consumes these contracts (task 193);
-machine-code and alternate/shared-consumer integration is still required. There is no installed C compiler yet. Linker tasks 185–187 are
-complete; compiler front ends/backends retain tasks 193–201 and 207.
+Task 192 is **complete**. Shared native compiler services cover types/operators,
+bounded IR, iterative traversal/copy, encoded tree and streaming pass interfaces,
+variadic diagnostics, table matching/expansion and register/temporary resources.
+PCC uses these contracts for real native code generation in both direct and
+split-pass modes. A separate analysis consumer links only the shared services;
+an independent producer exercises the same stream contract. The complete C,
+lint and Fortran commands retain their own tasks; they are not required outputs
+of this shared infrastructure task and are not claimed as installed tools.
 
 The reference tree remains unchanged. The code in `user/mip` adapts the supplied
 manifest/common/mfile2 interfaces; [toolchain ABI version 1](toolchain-abi.md)
@@ -62,8 +63,9 @@ without allocation. Constants 0/1/-1, names, memory, registers, fields, indirect
 operands, pointer-to-array element types and temporary/address shapes are checked.
 Table expansion retains A/C/I/U/B operand escapes, L/R/1/2/3 selection, O/Z target
 escapes, F suppression, T and S/H/M/N/L metadata. A bounded callback interface
-replaces unchecked printf-template substitution. Physical instruction selection,
-target escape implementations and call conventions remain tasks 194–195.
+replaces unchecked printf-template substitution. Physical instruction selection and target escape implementations belong to the
+backends. PCC integer emission (194) and scalar/call increments (195) now consume
+these contracts; the remaining machine ABI work stays in 195.
 
 Register tables describe up to 64 registers and symmetric alias masks. Reference
 counts prevent unsafe allocation of live aliases. A/B scratch classes, three
@@ -72,21 +74,55 @@ result resources, permitted operand sharing and aligned temporary slots adapt
 resource state; temporary alignment/overflow and frame bounds are checked.
 Target-specific register tables and spill/order decisions remain with backends.
 
+## Streaming consumer interface
+
+`pass.h`/`reader.c` replace the supplied reader/fort native-long records with an
+explicit stream. `NXMPS` version 1 starts with a 16-byte header: eight magic/version
+bytes, little-endian native ABI ID 1, and a zero reserved word. Each record has
+three little-endian 32-bit fields: kind, initializer width and payload length.
+Kinds are END (0), literal target text (1), expression (2) and initializer (3).
+Text has no embedded NUL and is bounded to 64 KiB per record. Trees contain the
+checked `NXMIP` payload above. Initializer widths are 8/16/32/64/128 bits; other
+records have width zero. A stream is bounded to 64 MiB, must end with an empty END
+record and physical EOF, and rejects unsupported versions, ABI IDs, reserved
+fields, kinds, widths and excessive/truncated lengths. Backend support for a
+particular initializer or expression type is a separate target decision.
+
+A writer has caller-owned context, a sticky error latch and explicit completion;
+failed output cannot be mistaken for a completed stream. The reader validates
+an entire record before dispatching callbacks and frees borrowed buffers/arenas
+after each call. It stops on callback or I/O failure. Earlier callbacks may have
+run when a later record fails; a driver must honor the returned failure and must
+not publish its partial assembly as a successful compilation. Analysis clients
+share checked IR/traversal without target code or parser globals.
+
+`user/pcc/output.c` provides the direct/stream output context. Private
+`pcc-backend-test --emit-pass input.i` performs retained parsing/semantics and
+serializes target text and expression/initializer IR. A fresh
+`pcc-backend-test --read-pass input.pass` generates assembly without invoking the
+parser or retaining its symbol/dimension tables. Backend-local labels have a
+separate sequence from parser labels, so the producer never needs to execute
+code generation to reserve label numbers. Both paths produce identical assembly.
+These private test switches are infrastructure consumers, not the installed PCC
+driver promised by task 196.
+
 ## Source and prototype ownership
 
 | Supplied files | Native adaptation / remaining owner |
 |---|---|
-| `manifest`, `common`, `comm1.c`, `fcomm2.c` | Native manifest/type/operator/arena services in `manifest.h`, `mip.h`, `common.c`; iterative traversal/copy in `trees.c`; real varargs in `diagnostics.c`. Consumer integration remains 192/193/196. |
-| `mfile1`, `mfile2`, `xdefs.c` | Explicit IR/context interfaces and table constants in `mip.h`/`templates.h`; front-end symbol/scope/dimension state remains 193. |
-| `allo.c`, `match.c`, `reader.c` | `allo.c`, `match.c`, `trees.c` implement checked resources, table selection/expansion and pass records; target ordering/spilling and front-end integration remain 194–196. |
-| `cgram.y`, `scan.c`, `pftn.c`, `trees.c`, `optim.c` | Actual front-end parsing, semantics and optimization remain 193. |
-| `makefile`, `convert` | `tools/mip.mk` builds shared native modules/private consumers. One-pass conversion instructions map to explicit shared contexts; complete compiler prototype remains 196. |
-| `fort.c`, `fallo.c`, `fmatch.c`, `freader.c`, `fcomm2.c`, `flocal2.c`, `forder.c`, `ftable.c`, `fconvert` | The encoded common pass and shared resources replace old binary overlays; actual alternate Fortran adapter/target consumers remain 192/196 and 203–206. No unused wrapper is claimed to be a compiler. |
-| `g`, `INDEX` | Search helper and source index are developer aids; repository search replaces fixed `/usr/src/cmd/mip` paths. |
+| `manifest`, `common`, `comm1.c`, `fcomm2.c` | `manifest.h`, `mip.h`, `common.c` provide native type/operator/arena contracts; `trees.c` traversal/copy and `diagnostics.c` replace overlays and stack-vararg shortcuts. Real PCC and independent analysis consumers share these services. |
+| `mfile1`, `mfile2`, `xdefs.c` | Explicit IR/resource/context contracts replace shared anonymous overlays. PCC parser symbol/scope/dimension state stays in task 193, outside the pass interface. |
+| `allo.c`, `match.c`, `reader.c` | `allo.c`, `match.c`, `trees.c`, `reader.c` implement checked resources, template selection/expansion, tree encoding and streaming consumption. Physical ordering/spilling remains a target responsibility (194–196). |
+| `cgram.y`, `scan.c`, `pftn.c`, `trees.c`, `optim.c` | Retained native working copies in `user/pcc` consume shared types/IR. Full native language/header closure remains 193. |
+| `makefile`, `convert` | `tools/mip.mk` builds reusable native objects and private consumers. `user/pcc/output.c` selects direct or encoded consumption explicitly, replacing destructive one-pass conversion edits; full compiler build/install recipes remain 196. |
+| `fort.c`, `fallo.c`, `fmatch.c`, `freader.c`, `fcomm2.c`, `flocal2.c`, `forder.c`, `ftable.c`, `fconvert` | Shared encoded streams/resources replace binary native-long overlays and source-include duplication. The independent producer checks this parser-free interface. Actual Fortran front end, machine target and driver are still owned by 196 and 203–206; no Fortran compiler is claimed by the interface test. |
+| `g`, `INDEX` | Developer search/index aids, not shared runtime services; prototype/build-helper reconciliation remains 196. |
+| lint consumers | The separate analysis executable links only `common.c`, `trees.c`, `reader.c`, consumes actual PCC passes and walks their checked IR. Full lint analysis passes/driver remain 261–262. |
 
 ## Acceptance evidence
 
-`make TOOLCHAIN_PREFIX= test-mip test-mip-infra test-inventory` preserves and checks
+`make TOOLCHAIN_PREFIX= test-mip test-mip-infra test-mip-pass test-pcc-front
+ test-pcc-integer test-inventory` preserves and checks
 all supplied operator entries. Host ASan/UBSan fixtures cover LP64 layouts,
 maximum modifiers, arithmetic/arena bounds, register aliasing, failed-candidate
 rollback, type/shape/operator classes, rewrite entries, bad escapes, shared-tree
@@ -98,6 +134,20 @@ stress uses 1,024 to fit the 16 MiB multi-user baseline.
 At 16/128 MiB, root and ordinary users execute the same shared services, compare
 exact serialized/generated bytes, assemble generated code with installed as,
 link it with native crt0/libc and a bootstrap C caller using installed ld, then
-execute and verify the result. This proves the shared template/pass pipeline;
-it does not replace the still-required C-source/PCC/lint/backend acceptance.
+execute and verify the result. This proves the shared template/pass pipeline.
+PCC source acceptance additionally runs real retained parsing, code generation,
+native assembly/linking and execution through both direct and split-pass modes,
+with byte-identical assembly and independent GCC execution/ABI oracles. It covers
+integer/pointer/control, scalar float/double, mixed GP/SSE calls, static
+initializers and exact-size aggregate copies at 16/128 MiB as root and ordinary
+user. This does not complete the remaining language, machine ABI or driver tasks.
+
+The independent analysis consumer checks every generated PCC pass against a
+Python framing/tree traversal oracle. The alternate producer includes full-width
+constants/offsets, 255-byte names, floating nodes and aggregate metadata. Native
+runs compare host/guest stream bytes and analysis results. Failure tests cover
+truncation at every byte (including record boundaries), unknown versions/ABI/
+reserved fields/kinds, bad widths/lengths, trailing bytes, embedded NUL, writer
+limits, repeated completion, callback cancellation and failed output. The same
+shared services run under host ASan/UBSan and native 16/128 MiB configurations.
 Commit/test evidence is recorded in Git history.

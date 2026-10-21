@@ -9265,7 +9265,7 @@
     {
       "id": "cmd.mip",
       "kind": "prototype",
-      "summary": "mip source group",
+      "summary": "Shared native portable compiler infrastructure and compiler prototypes",
       "sources": [
         "reference/v7/usr/src/cmd/mip/INDEX",
         "reference/v7/usr/src/cmd/mip/allo.c",
@@ -9300,9 +9300,14 @@
           "name": "comp",
           "install": null,
           "role": "helper",
-          "status": "prototype",
+          "status": "partial",
           "evidence": [
-            "reference/v7/usr/src/cmd/mip/makefile"
+            "reference/v7/usr/src/cmd/mip/makefile",
+            "user/pcc/code.c",
+            "user/pcc/local2.c",
+            "user/pcc/output.c",
+            "tools/pcc.mk",
+            "tools/pcc_integer_smoke.py"
           ]
         },
         {
@@ -9343,7 +9348,7 @@
         }
       ],
       "priority": 6,
-      "status": "prototype",
+      "status": "partial",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -9465,16 +9470,15 @@
         }
       ],
       "blockers": [
-        "Shared infrastructure/prototype targets, not a separate installed user command.",
-        "Machine-dependent backend required."
+        "Shared services are reusable native modules, not an installed user command. Complete comp/fort prototypes and build/helper outputs remain tasks 193/195/196."
       ],
       "unresolved": [
-        "Task 192: full PCC/lint/alternate-target consumer integration remains with the frontend/backend work in tasks 193\u2013196; the shared service library is not a complete compiler."
+        "Tasks 193/195/196: complete native frontend type/header contracts, remaining aggregate/long-double/variadic-definition ABI and installed compiler/alternate-target/build-helper integration. Shared services and their direct/split-pass/analysis consumers are complete under task 192."
       ],
       "acceptance": [
-        "Verify shared compiler/lint consumers and explicitly separate prototype backend targets.",
-        "Verify each installed output and its documented behavior; test helpers through their consuming pipeline.",
-        "make test-mip checks the first private native contract slice under host sanitizers and at 16/128 MiB; complete compiler pipeline acceptance remains pending."
+        "make test-mip test-mip-infra test-mip-pass tests shared native contracts, serialization, streaming failures and independent producer/analysis consumers under sanitizers and at 16/128 MiB.",
+        "make test-pcc-front test-pcc-integer verifies real retained PCC source consumption, identical direct/split-pass assembly/diagnostics and native as/ld execution as root and ordinary user at 16/128 MiB.",
+        "Keep incomplete compiler prototypes and installed outputs under tasks 193/195/196; full lint and Fortran ports retain their separate component tasks."
       ],
       "source_files": [
         "reference/v7/usr/src/cmd/mip/allo.c",
@@ -9501,7 +9505,9 @@
       ],
       "source_availability": "supplied",
       "unresolved_tasks": [
-        192
+        193,
+        195,
+        196
       ],
       "native_sources": [
         "user/mip/manifest.h",
@@ -9512,11 +9518,15 @@
         "user/mip/allo.c",
         "user/mip/templates.h",
         "user/mip/diagnostics.c",
-        "user/mip/diagnostics.h"
+        "user/mip/diagnostics.h",
+        "user/mip/pass.h",
+        "user/mip/reader.c",
+        "user/pcc/output.c"
       ],
       "port_notes": "docs/mip.md",
       "scope_notes": [
-        "Native LP64 type/operator, bounded IR, traversal/copy, diagnostic, template/resource and encoded pass services pass sanitizer and native generated-code execution at 16/128 MiB; full compiler/lint/alternate consumer integration remains."
+        "Task 192 shared types/operators/IR, traversal/copy, diagnostics, templates/resources and tree/stream interfaces are consumed by actual retained-PCC compilation and a parser-independent analysis client. Independent alternate-producer fixtures validate the same interface without claiming a Fortran compiler or full lint pass.",
+        "Native one/two-pass contexts replace convert/fconvert source-edit instructions. The complete compiler prototypes and their remaining output/helper reconciliation are explicitly owned by tasks 193/195/196."
       ]
     },
     {

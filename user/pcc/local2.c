@@ -5,6 +5,10 @@
 #include "backend.h"
 static const struct mip_arena *current_ir;
 static unsigned depth;
+/* Parser labels use the lower half. Backend-only labels have their own
+ * sequence so a serialized frontend never needs to run code generation. */
+static int backend_label=0x40000000;
+static int target_label(void) {if(backend_label==INT32_MAX)cerror("too many target labels");return ++backend_label;}
 static int floating(TWORD type) {return type==FLOAT || type==DOUBLE;}
 static int aggregate(TWORD type) {return type==STRTY || type==UNIONTY;}
 static const struct mip_node *node_at(uint32_t i) {if(i>=current_ir->count)cerror("invalid target node");return current_ir->nodes+i;}
@@ -109,7 +113,7 @@ static void scalar_convert(TWORD from,TWORD to) {
     if(floating(from) && floating(to)) {puts(to==FLOAT?" cvtsd2ss %xmm0,%xmm0":" cvtss2sd %xmm0,%xmm0");return;}
     if(floating(to)) {
         if(from==ULONG) {
-            int ordinary=getlab(),end=getlab();
+            int ordinary=target_label(),end=target_label();
             printf(" testq %%rax,%%rax\n jns .L%d\n movq %%rax,%%rcx\n andl $1,%%eax\n shrq $1,%%rcx\n orq %%rcx,%%rax\n",ordinary);
             printf(" cvtsi2%sq %%rax,%%xmm0\n add%s %%xmm0,%%xmm0\n jmp .L%d\n",to==FLOAT?"ss":"sd",to==FLOAT?"ss":"sd",end);
             deflab(ordinary);printf(" cvtsi2%sq %%rax,%%xmm0\n",to==FLOAT?"ss":"sd");deflab(end);
@@ -119,7 +123,7 @@ static void scalar_convert(TWORD from,TWORD to) {
     if(floating(from)) {
         const char *s=from==FLOAT?"ss":"sd";
         if(to==ULONG) {
-            int small=getlab(),end=getlab();uint64_t bits=from==FLOAT?UINT64_C(0x5f000000):UINT64_C(0x43e0000000000000);
+            int small=target_label(),end=target_label();uint64_t bits=from==FLOAT?UINT64_C(0x5f000000):UINT64_C(0x43e0000000000000);
             printf(" movq $%lu,%%rax\n movq %%rax,%%xmm1\n ucomi%s %%xmm1,%%xmm0\n jb .L%d\n sub%s %%xmm1,%%xmm0\n cvtt%s2siq %%xmm0,%%rax\n movq $-9223372036854775808,%%rcx\n xorq %%rcx,%%rax\n jmp .L%d\n",(unsigned long)bits,s,small,s,s,end);
             deflab(small);printf(" cvtt%s2siq %%xmm0,%%rax\n",s);deflab(end);
         } else printf(" cvtt%s2siq %%xmm0,%%rax\n",s);
@@ -151,7 +155,7 @@ static void float_binary(unsigned op,TWORD type) {
 }
 static int expand(void *p,char escape,unsigned modifier,const struct mip_node *n) {
     (void)n;struct binary_context *c=p;
-    if(!escape)return fputc((int)modifier,stdout)==EOF;
+    if(!escape)return putchar((int)modifier)==EOF;
     if(escape!='Z' || modifier!='b')return -1;
     binary_instruction(c->op,c->type);return ferror(stdout)!=0;
 }
@@ -277,14 +281,14 @@ static void generate(uint32_t root,unsigned nesting) {
         }
         else {puts(op==COMPL?" notq %rax":" negq %rax");normalize(n->type);}break;
     case ANDAND:case OROR: {
-        int shortcut=getlab(),end=getlab();generate(n->left,nesting+1);truth(node_at(n->left)->type);
+        int shortcut=target_label(),end=target_label();generate(n->left,nesting+1);truth(node_at(n->left)->type);
         printf(" testq %%rax,%%rax\n j%s .L%d\n",op==ANDAND?"z":"nz",shortcut);
         generate(n->right,nesting+1);truth(node_at(n->right)->type);printf(" testq %%rax,%%rax\n setne %%al\n movzbq %%al,%%rax\n jmp .L%d\n",end);
         deflab(shortcut);printf(" movq $%u,%%rax\n",op==OROR);deflab(end);break;
     }
     case QUEST: {
         const struct mip_node *arms=node_at(n->right);if(arms->op!=COLON)cerror("bad conditional tree");
-        int alternate=getlab(),end=getlab();generate(n->left,nesting+1);truth(node_at(n->left)->type);printf(" testq %%rax,%%rax\n jz .L%d\n",alternate);
+        int alternate=target_label(),end=target_label();generate(n->left,nesting+1);truth(node_at(n->left)->type);printf(" testq %%rax,%%rax\n jz .L%d\n",alternate);
         generate(arms->left,nesting+1);printf(" jmp .L%d\n",end);deflab(alternate);generate(arms->right,nesting+1);deflab(end);break;
     }
     case CBRANCH:

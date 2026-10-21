@@ -4,7 +4,7 @@ static int location=PROG,label_counter=10;
 static unsigned frame_size;
 static uint32_t initial_word;
 static unsigned initial_bits;
-int getlab(void) {return ++label_counter;}
+int getlab(void) {if(label_counter==0x3fffffff)cerror("too many parser labels");return ++label_counter;}
 void pcc_note_frame(unsigned bytes) {if(bytes>frame_size)frame_size=bytes;}
 unsigned pcc_frame_size(void) {return frame_size;}
 int locctr(int n) {
@@ -92,16 +92,30 @@ int fincode(double value,int bits) {
 int ecode(NODE *tree) {
     if(nerrors)return 0;
     struct mip_node *nodes=calloc(TREESZ,sizeof(*nodes));if(!nodes)cerror("no memory for target IR");
-    struct mip_arena arena={nodes,0,TREESZ};uint32_t root=pcc_lower(tree,&arena);pcc_emit_expression(&arena,root);free(nodes);return 0;
+    struct mip_arena arena={nodes,0,TREESZ};uint32_t root=pcc_lower(tree,&arena);
+    if(pcc_output_tree(&arena,root,0))cerror("expression pass output failed");
+    free(nodes);return 0;
 }
 int cinit(NODE *tree,int bits) {
     if(nerrors)return 0;
     if(initial_bits)cerror("unaligned scalar initializer");
     struct mip_node *nodes=calloc(TREESZ,sizeof(*nodes));if(!nodes)cerror("no memory for initializer IR");
-    struct mip_arena arena={nodes,0,TREESZ};uint32_t root=pcc_lower(tree,&arena);pcc_emit_initializer(&arena,root,(unsigned)bits);inoff+=bits;free(nodes);return 0;
+    struct mip_arena arena={nodes,0,TREESZ};uint32_t root=pcc_lower(tree,&arena);
+    if(pcc_output_tree(&arena,root,(unsigned)bits))cerror("initializer pass output failed");
+    inoff+=bits;free(nodes);return 0;
 }
 int main(int argc,char **argv) {
-    if(argc>2) {fprintf(stderr,"usage: pcc-backend [preprocessed-source]\n");return 2;}
-    if(argc==2 && strcmp(argv[1],"-")) {if(!freopen(argv[1],"r",stdin))return 1;snprintf(ftitle,sizeof(ftitle),"%s",argv[1]);}
-    puts(".text");return mainp1(1,argv);
+    unsigned emit=0,read=0;int source=1;
+    if(argc>1 && !strcmp(argv[1],"--emit-pass")) {emit=1;source++;}
+    else if(argc>1 && !strcmp(argv[1],"--read-pass")) {read=1;source++;}
+    if(argc>source+1) {fprintf(stderr,"usage: pcc-backend [--emit-pass|--read-pass] [input]\n");return 2;}
+    if(argc>source && strcmp(argv[source],"-")) {if(!freopen(argv[source],"r",stdin))return 1;snprintf(ftitle,sizeof(ftitle),"%s",argv[source]);}
+    if(read) {
+        if(pcc_read_pass(stdin)) {fprintf(stderr,"pcc: invalid or failed compiler pass\n");return 1;}
+        return 0;
+    }
+    if(emit && pcc_output_begin())return 1;
+    puts(".text");int status=mainp1(1,argv);
+    if(!status && pcc_output_end())status=1;
+    return status;
 }

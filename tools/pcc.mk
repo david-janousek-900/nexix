@@ -20,9 +20,9 @@ test-pcc-front: test-pcc-front-unit build/pcc-front-test.elf multi-iso rootfs
 test-unit: test-pcc-front-unit
 test: test-pcc-front
 
-build/pcc-backend-test.elf: build/crt0.o $(PCC_FRONT_OBJECTS) build/pcc-cgram.o build/pcc-code.o build/pcc-local2.o $(MIP_SHARED) build/libc.a user/user.ld
+build/pcc-backend-test.elf: build/crt0.o $(PCC_FRONT_OBJECTS) build/pcc-cgram.o build/pcc-code.o build/pcc-local2.o build/pcc-output.o $(MIP_SHARED) build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
--include build/pcc-code.d build/pcc-local2.d
+-include build/pcc-code.d build/pcc-local2.d build/pcc-output.d
 
 .PHONY: test-pcc-integer-unit test-pcc-integer
 test-pcc-integer-unit: build/gen-pcc/cgram.c

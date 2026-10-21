@@ -81,8 +81,8 @@ check error diagnostics. No machine-code acceptance is claimed by these tests.
 Task 193 still needs the extended native type/header contracts required by ABI
 version 1 and their backend integration. Aggregate, variadic-definition,
 long-double and installed driver acceptance stay open in 193–196;
-full supported-tool rebuild remains 207. The shared mip task also stays in
-progress until its compiler/alternate consumer gates pass. Commit/test evidence
+full supported-tool rebuild remains 207. Task 192 shared consumer integration is recorded in [mip.md](mip.md); complete
+lint/Fortran commands retain their own tasks. Commit/test evidence
 is recorded in Git history.
 
 ## Integer/pointer/control backend (task 194)
@@ -165,3 +165,13 @@ self-assignment and copies complete nested arrays and padding. GCC/native tests
 cover a three-byte struct with a neighboring guard byte and a larger structure
 containing a native-long array. This closes aggregate assignment only; argument
 and result ABI classification remains open.
+
+
+Task 192 now supplies the real split-pass integration used by this private
+compiler. `--emit-pass` runs the retained frontend and emits checked text/IR
+records; `--read-pass` consumes them in a fresh backend process without parser
+symbol/dimension tables. A separate analysis executable links only shared mip
+services and consumes the same PCC output. `test-pcc-integer` compares direct
+and split assembly and diagnostics and assembles/links/executes the split result
+at 16/128 MiB as root and ordinary user, including 255-byte symbols. Full native
+language/header, machine ABI and installed driver gates remain 193/195/196.

@@ -165,6 +165,12 @@ int main(){
  finish:return 0;
 }
 '''
+# Exercise target formatting across its stack-buffer boundary and preserve the
+# longest accepted symbol in text, IR names and a separately compiled caller.
+long_symbol='shared_pass_'+('n'*243)
+assert len(long_symbol)==255
+FUNCTIONS+=f'long {long_symbol}(x) long x;{{return x+4294967297L;}}\n'
+DRIVER=DRIVER.replace('int main(void){',f'extern long {long_symbol}(long);\nint main(void){{\n CHECK({long_symbol}(2L)==4294967299L);')
 helper_lines=[line for line in PROGRAM.splitlines() if line.startswith(('long sum9(', 'long recurse(', 'long leaf(', 'long nest(', 'double fp_sum(', 'double fp_leaf('))]
 PROGRAM='\n'.join(line for line in PROGRAM.splitlines() if line not in helper_lines)
 PROGRAM=PROGRAM.replace('int main(){','long sum9(),recurse(),leaf(),nest();double fp_sum(),fp_leaf();\nint main(){')
@@ -172,14 +178,21 @@ PROGRAM=PROGRAM.replace('int main(){','long sum9(),recurse(),leaf(),nest();doubl
 with tempfile.TemporaryDirectory(prefix='nx-pcc-integer-') as tmp:
     d=Path(tmp);binary=d/'ccom';flags=['cc','-std=gnu89','-O1','-g','-w','-fcommon','-fsanitize=address,undefined','-fno-pie','-no-pie','-Iuser/pcc']
     mip=[]
-    for name in ('common','trees','match','allo'):
+    for name in ('common','trees','match','allo','reader'):
         obj=d/('mip-'+name+'.o');mip.append(str(obj))
         subprocess.run([f.replace('-std=gnu89','-std=c11') for f in flags]+['-c','user/mip/'+name+'.c','-o',str(obj)],cwd=ROOT,check=True)
-    files=['scan','pftn','trees','optim','xdefs','common','local','numbers','ir','code','local2']
+    files=['scan','pftn','trees','optim','xdefs','common','local','numbers','ir','code','local2','output']
     subprocess.run(flags+[f'user/pcc/{n}.c' for n in files]+['build/gen-pcc/cgram.c',*mip,'-o',str(binary)],cwd=ROOT,check=True)
     def compile(name):
         p=subprocess.run([str(binary),str(OUT/(name+'.c'))],capture_output=True,env=ENV,timeout=10)
         assert p.returncode==0 and b'Sanitizer' not in p.stderr and b'runtime error:' not in p.stderr,p
+        # A distinct frontend process writes the shared pass; a fresh backend
+        # process has no parser symbol/dimension state and must reproduce it.
+        encoded=subprocess.run([str(binary),'--emit-pass',str(OUT/(name+'.c'))],capture_output=True,env=ENV,timeout=10)
+        assert encoded.returncode==0 and encoded.stderr==p.stderr,encoded.stderr
+        (OUT/(name+'.pass')).write_bytes(encoded.stdout)
+        decoded=subprocess.run([str(binary),'--read-pass'],input=encoded.stdout,capture_output=True,env=ENV,timeout=10)
+        assert decoded.returncode==0 and decoded.stdout==p.stdout and not decoded.stderr,decoded.stderr
         asm=OUT/(name+'.s');asm.write_bytes(p.stdout)
         subprocess.run(['as','--64',str(asm),'-o',str(OUT/(name+'.o'))],check=True)
     compile('integer');compile('program')
@@ -210,4 +223,10 @@ with tempfile.TemporaryDirectory(prefix='nx-pcc-integer-') as tmp:
     subprocess.run([str(d/'program')],check=True)
     # Bootstrap only the external native caller; generated bodies remain PCC output.
     subprocess.run(['gcc','-std=c11','-O2','-ffreestanding','-fno-builtin','-fno-pie','-fno-stack-protector','-fno-asynchronous-unwind-tables','-mno-red-zone','-mno-avx','-nostdinc','-Ilibc/include','-Iinclude','-c',str(OUT/'int-driver.c'),'-o',str(OUT/'int-driver.o')],cwd=ROOT,check=True)
+    # A failed frontend must not finish a valid stream. A separate backend
+    # rejects it rather than accepting EOF as successful pass completion.
+    failed=subprocess.run([str(binary),'--emit-pass'],input=b'int broken(',capture_output=True,env=ENV,timeout=10)
+    assert failed.returncode!=0 and b'Sanitizer' not in failed.stderr
+    rejected=subprocess.run([str(binary),'--read-pass'],input=failed.stdout,capture_output=True,env=ENV,timeout=10)
+    assert rejected.returncode==1 and rejected.stderr==b'pcc: invalid or failed compiler pass\n',rejected
 print('PASS: PCC integer backend sanitizers, GNU caller/execution oracle, scalar widths, stack arguments, pointer/field stores, control flow and static data')
