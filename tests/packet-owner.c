@@ -52,9 +52,9 @@ int proc_sleep_interruptible(void *channel,unsigned priority)
     packet_timer(ticks);return 0;
 }
 int copyin(const struct address_space *s,uintptr_t p,void *b,size_t n)
-{(void)s;if(n)memcpy(b,(void *)p,n);return 0;}
+{(void)s;if(n && p<4096)return -NX_EFAULT;if(n)memcpy(b,(void *)p,n);return 0;}
 int copyout(const struct address_space *s,uintptr_t p,const void *b,size_t n)
-{(void)s;if(n)memcpy((void *)p,b,n);return 0;}
+{(void)s;if(n && p<4096)return -NX_EFAULT;if(n)memcpy((void *)p,b,n);return 0;}
 _Noreturn void panic(const char *s){fprintf(stderr,"panic %s\n",s);abort();}
 static void reset(void)
 {
@@ -77,6 +77,9 @@ int main(void)
     assert(pk_take(&peer,bytes,sizeof(bytes),&eof)==0 && eof);pump();
     assert(pk_send(&peer,(const uint8_t *)"hello",5,ticks)==0);pump();
     assert(packet_ready(terminal));assert(packet_io(terminal,NULL,(uintptr_t)bytes,sizeof(bytes),false)==5 && !memcmp(bytes,"hello",5));pump();
+    assert(packet_io(terminal,NULL,1,1,true)==-NX_EFAULT);
+    assert(!pk_send(&peer,(const uint8_t *)"x",1,ticks));pump();
+    assert(packet_io(terminal,NULL,1,1,false)==-NX_EFAULT);pump();
     pk_shutdown(&peer);pump();assert(packet_io(terminal,NULL,(uintptr_t)bytes,1,false)==0);
     assert(packet_io(terminal,NULL,(uintptr_t)bytes,1,false)==0); /* Repeated EOF cannot sleep. */
     assert(packet_io(terminal,NULL,(uintptr_t)bytes,1,true)==-NX_EPIPE && sigpipe==1);

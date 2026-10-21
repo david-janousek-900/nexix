@@ -324,7 +324,8 @@ int64_t tty_io(struct tty *t, struct address_space *vm, uintptr_t address, size_
         uint8_t bytes[128];
         while (done < count) {
             size_t n = count - done; if (n > sizeof(bytes)) n = sizeof(bytes);
-            if (copyin(vm, address + done, bytes, n)) panic("tty write mapping changed");
+            int error=copyin(vm,address+done,bytes,n);
+            if(error)return done?(int64_t)done:error;
             for (size_t i = 0; i < n; ++i) {
                 for(;;){
                     if(!t->carrier || packet_active(t))return done+i?(int64_t)(done+i):-NX_EIO;
@@ -345,12 +346,13 @@ int64_t tty_io(struct tty *t, struct address_space *vm, uintptr_t address, size_
     }
     while (done < count && t->count) {
         uint16_t value = t->input[t->head];
-        t->head = (t->head + 1) % TTY_INPUT_CAPACITY; --t->count;
         if (!(value & EMPTY_EOF)) {
             uint8_t byte = value;
-            if (copyout(vm, address + done, &byte, 1)) panic("tty read mapping changed");
+            int error=copyout(vm,address+done,&byte,1);
+            if(error){input_flow(t);return done?(int64_t)done:error;}
             ++done;
         }
+        t->head = (t->head + 1) % TTY_INPUT_CAPACITY; --t->count;
         if (!immediate(t) && (value & RECORD_END)) break;
     }
     input_flow(t);return done;
