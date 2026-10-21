@@ -51,7 +51,7 @@ char message[]="native";
 subprocess.run(['cc','-E','-P','-nostdinc',str(OUT/'types.c'),'-o',str(OUT/'types.i')],check=True)
 with tempfile.TemporaryDirectory(prefix='nx-pcc-front-') as tmp:
     d=Path(tmp);binary=d/'front';flags=['cc','-std=gnu89','-O1','-g','-w','-fcommon','-fsanitize=address,undefined','-fno-pie','-no-pie','-Iuser/pcc']
-    files=['scan','pftn','trees','optim','xdefs','common','local','numbers','ir','declarations','real','trace']
+    files=['scan','pftn','trees','optim','xdefs','common','local','numbers','ir','declarations','real','abi','trace']
     mip=[]
     for name in ('common','trees'):
         obj=d/('mip-'+name+'.o');mip.append(str(obj))

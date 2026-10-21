@@ -1,10 +1,8 @@
 # Native PCC compiler implementation
 
-Task 193 is **complete**. The retained frontend and integer/pointer/control
-backend (194) use
-native LP64 and the shared mip contracts. Task 195 includes implemented scalar
-float/double code, calls and aggregate assignment; aggregate argument/result
-classification, x87 machine operations and variadic definitions remain open.
+Tasks 193–195 are **complete**. The retained frontend, the integer/pointer/control
+backend (194) and the call, aggregate, floating-point and variadic backend (195)
+use native LP64 and the shared mip contracts.
 The installed compiler/alternate drivers remain task 196, and complete supported
 V7 source rebuild acceptance remains 207. The private executables are not yet
 installed compiler commands.
@@ -74,9 +72,9 @@ Task 196 owns packaging this profile with the installed driver.
 `va_start`, `va_end`, `va_copy` and typed `va_arg` parse and check their operands.
 Start requires a variadic definition and its last named parameter; argument
 requests reject void/array/function types. Explicit shared IR nodes carry these
-operations, including aggregate size/alignment. Their runtime lowering and
-register-save-area behavior remain task 195; unsupported machine operations
-fail rather than becoming implicit external helper calls.
+operations, including aggregate size/alignment; their runtime lowering is
+described under the machine ABI below. Unsupported machine operations fail
+rather than becoming implicit external helper calls.
 
 The bounded implementation permits 1024 symbols, 1024 expression nodes, 4096
 dimension cells, 128 initializer levels, 150 parameters per function, 1024
@@ -108,8 +106,49 @@ registers, then ordered stack overflow slots; variadic callees receive the SSE
 count in AL. Integer widths, full-width addresses, field stores, short-circuit
 control, switch/goto, static data and scalar floating conversions are executed
 against independent GCC callers/callees. Exact-size aggregate copies evaluate
-addresses once and preserve neighboring objects. General aggregate calls and
-long-double operations still require task 195.
+addresses once and preserve neighboring objects.
+
+## Aggregate, long-double and variadic ABI
+
+`abi.c` classifies structures and unions from the frontend member tables using
+the System V eightbyte rules: INTEGER, SSE, a lone long double (X87 return
+class) or MEMORY for objects over 16 bytes, misaligned members and other x87
+contents. Bit fields are INTEGER, arrays classify each element and unions merge
+members. The packed class word travels in the `reg` field of STARG, STCALL and
+aggregate VA_ARG nodes, so a separate backend process needs no parser tables.
+
+Calls stage memory arguments at their final aligned stack location, then
+register values and the callee address in one aligned block. A structure is
+passed in registers only if all its eightbytes fit the remaining GP/SSE
+registers; otherwise it is copied to the stack. Long double arguments use
+16-byte-aligned stack slots. MEMORY results pass a hidden RDI pointer to a frame
+temporary. Register, SSE and X87 results are stored into that temporary, and the
+call yields its address. The frontend reserves temporaries above the current
+automatics for each lowered tree and records the offset in the node.
+
+Definitions reverse this ABI: register-class parameters are stored into aligned
+frame slots, memory-class and long double parameters use the caller's stack
+copy, and structure returns copy exactly the object size. MEMORY returns copy
+into the hidden pointer and return it in RAX. Register-class returns load the
+RAX/RDX and XMM0/XMM1 eightbytes. A lone long double is returned in ST0.
+Falling off the end of a structure function skips the copy.
+
+Long double values use a single-entry x87 accumulator in ST0. Binary
+operations spill the left operand to the stack, so the accumulator never holds
+two live values. The popping `faddp/fsubp/fmulp/fdivp` forms leave left-op-right,
+and comparisons use `fucomip` with the same unordered flags as SSE. Integer
+conversions use `fildq`, with a 2^64 correction for unsigned values.
+Truncating conversions use an explicit round-toward-zero control word; unsigned
+results at or above 2^63 are biased. Unused long double results are popped, and
+`return` keeps the result in ST0.
+
+Variadic definitions save all six GP and eight SSE argument registers in a
+176-byte frame area. `va_start` stores the named-register offsets, overflow area
+and save-area address into the 24-byte `va_list`. `va_arg` handles INTEGER/SSE
+scalars, stack-only long double and aggregates. Register-class aggregates are
+reassembled in a frame temporary only when all of their eightbytes remain
+available; otherwise they come from the aligned overflow area. `va_copy` copies
+the full state, and `va_end` only evaluates its operand.
 
 ## Acceptance
 
@@ -129,6 +168,14 @@ conversions, math predicates and existing integer/floating/call/aggregate-copy
 cases through cpp -> PCC -> as -> ld, including direct/split-pass equivalence.
 Ordinary translation units bound native assembler working sets. Short `ld -r`
 groups keep final link commands within the terminal line limit while preserving
-all execution cases. These checks complete the frontend contract, not remaining
-machine ABI, installed driver or full V7 rebuild work. Git history records the
+all execution cases. `make TOOLCHAIN_PREFIX= test-pcc-abi` compiles `tests/pcc_abi_fixture.c` with the
+sanitized compiler in direct and split-pass modes. It links the result with GCC
+callers and callees (`tests/pcc_abi_driver.c`) and repeats the cases through a
+GCC-compiled oracle. Cases include every eightbyte class pattern, register
+exhaustion, hidden result pointers, x87 arithmetic, comparisons, conversions,
+calls and predicates, and variadic integer, SSE, long double and structure
+arguments, including va_copy and forwarded va_list. In the guest, native cpp,
+PCC, as and ld rebuild the same fixture in bounded units with exact assembly.
+Execution runs as root and as an ordinary user at 16/128 MiB. These checks do
+not cover the installed driver or full V7 rebuild work. Git history records the
 implementation and test evidence.

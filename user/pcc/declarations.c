@@ -124,6 +124,9 @@ NODE *pcc_vararg(unsigned op,NODE *ap,NODE *other,NODE *type) {
     if(type && (result==VOID || ISFTN(result) || ISARY(result)))uerror("invalid va_arg type");
     NODE *p=block((int)op,ap,other,result,dim,size);
     if(type) {p->prototype=type->prototype;type->op=FREE;}
+    /* Like structure calls, an aggregate va_arg yields its address. */
+    p->stsize=0;
+    if(result==STRTY || result==UNIONTY) {p->type=INCREF(result);p->stsize=1;p=buildtree(UNARY MUL,p,NIL);}
     return p;
 }
 
@@ -146,3 +149,4 @@ void pcc_check_definition(const int *args,int count) {
         if(promoted!=parameters[i].type)uerror("parameter definition conflicts with prototype");
     }
 }
+int pcc_definition_variadic(void) {return definition && signature(definition)->variadic;}
