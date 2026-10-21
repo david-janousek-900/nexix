@@ -102,9 +102,10 @@ int main(int argc,char **argv)
     assert(node_equal(lookup(base,base,"/data"),(struct fs_node){0,4}));
     assert(namespace_lookup(base,base,"/inner/data",0,0,&result)==-NX_ENOENT);
     pins[0]=(struct inode){.i_count=1,.i_dev=0,.i_number=4};
-    assert(!namespace_mount_file(1,(struct fs_node){0,4},base,&pins[0],false));
-    assert(!namespace_lookup(base,base,"/data/..",123,123,&escaped));
-    assert(node_equal(escaped,base));
+    /* As in V7, .. through a mount on an ordinary file is ENOTDIR; no
+     * recorded parent lets a hard link to the file escape a chroot. */
+    assert(!namespace_mount(1,(struct fs_node){0,4},&pins[0],false));
+    assert(namespace_lookup(base,base,"/data/..",123,123,&escaped)==-NX_ENOTDIR);
     assert(!namespace_reset());
     assert(v7fs_unmount(&root)==0&&namespace_root(NULL)==0);
     for(unsigned i=0;i<8;++i)assert(storage_bind(i,NULL,false)==0);

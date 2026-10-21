@@ -11,7 +11,6 @@ struct v7fs *namespace_volume(v7_dev_t);
 int namespace_root(struct v7fs *); /* Quiescent root installation. */
 int namespace_lookup(struct fs_node cwd,struct fs_node root,const char *,uint16_t uid,uint16_t gid,struct fs_node *);
 int namespace_mount(v7_dev_t,struct fs_node,struct inode *pin,bool read_only);
-int namespace_mount_file(v7_dev_t,struct fs_node,struct fs_node parent,struct inode *pin,bool read_only);
 bool namespace_mountpoint(struct fs_node);
 unsigned namespace_pins(void);
 bool namespace_quiescent(void);
