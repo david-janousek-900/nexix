@@ -113,11 +113,12 @@ static void mx_detach(struct mx_entry e,bool orphan)
     }else{
         struct mx_channel *c=e.channel;
         /* Keep a detached endpoint alive without retaining the parent group. */
+        ++c->users;
         c->closing=true;mx_notify(c);mx_bridge_clear(c,0);
-        if(orphan || !c->endpoint){
+        if(c->parent && (orphan || !c->endpoint)){
             c->parent->entry[c->index]=(struct mx_entry){0};c->parent=NULL;
-            mx_reap(c);
         }
+        mx_release(c);
     }
 }
 static void mpx_close(struct file *f)

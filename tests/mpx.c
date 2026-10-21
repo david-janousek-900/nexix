@@ -72,6 +72,14 @@ static int disconnect_during_drain(void *channel)
     (void)channel;struct tty *t=bridged->output_tty;mx_bridge_clear(bridged,1);
     assert(tty_handle_valid(t));uart_idle=true;return 0;
 }
+static int close_during_detach(void *channel)
+{
+    (void)channel;
+    assert(bridged->users && bridged->endpoint);
+    mpx_close(bridged->endpoint);
+    assert(bridged->active && !bridged->parent);
+    uart_idle=true;return 0;
+}
 static int accept_open(void *channel)
 {((struct mx_channel *)channel)->pending=false;return 0;}
 int main(void)
@@ -215,5 +223,15 @@ int main(void)
     assert(tty_mpx_write(t,(const uint8_t *)"x",1)==1);
     assert(!mx_endpoint_ioctl(&writer,&process.p_vm,NX_TIOCSETP,(uintptr_t)&settings));
     assert(!c->output_tty && tty_open_count()==opens-1);on_sleep=NULL;
+    /* Endpoint close during last-bridge drain cannot reap the detacher. */
+    reset_mx();assert(!tty_open(NX_CONSOLE_DEV,&user,&t));
+    terminal_file=file_alloc();assert(terminal_file);
+    terminal_file->f_private=t;terminal_file->f_flag=V7_FREAD|V7_FWRITE;
+    g=&mx_groups[0];c=mx_allocate(g);bridged=c;
+    endpoint=(struct file){.f_private=c,.f_flag=V7_FMPY};c->endpoint=&endpoint;
+    c->output_tty=t;c->output_file=terminal_file;
+    uart_idle=false;on_sleep=close_during_detach;
+    mx_detach((struct mx_entry){.channel=c},true);
+    assert(!c->active && !g->entry[0].channel);on_sleep=NULL;
     puts("PASS: mpx record validation, queue bounds/wrap, low-water wakeups, control retention, nonblocking retry, interrupted writes and pinned detach lifetime, TTY data/EOF/signals/flow, ioctl replies and pinned bridge ioctls");return 0;
 }
