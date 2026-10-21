@@ -12,6 +12,9 @@ for n in ('object_with_a_very_long_member_name.o','native.a','bsd.a','historical
     path='/tmp/fixture.o' if n.endswith('.o') else '/tmp/'+n
     artifacts[path]=artifact
 if tool=='size':artifacts['/tmp/sectionless']='fixtures-size/sectionless'
+if tool=='lorder':
+    artifacts['/tmp/a.o']='fixtures-lorder/a.o'
+    artifacts['/tmp/b.o']='fixtures-lorder/b.o'
 with private_guest(qemu,iso,ram,tool,artifacts,single_user=False) as guest:
     login(guest,'root','nexix')
     if tool=='nm':
@@ -36,4 +39,15 @@ with private_guest(qemu,iso,ram,tool,artifacts,single_user=False) as guest:
         guest.command('cp /tmp/fixture.o a.out')
         guest.command('size',stdout=line)
         guest.command('size /tmp/sectionless',stdout=(folder/'segment.txt').read_text())
+    if tool=='lorder':
+        guest.command('lorder /tmp/a.o /tmp/b.o',stdout='/tmp/a.o /tmp/a.o\n/tmp/b.o /tmp/b.o\n'+
+                      '/tmp/a.o /tmp/b.o\n'*4)
+        guest.command('lorder /tmp/a.o',stdout='/tmp/a.o /tmp/a.o\n'*2)
+        guest.command('lorder',stdout='usage: lorder file ...\n')
+        guest.command('lorder /tmp/absent',stdout='lorder: cannot read object/archive /tmp/absent\n',status=1)
+        guest.command("lorder 'with space.o'",stdout='lorder: whitespace in object names is unsupported\n',status=2)
+        label='/tmp/native.a(object_with_a_very_long_member_name.o)'
+        guest.command('lorder /tmp/native.a',stdout=f'{label} {label}\n')
+        for name in ('truncated','machine','archive-short','string-offset'):
+            guest.command('lorder /tmp/'+name,stdout='lorder: cannot read object/archive /tmp/'+name+'\n',status=1)
 print(f'PASS: {ram} installed {tool} ELF/archive behavior, long names and malformed inputs')

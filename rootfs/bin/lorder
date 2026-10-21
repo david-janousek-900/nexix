@@ -1,0 +1,4 @@
+case $# in
+0) exec /usr/lib/lorder-native ;;
+esac
+exec /usr/lib/lorder-native "$@"

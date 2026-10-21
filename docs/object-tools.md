@@ -57,3 +57,34 @@ encoded archive containers and a sectionless static executable, and exercises
 default/multiple operands and malformed inputs. ASan/UBSan host checks and
 installed guest checks at 16/128 MiB must pass. Shared reader changes also run
 `make test-nm` to protect symbol inspection.
+
+## lorder (task 202)
+
+`/bin/lorder file ...` prints object dependency pairs: every object gets a self
+pair, and each external undefined symbol creates edges to objects defining it.
+It preserves repeated edges and the original script's duplicate self-pair for
+a single `.o` operand. No operands print the original usage line and return 0.
+
+The active shell wrapper is `rootfs/bin/lorder`; the original reference script
+is unchanged. Its nm/sed/sort/join pipeline is implemented by the installed
+native helper `/usr/lib/lorder-native`, sharing the checked ELF/archive reader
+with nm and size. This removes the need to wait for unrelated text-tool ports
+and avoids the original predictable temporary files. The wrapper handles V7's
+empty quoted `$@` behavior explicitly and passes supplied operands quoted.
+
+ELF global/weak definitions include BSS, common and read-only data as well as
+text and initialized data. A reference to an absent definition creates no edge;
+linker resolution remains a separate task. Multiple providers yield conservative
+edges to each provider. Archive members use `archive(member)` identities.
+Malformed/missing files return 1; whitespace in filenames is rejected with
+status 2 because the historical pair protocol cannot represent it unambiguously.
+The implementation is bounded to 1024 object units and 100000 external symbol
+records, with normal memory-allocation failures reported as input failure.
+
+`make test-lorder` checks host production code under ASan/UBSan against known
+dependency graphs (including cycles), multiple definition kinds, single/no
+operands, GNU/BSD/V7 containers, long names and malformed inputs. Installed
+script/helper guest tests at 16/128 MiB check graph output, argument forwarding,
+archive identity and error statuses. `make test-install-unit` additionally
+checks wrapper byte provenance, real helper ELF validation and rejection of
+nonexecutable or incorrectly owned helpers.

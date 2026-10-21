@@ -96,6 +96,29 @@ def check(tool,binary,folder):
         a,b,c=sizes;s=sum(sizes);expected=f'{a}+{b}+{c} = {s}b = 0{s:o}b\n'
         r=run(folder/'sectionless');assert r.returncode==0 and r.stdout==expected,r
         (folder/'segment.txt').write_text(expected)
+    if tool=='lorder':
+        a=folder/'a.c';b=folder/'b.c'
+        a.write_text('extern int b_value,b_common; extern const int b_const; extern int b_func(void); '
+                     'int a_func(void){return b_value+b_common+b_const+b_func();}\n')
+        b.write_text('int b_value=1; int b_common; const int b_const=2; int b_func(void){return 3;}\n')
+        for src in (a,b):
+            subprocess.run(['gcc','-fcommon','-fno-pie','-c',str(src),'-o',str(src.with_suffix('.o'))],check=True)
+        aa=a.with_suffix('.o');bb=b.with_suffix('.o')
+        r=run(aa,bb);expected=f'{aa} {aa}\n{bb} {bb}\n'+f'{aa} {bb}\n'*4
+        assert r.returncode==0 and r.stdout==expected,r
+        assert run(aa).stdout==f'{aa} {aa}\n'*2
+        assert run().stdout=='usage: lorder file ...\n'
+        assert run(folder/'absent').returncode==1
+        assert run('with space.o').returncode==2
+        for name in bads:
+            assert run(folder/name).returncode==1,name
+        for archive,member in (('native.a',obj.name),('bsd.a',obj.name),('historical.a','fixture.o')):
+            label=f'{folder/archive}({member})'
+            r=run(folder/archive);assert r.returncode==0 and r.stdout==f'{label} {label}\n',r
+        cycle=folder/'cycle.c';cycle.write_text('extern int a_func(void);int b_func(void){return a_func();}\n')
+        subprocess.run(['gcc','-fno-pie','-c',str(cycle),'-o',str(folder/'cycle.o')],check=True)
+        cc=folder/'cycle.o';r=run(aa,cc)
+        assert r.returncode==0 and set(r.stdout.splitlines())=={f'{aa} {aa}',f'{cc} {cc}',f'{aa} {cc}',f'{cc} {aa}'},r
     return obj,bads
 
 

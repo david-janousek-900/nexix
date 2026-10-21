@@ -7892,6 +7892,32 @@
         "root": "programs",
         "path": "v7-size.elf"
       }
+    },
+    {
+      "path": "/bin/lorder",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "script.lorder",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "bin/lorder"
+      }
+    },
+    {
+      "path": "/usr/lib/lorder-native",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "script.lorder",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-lorder-native.elf"
+      }
     }
   ]
 }

@@ -50,7 +50,7 @@ class Installation(unittest.TestCase):
         owners={e['id']:e for e in json.loads(install.INVENTORY.read_text())['entries']}
         for e in entries:
             owner=owners[e['component']]
-            if owner['kind']=='installed_script':
+            if owner['kind']=='installed_script' and e.get('format')!='elf':
                 source=owner['ported_script'] if 'ported_script' in owner else owner['source_files'][0]
                 self.assertEqual(payloads[e['path']],(install.ROOT/source).read_bytes())
                 if 'ported_script' in owner:
@@ -61,6 +61,15 @@ class Installation(unittest.TestCase):
     def test_nonexecutable_script_is_rejected(self):
         next(e for e in self.plan['entries'] if e['path']=='/bin/false')['mode']='0644'
         self.save()
+        with self.assertRaisesRegex(ValueError,'invalid executable script'):
+            install.load(self.manifest)
+
+    def test_script_helper_must_be_executable_and_owned(self):
+        helper=next(e for e in self.plan['entries'] if e['path']=='/usr/lib/lorder-native')
+        helper['mode']='0644';self.save()
+        with self.assertRaisesRegex(ValueError,'invalid executable script'):
+            install.load(self.manifest)
+        helper['mode']='0755';helper['component']='script.false';self.save()
         with self.assertRaisesRegex(ValueError,'invalid executable script'):
             install.load(self.manifest)
 

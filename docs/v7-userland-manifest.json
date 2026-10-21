@@ -24600,74 +24600,89 @@
           "name": "lorder",
           "install": "/bin/lorder",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/bin/lorder"
+            "rootfs/bin/lorder",
+            "user/v7/cmd/lorder.c",
+            "tools/object-tools.mk",
+            "tests/object_tools.py",
+            "tools/object_tools_smoke.py"
+          ]
+        },
+        {
+          "name": "lorder-native",
+          "install": "/usr/lib/lorder-native",
+          "role": "helper",
+          "status": "implemented",
+          "evidence": [
+            "user/v7/cmd/lorder.c",
+            "tools/object-tools.mk",
+            "tools/object_tools_smoke.py"
           ]
         }
       ],
       "priority": 6,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "cmd.sh",
           "phase": "runtime",
           "certainty": "confirmed",
           "evidence": [
-            "reference/v7/bin/lorder"
+            "rootfs/bin/lorder",
+            "user/v7/cmd/lorder.c",
+            "tools/object-tools.mk"
           ],
-          "note": "Shell-script execution requires the native Bourne shell."
+          "note": "Native shell executes the adapted wrapper and passes quoted arguments to its ELF helper."
         },
         {
-          "target": "cmd.nm",
+          "target": "lib.libc",
           "phase": "runtime",
           "certainty": "confirmed",
           "evidence": [
-            "reference/v7/bin/lorder"
+            "rootfs/bin/lorder",
+            "user/v7/cmd/lorder.c",
+            "tools/object-tools.mk"
           ],
-          "note": "Installed reference script directly invokes this component."
+          "note": "Native helper uses libc and the checked shared object reader; original nm/sed/sort/join pipeline is implemented internally."
         },
         {
-          "target": "cmd.sed",
-          "phase": "runtime",
+          "target": "headers",
+          "phase": "build",
           "certainty": "confirmed",
           "evidence": [
-            "reference/v7/bin/lorder"
+            "rootfs/bin/lorder",
+            "user/v7/cmd/lorder.c",
+            "tools/object-tools.mk"
           ],
-          "note": "Installed reference script directly invokes this component."
+          "note": "Native public C/ELF declarations."
         },
         {
-          "target": "cmd.sort",
-          "phase": "runtime",
+          "target": "native-build-tools",
+          "phase": "build",
           "certainty": "confirmed",
           "evidence": [
-            "reference/v7/bin/lorder"
+            "rootfs/bin/lorder",
+            "user/v7/cmd/lorder.c",
+            "tools/object-tools.mk"
           ],
-          "note": "Installed reference script directly invokes this component."
-        },
-        {
-          "target": "cmd.join",
-          "phase": "runtime",
-          "certainty": "confirmed",
-          "evidence": [
-            "reference/v7/bin/lorder"
-          ],
-          "note": "Installed reference script directly invokes this component."
+          "note": "Host GCC/binutils bootstrap the installed helper."
         }
       ],
       "reference_includes": [],
-      "blockers": [
-        "Not installed in Nexix; native integration and functional acceptance remain pending."
-      ],
-      "unresolved": [
-        "Audit native API/format compatibility and remaining transitive dependencies."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
-        "Run the original script with reference-compatible arguments; verify helper execution, output and failures."
+        "make test-lorder: ASan/UBSan and installed 16/128 MiB script/helper tests; definition/reference graph including common/read-only symbols, single-input self-pairs, missing/malformed files and quoted whitespace rejection."
       ],
-      "unresolved_tasks": [
-        202
-      ]
+      "ported_script": "rootfs/bin/lorder",
+      "port_notes": "docs/object-tools.md",
+      "native_sources": [
+        "rootfs/bin/lorder",
+        "user/v7/cmd/lorder.c",
+        "user/toolchain/object.c"
+      ],
+      "unresolved_tasks": []
     },
     {
       "id": "script.man",

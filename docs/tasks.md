@@ -10,17 +10,17 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 71 native ELF programs are
+to multi-user V7 login with persistent IDE storage. 72 native ELF programs are
 installed; the complete list and destinations are in [the installation manifest](native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
 The inventory accounts for **223 components, 2,144 distribution files and
-36 supporting/platform requirements**. Its component statuses are 74 implemented,
-4 partial, 1 prototype and 144 not ported; importing reference inputs does not
+36 supporting/platform requirements**. Its component statuses are 75 implemented,
+4 partial, 1 prototype and 143 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **411 tracking tasks: 187 done, 0 in progress
-and 224 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 177, 188–189, 219, 223, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **411 tracking tasks: 188 done, 0 in progress
+and 223 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 177, 188–189, 202, 219, 223, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -354,7 +354,7 @@ are accounted for. Final native rebuild acceptance is task 207.
 | 199 | Retarget original C floating/aggregate generation | To do | Native ABI and compiler helper coverage |
 | 200 | Retarget c2 optimizer and conversion helpers | To do | c2/fc1/cvopt targets; optimized/unoptimized comparison |
 | 201 | Port cc driver | To do | Preprocessor/compiler/assembler/linker and diagnostics |
-| 202 | Install/test lorder script | To do | Native symbol dependencies |
+| 202 | Install/test lorder script | Done | Git history; [adapted script/native join](object-tools.md); make test-lorder test-install-unit test-inventory; definition/reference graphs including common/read-only symbols and cycles, original single-object self-pairs, long archive names and errors under ASan/UBSan and 16/128 MiB guests |
 | 203 | Retarget f77 parser and semantic analysis | To do | f77pass1 and native symbol/type sizes |
 | 204 | Retarget f77 integer/control/array backend | To do | Native frame, array and COMMON/EQUIVALENCE layouts |
 | 205 | Retarget f77 real/complex/call backend | To do | Fortran ABI, hidden lengths and runtime calls |

@@ -93,7 +93,9 @@ def load(path=MANIFEST):
         if 'bootstrap' in e and (e.get('format') != 'elf' or type(e['bootstrap']) is not bool):
             raise ValueError(f'invalid bootstrap selection: {e["path"]}')
         if owners[e['component']]['kind']=='installed_script':
-            if e.get('format')!='data' or e.get('source',{}).get('root')!='config' or not int(e.get('mode','0'),8)&0o111:
+            helper=e.get('format')=='elf' and any(o['install']==e['path'] and
+                o['status']=='implemented' and o['role']=='helper' for o in owners[e['component']]['outputs'])
+            if (not helper and (e.get('format')!='data' or e.get('source',{}).get('root')!='config')) or not int(e.get('mode','0'),8)&0o111:
                 raise ValueError(f'invalid executable script: {e["path"]}')
             if not any(o['install']==e['path'] and o['status']=='implemented' for o in owners[e['component']]['outputs']):
                 raise ValueError(f'unimplemented or mismatched script: {e["path"]}')

@@ -27,3 +27,16 @@ test-size: test-size-unit multi-iso rootfs
 	$(PYTHON) tools/object_tools_smoke.py $(QEMU) build/nexix-multi.iso 128M size
 test: test-size
 test-unit: test-size-unit
+build/v7-lorder.o: user/v7/cmd/lorder.c user/toolchain/object.h | build/.dir
+	$(CC) $(USER_CFLAGS) -Iuser/toolchain -c $< -o $@
+build/v7-lorder-native.elf: build/crt0.o build/v7-lorder.o build/toolchain-object.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+-include build/v7-lorder.d
+.PHONY: test-lorder-unit test-lorder
+test-lorder-unit:
+	$(PYTHON) tests/object_tools.py lorder
+test-lorder: test-lorder-unit multi-iso rootfs
+	$(PYTHON) tools/object_tools_smoke.py $(QEMU) build/nexix-multi.iso 16M lorder
+	$(PYTHON) tools/object_tools_smoke.py $(QEMU) build/nexix-multi.iso 128M lorder
+test: test-lorder
+test-unit: test-lorder-unit
