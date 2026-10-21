@@ -9437,53 +9437,61 @@
           "name": "mknod",
           "install": "/etc/mknod",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/mknod.c",
+            "tools/mknod_smoke.py",
+            "Makefile"
           ]
         }
       ],
       "priority": 8,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
           "phase": "build",
           "certainty": "confirmed",
           "evidence": [
+            "user/v7/cmd/mknod.c",
             "Makefile"
           ],
-          "note": "Existing Nexix bootstrap uses host GCC/binutils."
+          "note": "Uses native root-only mknod syscall, uint16 device encoding and public libc interfaces; actual node I/O is guest-tested."
         },
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/mknod.c",
+            "Makefile"
+          ],
+          "note": "Uses native root-only mknod syscall, uint16 device encoding and public libc interfaces; actual node I/O is guest-tested."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/mknod.c",
+            "Makefile"
+          ],
+          "note": "Uses native root-only mknod syscall, uint16 device encoding and public libc interfaces; actual node I/O is guest-tested."
         },
         {
           "target": "raw-storage",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/mknod.c",
+            "Makefile"
+          ],
+          "note": "Uses native root-only mknod syscall, uint16 device encoding and public libc interfaces; actual node I/O is guest-tested."
         }
       ],
       "reference_includes": [],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Create supported device nodes as root and reject unprivileged requests.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -9497,6 +9505,9 @@
           "path": "/etc/mknod",
           "artifact": "historical_binary"
         }
+      ],
+      "native_sources": [
+        "user/v7/cmd/mknod.c"
       ]
     },
     {

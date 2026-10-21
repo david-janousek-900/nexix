@@ -19,3 +19,21 @@ Python arithmetic supplies expected checksums for all byte values, repeated
 overflow, empty files and 512/513-byte boundaries. Fixtures also cover stdin,
 multiple filenames, failed opens with continuation, and a memory-device read
 error. The working disk and historical reference remain unchanged.
+
+## mknod (task 219)
+
+`/etc/mknod name b/c major minor` creates a block or character node through
+the native root-only syscall. Major and minor are decimal values from 0 to 255;
+the native device ABI stores each in eight bits. Empty values, signs, trailing
+characters and overflow are rejected before invoking the syscall. Exactly `b`
+or `c` selects the node type. The initial 0666 permissions are filtered by umask.
+
+The source adapts the V7 command with explicit declarations and bounded parsing.
+Usage errors return 2; syscall failures print the V7 error message and return 1
+(the historical source returned success after a failed syscall). Device numbers
+can describe absent hardware; creating a node does not enable a driver.
+
+`make test-mknod` checks installed behavior on disposable 16/128 MiB guests,
+including real null-device I/O, the maximum encoded major/minor, root/ordinary
+user permissions, duplicate nodes, malformed arguments, umask and persistence
+across two cold boots. It never writes the working disk.

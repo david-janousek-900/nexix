@@ -492,6 +492,11 @@ test-sum: multi-iso rootfs
 	$(PYTHON) tools/sum_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/sum_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-sum
+.PHONY: test-mknod
+test-mknod: multi-iso rootfs
+	$(PYTHON) tools/mknod_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/mknod_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-mknod
 test-inventory:
 	$(PYTHON) tools/check_inventory.py
 	$(PYTHON) tests/inventory.py

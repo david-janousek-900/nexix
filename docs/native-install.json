@@ -7801,6 +7801,19 @@
         "path": "v7-sum.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/etc/mknod",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.mknod",
+      "source": {
+        "root": "programs",
+        "path": "v7-mknod.elf"
+      },
+      "format": "elf"
     }
   ]
 }

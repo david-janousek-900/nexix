@@ -10,17 +10,17 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 65 native ELF programs are
+to multi-user V7 login with persistent IDE storage. 66 native ELF programs are
 installed; the complete list and destinations are in [the installation manifest](native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
 The inventory accounts for **223 components, 2,144 distribution files and
-36 supporting/platform requirements**. Its component statuses are 68 implemented,
-4 partial, 1 prototype and 150 not ported; importing reference inputs does not
+36 supporting/platform requirements**. Its component statuses are 69 implemented,
+4 partial, 1 prototype and 149 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **388 tracking tasks: 178 done, 0 in progress
-and 210 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 226, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **388 tracking tasks: 179 done, 0 in progress
+and 209 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 219, 226, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -381,7 +381,7 @@ are accounted for. Final native rebuild acceptance is task 207.
 
 | Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
-| 219 | Port mknod | To do | Disposable storage fixtures; bounds, permissions and error paths |
+| 219 | Port mknod | Done | Git history; make test-mknod at 16/128 MiB; decimal bounds, exact b/c modes, root-only creation, umask, real null I/O, duplicate errors and cold-boot node persistence; [contract](storage-commands.md) |
 | 220 | Port mount | To do | Native /etc/mtab integration; disposable storage fixtures, bounds, permissions and error paths |
 | 221 | Port umount | To do | Shared /etc/mtab lifecycle; disposable storage fixtures, bounds, permissions and error paths |
 | 222 | Port mkfs | To do | Format disposable media; mount and populate |
