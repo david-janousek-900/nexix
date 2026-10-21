@@ -2304,3 +2304,17 @@ test-inode-release-unit: build/inode-release-test
 	./build/inode-release-test
 test-unit: test-inode-release-unit
 .PHONY: test-inode-release-unit
+
+build/tick-clock-test: tests/tick-clock.c kernel/include/tick_clock.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include $< -o $@
+test-tick-clock-unit: build/tick-clock-test
+	./build/tick-clock-test
+test-unit: test-tick-clock-unit
+.PHONY: test-tick-clock-unit
+
+build/timer-periods-test: tests/timer-periods.c kernel/arch/x86_64/interrupts.c | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -ffunction-sections -fdata-sections -Wl,--gc-sections -Ikernel/include -Iinclude $< -o $@
+test-timer-periods-unit: build/timer-periods-test
+	./build/timer-periods-test
+test-unit: test-timer-periods-unit
+.PHONY: test-timer-periods-unit

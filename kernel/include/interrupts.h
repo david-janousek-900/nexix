@@ -10,6 +10,7 @@ struct interrupt_frame {
 void interrupts_init(void);
 void timer_init(void);
 uint64_t timer_ticks(void);
+void timer_poll(struct interrupt_frame *);
 void interrupt_dispatch(struct interrupt_frame *frame);
 _Noreturn void panic(const char *message);
 #endif

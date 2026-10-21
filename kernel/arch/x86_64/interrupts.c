@@ -6,6 +6,7 @@
 #include "files.h"
 #include "tty.h"
 #include "interrupts.h"
+#include "tick_clock.h"
 #include "io.h"
 #include "serial.h"
 #include "segments.h"
@@ -39,6 +40,13 @@ _Static_assert(offsetof(struct interrupt_frame, cs) == 144, "ISR CS offset");
 extern const uintptr_t isr_table[256];
 static struct idt_gate idt[256] __attribute__((aligned(16)));
 static volatile uint64_t ticks;
+static struct tick_clock tick_clock;
+static uint64_t cycles(void)
+{
+    uint32_t lo,hi;
+    __asm__ volatile("lfence; rdtsc":"=a"(lo),"=d"(hi)::"memory");
+    return ((uint64_t)hi<<32)|lo;
+}
 _Noreturn void panic(const char *message)
 {
     __asm__ volatile ("cli" : : : "memory");
@@ -81,14 +89,43 @@ void interrupts_init(void)
 }
 void timer_init(void)
 {
-    /* Channel 0, rate generator, approximately 100 Hz. Unmask IRQ0. */
+    /* Calibrate TSC with PIT channel 2 while IRQs remain masked. Channel 0
+     * is only a wakeup source: elapsed time must survive coalesced IRQs. */
     uint16_t divisor = 1193182 / 100;
+    uint8_t speaker=inb(0x61);
+    outb(0x61,speaker&~3U);outb(0x43,0xb0);
+    outb(0x42,divisor&255);outb(0x42,divisor>>8);
+    uint64_t start=cycles();outb(0x61,(speaker&~2U)|1);
+    unsigned polls=0;
+    while(!(inb(0x61)&0x20))if(++polls==10000000U)panic("PIT calibration timeout");
+    tick_clock=(struct tick_clock){.last=cycles()};
+    tick_clock.period=tick_clock.last-start;
+    outb(0x61,speaker);
+    if(!tick_clock.period)panic("invalid TSC calibration");
+    /* Channel 0, rate generator, approximately 100 Hz. Unmask IRQ0. */
     outb(0x43, 0x34);
     outb(0x40, divisor & 0xff);
     outb(0x40, divisor >> 8);
     outb(0x21, inb(0x21) & ~1U);
 }
 uint64_t timer_ticks(void) { return ticks; }
+/* All callers hold IRQ serialization; callbacks may schedule and resume. */
+static void timer_advance_to(struct interrupt_frame *frame,uint64_t now)
+{
+    if(!tick_clock.period)return;
+    uint64_t target=ticks+tick_clock_advance(&tick_clock,now);
+    while(ticks<target){
+        ++ticks;
+        struct proc *owner=proc_current();
+        if(!owner)++cpu_idle;
+        else if((frame->cs&3)!=3)++cpu_system;
+        else if(owner->p_nice>20)++cpu_nice;
+        else ++cpu_user;
+        callout_tick(ticks);tty_timer(ticks);modem_timer(ticks);packet_timer(ticks);proc_timer(frame);
+    }
+}
+void timer_poll(struct interrupt_frame *frame)
+{timer_advance_to(frame,cycles());}
 static void dispatch(struct interrupt_frame *frame)
 {
     if (frame->vector == 8 || frame->vector == 2) {
@@ -164,21 +201,13 @@ static void dispatch(struct interrupt_frame *frame)
                 return;
             }
         }
-        if (frame->vector == 32) {
-            ++ticks;
-            struct proc *owner=proc_current();
-            if(!owner)++cpu_idle;
-            else if((frame->cs&3)!=3)++cpu_system;
-            else if(owner->p_nice>20)++cpu_nice;
-            else ++cpu_user;
-        }
         if (frame->vector == 33) keyboard_interrupt();
         if (frame->vector == 35) serial_secondary_interrupt();
         if (frame->vector == 36) serial_interrupt();
         if (frame->vector >= 40)
             outb(0xa0, 0x20);
         outb(0x20, 0x20);
-        if (frame->vector == 32) {callout_tick(ticks);tty_timer(ticks);modem_timer(ticks);packet_timer(ticks);proc_timer(frame);}
+        if (frame->vector == 32) timer_poll(frame);
         signal_deliver(frame);
         return;
     }
