@@ -209,6 +209,10 @@ branch(int lab)
 void
 label(int l)
 {
+	if (l >= 1000000) {
+		error("Too many labels");
+		exit(1);
+	}
 	outcode("BN", LABEL, l);
 }
 

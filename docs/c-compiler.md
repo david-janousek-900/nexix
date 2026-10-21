@@ -1,12 +1,12 @@
-# Native V7 C compiler (c0, c1)
+# Native V7 C compiler (c0, c1, c2)
 
 Tasks 197 and 198 retarget the supplied Ritchie compiler passes in
 `reference/v7/usr/src/cmd/c` to native AMD64. The installed passes are
 `/lib/c0` and `/lib/c1`. Both are bootstrapped with the host compiler and
 statically linked against native libc. The reference tree is unchanged.
 Task 199 completes floating-point values, structure values and the System V
-ABI with variadic definitions. Task 200 owns the c2 optimizer, the native cvopt
-command and fc1. The `cc` driver is task 201.
+ABI with variadic definitions. Task 200 adds the c2 optimizer (`/lib/c2`), fc1
+(`/lib/fc1`) and the native cvopt command. The `cc` driver is task 201.
 
 ## Pass interface
 
@@ -160,6 +160,48 @@ have no native counterpart: the native code is generated inline.
 Variadic definitions save all argument registers. `__builtin_va_arg` handles
 integer, pointer and floating arguments; structure va_arg is rejected.
 
+## c2: the object code improver (task 200)
+
+`user/c/c20.c` and `c21.c` keep the supplied optimizer's design. It reads one
+routine at a time, up to `.globl`, into a doubly linked node list. It counts
+label references (including `.quad .Ln` jump-table entries) and iterates until
+nothing changes. The jump optimizations are as supplied:
+- redirecting jumps to jumps, and deleting code after unconditional jumps and
+  `ret`;
+- removing jumps to the next instruction and unreferenced labels;
+- reversing a conditional branch over a jump, and cross-jumping (merging
+  identical code that precedes jumps to the same place);
+- code motion, which removes V7's jump to the frame-size code at the end of
+  each function and back;
+- loop inversion, common sequences before jumps, and reordering branches for
+  locality;
+- moving data sections ahead of the code, so constants emitted inside
+  functions do not interrupt the jump graph.
+
+The input is native AT&T assembly from c1 or the portable compiler.
+Instructions are kept as text, while jumps, labels and segment directives are
+parsed. The fourteen conditional jumps, including the parity and sign jumps
+used by floating comparisons, have exact inverses. Directives are never
+deleted or moved. New labels are numbered from 1500000000, above c0, c1 (from
+1000000) and the portable compiler.
+
+The PDP-11 register-content tracker (`rmove`) becomes a conservative AMD64
+equivalent: a register known to hold a memory operand of the same width makes
+an identical later load redundant. Stores to any memory, labels, calls and
+unlisted instructions forget everything. Writes to a register forget it and
+every address formed from it. The supplied `sob` loop instruction,
+PC-relative literals, `cfcc`/`sxt`/`tst` and constant-compare rewrites have no
+AMD64 counterpart and are omitted. `c2 [-] [input [output]]` keeps the
+supplied interface; `-` prints the statistics.
+
+## fc1 and cvopt
+
+`/lib/fc1` is the same pass as `/lib/c1`, linked with the floating-point
+startup `fcrt0.o`. V7's fc1 linked a floating-point simulator; Nexix requires
+hardware SSE2, so the two passes produce identical code. The native cvopt
+command (`build/v7-cvopt.elf`, a build helper with no installed path) converts
+the table to the same bytes as the bootstrap build's host cvopt.
+
 ## Acceptance
 
 `make TOOLCHAIN_PREFIX= test-c-compiler` runs:
@@ -169,6 +211,8 @@ integer, pointer and floating arguments; structure va_arg is rejected.
   with the same source compiled by GCC;
 - the sbrk-arena build, which must produce identical intermediate code and
   assembly;
+- c2 on every compiled fixture and V7 source: optimized code must be shorter,
+  assemble with GNU and native as, and behave exactly like unoptimized code;
 - `tests/c_float_fixture.c` against its GCC-compiled oracle;
 - `tests/c_abi_fixture.c` (every eightbyte class pattern, register exhaustion,
   hidden result pointers, float parameters and results, variadic definitions
@@ -176,9 +220,12 @@ integer, pointer and floating arguments; structure va_arg is rejected.
 - the V7 dialect fixture `tests/c_v7dialect.c` against hand-computed results;
 - every libc header, and 90 supplied V7 command sources, through c0, c1 and
   the native assembler;
-- malformed sources, truncated or garbage intermediate files and 600
-  deterministic source mutations, which must fail without sanitizer reports;
+- malformed sources, truncated or garbage intermediate files, 600
+  deterministic source mutations and 300 mutated assembly inputs to c2, which
+  must fail without sanitizer reports;
 - in the guest at 16 and 128 MiB, as root and as an ordinary user: native
   cpp, c0, c1, as and ld compile the integer, floating and ABI fixtures in
   bounded translation units, the dialect test and the supplied `echo`, `wc`
-  and `cat`, and the results run with the expected output.
+  and `cat`, and the results run with the expected output. The fixtures also
+  run after `/lib/c2`, `/lib/fc1` output is compared with `/lib/c1`'s, and the
+  native cvopt reproduces the generated table.

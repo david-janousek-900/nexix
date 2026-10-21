@@ -12,7 +12,8 @@ linked=parts+fparts+aparts
 names=linked+['dialect','wc','echo','cat']
 artifacts={f'/tmp/{n}.c':f'fixtures-c/{n}.c' for n in names}
 artifacts.update({'/tmp/fixture.exp':'fixtures-c/fixture.exp','/tmp/dialect.exp':'fixtures-c/dialect.exp',
-    '/tmp/float.exp':'fixtures-c/float.exp','/tmp/abidrv.o':'fixtures-c/abidriver.o'})
+    '/tmp/float.exp':'fixtures-c/float.exp','/tmp/abidrv.o':'fixtures-c/abidriver.o',
+    '/tmp/cvopt':'v7-cvopt.elf','/tmp/table.s':'fixtures-c/table.s','/tmp/table.exp':'fixtures-c/table.exp'})
 expected=(F/'fixture.exp').read_text()
 words=len(expected.split());lines=expected.count('\n');chars=len(expected)
 def pipeline(guest,p,terminal):
@@ -21,19 +22,36 @@ def pipeline(guest,p,terminal):
         guest.command(f'/lib/c0 /tmp/{p}{n}.i /tmp/{p}{n}.1 /tmp/{p}{n}.2',terminal=terminal)
         guest.command(f'/lib/c1 /tmp/{p}{n}.1 /tmp/{p}{n}.2 /tmp/{p}{n}.s',terminal=terminal)
         guest.command(f'as -o /tmp/{p}{n}.o /tmp/{p}{n}.s',terminal=terminal)
+        if n in linked:
+            # c2 output must behave like the unoptimized code; fc1 = c1
+            guest.command(f'/lib/fc1 /tmp/{p}{n}.1 /tmp/{p}{n}.2 /tmp/{p}f.s',terminal=terminal)
+            guest.command(f'cmp /tmp/{p}f.s /tmp/{p}{n}.s',terminal=terminal)
+            guest.command(f'/lib/c2 /tmp/{p}{n}.s /tmp/{p}{n}.os',terminal=terminal)
+            guest.command(f'as -o /tmp/{p}{n}o.o /tmp/{p}{n}.os',terminal=terminal)
+            guest.command(f'rm /tmp/{p}f.s /tmp/{p}{n}.os',terminal=terminal)
         guest.command(f'rm /tmp/{p}{n}.i /tmp/{p}{n}.1 /tmp/{p}{n}.2 /tmp/{p}{n}.s',terminal=terminal)
         if n not in linked:
             guest.command(f'ld -o /tmp/{p}{n} /lib/crt0.o /tmp/{p}{n}.o -lc',terminal=terminal)
     # Short ld -r groups keep commands within the terminal line limit.
-    def link(output,units,extra=''):
+    def link(output,units,extra='',suffix=''):
         groups=[]
         for k in range(0,len(units),5):
             groups.append(f'/tmp/{p}{output}{k}.o')
-            guest.command(f'ld -r -o /tmp/{p}{output}{k}.o '+' '.join(f'/tmp/{p}{n}.o' for n in units[k:k+5]),terminal=terminal)
+            guest.command(f'ld -r -o /tmp/{p}{output}{k}.o '+' '.join(f'/tmp/{p}{n}{suffix}.o' for n in units[k:k+5]),terminal=terminal)
         guest.command(f'ld -o /tmp/{p}{output} /lib/crt0.o {extra}'+' '.join(groups)+' -lc',terminal=terminal)
     link('fixture',parts)
     link('float',fparts)
     link('abi',aparts,'/tmp/abidrv.o ')
+    link('ofixture',parts,suffix='o')
+    link('ofloat',fparts,suffix='o')
+    link('oabi',aparts,'/tmp/abidrv.o ',suffix='o')
+    guest.command(f'/tmp/{p}ofixture > /tmp/{p}oout',terminal=terminal)
+    guest.command(f'cmp /tmp/{p}oout /tmp/fixture.exp',terminal=terminal)
+    guest.command(f'/tmp/{p}ofloat > /tmp/{p}ofout',terminal=terminal)
+    guest.command(f'cmp /tmp/{p}ofout /tmp/float.exp',terminal=terminal)
+    guest.command(f'/tmp/{p}oabi',terminal=terminal,stdout='PASS: native V7 C structure, floating and variadic ABI\n')
+    guest.command(f'/tmp/cvopt /tmp/table.s /tmp/{p}table.out',terminal=terminal)
+    guest.command(f'cmp /tmp/{p}table.out /tmp/table.exp',terminal=terminal)
     guest.command(f'/tmp/{p}float > /tmp/{p}fout',terminal=terminal)
     guest.command(f'cmp /tmp/{p}fout /tmp/float.exp',terminal=terminal)
     guest.command(f'/tmp/{p}abi',terminal=terminal,stdout='PASS: native V7 C structure, floating and variadic ABI\n')
@@ -49,7 +67,8 @@ def pipeline(guest,p,terminal):
 with private_guest(qemu,iso,ram,'c-compiler',artifacts,terminals=2,single_user=False) as guest:
     login(guest,'root','nexix')
     pipeline(guest,'r',0)
-    guest.command('rm -f /tmp/r*')
+    for n in linked:
+        guest.command(f'rm -f /tmp/r{n}.o /tmp/r{n}o.o')
     login(guest,'bob','bob',line=1,prompt='$ ')
     pipeline(guest,'u',1)
-print(f'PASS: {ram} native cpp/c0/c1/as/ld V7 C integer/floating fixtures, structure/floating/variadic ABI, dialect and supplied commands as root and ordinary user')
+print(f'PASS: {ram} native cpp/c0/c1/as/ld V7 C integer/floating fixtures, structure/floating/variadic ABI unoptimized and through c2, fc1, cvopt, dialect and supplied commands as root and ordinary user')

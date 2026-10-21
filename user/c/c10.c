@@ -32,7 +32,7 @@ struct	table	*cregtab;
 struct	table	lsptab[1];
 
 int	nreg	= NSCRATCH;
-int	isn	= 10000;
+int	isn	= 1000000;	/* above c0's labels */
 
 /*
  * Register names by width: 64, 32, 16 and 8 bits.
