@@ -7576,7 +7576,7 @@
         }
       ],
       "priority": 6,
-      "status": "not_ported",
+      "status": "partial",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -7633,7 +7633,7 @@
         "Native API/width audit and functional port pending."
       ],
       "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
+        "Tasks 186\u2013187: executable layout, relocations, public driver and installed native acceptance remain."
       ],
       "acceptance": [
         "Link native objects with relocations into a runnable ELF and reject unresolved symbols.",
@@ -7650,9 +7650,16 @@
         }
       ],
       "unresolved_tasks": [
-        185,
         186,
         187
+      ],
+      "native_sources": [
+        "user/ld/resolve.c",
+        "user/ld/ld.h"
+      ],
+      "port_notes": "docs/linker.md",
+      "scope_notes": [
+        "Task 185 resolution pass preserves reference selection/search algorithms with checked ELF64 and native symbol binding adaptations; private native consumption passes at 16/128 MiB."
       ]
     },
     {
