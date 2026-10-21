@@ -1279,7 +1279,7 @@ build/modem_program.o: user/modem-test.c | build/.dir
 
 # Task 83: manifest-driven installation staging and root-image equivalence.
 .PHONY: test-install-unit test-install
-test-install-unit: v7-userland
+test-install-unit: v7-userland $(INSTALL_INPUTS) build/root.img
 	$(PYTHON) tests/install_manifest.py
 test-install: test-install-unit stage test-rootfs test-inventory test-libc-interfaces
 test-unit: test-install-unit
