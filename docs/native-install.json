@@ -7931,6 +7931,19 @@
         "root": "programs",
         "path": "v7-cpp.elf"
       }
+    },
+    {
+      "path": "/bin/ar",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.ar",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-ar.elf"
+      }
     }
   ]
 }

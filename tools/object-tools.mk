@@ -58,3 +58,19 @@ test-cpp: test-cpp-unit multi-iso rootfs
 	$(PYTHON) tools/cpp_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-cpp
 test-unit: test-cpp-unit
+
+build/toolchain-archive.o: user/toolchain/archive.c user/toolchain/archive.h user/toolchain/object.h | build/.dir
+	$(CC) $(USER_CFLAGS) -Iuser/toolchain -c $< -o $@
+build/v7-ar.o: user/v7/cmd/ar.c user/toolchain/archive.h | build/.dir
+	$(CC) $(USER_CFLAGS) -Iuser/toolchain -c $< -o $@
+build/v7-ar.elf: build/crt0.o build/v7-ar.o build/toolchain-archive.o build/toolchain-object.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+-include build/toolchain-archive.d build/v7-ar.d
+.PHONY: test-ar-unit test-ar
+test-ar-unit:
+	$(PYTHON) tests/archives.py ar
+test-ar: test-ar-unit multi-iso rootfs
+	$(PYTHON) tools/archives_smoke.py $(QEMU) build/nexix-multi.iso 16M ar
+	$(PYTHON) tools/archives_smoke.py $(QEMU) build/nexix-multi.iso 128M ar
+test: test-ar
+test-unit: test-ar-unit
