@@ -59,18 +59,22 @@ static int kill_request(int64_t pid, uint64_t n, bool group_only)
 {
     if (pid < INT32_MIN || pid > INT32_MAX || n >= V7_NSIG) return -NX_EINVAL;
     struct proc *caller = proc_current();
-    bool found = false, permitted = false;
+    /* V7 sys4.c: root's -1 is every process; others match pid -1 (none). */
+    bool all = !group_only && pid == -1 && !caller->p_user->u_uid;
+    bool found = false, denied = false;
     for (unsigned i = 1; i < V7_NPROC; ++i) {
         struct proc *p = (struct proc *)&proc_table()[i];
-        if (p->p_stat == V7_UNUSED || p->p_stat == V7_SIDL || p->p_stat == V7_SZOMB || (p->p_flag & V7_SSYS)) continue;
-        bool match = group_only ? p->p_pgrp == -pid : pid > 0 ? p->p_pid == pid : pid == 0 ? p->p_pgrp == caller->p_pgrp :
-            pid == -1 ? p->p_pid != 1 && p != caller : p->p_pgrp == -pid;
-        if (!match) continue;
-        found = true;
-        if (caller->p_user->u_uid && caller->p_user->u_uid != p->p_uid) continue;
-        permitted = true; signal_post(p, n);
+        if (p->p_stat == V7_UNUSED || p->p_stat == V7_SIDL || (p->p_flag & V7_SSYS)) continue;
+        bool broadcast = all || (!group_only && pid == 0);
+        bool match = group_only ? p->p_pgrp == -pid : all ? true : pid == 0 ? p->p_pgrp == caller->p_pgrp :
+            pid > 0 ? p->p_pid == pid : pid != -1 && p->p_pgrp == -pid;
+        /* Broadcasts never reach init. */
+        if (!match || (broadcast && p->p_pid == 1)) continue;
+        if (caller->p_user->u_uid && caller->p_user->u_uid != p->p_uid) {denied = true; continue;}
+        found = true; signal_post(p, n);
     }
-    return permitted ? 0 : found ? -NX_EPERM : -NX_ESRCH;
+    /* V7 kill counts only permitted targets; killpg keeps its EPERM. */
+    return found ? 0 : group_only && denied ? -NX_EPERM : -NX_ESRCH;
 }
 int signal_kill(int64_t pid,uint64_t n){return kill_request(pid,n,false);}
 int signal_group_user(v7_pid_t group,unsigned n)

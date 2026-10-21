@@ -24,7 +24,17 @@ int main(void)
     assert(signal_group_user(99,NX_SIGTERM)==-NX_ESRCH);
     assert(signal_group_user(0,NX_SIGTERM)==-NX_EINVAL);
     assert(signal_group_user(2,V7_NSIG)==-NX_EINVAL);
-    assert(!signal_kill(-1,0));
+    /* V7 kill: non-root -1 matches nothing; broadcasts skip init; ESRCH when nothing permitted. */
+    assert(signal_kill(-1,0)==-NX_ESRCH);
+    assert(signal_kill(2,NX_SIGTERM)==-NX_ESRCH && !processes[2].p_sig);
+    for(unsigned i=1;i<4;++i)processes[i].p_sig=0;
+    users[1].u_uid=0;processes[2].p_pgrp=1;
+    assert(!signal_kill(0,NX_SIGTERM) && !processes[1].p_sig && processes[2].p_sig && !processes[3].p_sig);
+    processes[2].p_sig=0;
+    assert(!signal_kill(-1,NX_SIGTERM) && !processes[1].p_sig && processes[2].p_sig && processes[3].p_sig);
+    for(unsigned i=1;i<4;++i)processes[i].p_sig=0;
+    processes[2].p_stat=V7_SZOMB;assert(!signal_kill(2,0));processes[2].p_stat=V7_SRUN;
+    users[1].u_uid=100;processes[2].p_pgrp=2;
     /* V7 traces SIGKILL: a trace stop waits for the tracer even for SIGKILL. */
     processes[3]=(struct proc){.p_stat=V7_SSTOP,.p_flag=V7_STRC,.p_pid=3,.p_pgrp=3,.p_user=&users[3]};
     signal_post(&processes[3],NX_SIGTERM);assert(processes[3].p_stat==V7_SSTOP);
