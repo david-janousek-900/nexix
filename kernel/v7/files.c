@@ -329,8 +329,8 @@ int files_core_begin(struct inode **result)
     if(!error && node_volume(ino)->read_only)error=-NX_EROFS;
     if(!error)error=node_inode_get(ino,&disk);
     if(!error&&(disk.mode&V7_IFMT)!=V7_IFREG)error=-NX_EACCES;
-    if(!error)error=text_write_check(ino);
     if(!error&&!v7fs_access(&disk,u->u_uid,u->u_gid,2))error=-NX_EACCES;
+    if(!error)error=text_write_check(ino);
     if(error)return error;
     struct inode *inode=inode_get(ino,&disk);if(!inode)return -NX_ENFILE;
     error=v7fs_truncate(node_volume(ino),ino.ino);
@@ -591,7 +591,7 @@ static int mount_path(struct user *u,const uintptr_t args[6])
 {
     if(!proc_superuser(u))return -NX_EPERM;
     if(!root)return -NX_ENODEV;
-    v7_dev_t dev;int error=device_path(u,args[0],&dev);if(error)return error;
+    v7_dev_t dev=0;int error=device_path(u,args[0],&dev);if(error)return error;
     char point_path[256];error=path_copy(args[1],point_path);if(error)return error;
     struct fs_node point;error=lookup_path(u,point_path,&point);if(error)return error;
     struct v7fs_inode disk;error=node_inode_get(point,&disk);if(error)return error;
@@ -616,7 +616,7 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
     if(number==NX_SYS_UMOUNT){
         if(!proc_superuser(u))return -NX_EPERM;
         if(!root)return -NX_ENODEV;
-        v7_dev_t dev;int error=device_path(u,args[0],&dev);
+        v7_dev_t dev=0;int error=device_path(u,args[0],&dev);
         return error?error:namespace_unmount(dev);
     }
     if (number == NX_SYS_SYNC) {
