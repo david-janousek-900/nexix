@@ -88,7 +88,13 @@ static int close_during_detach(void *channel)
     uart_idle=true;return 0;
 }
 static int accept_open(void *channel)
-{((struct mx_channel *)channel)->pending=false;return 0;}
+{
+    struct mx_channel *c=channel;
+    assert(c->event_count==1);
+    struct nx_mx_control event;memcpy(&event,c->events[c->event_head].bytes,sizeof(event));
+    assert(event.code==NX_M_OPEN || event.code==NX_M_WATCH);
+    c->pending=false;return 0;
+}
 int main(void)
 {
     reset_mx();struct mx_group *g=&mx_groups[0];struct mx_channel *c=mx_allocate(g);assert(c);

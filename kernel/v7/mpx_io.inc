@@ -280,9 +280,9 @@ static int mpx_open(struct file *f,const char *path,struct user *u)
     if(!g)return -NX_ENXIO;
     struct mx_channel *c=mx_allocate(g);if(!c)return -NX_ENXIO;
     c->pending=true;c->endpoint=f;f->f_private=c;f->f_flag=V7_FMPY;
-    (void)mx_event(c,g==mx_listener?NX_M_OPEN:NX_M_WATCH,u->u_uid,g==mx_listener?path:NULL);
-    int error=0;
-    while(c->pending && !c->closing){if(proc_sleep_interruptible(c,40)){error=-NX_EINTR;break;}}
+    int error=mx_event(c,g==mx_listener?NX_M_OPEN:NX_M_WATCH,u->u_uid,
+        g==mx_listener?path:NULL)?0:-NX_EAGAIN;
+    while(!error && c->pending && !c->closing){if(proc_sleep_interruptible(c,40)){error=-NX_EINTR;break;}}
     if(c->closing)error=-NX_ENXIO;
     if(error){
         mx_notify(c);
