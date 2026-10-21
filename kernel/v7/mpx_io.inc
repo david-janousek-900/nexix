@@ -10,14 +10,14 @@ static void mx_release(struct mx_channel *c)
 { if(!c->users)panic("mpx channel pin underflow");--c->users;mx_reap(c); }
 static bool mx_event_payload(struct mx_channel *c,const void *payload,unsigned size)
 {
-    if(c->event_count==NX_MX_EVENTS || size>sizeof(c->events[0].bytes))return false;
+    if(c->event_count+c->event_reserved>=NX_MX_EVENTS || size>sizeof(c->events[0].bytes))return false;
     struct mx_event *e=&c->events[(c->event_head+c->event_count)%NX_MX_EVENTS];
     e->size=size;for(unsigned i=0;i<size;++i)e->bytes[i]=((const uint8_t *)payload)[i];
     ++c->event_count;mx_notify(c);return true;
 }
 static bool mx_event(struct mx_channel *c,uint16_t code,uint16_t value,const char *name)
 {
-    if(c->event_count==NX_MX_EVENTS)return false;
+    if(c->event_count+c->event_reserved>=NX_MX_EVENTS)return false;
     struct mx_event *e=&c->events[(c->event_head+c->event_count)%NX_MX_EVENTS];
     struct nx_mx_control h={code,value};
     for(unsigned i=0;i<sizeof(h);++i)e->bytes[i]=((uint8_t *)&h)[i];
@@ -280,9 +280,9 @@ static int mpx_open(struct file *f,const char *path,struct user *u)
     if(!g)return -NX_ENXIO;
     struct mx_channel *c=mx_allocate(g);if(!c)return -NX_ENXIO;
     c->pending=true;c->endpoint=f;f->f_private=c;f->f_flag=V7_FMPY;
-    (void)mx_event(c,g==mx_listener?NX_M_OPEN:NX_M_WATCH,u->u_uid,g==mx_listener?path:NULL);
-    int error=0;
-    while(c->pending && !c->closing){if(proc_sleep_interruptible(c,40)){error=-NX_EINTR;break;}}
+    int error=mx_event(c,g==mx_listener?NX_M_OPEN:NX_M_WATCH,u->u_uid,
+        g==mx_listener?path:NULL)?0:-NX_EAGAIN;
+    while(!error && c->pending && !c->closing){if(proc_sleep_interruptible(c,40)){error=-NX_EINTR;break;}}
     if(c->closing)error=-NX_ENXIO;
     if(error){
         mx_notify(c);

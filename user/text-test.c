@@ -4,8 +4,18 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <sys/kinfo.h>
 #define CHECK(c) do {if(!(c))return __LINE__;}while(0)
 static int ready_fd,go_fd;
+static int cached(const char *path)
+{
+    struct stat st;if(stat(path,&st))return 0;
+    struct {struct nx_kinfo_header header;struct nx_kinfo_text records[64];} snapshot;
+    if(nx_kinfo(1,NX_KINFO_TEXT,&snapshot,sizeof(snapshot))<0)return 0;
+    for(unsigned i=0;i<snapshot.header.count;++i)
+        if(snapshot.records[i].dev==st.st_dev && snapshot.records[i].ino==st.st_ino)return 1;
+    return 0;
+}
 static pid_t start(const char *path,const char *mode)
 {
     int ready[2],go[2];if(pipe(ready)||pipe(go))return -1;
@@ -77,7 +87,18 @@ int text_test(void)
     CHECK(chmod("/tmp/text",0755)==0);error=open_exec_busy(O_RDONLY);if(error)return error;
     CHECK(chmod("/tmp/text",01755)==0);
     child=start("/tmp/text","hold");CHECK(child>=0&&receive('R')&&finish(child));
+    CHECK(cached("/tmp/text"));
+    denied=fork();CHECK(denied>=0);
+    if(!denied){
+        if(setuid(123))_exit(1);
+        if(open("/tmp/text",O_WRONLY)!=-1 || errno!=EACCES)_exit(2);
+        if(access("/tmp/text",W_OK)!=-1 || errno!=EACCES)_exit(3);
+        _exit(0);
+    }
+    CHECK(wait(&denied_status)==denied && WIFEXITED(denied_status) && !WEXITSTATUS(denied_status));
+    CHECK(cached("/tmp/text"));
     fd=open("/tmp/text",O_WRONLY);CHECK(fd>=0&&close(fd)==0); /* Evicts unused sticky entry. */
+    CHECK(!cached("/tmp/text"));
     CHECK(chmod("/tmp/text",0755)==0&&unlink("/tmp/text")==0&&unlink("/tmp/text2")==0);
     CHECK(write(1,"NEXIX_TEXT_OK\n",14)==14);return 0;
 }

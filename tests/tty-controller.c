@@ -10,6 +10,9 @@
 static uint8_t wire[32768],buffer[2048];static unsigned size,baud,format,sleeps;static uint64_t ticks;
 static bool blocked,dtr,idle=true;
 static void (*sleep_hook)(void);
+static bool attached_packet;
+bool packet_active(struct tty *t){(void)t;return attached_packet;}
+static void attach_during_settings(void){attached_packet=true;idle=true;}
 static struct address_space vm;
 uint64_t timer_ticks(void){return ticks;}
 void serial_putc(uint8_t b){assert(size<sizeof(wire));wire[size++]=b;}
@@ -110,6 +113,16 @@ int main(void)
     assert(tty_controller_device(NX_TTY_CONTROLLER_DEV(NX_TTY_DH,15),&profile,&line)==-NX_ENODEV);
     assert(tty_delay(NX_TTY_KL,10)==24 && tty_delay(NX_TTY_DH,6)==20);
     assert(!tty_open(NX_CONSOLE_DEV,&u,&t));
+    s.flags=NX_RAW;assert(!ctl(t,NX_TIOCSETP,&s));
+    struct nx_sgttyb cooked=s;cooked.flags=NX_CRMOD;
+    idle=false;sleep_hook=attach_during_settings;
+    assert(ctl(t,NX_TIOCSETP,&cooked)==-NX_EBUSY);
+    struct nx_sgttyb observed;assert(!ctl(t,NX_TIOCGETP,&observed));
+    assert(observed.flags==NX_RAW);attached_packet=false;
+    cooked.ispeed=cooked.ospeed=NX_B9600;idle=false;sleep_hook=attach_during_settings;
+    assert(ctl(t,NX_TIOCSETN,&cooked)==-NX_EBUSY);
+    assert(!ctl(t,NX_TIOCGETP,&observed) && observed.flags==NX_RAW);
+    attached_packet=false;
     idle=false;sleep_hook=try_open_during_close;tty_close(t);
     assert(!tty_open_count() && !sleep_hook);
     assert(!tty_open(NX_CONSOLE_DEV,&u,&t));feed("new\n");expect(t,"new\n",4);tty_close(t);
@@ -117,7 +130,11 @@ int main(void)
     assert(!tty_open(NX_CONSOLE_DEV,&u,&t));tty_receive(003);assert(signalled==17);
     tty_set_group(t,99,100,false);tty_receive(003);assert(signalled==17);
     tty_set_group(t,17,18,false);tty_receive(003);assert(signalled==18);
-    tty_set_group(t,99,100,true);tty_receive(003);assert(signalled==100);tty_close(t);
+    tty_set_group(t,99,100,true);tty_receive(003);assert(signalled==100);
+    tty_set_group(t,99,101,false);tty_receive(003);assert(signalled==100);
+    tty_set_group(t,100,0,true);
+    tty_set_group(t,99,101,false);tty_receive(003);assert(signalled==101);
+    tty_close(t);
     puts("PASS: controller plans/parity, source escapes, TANDEM, delayed/blocked output, timer drain/flush, exclusive opens, hangup, profile ownership and foreground group changes");
     return 0;
 }

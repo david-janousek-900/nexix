@@ -28,6 +28,7 @@ static bool output_file(const struct file *f)
 static struct file table[V7_NFILE];
 static bool closing[V7_NFILE];
 static struct inode inodes[V7_NINODE];
+static bool release_pending[V7_NINODE];
 static struct v7fs *root;
 static bool root_exec;
 static void zero(void *p, size_t n) { uint8_t *b = p; for (size_t i = 0; i < n; ++i) b[i] = 0; }
@@ -99,7 +100,23 @@ int files_inode_put(struct inode *inode)
     struct v7fs_inode disk;
     int error = node_inode_get(inode_node(inode), &disk);
     if (!error && !disk.nlink) error = v7fs_release_inode(node_volume(inode_node(inode)), inode->i_number);
-    zero(inode, sizeof(*inode)); return error;
+    unsigned slot=inode-inodes;
+    if(error){
+        /* Retain cleanup ownership even when exit/text release cannot return
+         * the error. sync retries it and reports continued failure. */
+        inode->i_count=1;release_pending[slot]=true;return error;
+    }
+    release_pending[slot]=false;
+    zero(inode, sizeof(*inode)); return 0;
+}
+static int retry_releases(void)
+{
+    int error=0;
+    for(unsigned i=0;i<V7_NINODE;++i)if(release_pending[i]){
+        release_pending[i]=false;
+        int e=files_inode_put(&inodes[i]);if(!error)error=e;
+    }
+    return error;
 }
 int files_mountpoint_put(struct inode *inode)
 {
@@ -207,6 +224,7 @@ static int text_write_check(struct fs_node ino)
     int error=text_evict(inode);if(error)return error;
     return inode->i_count&&(inode->i_flag&V7_ITEXT)?-NX_ETXTBSY:0;
 }
+/* V7 reports ETXTBSY before permission; this probe evicts nothing. */
 static int image_text(struct fs_node ino,struct exec_image *image)
 {
     struct v7fs_inode disk;int error=node_inode_get(ino,&disk);if(error)return error;
@@ -320,8 +338,8 @@ int files_core_begin(struct inode **result)
     if(!error && node_volume(ino)->read_only)error=-NX_EROFS;
     if(!error)error=node_inode_get(ino,&disk);
     if(!error&&(disk.mode&V7_IFMT)!=V7_IFREG)error=-NX_EACCES;
-    if(!error)error=text_write_check(ino);
     if(!error&&!v7fs_access(&disk,u->u_uid,u->u_gid,2))error=-NX_EACCES;
+    if(!error)error=text_write_check(ino);
     if(error)return error;
     struct inode *inode=inode_get(ino,&disk);if(!inode)return -NX_ENFILE;
     error=v7fs_truncate(node_volume(ino),ino.ino);
@@ -585,7 +603,7 @@ static int mount_path(struct user *u,const uintptr_t args[6])
 {
     if(!proc_superuser(u))return -NX_EPERM;
     if(!root)return -NX_ENODEV;
-    v7_dev_t dev;int error=device_path(u,args[0],&dev);if(error)return error;
+    v7_dev_t dev=0;int error=device_path(u,args[0],&dev);if(error)return error;
     char point_path[256];error=path_copy(args[1],point_path);if(error)return error;
     struct fs_node point;error=lookup_path(u,point_path,&point);if(error)return error;
     struct v7fs_inode disk;error=node_inode_get(point,&disk);if(error)return error;
@@ -593,7 +611,11 @@ static int mount_path(struct user *u,const uintptr_t args[6])
     if((disk.mode&V7_IFMT)!=V7_IFREG && (disk.mode&V7_IFMT)!=V7_IFDIR)return -NX_EBUSY;
     struct inode *pin=inode_get(point,&disk);if(!pin)return -NX_ENFILE;
     if(pin->i_count!=1)error=-NX_EBUSY;
-    else error=namespace_mount(dev,point,pin,!!(args[2]&1));
+    else if((disk.mode&V7_IFMT)==V7_IFREG){
+        struct fs_node parent;char name[V7_DIRSIZ];
+        error=parent_path(u,point_path,&parent,name);
+        if(!error)error=namespace_mount_file(dev,point,parent,pin,!!(args[2]&1));
+    }else error=namespace_mount(dev,point,pin,!!(args[2]&1));
     if(error)(void)files_inode_put(pin);
     return error;
 }
@@ -606,10 +628,13 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
     if(number==NX_SYS_UMOUNT){
         if(!proc_superuser(u))return -NX_EPERM;
         if(!root)return -NX_ENODEV;
-        v7_dev_t dev;int error=device_path(u,args[0],&dev);
+        v7_dev_t dev=0;int error=device_path(u,args[0],&dev);
         return error?error:namespace_unmount(dev);
     }
-    if (number == NX_SYS_SYNC) return namespace_sync(); /* Write-through cache plus V7 superblock time. */
+    if (number == NX_SYS_SYNC) {
+        int error=retry_releases(),sync_error=namespace_sync();
+        return error?error:sync_error;
+    } /* Write-through cache plus V7 superblock time. */
     if (number == NX_SYS_MKNOD) {
         if (!proc_superuser(u)) return -NX_EPERM;
         if (args[1] > UINT16_MAX || args[2] > UINT16_MAX) return -NX_EINVAL;

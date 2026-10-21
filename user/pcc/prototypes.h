@@ -36,3 +36,18 @@ unsigned pcc_ir_capacity(NODE *);
 int pcc_special_real(int);
 NODE *pcc_predicate(unsigned,NODE *);
 void pcc_check_definition(const int *,int);
+
+/* Packed System V eightbyte classes carried in shared IR reg fields. */
+#define PCC_CLASS_NONE 0
+#define PCC_CLASS_INTEGER 1
+#define PCC_CLASS_SSE 2
+#define PCC_CLASS_X87 3
+#define PCC_CLASS_MEMORY 4
+#define PCC_PACK_CLASS(a,b) ((unsigned)(a)|((unsigned)(b)<<4))
+#define PCC_CLASS_AT(c,i) (((c)>>((i)*4))&15U)
+unsigned pcc_classify(int);
+int pcc_definition_variadic(void);
+/* Variadic definition state: register save area and initial va_list offsets. */
+struct pcc_va_frame {int save;unsigned gp,fp,overflow;};
+extern struct pcc_va_frame pcc_va_frame;
+void pcc_note_frame(unsigned);

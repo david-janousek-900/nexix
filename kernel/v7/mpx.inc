@@ -25,7 +25,7 @@ struct mx_channel {
     struct tty *input_tty,*output_tty;
     struct file *input_file,*output_file,*port_file;
     uint32_t signals;
-    unsigned users, event_head, event_count;
+    unsigned users, event_head, event_count, event_reserved;
     struct mx_queue x, y;
     struct mx_event events[NX_MX_EVENTS];
     struct mx_group *parent;
@@ -113,11 +113,12 @@ static void mx_detach(struct mx_entry e,bool orphan)
     }else{
         struct mx_channel *c=e.channel;
         /* Keep a detached endpoint alive without retaining the parent group. */
+        ++c->users;
         c->closing=true;mx_notify(c);mx_bridge_clear(c,0);
-        if(orphan || !c->endpoint){
+        if(c->parent && (orphan || !c->endpoint)){
             c->parent->entry[c->index]=(struct mx_entry){0};c->parent=NULL;
-            mx_reap(c);
         }
+        mx_release(c);
     }
 }
 static void mpx_close(struct file *f)

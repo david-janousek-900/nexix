@@ -33,8 +33,8 @@ void signal_post(struct proc *p, unsigned n)
     if (p->p_stat == V7_SSLEEP && p->p_interruptible) {
         p->p_wchan = NULL; p->p_timed_sleep = false; p->p_stat = V7_SRUN;
     }
-    /* SIGKILL ends a trace stop; the tracer cannot continue it away. */
-    if (n == NX_SIGKILL && p->p_stat == V7_SSTOP) p->p_stat = V7_SRUN;
+    /* The tracer already saw this stop; continuing must not discard a later SIGKILL. */
+    if (n == NX_SIGKILL && p->p_stat == V7_SSTOP && (p->p_flag & V7_STRC)) p->p_trace_kill = true;
 }
 void signal_group(v7_pid_t group, unsigned n)
 {
@@ -59,18 +59,22 @@ static int kill_request(int64_t pid, uint64_t n, bool group_only)
 {
     if (pid < INT32_MIN || pid > INT32_MAX || n >= V7_NSIG) return -NX_EINVAL;
     struct proc *caller = proc_current();
-    bool found = false, permitted = false;
+    /* V7 sys4.c: root's -1 is every process; others match pid -1 (none). */
+    bool all = !group_only && pid == -1 && !caller->p_user->u_uid;
+    bool found = false, denied = false;
     for (unsigned i = 1; i < V7_NPROC; ++i) {
         struct proc *p = (struct proc *)&proc_table()[i];
-        if (p->p_stat == V7_UNUSED || p->p_stat == V7_SIDL || p->p_stat == V7_SZOMB || (p->p_flag & V7_SSYS)) continue;
-        bool match = group_only ? p->p_pgrp == -pid : pid > 0 ? p->p_pid == pid : pid == 0 ? p->p_pgrp == caller->p_pgrp :
-            pid == -1 ? p->p_pid != 1 && p != caller : p->p_pgrp == -pid;
-        if (!match) continue;
-        found = true;
-        if (caller->p_user->u_uid && caller->p_user->u_uid != p->p_uid) continue;
-        permitted = true; signal_post(p, n);
+        if (p->p_stat == V7_UNUSED || p->p_stat == V7_SIDL || (p->p_flag & V7_SSYS)) continue;
+        bool broadcast = all || (!group_only && pid == 0);
+        bool match = group_only ? p->p_pgrp == -pid : all ? true : pid == 0 ? p->p_pgrp == caller->p_pgrp :
+            pid > 0 ? p->p_pid == pid : pid != -1 && p->p_pgrp == -pid;
+        /* Broadcasts never reach init. */
+        if (!match || (broadcast && p->p_pid == 1)) continue;
+        if (caller->p_user->u_uid && caller->p_user->u_uid != p->p_uid) {denied = true; continue;}
+        found = true; signal_post(p, n);
     }
-    return permitted ? 0 : found ? -NX_EPERM : -NX_ESRCH;
+    /* V7 kill counts only permitted targets; killpg keeps its EPERM. */
+    return found ? 0 : group_only && denied ? -NX_EPERM : -NX_ESRCH;
 }
 int signal_kill(int64_t pid,uint64_t n){return kill_request(pid,n,false);}
 int signal_group_user(v7_pid_t group,unsigned n)
@@ -82,13 +86,11 @@ void signal_deliver(struct interrupt_frame *frame)
 {
     struct proc *p = proc_current();
     if (!p || (frame->cs & 3) != 3 || !signal_pending(p)) return;
-    const uint32_t kill = 1U << (NX_SIGKILL - 1);
     if(p->p_flag&V7_STRC){
         /* As in V7, a traced process stops for SIGKILL too and the tracer may
          * cancel it. A SIGKILL posted during the stop releases it (signal_post)
          * and cannot be continued away. */
         proc_trace_stop();
-        if (p->p_sig & kill) proc_exit(NX_SIGKILL);
         /* Continue replaces the pending set, including suppression with 0.
          * Deliver the selected replacement once without stopping again. */
         if(!p->p_sig)return;
@@ -112,6 +114,10 @@ void signal_deliver(struct interrupt_frame *frame)
         copyout(&p->p_vm, stack, &restorer, 8) ||
         copyout(&p->p_vm, stack + 8, frame, sizeof(*frame)) ||
         copyout(&p->p_vm, stack + 8 + sizeof(*frame), &fp, sizeof(fp))) proc_exit(NX_SIGSEGV|(core_dump(NX_SIGSEGV,frame)?0200:0));
+    /* The saved frame retains the faulting environment for sigreturn. Give
+     * handlers a clean live environment, including masked x87/SSE exceptions. */
+    struct nx_fpu_state clean;
+    fpu_default(&clean);fpu_restore(&clean);
     if (n != NX_SIGILL && n != NX_SIGTRAP) p->p_user->u_signal[n] = 0;
     frame->rip = handler; frame->rsp = stack; frame->rdi = n;
     frame->rflags &= ~0x500UL; /* SysV requires DF clear; do not single-step entry. */

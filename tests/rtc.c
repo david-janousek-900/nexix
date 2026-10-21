@@ -58,5 +58,10 @@ int main(void)
     ticks=400;snap=clock_snapshot();assert(snap.time==124 && snap.millitm==0);
     ticks=401;snap=clock_snapshot();assert(snap.time==124 && snap.millitm==10);
     assert(clock_set(500));snap=clock_snapshot();assert(snap.time==500 && snap.millitm==10);
+    ticks=0;assert(clock_set(INT64_MAX-1));
+    ticks=2*NX_CLK_TCK;
+    assert(clock_now()==INT64_MAX && clock_snapshot().time==INT64_MAX);
+    ticks=UINT64_MAX;
+    assert(clock_now()==INT64_MAX && clock_snapshot().time==INT64_MAX);
     puts("PASS: RTC formats, UTC calendar, century fallback, invalid/stuck/unstable RTC, clock ticks and stime");
 }

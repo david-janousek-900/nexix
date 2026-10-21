@@ -1,6 +1,10 @@
+#include <nexix/modem.h>
 #define main controller_regressions
 #include "tty-controller.c"
 #undef main
+static struct user peer_user;
+static struct proc peer_process={.p_user=&peer_user};
+struct proc *proc_current(void){return &peer_process;}
 struct endpoint {uint8_t wire[4096];unsigned count,rate,format;};
 static bool transmit_line(void *v,const uint8_t *p,size_t n){struct endpoint *e=v;assert(e->count+n<=sizeof(e->wire));memcpy(e->wire+e->count,p,n);e->count+=n;return true;}
 static bool line_idle(void *v){(void)v;return true;}
@@ -44,6 +48,10 @@ int main(void)
     struct proc d={.p_pid=40};struct user ud={.u_procp=&d};
     assert(!tty_open(NX_CONSOLE_DEV,&ud,&alias) && alias==z);
     assert(ud.u_ttyd==NX_CONSOLE_DEV);
+    struct nx_modem_tty modem={.mode=NX_MDM_VIRTUAL};
+    assert(!ctl(alias,NX_MDM_SET,&modem));
+    assert(!tty_modem_peer(NX_MDM_DCD));
+    assert(!ctl(alias,NX_MDM_GET,&modem) && (modem.signals&NX_MDM_DCD));
     tty_close(alias);tty_console_line=0;
     assert(!tty_open_count());
     assert(tty_open(0x103,&uc,&alias)==-NX_ENXIO);

@@ -63,6 +63,9 @@ int main(void)
     assert(!phys_request(0,2,BASE+2*PAGE_SIZE) && leaves[1][0].pa==BASE+2*PAGE_SIZE && used[0]);
     assert(!phys_request(1,0,UINTPTR_MAX) && !used[0]);
     struct address_space dest={.root=2};size_t bytes=0;
+    u.u_uid=123;bytes=99;
+    assert(!phys_exec(&p.p_vm,&dest,&bytes) && !bytes && !leaves[2][0].pa);
+    u.u_uid=0;
     assert(!phys_exec(&p.p_vm,&dest,&bytes) && bytes==8192 && leaves[2][0].pa==leaves[1][0].pa);
     assert(!phys_request(0,0,0) && used[2] && used[3]);release(2);assert(!used[2] && !used[3]);
     assert(!phys_request(0,2,BASE));

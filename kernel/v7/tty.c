@@ -70,8 +70,9 @@ void tty_modem_status(unsigned signals)
 int tty_modem_peer(unsigned signals)
 {
     if(signals&~31U)return -NX_EINVAL;
-    if(console.modem_mode!=NX_MDM_VIRTUAL)return -NX_EBUSY;
-    carrier_update(&console,signals,true);return 0;
+    struct tty *t=&terminals[tty_console_line];
+    if(t->modem_mode!=NX_MDM_VIRTUAL)return -NX_EBUSY;
+    carrier_update(t,signals,true);return 0;
 }
 static void defaults(struct tty *t,unsigned profile)
 {
@@ -323,7 +324,8 @@ int64_t tty_io(struct tty *t, struct address_space *vm, uintptr_t address, size_
         uint8_t bytes[128];
         while (done < count) {
             size_t n = count - done; if (n > sizeof(bytes)) n = sizeof(bytes);
-            if (copyin(vm, address + done, bytes, n)) panic("tty write mapping changed");
+            int error=copyin(vm,address+done,bytes,n);
+            if(error)return done?(int64_t)done:error;
             for (size_t i = 0; i < n; ++i) {
                 for(;;){
                     if(!t->carrier || packet_active(t))return done+i?(int64_t)(done+i):-NX_EIO;
@@ -344,12 +346,13 @@ int64_t tty_io(struct tty *t, struct address_space *vm, uintptr_t address, size_
     }
     while (done < count && t->count) {
         uint16_t value = t->input[t->head];
-        t->head = (t->head + 1) % TTY_INPUT_CAPACITY; --t->count;
         if (!(value & EMPTY_EOF)) {
             uint8_t byte = value;
-            if (copyout(vm, address + done, &byte, 1)) panic("tty read mapping changed");
+            int error=copyout(vm,address+done,&byte,1);
+            if(error){input_flow(t);return done?(int64_t)done:error;}
             ++done;
         }
+        t->head = (t->head + 1) % TTY_INPUT_CAPACITY; --t->count;
         if (!immediate(t) && (value & RECORD_END)) break;
     }
     input_flow(t);return done;
@@ -415,6 +418,7 @@ int tty_control(struct tty *t,uint64_t request,void *argument)
         else if(parameters.rate!=t->parameters.rate || parameters.format!=t->parameters.format){
             while(!t->driver->idle(t->driver->context))if(proc_sleep_interruptible(&t->output_channel,29))return -NX_EINTR;
         }
+        if(packet_active(t))return -NX_EBUSY;
         if(request==NX_TIOCSETP || ((settings.flags^t->settings.flags)&(NX_RAW|NX_CBREAK|NX_LCASE)))flush(t);
         bool configure=parameters.rate!=t->parameters.rate || parameters.format!=t->parameters.format;
         t->settings=settings;t->parameters=parameters;

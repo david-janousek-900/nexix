@@ -2,6 +2,7 @@
 #include "mfile1"
 static int location=PROG,label_counter=10;
 int getlab(void) {return ++label_counter;}
+void pcc_note_frame(unsigned bytes) {(void)bytes;}
 int locctr(int n) {int old=location;location=n;printf("section %d\n",n);return old;}
 int defalign(int n) {printf("align %d\n",n/SZCHAR);return 0;}
 int deflab(int n) {printf("label %d\n",n);return 0;}

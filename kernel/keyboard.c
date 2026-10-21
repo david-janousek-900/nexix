@@ -1,5 +1,6 @@
 #include "keyboard.h"
 #include "io.h"
+#include <stddef.h>
 #define POLLS 100000U
 static void (*input)(uint8_t);
 static bool active, extended, caps, caps_down;
@@ -25,7 +26,21 @@ void keyboard_decode(uint8_t code)
     bool ext=extended;extended=false;
     bool release=(code&128)!=0;unsigned key=code&127;
     if(key==29){uint8_t bit=ext?2:1;if(release)controls&=~bit;else controls|=bit;return;}
-    if(ext){if(!release && input){if(key==28)input('\r');if(key==53)input('/');}return;}
+    if(ext){
+        if(!release && input){
+            const char *sequence=NULL;
+            switch(key){
+            case 28:input('\r');break;case 53:input('/');break;
+            case 72:sequence="\033[A";break;case 80:sequence="\033[B";break;
+            case 77:sequence="\033[C";break;case 75:sequence="\033[D";break;
+            case 71:sequence="\033[H";break;case 79:sequence="\033[F";break;
+            case 73:sequence="\033[5~";break;case 81:sequence="\033[6~";break;
+            case 82:sequence="\033[2~";break;case 83:sequence="\033[3~";break;
+            }
+            if(sequence)while(*sequence)input(*sequence++);
+        }
+        return;
+    }
     if(key==42 || key==54){uint8_t bit=key==42?1:2;if(release)shifts&=~bit;else shifts|=bit;return;}
     if(key==58){if(!release && !caps_down)caps=!caps;caps_down=!release;return;}
     if(release)return;

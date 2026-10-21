@@ -1,4 +1,5 @@
 #include <sys/kinfo.h>
+#include <sys/times.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -35,6 +36,14 @@ int kinfo_test(void)
     const struct nx_kinfo_io *io=records();
     CHECK(header()->count==1 && header()->record_size==96);
     CHECK(io->user_ticks+io->nice_ticks+io->system_ticks+io->idle_ticks==header()->ticks);
+    struct tms cpu_before,cpu_after;
+    clock_t start=times(&cpu_before);CHECK(start>=0);
+    struct stat accounting_stat;
+    do {
+        for(unsigned i=0;i<100;++i)CHECK(stat("/tmp",&accounting_stat)==0);
+    } while(times(&cpu_after)-start<20);
+    CHECK(cpu_after.tms_stime>cpu_before.tms_stime);
+    e=load(NX_KINFO_IO);if(e)return e;io=records();
     struct nx_kinfo_io before=*io;
     e=load(NX_KINFO_IO);if(e)return e;io=records();
     CHECK(io->read_sectors==before.read_sectors && io->write_sectors==before.write_sectors);

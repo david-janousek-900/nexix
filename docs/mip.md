@@ -67,8 +67,10 @@ operands, pointer-to-array element types and temporary/address shapes are checke
 Table expansion retains A/C/I/U/B operand escapes, L/R/1/2/3 selection, O/Z target
 escapes, F suppression, T and S/H/M/N/L metadata. A bounded callback interface
 replaces unchecked printf-template substitution. Physical instruction selection and target escape implementations belong to the
-backends. PCC integer emission (194) and scalar/call increments (195) now consume
-these contracts; the remaining machine ABI work stays in 195.
+backends. PCC integer emission (194) and the complete call, aggregate, long-double
+and variadic ABI (195) consume these contracts. Aggregate class words, frame
+temporaries and va_start offsets travel in existing node fields, so the version 2
+stream format is unchanged.
 
 Register tables describe up to 64 registers and symmetric alias masks. Reference
 counts prevent unsafe allocation of live aliases. A/B scratch classes, three

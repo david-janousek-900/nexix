@@ -17,7 +17,9 @@ static int finished(pid_t pid,int code)
 static int burn(void)
 {
     struct tms t;CHECK(times(&t)>=0);clock_t start=t.tms_utime;
-    do{profile_work(100000);CHECK(times(&t)>=0);}while(t.tms_utime-start<3);
+    /* Keep each user burst longer than a tick so IRQ sampling can see it
+     * even when syscall boundary polling also advances the clock. */
+    do{profile_work(10000000);CHECK(times(&t)>=0);}while(t.tms_utime-start<3);
     return 0;
 }
 static int buckets(void)

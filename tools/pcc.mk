@@ -1,5 +1,5 @@
 # Retained PCC front end, privately inspected until native backend/driver closure.
-PCC_FRONT_NAMES = scan pftn trees optim xdefs common local numbers ir declarations real
+PCC_FRONT_NAMES = scan pftn trees optim xdefs common local numbers ir declarations real abi
 PCC_FRONT_OBJECTS = $(addprefix build/pcc-,$(addsuffix .o,$(PCC_FRONT_NAMES)))
 PCC_CFLAGS = $(V7_CFLAGS) -Iuser/pcc -Wno-comment -Wno-return-mismatch -Werror=pointer-to-int-cast -Werror=int-to-pointer-cast
 build/gen-pcc/cgram.c: user/pcc/cgram.y tools/pcc_generate.py rootfs/usr/lib/yaccpar build/host-v7-yacc
@@ -32,3 +32,12 @@ test-pcc-integer: test-pcc-integer-unit build/pcc-backend-test.elf multi-iso roo
 	$(PYTHON) tools/pcc_integer_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test-unit: test-pcc-integer-unit
 test: test-pcc-integer
+
+.PHONY: test-pcc-abi-unit test-pcc-abi
+test-pcc-abi-unit: build/gen-pcc/cgram.c
+	$(PYTHON) tests/pcc_abi.py
+test-pcc-abi: test-pcc-abi-unit build/pcc-backend-test.elf multi-iso rootfs
+	$(PYTHON) tools/pcc_abi_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/pcc_abi_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test-unit: test-pcc-abi-unit
+test: test-pcc-abi

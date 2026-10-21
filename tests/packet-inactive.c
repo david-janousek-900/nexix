@@ -4,7 +4,7 @@
 #include "uaccess.h"
 #include "serial.h"
 #include <nexix/errno.h>
-bool packet_active(struct tty *t){(void)t;return false;}
+__attribute__((weak)) bool packet_active(struct tty *t){(void)t;return false;}
 int packet_open(struct tty *t,struct nx_piocb *p){(void)t;(void)p;return -NX_ENXIO;}
 void packet_changed(struct tty *t){(void)t;}
 void packet_close(struct tty *t){(void)t;}

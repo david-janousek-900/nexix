@@ -9,7 +9,7 @@ struct volume {
     struct v7fs *fs;
     struct v7fs owned;
     v7_dev_t dev;
-    struct fs_node point;
+    struct fs_node point, parent;
     struct inode *pin;
     struct storage_handle *handle;
 };
@@ -73,17 +73,27 @@ int namespace_lookup(struct fs_node cwd,struct fs_node root,const char *path,uin
                 bool found=false;
                 for(unsigned i=1;i<NAMESPACE_MOUNTS;++i)
                     if(mounts[i].fs&&mounts[i].dev==current.dev){
+                        if(mounts[i].parent.ino){
+                            current=mounts[i].parent;
+                            goto resolved_dotdot;
+                        }
                         current=mounts[i].point;found=true;break;
                     }
                 if(!found||node_equal(current,root))break;
             }
             if(node_equal(current,root))continue;
             fs=namespace_volume(current.dev);
+            /* Search was checked on the visible mounted root. The hidden
+             * covered directory is not another permission boundary. */
+            error=v7fs_lookup(fs,current.ino,"..",&current.ino);
+            if(error)return error;
+            goto resolved_dotdot;
         }
         /* rootino=0 disables the single-volume helper's implicit root clamp;
          * the namespace performs the process-root clamp above. */
         error=v7fs_lookup_root_user(fs,current.ino,0,name,&current.ino,uid,gid);
         if(error)return error;
+resolved_dotdot:
         current=cross(current);
     }
     struct v7fs *fs=namespace_volume(current.dev);struct v7fs_inode node;
@@ -193,4 +203,14 @@ bool mounts_info(unsigned i,struct nx_kinfo_mount *r)
         .inodes=fs->inodes,.cache_capacity=V7FS_CACHE};
     for(unsigned j=0;j<V7FS_CACHE;++j)r->cache_used+=fs->cache[j].valid;
     return true;
+}
+
+/* Regular mountpoints have no on-disk dotdot; remember the containing node. */
+int namespace_mount_file(v7_dev_t dev,struct fs_node point,struct fs_node parent,
+    struct inode *pin,bool read_only)
+{
+    int error=namespace_mount(dev,point,pin,read_only);
+    if(!error)for(unsigned i=1;i<NAMESPACE_MOUNTS;++i)
+        if(mounts[i].fs && mounts[i].dev==dev){mounts[i].parent=parent;break;}
+    return error;
 }

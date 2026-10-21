@@ -29,26 +29,77 @@ int defnam(struct symtab *p) {
     if(p->sclass==EXTDEF)printf(".globl %s\n",name);
     printf(".type %s,@object\n%s:\n",name,name);return 0;
 }
+static int result_hidden,result_temp,result_end;
+static unsigned result_class;
+static int frame_slot(unsigned bytes,unsigned alignment) {
+    unsigned bits=alignment*8;autooff=(autooff+(int)bits-1)/(int)bits*(int)bits;
+    if((unsigned)autooff>INT32_MAX/2-bytes*8)cerror("frame too large");
+    autooff+=(int)(bytes*8);return -autooff/8;
+}
+static unsigned aggregate_need(unsigned c,unsigned class) {return (PCC_CLASS_AT(c,0)==class)+(PCC_CLASS_AT(c,1)==class);}
+static int register_class(unsigned c) {unsigned a=PCC_CLASS_AT(c,0);return a==PCC_CLASS_INTEGER || a==PCC_CLASS_SSE;}
 int bfcode(int *args,int count) {
-    struct symtab *function=stab+curftn;TWORD result=DECREF(function->stype);struct mip_layout layout;
-    if(result==LDOUBLE || (result!=VOID && mip_scalar_layout(result,&layout))) {uerror("function result requires aggregate backend");return 0;}
-    frame_size=0;autooff=0;locctr(PROG);
+    struct symtab *function=stab+curftn;TWORD result=DECREF(function->stype);
+    static const char *gp[]={"rdi","rsi","rdx","rcx","r8","r9"};int i;unsigned ngp=0,nsse=0,stack=16;
+    frame_size=0;autooff=0;locctr(PROG);result_hidden=result_temp=0;result_class=PCC_CLASS_NONE;
     if(function->sclass==EXTDEF)printf(".globl %s\n",function->sname);
     printf(".type %s,@function\n%s:\n pushq %%rbp\n movq %%rsp,%%rbp\n subq $.F%d,%%rsp\n",function->sname,function->sname,ftnno);
-    retlab=getlab();static const char *gp[]={"rdi","rsi","rdx","rcx","r8","r9"};int i;unsigned ngp=0,nsse=0,stack=16;
+    retlab=getlab();
+    if(result==STRTY || result==UNIONTY) {
+        result_class=pcc_classify(function->sizoff);result_end=getlab();
+        if(PCC_CLASS_AT(result_class,0)==PCC_CLASS_MEMORY) {result_hidden=frame_slot(8,8);printf(" movq %%rdi,%d(%%rbp)\n",result_hidden);ngp=1;}
+        else if(PCC_CLASS_AT(result_class,0)!=PCC_CLASS_X87)result_temp=frame_slot(16,16);
+    }
+    if(pcc_definition_variadic())pcc_va_frame.save=frame_slot(176,16);
     for(i=0;i<count;i++) {
-        struct symtab *p=stab+args[i];
-        if(p->stype==LDOUBLE || mip_scalar_layout(p->stype,&layout)) {uerror("parameter requires aggregate backend");continue;}
-        autooff+=64;p->offset=-autooff;p->sclass=PARAM;
+        struct symtab *p=stab+args[i];p->sclass=PARAM;
+        if(p->stype==LDOUBLE) {stack=(stack+15)&~15U;p->offset=(int)stack*8;stack+=16;continue;}
+        if(p->stype==STRTY || p->stype==UNIONTY) {
+            unsigned c=pcc_classify(p->sizoff),bytes=(unsigned)(tsize(p->stype,p->dimoff,p->sizoff)/8),align=(unsigned)talign(p->stype,p->sizoff)/8;
+            unsigned needgp=aggregate_need(c,PCC_CLASS_INTEGER),needsse=aggregate_need(c,PCC_CLASS_SSE),j;
+            if(!register_class(c) || ngp+needgp>6 || nsse+needsse>8) {
+                if(align>8)stack=(stack+15)&~15U;
+                p->offset=(int)stack*8;stack+=(bytes+7)&~7U;continue;
+            }
+            p->offset=frame_slot(16,align>8?16:8)*8;
+            for(j=0;j<2 && PCC_CLASS_AT(c,j)!=PCC_CLASS_NONE;j++) {
+                if(PCC_CLASS_AT(c,j)==PCC_CLASS_SSE)printf(" movsd %%xmm%u,%d(%%rbp)\n",nsse++,p->offset/8+(int)j*8);
+                else printf(" movq %%%s,%d(%%rbp)\n",gp[ngp++],p->offset/8+(int)j*8);
+            }
+            continue;
+        }
+        autooff+=64;p->offset=-autooff;
         if((p->stype==FLOAT || p->stype==DOUBLE) && nsse<8)printf(" mov%s %%xmm%u,%d(%%rbp)\n",p->stype==FLOAT?"ss":"sd",nsse++,p->offset/8);
         else if(p->stype!=FLOAT && p->stype!=DOUBLE && ngp<6)printf(" movq %%%s,%d(%%rbp)\n",gp[ngp++],p->offset/8);
         else {printf(" movq %u(%%rbp),%%rax\n movq %%rax,%d(%%rbp)\n",stack,p->offset/8);stack+=8;}
+    }
+    if(pcc_definition_variadic()) {
+        /* Every incoming register is saved; va_arg consumes those after the named ones. */
+        unsigned j;for(j=0;j<6;j++)printf(" movq %%%s,%d(%%rbp)\n",gp[j],pcc_va_frame.save+(int)j*8);
+        for(j=0;j<8;j++)printf(" movsd %%xmm%u,%d(%%rbp)\n",j,pcc_va_frame.save+48+(int)j*16);
+        pcc_va_frame.gp=ngp*8;pcc_va_frame.fp=48+nsse*16;pcc_va_frame.overflow=stack;
     }
     pcc_note_frame((unsigned)autooff/8);return 0;
 }
 int bccode(void) {pcc_note_frame((unsigned)autooff/8);return 0;}
 int efcode(void) {
-    deflab(retlab);printf(" leave\n ret\n.set .F%d,%u\n.size %s,.-%s\n",ftnno,(frame_size+15)&~15U,stab[curftn].sname,stab[curftn].sname);return 0;
+    if(result_class!=PCC_CLASS_NONE) {
+        /* Returns arrive with the value address in RAX; falling off the end skips the copy. */
+        branch(result_end);deflab(retlab);unsigned a=PCC_CLASS_AT(result_class,0);
+        unsigned long bytes=(unsigned long)(tsize(STRTY,0,stab[curftn].sizoff)/8);
+        if(a==PCC_CLASS_X87)puts(" fldt (%rax)");
+        else if(a==PCC_CLASS_MEMORY)printf(" movq %%rax,%%rsi\n movq %d(%%rbp),%%rdi\n movq $%lu,%%rcx\n cld\n rep movsb\n movq %d(%%rbp),%%rax\n",result_hidden,bytes,result_hidden);
+        else {
+            unsigned j,ngp=0,nsse=0;static const char *gp[]={"rax","rdx"};
+            printf(" movq %%rax,%%rsi\n leaq %d(%%rbp),%%rdi\n movq $%lu,%%rcx\n cld\n rep movsb\n",result_temp,bytes);
+            for(j=0;j<2 && PCC_CLASS_AT(result_class,j)!=PCC_CLASS_NONE;j++) {
+                if(PCC_CLASS_AT(result_class,j)==PCC_CLASS_SSE)printf(" movsd %d(%%rbp),%%xmm%u\n",result_temp+(int)j*8,nsse++);
+                else printf(" movq %d(%%rbp),%%%s\n",result_temp+(int)j*8,gp[ngp++]);
+            }
+        }
+        deflab(result_end);
+    } else deflab(retlab);
+    printf(" leave\n ret\n.set .F%d,%u\n.size %s,.-%s\n",ftnno,(frame_size+15)&~15U,stab[curftn].sname,stab[curftn].sname);return 0;
 }
 int aobeg(void) {return 0;}
 int aocode(struct symtab *p) {if(p->sclass==AUTO && p->offset<0)pcc_note_frame((unsigned)(-(int64_t)p->offset)/8);return 0;}

@@ -101,14 +101,14 @@ int64_t packet_io(struct tty *t,struct address_space *vm,uintptr_t address,size_
         else if(!tty_packet_reader(t))error=-NX_ENXIO;
         if(!error){bool eof;size_t n=count>sizeof(bytes)?sizeof(bytes):count;
             done=pk_take(&b->packet,bytes,n,&eof);
-            if(copyout(vm,address,bytes,done))panic("packet read mapping changed");}
+            error=copyout(vm,address,bytes,done);if(error)done=0;}
     }else do{
         while(b->attached && b->packet.state==NX_PK_LIVE && b->packet.tx_count>=b->packet.swindow)
             if(proc_sleep_interruptible(b,29)){error=-NX_EINTR;break;}
         if(error)break;
         if(!b->attached || b->packet.state!=NX_PK_LIVE){error=-NX_EPIPE;signal_post(proc_current(),NX_SIGPIPE);break;}
         size_t n=count-done;if(n>b->packet.xsize)n=b->packet.xsize;
-        if(copyin(vm,address+done,bytes,n))panic("packet write mapping changed");
+        error=copyin(vm,address+done,bytes,n);if(error)break;
         error=pk_send(&b->packet,bytes,n,timer_ticks());if(error)break;
         done+=n;
     }while(done<count);

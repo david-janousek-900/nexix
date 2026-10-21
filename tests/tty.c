@@ -46,6 +46,10 @@ int main(void)
     assert(tty_open(0x999, &u, &t) == -NX_ENODEV && !t && tty_open_count() == 0);
     assert(tty_open(NX_CTTY_DEV, &u, &t) == -NX_ENXIO && !t);
     assert(tty_open(NX_CONSOLE_DEV, &u, &t) == 0 && t && tty_open_count() == 1);
+    assert(tty_io(t,&vm,1,1,true)==-NX_EFAULT);
+    feed("fault\n",6);
+    assert(tty_io(t,&vm,1,1,false)==-NX_EFAULT);
+    expect(t,"fault\n",6);
     struct nx_sgttyb sg;
     assert(control(t, NX_TIOCGETP, &sg) == 0 && sg.flags == (NX_ECHO | NX_CRMOD));
     struct nx_tty_state state,initial;

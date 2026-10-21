@@ -13,6 +13,7 @@ static struct address_space vm;
 static uint64_t ticks;
 static void *ctl;
 static unsigned script,steps,digits,hangups,outputs,uart_signals;
+static v7_pid_t interrupt_group;
 static uint8_t number[16],wire[8192];static size_t used;
 static uintptr_t readonly;
 static struct tty *closing;
@@ -26,7 +27,7 @@ bool user_access_ok(const struct address_space *v,uintptr_t a,size_t n,bool writ
 {(void)v;(void)n;return a>=4096 && (!write || a!=readonly);}
 unsigned proc_wakeup(void *p){assert(p);return 0;}
 _Noreturn void panic(const char *s){puts(s);abort();}
-void signal_group(v7_pid_t g,unsigned n){assert(g==17 && n==NX_SIGHUP);++hangups;}
+void signal_group(v7_pid_t g,unsigned n){if(n==NX_SIGINT){interrupt_group=g;return;}assert(g==17 && n==NX_SIGHUP);++hangups;}
 void mpx_tty_notify(void *p,unsigned n){(void)p;(void)n;}
 void mpx_tty_resume(struct tty *t){(void)t;}
 void serial_putc(uint8_t c){assert(used<sizeof(wire));wire[used++]=c;}
@@ -135,6 +136,8 @@ int main(void)
     tty_link(NX_MDM_DCD);assert(!tty_open(NX_TTY_CONTROLLER_DEV(NX_TTY_DH,0),&user,&tty));tty_link(0);
     closing=tty;script=9;process.p_pid=19;process.p_pgrp=0;
     assert(!tty_open(NX_TTY_CONTROLLER_DEV(NX_TTY_DH,0),&user,&tty) && process.p_pgrp==19);
+    s.flags=NX_CRMOD;assert(!tty_control(tty,NX_TIOCSETP,&s));
+    tty_receive(0177);assert(interrupt_group==19);
     tty_close(tty);process.p_pid=process.p_pgrp=17;script=0;modem_close(ctl);
     puts("PASS: DN dialing/pause/completion/errors, DU ownership/records/flow/timeouts, peer atomicity, carrier waits/hangup, last close with carrier waiters, local/UART modes and B0");
 }

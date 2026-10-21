@@ -2,6 +2,8 @@
 #include "io.h"
 #include <nexix/errno.h>
 struct ata {uint16_t io,control;unsigned slave;};
+static uint16_t master_serial[2][10];
+static bool master_known[2];
 static const struct ata ports[]={{0x1f0,0x3f6,0},{0x1f0,0x3f6,1},{0x170,0x376,0},{0x170,0x376,1}};
 #define BUSY 0x80
 #define DRDY 0x40
@@ -19,7 +21,7 @@ static int ready(const struct ata *a,bool data, bool check_errors)
         if (!status || status==0xff) return -NX_EIO;
         if (status&BUSY) continue;
         if (check_errors && (status&FAULT)) return -NX_EIO;
-        if (!!(status&DRQ)==data) return 0;
+        if ((status&DRDY) && !!(status&DRQ)==data) return 0;
     }
     return -NX_EIO;
 }
@@ -86,10 +88,14 @@ int ide_init_unit(struct block_device *device,unsigned index)
 {
     if (!device || index>=4) return -NX_EINVAL;
     const struct ata *a=&ports[index];
+    if(!a->slave)master_known[index/2]=false;
     *device=(struct block_device){0};
     outb(a->control,2); /* nIEN: disable device interrupts for polling. */
     outb(a->io+6,0xa0 | (a->slave<<4));
     delay(a);
+    /* An absent slave may mirror the master's status. Verify that the
+     * device/head register actually reports the selected device too. */
+    if((inb(a->io+6)&0x10)!=(a->slave<<4))return -NX_ENODEV;
     uint8_t status=inb(a->io+7);
     if (!status || status==0xff) return -NX_ENODEV;
     int error=drive_ready(a);if (error) return error;
@@ -108,6 +114,21 @@ int ide_init_unit(struct block_device *device,unsigned index)
     if ((words[106]&0xc000)==0x4000 && (words[106]&(1U<<12))) {
         uint32_t size=(uint32_t)words[117] | ((uint32_t)words[118]<<16);
         if (size!=256) return -NX_EIO;
+    }
+    /* Some absent slaves also echo device/head writes. IDENTIFY must not
+     * present the known master's nonblank hardware serial as a second disk. */
+    if(a->slave && master_known[index/2]){
+        bool same=true,identified=false;
+        for(unsigned i=0;i<10;++i){
+            uint16_t serial=words[10+i];
+            if(serial!=master_serial[index/2][i])same=false;
+            if(serial && serial!=0x2020 && serial!=0xffff)identified=true;
+        }
+        if(same && identified)return -NX_ENODEV;
+    }
+    if(!a->slave){
+        for(unsigned i=0;i<10;++i)master_serial[index/2][i]=words[10+i];
+        master_known[index/2]=true;
     }
     *device=(struct block_device){.blocks=blocks,.context=(void *)a,.read=read_sector,.write=write_sector};
     return 0;

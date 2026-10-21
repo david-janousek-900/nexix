@@ -9,9 +9,16 @@ bool clock_set(int64_t epoch)
     offset = epoch - elapsed;
     return true;
 }
+/* Saturate wall time when an accepted setting reaches the signed limit. */
+static int64_t at_ticks(uint64_t ticks)
+{
+    int64_t elapsed = ticks / NX_CLK_TCK;
+    if (offset > 0 && elapsed > INT64_MAX - offset) return INT64_MAX;
+    return offset + elapsed;
+}
 int64_t clock_now(void)
 {
-    return offset + timer_ticks() / NX_CLK_TCK;
+    return at_ticks(timer_ticks());
 }
 bool clock_init(void)
 {
@@ -22,6 +29,6 @@ bool clock_init(void)
 struct nx_timeb clock_snapshot(void)
 {
     uint64_t ticks=timer_ticks();
-    return (struct nx_timeb){.time=offset+(int64_t)(ticks/NX_CLK_TCK),
+    return (struct nx_timeb){.time=at_ticks(ticks),
         .millitm=(ticks%NX_CLK_TCK)*(1000/NX_CLK_TCK)};
 }

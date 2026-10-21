@@ -17,6 +17,7 @@ uint64_t timer_ticks(void);
  * line; detach masks it and waits for nothing (single CPU, IRQs disabled). */
 bool irq_attach(unsigned irq, void (*handler)(void *), void *argument);
 void irq_detach(unsigned irq);
+void timer_poll(struct interrupt_frame *);
 void interrupt_dispatch(struct interrupt_frame *frame);
 _Noreturn void panic(const char *message);
 #endif
