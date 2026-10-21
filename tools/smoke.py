@@ -15,7 +15,7 @@ user_faults = {"user-kernel": (14, 5), "user-ro": (14, 7), "user-nx": (14, 21),
 # Keep their timeout and required-marker classification together: memory, paging
 # OOM and bad-stack recovery take just as long as an ordinary self-test boot.
 full_boot_modes = ("boot", "process", "syscall", "exec", "libc", "fs", "files",
-                   "signals", "v7", "rootfs", "tty", "tty-demo", "memory",
+                   "signals", "net", "v7", "rootfs", "tty", "tty-demo", "memory",
                    "paging-oom", "user-bad-stack")
 fault_modes = ("ud", "pf", "wp", "nx", "unmap", "null", "protect")
 if mode not in full_boot_modes and mode not in fault_modes and mode not in user_faults:
@@ -78,7 +78,7 @@ else:
             process.kill()
             output, _ = process.communicate()
 log = Path("build") / (f"memory-{ram}.log" if mode == "memory" else
-                        f"{mode}-{ram}.log" if mode in ("process", "syscall", "exec", "libc", "fs", "files", "signals", "v7", "rootfs", "tty", "tty-demo") else f"{mode}.log")
+                        f"{mode}-{ram}.log" if mode in ("process", "syscall", "exec", "libc", "fs", "files", "signals", "net", "v7", "rootfs", "tty", "tty-demo") else f"{mode}.log")
 log.write_bytes(output)
 sys.stdout.buffer.write(output)
 # Keep raw timestamped transcripts; comparisons below ignore only the log prefix.
@@ -121,6 +121,8 @@ if mode in full_boot_modes:
     if any(f"{marker}\r\n".encode() not in output for marker in
            ("SIGNALS OK", "HEAP OK", "INIT SYSCALLS OK", "SIGNALS CLEANUP OK")):
         sys.exit(f"FAIL: signals/heap/init syscalls check failed; see {log}")
+    if b"NET POOLS OK\r\n" not in output:
+        sys.exit(f"FAIL: network packet/socket pool check failed; see {log}")
     if any(f"{marker}\r\n".encode() not in output for marker in
            ("V7 INIT ELF OK", "NEXIX_V7_USER_PROGRAM_OK", "V7 SHELL OK", "V7 UTILITIES OK", "V7 USERLAND CLEANUP OK")):
         sys.exit(f"FAIL: rebuilt V7 userland check failed; see {log}")
@@ -142,7 +144,7 @@ if mode in full_boot_modes:
         sys.exit(f"FAIL: page-table allocation rollback failed; see {log}")
     if mode == "user-bad-stack" and b"USER BAD STACK OK\r\n" not in output:
         sys.exit(f"FAIL: TSS handoff with unusable user stack failed; see {log}")
-    print("PASS: boot, scheduling, fork/exit/wait, native syscalls, user copies, ELF exec, native libc, V7 filesystem, file descriptors, pipes, serial TTY, signals, heap, init services, rebuilt V7 userland, and packaged root image")
+    print("PASS: boot, scheduling, fork/exit/wait, native syscalls, user copies, ELF exec, native libc, V7 filesystem, file descriptors, pipes, serial TTY, signals, heap, init services, network pools, rebuilt V7 userland, and packaged root image")
 elif mode in user_faults:
     vector, error = user_faults[mode]
     fault = re.search(rb"exception vector=(0x[0-9a-f]{16}) error=(0x[0-9a-f]{16})"

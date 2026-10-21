@@ -138,7 +138,8 @@ retain their notices and audit LP64 assumptions. See the
 [0.2.0 networking roadmap](networking-roadmap.md) for milestones and acceptance.
 The private [compatibility foundation](networking-compat.md) supplies fixed-width
 protocol types, byte-array wire records, byte-order/checksum helpers, sequence
-comparisons and checked size arithmetic; hardware and stack integration remain
+comparisons and checked size arithmetic. Bounded
+[packet and socket pools](networking-pools.md) replace BSD VM-backed mbufs; hardware and stack integration remain
 planned work.
 
 Architecture references: [Intel system programming manuals](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html)

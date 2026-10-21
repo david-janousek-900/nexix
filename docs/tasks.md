@@ -19,8 +19,8 @@ The inventory accounts for **223 components, 2,144 distribution files and
 6 partial, 1 prototype and 136 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **431 tracking tasks: 200 done, 0 in progress
-and 231 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–170, 177–183, 188–191, 202, 219, 223, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–413** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **431 tracking tasks: 201 done, 0 in progress
+and 230 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–170, 177–183, 188–191, 202, 219, 223, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–414** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -744,7 +744,7 @@ remain deferred. Each task requires focused tests, affected regressions and a co
 |---:|---|---|---|
 | 412 | Pin and audit 4.4BSD-Lite2 networking sources | Done | Pinned mirror commit 50587b00e922225c62f1706266587f435898126d; 102 byte-identical reference files, archive/per-file hashes and retained Berkeley licenses; [dependency/LP64 audit](bsd-networking-audit.md); make test-bsd-reference test-inventory, full pinned-archive comparison and rejection fixtures; Git history |
 | 413 | Adapt BSD networking types and compatibility primitives | Done | Private namespaced LP64 types, pointer-free wire records, unaligned byte-order codecs, streaming checksum/pseudoheader, modular sequence comparisons and checked size arithmetic; [compatibility contract](networking-compat.md); make test-net-compat (ASan/UBSan, isolated freestanding headers), make check and make test-inventory; Git history |
-| 414 | Implement bounded mbuf and socket-buffer pools | To do | After 413: page-backed packet/socket pools with explicit limits, ownership and drop/allocation counters; exercise exhaustion, rollback, chain operations and leak-free teardown at 16/128 MiB |
+| 414 | Implement bounded mbuf and socket-buffer pools | Done | Page budgets, fixed-size slabs, 256-byte mbufs, shared 2048-byte clusters, chain operations with rollback, socket buffers with byte/mbuf limits and drop/allocation counters, separate socket-object budget; [pool contract](networking-pools.md); make test-net-pool (ASan/UBSan, injected page failures) and make test-net-pools-guest (exhaustion and leak-free teardown at 16/128 MiB); Git history |
 | 415 | Add serialized network worker and protocol timers | To do | After 414: schedulable kernel worker, bounded work queues, IRQ-safe wakeup and BSD timer adaptation; no sleeping in IRQ callbacks; verify timer cancellation/expiry, queue overflow and progress while socket callers sleep |
 | 416 | Add PCI discovery for QEMU e1000 | To do | Enumerate supported PCI functions, decode BARs and interrupt routing, map device MMIO safely and enable required PCI command bits; QEMU discovery and no-NIC boot acceptance |
 | 417 | Implement e1000 DMA transmit and receive | To do | After 414–416: reset/init, MAC/link state, bounded DMA rings, IRQ acknowledgement and worker handoff; exercise RX/TX, ring wrap, full queues, malformed lengths and resource cleanup on QEMU |

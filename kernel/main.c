@@ -4,6 +4,7 @@
 #include "fpu.h"
 #include "clock.h"
 #include "signals.h"
+#include "net/kernel.h"
 #include "userland.h"
 #include "exec.h"
 #include "libc_test.h"
@@ -197,6 +198,7 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
     files_selftest();
     tty_selftest(test);
     signals_selftest();
+    net_pool_selftest();
     v7_userland_selftest();
     rootfs_selftest();
     root_exec_selftest();
