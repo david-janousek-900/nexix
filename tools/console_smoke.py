@@ -65,7 +65,9 @@ def check(qemu, ram, mode):
                 guest.pump(.1)
                 assert not any(guest.buffers), guest.buffers
             else:
-                login(guest,'root','nexix')
+                # The login prompt was already consumed before the NMI.
+                guest.send('root\n');guest.expect('Password:')
+                guest.send('nexix\n');guest.expect('root@nexix.localdomain# ')
                 guest.command('echo NMI_OK',stdout='NMI_OK\n')
                 assert 'Nexix' not in screen.screen(), screen.screen()
                 assert not guest.buffers[1], guest.buffers[1]
