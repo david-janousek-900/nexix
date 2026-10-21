@@ -56,21 +56,20 @@ def check(qemu, ram, mode):
                 guest.send('\x04');guest.expect('login: ')
                 assert not guest.buffers[1], guest.buffers[1]
                 assert 'Nexix' not in screen.screen(), screen.screen()
-            # An NMI exercises the production panic path without a test kernel.
+            # NMI must return through its IST without disturbing the console.
             screen.call('inject-nmi')
             if mode=='vga':
-                screen.expect('PANIC: unhandled CPU exception')
+                screen.type('root\n');screen.expect('Password: ')
+                screen.type('nexix\n');screen.expect('root@nexix.localdomain# ')
+                screen.type('echo NMI_OK\n');screen.expect('\nNMI_OK\n')
                 guest.pump(.1)
                 assert not any(guest.buffers), guest.buffers
             else:
-                deadline=time.monotonic()+10
-                while b'PANIC: unhandled CPU exception' not in guest.buffers[0]:
-                    if time.monotonic()>deadline:
-                        raise AssertionError('serial panic diagnostic missing')
-                    guest.pump(.05)
+                login(guest,'root','nexix')
+                guest.command('echo NMI_OK',stdout='NMI_OK\n')
                 assert 'Nexix' not in screen.screen(), screen.screen()
                 assert not guest.buffers[1], guest.buffers[1]
-            print(f'PASS: {ram} {mode}: exclusive boot, rc, login, console writes, logout and panic',flush=True)
+            print(f'PASS: {ram} {mode}: exclusive boot, rc, login, console writes, logout and NMI',flush=True)
         finally:
             if screen:
                 Path(f'build/console-{mode}-{ram}.screen.txt').write_text(screen.screen())

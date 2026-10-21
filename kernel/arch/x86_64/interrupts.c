@@ -94,6 +94,15 @@ static void dispatch(struct interrupt_frame *frame)
     if (frame->vector == 8 || frame->vector == 2) {
         if (!interrupt_stack_valid(frame))
             panic("invalid IST entry stack");
+        if (frame->vector == 2) {
+            /* NMI runs on IST and must not enter the scheduler or console.
+             * Pulse the PC parity/channel-check latch reset bits when set.
+             * Software-injected NMIs have no legacy latch to acknowledge. */
+            uint8_t status=inb(0x61);
+            uint8_t reset=((status&0x80)?4:0)|((status&0x40)?8:0);
+            if(reset){outb(0x61,status|reset);outb(0x61,status&~reset);}
+            return;
+        }
         if (frame->vector == 8)
             console_puts("DOUBLE FAULT STACK OK\r\n");
     } else if ((frame->cs & 3) == 3) {

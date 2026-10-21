@@ -2293,3 +2293,7 @@ test-signal-fpu-unit: build/signal-fpu-test
 	./build/signal-fpu-test
 test-unit: test-signal-fpu-unit
 .PHONY: test-signal-fpu-unit
+
+test-nmi: multi-iso
+	$(PYTHON) tools/nmi_smoke.py $(QEMU) build/nexix-multi.iso
+.PHONY: test-nmi
