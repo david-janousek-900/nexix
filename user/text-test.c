@@ -59,7 +59,7 @@ int text_test(void)
     error=open_exec_busy(O_WRONLY);if(error)return error;
     pid_t child=start("/tmp/text","hold");CHECK(child>=0&&receive('R')&&busy("/tmp/text"));
     pid_t denied=fork();CHECK(denied>=0);
-    if(!denied){if(setuid(123))_exit(1);_exit(open("/tmp/text",O_WRONLY)==-1&&errno==EACCES?0:2);}
+    if(!denied){if(setuid(123))_exit(1);_exit(open("/tmp/text",O_WRONLY)==-1&&errno==ETXTBSY?0:2);}
     int denied_status;CHECK(wait(&denied_status)==denied&&WIFEXITED(denied_status)&&WEXITSTATUS(denied_status)==0);
     CHECK(chmod("/tmp/text",01755)==0&&chmod("/tmp/text",0755)==0&&busy("/tmp/text"));
     CHECK(unlink("/tmp/text")==-1&&errno==ETXTBSY);
