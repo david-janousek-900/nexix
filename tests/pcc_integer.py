@@ -14,6 +14,7 @@ char *greeting = "native";
 long calc(a,b) long a; unsigned b; { long x; x=a+b; x*=3; return x+global_value; }
 unsigned long huge_address(){return (unsigned long)&global_value+0x100000000UL;}
 long indirect(){return *global_pointer;}
+long callback_call(f,x) long (*f)();long x;{return 7+(*f)(x,2L,3L,4L,5L,6L,7L,8L,9L);}
 int literal(){return greeting[0]+greeting[5];}
 unsigned wrap32(a,b) unsigned a,b;{return a+b;}
 long cast_assignment(p) unsigned *p;{return (long)(int)(*p=0xffffffffU);}
@@ -63,8 +64,11 @@ extern int literal(void),flow(int),no_default(int);
 struct tiny {unsigned char value:3;}; extern int tiny_update(struct tiny *),field_divide(struct tiny *,int),field_less(struct tiny *),char_divide(unsigned char *,int);
 struct fields {unsigned a:3;int b:5;unsigned c:9;};extern int fields_update(struct fields *),fields_less(struct fields *);
 #define CHECK(x) do{if(!(x)){printf("FAIL integer line %d\\n",__LINE__);return 1;}}while(0)
+long callback_target(long a,long b,long c,long d,long e,long f,long g,long h,long i){return a+2*b+3*c+4*d+5*e+6*f+7*g+8*h+9*i;}
+extern long callback_call(long (*)(),long);
 int main(void){
  long a[8];unsigned cast_value=0;int p[2]={10,22};unsigned char guarded[2]={7,90};struct fields f={0};
+ CHECK(callback_call(callback_target,1)==292);
  CHECK(huge_address()==(unsigned long)&global_value+0x100000000UL);
  CHECK(indirect()==4294967297L && literal()==211);CHECK(wrap32(0xffffffffU,1)==0);
  CHECK(cast_assignment(&cast_value)== -1L && cast_value==0xffffffffU);CHECK(unary(7)==6);
@@ -89,8 +93,17 @@ PROGRAM='''unsigned long constant=0xffffffffffffffffUL;
 int global_zero[4];
 struct pair {int left;long right;};
 struct pair object;
+long sum9(a,b,c,d,e,f,g,h,i) long a,b,c,d,e,f,g,h,i;{return a+2*b+3*c+4*d+5*e+6*f+7*g+8*h+9*i;}
+long recurse(n) long n;{if(n<2)return 1;return n*recurse(n-1);}
+long leaf(){return 4294967297L;}
+long nest(n) long n;{return sum9(n,leaf(),3L,4L,recurse(3L),6L,7L,8L,9L);}
 int main(){
- int array[4];int i;int sum;int lazy_value;long *pointer;
+ int array[4];int i;int sum;int lazy_value;long *pointer;long (*fp)();
+ fp = sum9;
+ if((*fp)(1L,2L,3L,4L,5L,6L,7L,8L,9L)!=285L)return 20;
+ if(recurse(10L)!=3628800L)return 21;
+ if(leaf()+recurse(4L)!=4294967321L)return 22;
+ if(nest(1L)!=8589934880L)return 23;
  array[0]=3;array[1]= -7;array[2]=11;array[3]=9;
  sum=0;for(i=0;i<4;i++)sum+=array[i];
  if(sum!=16)return 1;

@@ -124,3 +124,14 @@ compiles a complete C main program and executes it with native crt0/libc.
 Fixtures use ordinary separate translation units to keep assembler working sets
 within the 16 MiB baseline; larger complete-tool rebuilds remain the 128 MiB
 acceptance gate. This completes task 194, not the remaining compiler family.
+
+
+Task 195 integer call increment implements direct and indirect calls through the
+shared IR. Caller arguments use six GP registers followed by ordered stack
+slots, with 16-byte call alignment even inside spilled expressions. Reserved
+argument slots keep nested evaluations and the function pointer intact. Return
+values are normalized to the declared native width. Integer ABI tests include
+nine arguments, a separately compiled GCC callback, recursion, zero-argument
+calls and nested calls. `make TOOLCHAIN_PREFIX= test-pcc-integer` passes host
+ASan/UBSan/GCC oracles and native root/user 16/128 MiB execution. Floating,
+aggregate and variadic call classification remain pending; task 195 is open.

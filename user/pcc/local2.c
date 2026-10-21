@@ -144,10 +144,37 @@ static void assignment(uint32_t root,unsigned nesting) {
         puts(" movq 8(%rsp),%rcx");store(n->left);pop("rax");pop("r10");
     } else {pop("rcx");store(n->left);}
 }
+static void arguments(uint32_t root,uint32_t *items,unsigned *count,unsigned nesting) {
+    if(nesting>TREESZ)cerror("call argument tree too deep");
+    const struct mip_node *n=node_at(root);
+    if(n->op==CM) {arguments(n->left,items,count,nesting+1);arguments(n->right,items,count,nesting+1);return;}
+    if(*count>=256)cerror("too many call arguments");
+    if(n->op==STARG || n->type==FLOAT || n->type==DOUBLE || n->type==STRTY || n->type==UNIONTY)
+        cerror("call argument requires floating/aggregate ABI");
+    items[(*count)++]=root;
+}
+static void call(const struct mip_node *n,unsigned nesting) {
+    static const char *regs[]={"rdi","rsi","rdx","rcx","r8","r9"};
+    uint32_t items[256];unsigned count=0,i;
+    if(n->op==CALL)arguments(n->right,items,&count,nesting+1);
+    unsigned stack=count>6?count-6:0,slots=count+1;
+    if((depth+slots)&1)slots++;
+    printf(" subq $%u,%%rsp\n",slots*8);depth+=slots;
+    generate(n->left,nesting+1);printf(" movq %%rax,%u(%%rsp)\n",count*8);
+    for(i=0;i<count;i++) {
+        generate(items[i],nesting+1);
+        unsigned slot=i<6?stack+i:i-6;
+        printf(" movq %%rax,%u(%%rsp)\n",slot*8);
+    }
+    for(i=0;i<count && i<6;i++)printf(" movq %u(%%rsp),%%%s\n",(stack+i)*8,regs[i]);
+    printf(" movq %u(%%rsp),%%r11\n xorl %%eax,%%eax\n call *%%r11\n addq $%u,%%rsp\n",count*8,slots*8);
+    depth-=slots;
+}
 static void generate(uint32_t root,unsigned nesting) {
     if(nesting>TREESZ)cerror("target expression too deep");
     const struct mip_node *n=node_at(root);unsigned op=n->op;unsigned initial=depth;
     switch(op) {
+    case CALL:case UNARY CALL:call(n,nesting+1);break;
     case ICON:
         if(n->name[0])address(root,nesting+1);else printf(" movq $%ld,%%rax\n",(long)n->value);
         normalize(n->type);break;
