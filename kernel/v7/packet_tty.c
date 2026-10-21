@@ -63,6 +63,11 @@ void packet_close(struct tty *t)
         if(proc_sleep_interruptible(b,29))break;
     detach(b);release(b);
 }
+void packet_abort(struct tty *t)
+{
+    struct binding *b=find(t);if(!b)return;
+    ++b->users;detach(b);release(b);
+}
 void packet_changed(struct tty *t)
 {struct binding *b=find(t);if(b)proc_wakeup(b);}
 void packet_receive(struct tty *t,uint8_t byte)

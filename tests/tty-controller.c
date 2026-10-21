@@ -8,6 +8,7 @@
 #include <nexix/errno.h>
 static uint8_t wire[32768],buffer[2048];static unsigned size,baud,format,sleeps;static uint64_t ticks;
 static bool blocked,dtr,idle=true;
+static void (*sleep_hook)(void);
 static struct address_space vm;
 uint64_t timer_ticks(void){return ticks;}
 void serial_putc(uint8_t b){assert(size<sizeof(wire));wire[size++]=b;}
@@ -20,7 +21,7 @@ bool serial_idle(void){return idle;}
 void serial_dtr(bool on){dtr=on;}
 unsigned proc_wakeup(void *p){assert(p);return 0;}
 int proc_sleep_interruptible(void *p,unsigned priority)
-{assert(p && priority==29);++sleeps;++ticks;tty_timer(ticks);return sleeps>1000?-NX_EINTR:0;}
+{assert(p && (priority==28 || priority==29));if(sleep_hook){void (*hook)(void)=sleep_hook;sleep_hook=NULL;hook();return 0;}++sleeps;++ticks;tty_timer(ticks);return sleeps>1000?-NX_EINTR:0;}
 void signal_group(v7_pid_t g,unsigned n){(void)g;(void)n;abort();}
 void mpx_tty_notify(void *p,unsigned n){(void)p;(void)n;}
 void mpx_tty_resume(struct tty *p){(void)p;}
@@ -31,6 +32,14 @@ static int ctl(struct tty *t,unsigned r,void *p){return tty_ioctl(t,&vm,r,(uintp
 static void feed(const char *p){while(*p)tty_receive((uint8_t)*p++);}
 static void expect(struct tty *t,const void *p,size_t n)
 {assert(tty_io(t,&vm,(uintptr_t)buffer,sizeof(buffer),false)==(int64_t)n && !memcmp(buffer,p,n));}
+static void try_open_during_close(void)
+{
+    struct proc p={.p_pgrp=42};struct user u={.u_procp=&p};struct tty *t=NULL;
+    /* A contending opener sleeps rather than entering the closing terminal. */
+    unsigned saved=sleeps;sleeps=1001;
+    assert(tty_open(NX_CONSOLE_DEV,&u,&t)==-NX_EINTR && !t && tty_open_count()==1);
+    sleeps=saved;idle=true;
+}
 int main(void)
 {
     struct proc process={.p_pgrp=17};struct user u={.u_procp=&process};struct tty *t,*other;
@@ -81,6 +90,15 @@ int main(void)
             s.flags=NX_CBREAK|NX_ODDP;assert(!ctl(t,NX_TIOCSETP,&s));
             tty_receive_status(0xe1,0);tty_receive_status(0x61,0);expect(t,"a",1);
             s.ispeed=s.ospeed=NX_B9600;assert(ctl(t,NX_TIOCSETN,&s)==-NX_EINVAL);}
+        if(profile==NX_TTY_DH || profile==NX_TTY_DZ){
+            for(unsigned action=0;action<3;++action){
+                struct nx_tty_state state;assert(!ctl(t,NX_TIOCGETA,&state));
+                state.action=action;state.settings.ispeed=state.settings.ospeed=0;
+                assert(!ctl(t,NX_TIOCSETA,&state) && !dtr);
+                state.settings.ispeed=state.settings.ospeed=NX_B9600;
+                assert(!ctl(t,NX_TIOCSETA,&state) && dtr);
+            }
+        }
         tty_close(t);
     }
     struct tty_parameters parameters;unsigned profile,line;
@@ -89,6 +107,10 @@ int main(void)
     assert(tty_controller_device(NX_TTY_CONTROLLER_DEV(NX_TTY_DC,4),&profile,&line)==-NX_ENXIO);
     assert(tty_controller_device(NX_TTY_CONTROLLER_DEV(NX_TTY_DH,15),&profile,&line)==-NX_ENODEV);
     assert(tty_delay(NX_TTY_KL,10)==24 && tty_delay(NX_TTY_DH,6)==20);
+    assert(!tty_open(NX_CONSOLE_DEV,&u,&t));
+    idle=false;sleep_hook=try_open_during_close;tty_close(t);
+    assert(!tty_open_count() && !sleep_hook);
+    assert(!tty_open(NX_CONSOLE_DEV,&u,&t));feed("new\n");expect(t,"new\n",4);tty_close(t);
     puts("PASS: controller plans/parity, source escapes, TANDEM, delayed/blocked output, timer drain/flush, exclusive opens, hangup and profile ownership");
     return 0;
 }

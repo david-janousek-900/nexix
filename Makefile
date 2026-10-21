@@ -1084,8 +1084,11 @@ test-mpx-data: test-rootfs test-inventory test-libc-interfaces
 build/mpx-unit-test: kernel/v7/tty_controller.c kernel/include/tty_controller.h tests/packet-inactive.c tests/mpx.c kernel/v7/tty.c kernel/v7/mpx_tty.inc kernel/v7/files.c kernel/v7/mpx.inc kernel/v7/mpx_io.inc include/nexix/mpx.h | build/.dir
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -ffunction-sections -fdata-sections -Wl,--gc-sections -Ikernel/include -Iinclude tests/mpx.c tests/packet-inactive.c kernel/v7/tty.c kernel/v7/tty_controller.c -o $@
 .PHONY: test-mpx-unit
-test-mpx-unit: build/mpx-unit-test
+build/signal-group-test: tests/signal-group.c kernel/v7/signals.c kernel/include/signals.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -ffunction-sections -fdata-sections -Wl,--gc-sections -Ikernel/include -Iinclude $(filter %.c,$^) -o $@
+test-mpx-unit: build/mpx-unit-test build/signal-group-test
 	./build/mpx-unit-test
+	./build/signal-group-test
 test-unit: test-mpx-unit
 test-mpx-data: test-mpx-unit
 

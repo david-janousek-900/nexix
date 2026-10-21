@@ -48,11 +48,13 @@ static struct file *mx_tty_file(struct user *u,int fd)
 {
     if(fd<0 || fd>=V7_NOFILE)return NULL;
     struct file *f=u->u_ofile[fd];
-    return f && f->f_private && !modem_file(f) && !(f->f_flag&(V7_FMP|V7_FPIPE|FILE_STORAGE|FILE_TAPE))?f:NULL;
+    return f && f->f_private && !(f->f_flag&(V7_FMP|V7_FPIPE|FILE_STORAGE|FILE_TAPE)) &&
+        tty_handle_valid(f->f_private)?f:NULL;
 }
 static int mx_join_tty(struct user *u,struct mx_group *g,int fd)
 {
     struct file *f=mx_tty_file(u,fd);if(!f)return -NX_ENXIO;
+    if((f->f_flag&(V7_FREAD|V7_FWRITE))!=(V7_FREAD|V7_FWRITE))return -NX_EBADF;
     int index=mx_slot(g);if(index<0)return index;
     struct mx_channel *c=NULL;
     for(unsigned i=0;i<NX_MX_PORTS;++i)if(!mx_ports[i].active){c=&mx_ports[i];break;}
@@ -76,6 +78,7 @@ static int mx_connect(struct user *u,const struct nx_mx_args *a,bool disconnect)
         if((side<=0 && c->input_tty!=t) || (side>=0 && c->output_tty!=t))return -NX_ENXIO;
         mx_bridge_clear(c,side);return 0;
     }
+    if((side<=0 && !(f->f_flag&V7_FREAD)) || (side>=0 && !(f->f_flag&V7_FWRITE)))return -NX_EBADF;
     if(side<=0){int error=tty_mpx_bind(t,c);if(error)return error;}
     struct file *old_input=NULL,*old_output=NULL;
     if(side<=0){
