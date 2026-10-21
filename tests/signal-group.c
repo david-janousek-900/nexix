@@ -29,5 +29,14 @@ int main(void)
     processes[3]=(struct proc){.p_stat=V7_SSTOP,.p_flag=V7_STRC,.p_pid=3,.p_pgrp=3,.p_user=&users[3]};
     signal_post(&processes[3],NX_SIGTERM);assert(processes[3].p_stat==V7_SSTOP);
     signal_post(&processes[3],NX_SIGKILL);assert(processes[3].p_stat==V7_SRUN && (processes[3].p_sig&(1U<<(NX_SIGKILL-1))));
+    /* Ignored dispositions and sleep state cannot suppress SIGKILL. */
+    users[3].u_signal[NX_SIGKILL]=1;
+    processes[3].p_sig=0;processes[3].p_stat=V7_SSTOP;
+    signal_post(&processes[3],NX_SIGKILL);
+    assert(processes[3].p_stat==V7_SRUN && signal_pending(&processes[3]));
+    processes[3].p_stat=V7_SSLEEP;processes[3].p_interruptible=true;
+    processes[3].p_wchan=&users[3];processes[3].p_timed_sleep=true;
+    signal_post(&processes[3],NX_SIGKILL);
+    assert(processes[3].p_stat==V7_SRUN && !processes[3].p_wchan && !processes[3].p_timed_sleep);
     puts("PASS: user group signals enforce UID permissions, root access, mixed groups, group 1 isolation and SIGKILL trace-stop release");
 }
