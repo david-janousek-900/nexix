@@ -2276,3 +2276,5 @@ test-man: build/nexix-multi.iso build/formatter-protocol.elf stage
 test: test-man
 .PHONY: test-manuals
 test-manuals: test-man-pages test-formatter-table-helpers test-formatter-core test-formatter-macros test-nroff test-troff test-eqn test-neqn test-public-data test-tc test-pager test-man
+
+include tools/mip.mk
