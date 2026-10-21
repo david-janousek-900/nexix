@@ -1,0 +1,35 @@
+/* Native LP64 front-end sizes in bits; shared ABI version 1. */
+#define CONSZ int64_t
+#define CONFMT "%ld"
+#define OFFSZ int64_t
+#define SZCHAR 8
+#define SZSHORT 16
+#define SZINT 32
+#define SZLONG 64
+#define SZFLOAT 32
+#define SZDOUBLE 64
+#define SZPOINT 64
+#define ALCHAR 8
+#define ALSHORT 16
+#define ALINT 32
+#define ALLONG 64
+#define ALFLOAT 32
+#define ALDOUBLE 64
+#define ALPOINT 64
+#define ALSTRUCT 8
+#define ALSTACK 128
+#define ARGINIT 128
+#define AUTOINIT 0
+#define STKREG 6
+#define ARGREG 6
+#define MAXRVAR (-1)
+#define MINRVAR 0
+#define NOPREF 020000
+#define BACKAUTO
+#define BACKTEMP
+#define RTOLBYTES
+#define LABFMT ".L%d"
+#define CCTRANS(x) (x)
+#define ENUMSIZE(high,low) INT
+#define makecc(val,i) (lastcon=(int64_t)(((uint64_t)lastcon<<8)|(unsigned char)(val)))
+#define CHARCAST(x) (signed char)(x)

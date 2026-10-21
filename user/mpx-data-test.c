@@ -203,6 +203,34 @@ static int opens(int listener,int reject,int interrupt)
     if(g>=0)CHECK(mx(NX_MX_CHAN,0,g)==0xfff0 && close(g)==0);
     CHECK(unlink("/tmp/mx-data")==0 && unlink("/tmp/mx-alias")==0);return 0;
 }
+static int one_way_open(int mode)
+{
+    int g=named("/tmp/mx-mode");CHECK(g>=0 && chmod("/tmp/mx-mode",0666)==0);
+    int release[2];CHECK(pipe(release)==0);
+    pid_t pid=fork();CHECK(pid>=0);
+    if(!pid){
+        CHECK(close(g)==0 && close(release[1])==0 && setuid(123)==0);
+        int fd=open("/tmp/mx-mode",mode);CHECK(fd>=0 && fcntl(fd,F_GETFL)==mode);char b[2];
+        if(mode==O_RDONLY){
+            CHECK(write(fd,"x",1)==-1 && errno==EBADF);
+            CHECK(read(fd,b,2)==2 && !memcmp(b,"ok",2));
+        }else{
+            CHECK(read(fd,b,2)==-1 && errno==EBADF);
+            CHECK(write(fd,"hi",2)==2);
+        }
+        CHECK(read(release[0],b,1)==1 && close(release[0])==0 && close(fd)==0);_exit(0);
+    }
+    CHECK(close(release[0])==0);
+    uint8_t b[128];CHECK(sleeping(pid) && read(g,b,sizeof(b))==10);
+    struct nx_mx_read h;memcpy(&h,b,sizeof(h));
+    CHECK(mx(NX_MX_ATTACH,h.index,g)==h.index);
+    if(mode==O_RDONLY)CHECK(send(g,h.index,"ok",2)==16);
+    else CHECK(read(g,b,sizeof(b))==8 && !memcmp(b+6,"hi",2));
+    CHECK(write(release[1],"r",1)==1 && close(release[1])==0);
+    CHECK(finished(pid) && event(g,NX_M_CLOSE,h.index));
+    CHECK(mx(NX_MX_DETACH,h.index,g)==0 && close(g)==0 && unlink("/tmp/mx-mode")==0);
+    return 0;
+}
 static int end_of_file(void)
 {
     int g,id,e;CHECK(pair(&g,&id,&e)==0 && eot(g,id)==16);
@@ -250,6 +278,8 @@ int mpx_data_test(void)
     error=opens(0,1,0);if(error)return error;
     error=opens(0,2,0);if(error)return error;
     error=opens(0,0,1);if(error)return error;
+    error=one_way_open(O_RDONLY);if(error)return error;
+    error=one_way_open(O_WRONLY);if(error)return error;
     error=nested();if(error)return error;
     CHECK(nx_kinfo(1,NX_KINFO_FILE,0,0)==files && nx_kinfo(1,NX_KINFO_INODE,0,0)==inodes);
     const char marker[]="NEXIX_MPX_DATA_OK\n";CHECK(write(1,marker,sizeof(marker)-1)==sizeof(marker)-1);return 0;

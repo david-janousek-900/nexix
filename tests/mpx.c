@@ -10,6 +10,20 @@ static unsigned wakes,sleeps;
 static int (*on_sleep)(void *);
 static uintptr_t readonly_start,readonly_end;
 static uint8_t output[256];static unsigned output_count;
+static bool uart_idle=true;
+bool serial_idle(void){return uart_idle;}
+/* Device/filesystem teardown is mocked; the production file slot and TTY
+ * close paths below must remain intact across an injected scheduler turn. */
+struct v7fs *namespace_volume(v7_dev_t dev){(void)dev;return NULL;}
+int v7fs_inode_get(struct v7fs *fs,v7_ino_t ino,struct v7fs_inode *ip)
+{(void)fs;(void)ino;(void)ip;abort();}
+int v7fs_release_inode(struct v7fs *fs,v7_ino_t ino){(void)fs;(void)ino;abort();}
+void storage_close(struct storage_handle *h){(void)h;abort();}
+int tape_close(void *p){(void)p;abort();}
+int output_close(void *p){(void)p;abort();}
+void modem_close(void *p){(void)p;abort();}
+bool output_matches(v7_dev_t dev){return dev>=NX_CAT_DEV && dev<=NX_VS_DEV;}
+bool modem_matches(uint16_t dev){return (dev>>8)>=27 && (dev>>8)<=29;}
 void serial_putc(uint8_t c){assert(output_count<sizeof(output));output[output_count++]=c;}
 void serial_configure(unsigned rate,unsigned mode){(void)rate;(void)mode;}
 void serial_receive_enable(void){}
@@ -18,7 +32,7 @@ struct proc *proc_current(void){return &process;}
 _Noreturn void panic(const char *message){fprintf(stderr,"panic: %s\n",message);abort();}
 unsigned proc_wakeup(void *channel){assert(channel);++wakes;return 1;}
 int proc_sleep_interruptible(void *channel,unsigned priority)
-{assert(priority==40);++sleeps;return on_sleep?on_sleep(channel):-NX_EINTR;}
+{assert(priority==40 || priority==29);++sleeps;return on_sleep?on_sleep(channel):-NX_EINTR;}
 bool user_access_ok(const struct address_space *vm,uintptr_t address,size_t length,bool write)
 {
     (void)vm;if(!length)return true;
@@ -45,6 +59,21 @@ static int drain_waiter(void *channel)
     struct mx_channel *c=channel;assert(c->y.size==200);
     mx_drop(c,&c->y,181);return 0;
 }
+static struct file *closing_file,*replacement;
+static int allocate_during_close(void *channel)
+{
+    (void)channel;assert(!closing_file->f_count);
+    replacement=file_alloc();assert(replacement && replacement!=closing_file);
+    replacement->f_open_flags=NX_O_APPEND;uart_idle=true;return 0;
+}
+static struct mx_channel *bridged;
+static int disconnect_during_drain(void *channel)
+{
+    (void)channel;struct tty *t=bridged->output_tty;mx_bridge_clear(bridged,1);
+    assert(tty_handle_valid(t));uart_idle=true;return 0;
+}
+static int accept_open(void *channel)
+{((struct mx_channel *)channel)->pending=false;return 0;}
 int main(void)
 {
     reset_mx();struct mx_group *g=&mx_groups[0];struct mx_channel *c=mx_allocate(g);assert(c);
@@ -101,6 +130,34 @@ int main(void)
     assert(mx_allocate(g)==c && c->y.size==0 && c->event_count==0);
     reset_mx();tty_init();struct user user={.u_procp=&process};struct tty *t;
     process.p_pid=17;assert(tty_open(NX_CONSOLE_DEV,&user,&t)==0);
+    /* Non-TTY private handles, including output devices, cannot be bridges. */
+    struct inode output_inode={.i_mode=V7_IFCHR};output_inode.i_un.i_rdev=NX_CAT_DEV;
+    struct file fake={.f_inode=&output_inode,.f_private=&output_inode,.f_flag=V7_FREAD|V7_FWRITE};
+    user.u_ofile[0]=&fake;assert(!mx_tty_file(&user,0));
+    struct file *terminal_file=file_alloc();assert(terminal_file);terminal_file->f_private=t;terminal_file->f_flag=V7_FREAD;
+    user.u_ofile[0]=terminal_file;assert(mx_tty_file(&user,0)==terminal_file);
+    g=&mx_groups[0];c=mx_allocate(g);assert(c);
+    struct file connected={.f_private=c,.f_flag=V7_FMPY};user.u_ofile[1]=&connected;
+    struct nx_mx_args connection={.arg={0,1,1}};
+    assert(mx_connect(&user,&connection,false)==-NX_EBADF && !c->output_tty);
+    assert(mx_join_tty(&user,g,0)==-NX_EBADF);
+    terminal_file->f_flag=V7_FWRITE;connection.arg[2]=-1;
+    assert(mx_connect(&user,&connection,false)==-NX_EBADF && !c->input_tty);
+    assert(mx_join_tty(&user,g,0)==-NX_EBADF);
+    /* Successful one-way connections preserve access restrictions. */
+    connection.arg[2]=1;assert(!mx_connect(&user,&connection,false) && c->output_tty==t);
+    assert(!mx_connect(&user,&connection,true) && !c->output_tty);
+    terminal_file->f_flag=V7_FREAD;connection.arg[2]=-1;
+    assert(!mx_connect(&user,&connection,false) && c->input_tty==t);
+    assert(!mx_connect(&user,&connection,true) && !c->input_tty);
+    memset(user.u_ofile,0,sizeof(user.u_ofile));reset_mx();
+    /* Endpoint setup contributes direction flags, never grants I/O access. */
+    struct file canonical={.f_count=1,.f_inode=&output_inode};g=&mx_groups[0];g->file=&canonical;
+    struct file client={.f_count=1,.f_inode=&output_inode};on_sleep=accept_open;
+    assert(!mpx_open(&client,"client",&user) && !(client.f_flag&(V7_FREAD|V7_FWRITE)));
+    canonical.f_count=0;struct file late={.f_count=1,.f_inode=&output_inode};
+    assert(mpx_open(&late,"closing",&user)==-NX_ENXIO && !late.f_private);
+    reset_mx();
     g=&mx_groups[0];c=mx_allocate(g);assert(c);
     c->input_tty=c->output_tty=t;assert(tty_mpx_bind(t,c)==0);
     struct nx_sgttyb settings;assert(tty_control(t,NX_TIOCGETP,&settings)==0);
@@ -130,7 +187,12 @@ int main(void)
     struct file modem_request={.f_private=c,.f_flag=V7_FMPY};
     assert(mx_endpoint_ioctl(&modem_request,&process.p_vm,NX_MDM_GET,(uintptr_t)buffer)==-NX_ENOTTY);
     request.command=NX_TIOCGETP;
-    tty_mpx_unbind(t,c);c->input_tty=c->output_tty=NULL;tty_close(t);
+    tty_mpx_unbind(t,c);c->input_tty=c->output_tty=NULL;
+    /* Closing TTY sleeps while its original file slot remains reserved. */
+    closing_file=file_alloc();assert(closing_file);closing_file->f_private=t;closing_file->f_flag=V7_FREAD;
+    uart_idle=false;on_sleep=allocate_during_close;
+    assert(!file_put(closing_file) && replacement->f_count==1 && replacement->f_open_flags==NX_O_APPEND);
+    assert(file_alloc()==closing_file);on_sleep=NULL;
     /* A reply remains owned by its sleeping caller until it consumes data. */
     c->ioctl_busy=c->ioctl_pending=true;c->ioctl_command=NX_TIOCGETP;
     assert(mx_ioctl_control(c,&request)==0 && !c->ioctl_pending && c->ioctl_busy);
@@ -138,5 +200,20 @@ int main(void)
     assert(mx_ioctl_control(c,&request)==-NX_EINTR && !c->ioctl_pending && !c->ioctl_busy);
     c->closing=true;struct file endpoint={.f_private=c,.f_flag=V7_FMPY};
     assert(mx_endpoint_ioctl(&endpoint,&process.p_vm,NX_TIOCGETP,(uintptr_t)&settings)==-NX_ENXIO);
-    puts("PASS: mpx record validation, queue bounds/wrap, low-water wakeups, control retention, nonblocking retry, interrupted writes and pinned detach lifetime, TTY data/EOF/signals/flow and ioctl replies");return 0;
+    /* A sleeping endpoint ioctl keeps a disconnected bridge's terminal open. */
+    reset_mx();assert(tty_open(NX_CONSOLE_DEV,&user,&t)==0);
+    terminal_file=file_alloc();assert(terminal_file);terminal_file->f_private=t;terminal_file->f_flag=V7_FREAD|V7_FWRITE;
+    g=&mx_groups[0];c=mx_allocate(g);assert(c);bridged=c;
+    struct file connected_rw={.f_private=c,.f_flag=V7_FMPY};
+    user.u_ofile[0]=terminal_file;user.u_ofile[1]=&connected_rw;connection=(struct nx_mx_args){.arg={0,1,1}};
+    assert(!mx_connect(&user,&connection,false) && c->output_tty==t);
+    assert(!file_put(terminal_file) && terminal_file->f_count==1);memset(user.u_ofile,0,sizeof(user.u_ofile));
+    struct file reader={.f_private=c,.f_flag=V7_FMPY|V7_FREAD};
+    assert(mx_endpoint_ioctl(&reader,&process.p_vm,NX_TIOCSETP,(uintptr_t)&settings)==-NX_EBADF);
+    struct file writer={.f_private=c,.f_flag=V7_FMPY|V7_FWRITE};
+    unsigned opens=tty_open_count();uart_idle=false;on_sleep=disconnect_during_drain;
+    assert(tty_mpx_write(t,(const uint8_t *)"x",1)==1);
+    assert(!mx_endpoint_ioctl(&writer,&process.p_vm,NX_TIOCSETP,(uintptr_t)&settings));
+    assert(!c->output_tty && tty_open_count()==opens-1);on_sleep=NULL;
+    puts("PASS: mpx record validation, queue bounds/wrap, low-water wakeups, control retention, nonblocking retry, interrupted writes and pinned detach lifetime, TTY data/EOF/signals/flow, ioctl replies and pinned bridge ioctls");return 0;
 }

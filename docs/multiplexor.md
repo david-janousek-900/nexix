@@ -142,8 +142,9 @@ DETACH to reclaim the channel. Group destruction also releases all queued state.
 
 Opening an active named group allocates a Y channel, sends M_WATCH with the
 opener's effective UID, and waits for ATTACH. The open file is not published to
-the caller until acceptance. As in V7, accepted channel descriptors permit
-both reads and writes after the pathname access check. DETACH or parent closure
+the caller until acceptance. Accepted channel descriptors retain the requested
+O_RDONLY/O_WRONLY/O_RDWR access mode; this native permission check replaces
+V7's unconditional full-duplex grant after the pathname check. DETACH or parent closure
 rejects the open with ENXIO. A signal cancels an unaccepted open with EINTR and
 reclaims its unpublished file/channel/inode references. New opens are matched
 by full device/inode identity, so reusing a minor number cannot revive an old
@@ -169,6 +170,10 @@ The actual two-argument mpxcall source interface is used; the snapshot's
 mpxcall(2) page describes a different older calling convention.
 
 `join(ttyfd, group)` creates a TTY port and retains the canonical TTY open file.
+The descriptor must be a live TTY opened for both reading and writing; other
+device handles are rejected. Single-direction CONNECT requires only the access
+permission for that direction. A forbidden direction returns EBADF before any
+bridge is installed.
 The thirty-entry port table is separate from the twenty ordinary channels.
 COM1 and its controlling-terminal alias are currently the available TTYs;
 independent hardware/terminal ports remain tasks 89–93. Port extraction duplicates
@@ -214,8 +219,11 @@ It returns the selected group. This differs from the manual's claim that it
 changes a remote endpoint process. Negative process groups are rejected.
 `ckill` validates the signal and returns its number, delivering through the
 recorded channel process group; a TTY port has no process target and is a no-op.
-As in V7, possession of the channel/group descriptor supplies authority for this
-channel-specific group control. Named opens capture the opener's process group.
+In addition to possession of the channel/group descriptor, user-requested
+signals apply kill's effective-UID checks to each target. A foreign-UID-only
+group returns EPERM and a missing group returns ESRCH; root may signal either
+UID. This native security restriction also applies to group SIGPIPE generated
+by endpoint writes. Named opens capture the opener's process group.
 Broken endpoint writes use that group for SIGPIPE, falling back to the current
 process for a channel with no assigned group. `debug` stores the reference's
 thirty diagnostic settings (ALL sets all), without a data-transport effect;
@@ -236,7 +244,10 @@ owns further historical modes). Malformed M_IOCTL lengths return EINVAL.
 A group M_IOCTL directed at a TTY applies a SET/FLUSH immediately; a GET queues
 an M_IOCTL reply for the group. Endpoint ioctls on connected channels apply to
 the output TTY, falling back to the input TTY, and notify the group with the resulting payload. Notification capacity
-is reserved before changing terminal state. An unconnected endpoint instead
+is reserved before changing terminal state. SET, FLUSH and other non-GET endpoint
+ioctls require a writable endpoint (EBADF otherwise). The bridged terminal's file
+stays referenced while a terminal ioctl sleeps, so a concurrent disconnect or group
+close cannot close the line underneath it. An unconnected endpoint instead
 queues the request and waits interruptibly for the owner to write a matching
 M_IOCTL response. A GET then copies the returned payload to its caller; SET and
 FLUSH return after acknowledgement. Calls are serialized per channel. Copy and

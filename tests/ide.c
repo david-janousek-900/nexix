@@ -56,6 +56,7 @@ int main(void)
     struct block_device device;
     reset();status=0;assert(ide_init(&device)==-NX_ENODEV && !device.blocks);
     reset();stuck=true;assert(ide_init(&device)==-NX_EIO && polls>=1000000 && polls<1000020);
+    reset();status=0x10;assert(ide_init(&device)==-NX_EIO && !commands); /* No DRDY: never IDENTIFY. */
     reset();identify[49]=0;assert(ide_init(&device)==-NX_EIO);
     reset();identify[106]=0x5000;identify[117]=2048;assert(ide_init(&device)==-NX_EIO);
     reset();identify[83]=0x4000;assert(ide_init(&device)==-NX_EIO);
@@ -72,5 +73,5 @@ int main(void)
     fail_read=false;assert(!block_read(&device,0,1,output));
     reset();assert(!ide_init(&device));fail_flush=true;
     assert(block_write(&device,0,1,input)==-NX_EIO && flushes==1);
-    puts("PASS: IDE absent/timeout/unsupported device, unaligned multi-sector I/O, bounds, read and flush errors");
+    puts("PASS: IDE absent/timeout/not-ready/unsupported device, unaligned multi-sector I/O, bounds, read and flush errors");
 }

@@ -1140,8 +1140,11 @@ test-mpx-data: test-rootfs test-inventory test-libc-interfaces
 build/mpx-unit-test: kernel/v7/tty_controller.c kernel/include/tty_controller.h tests/packet-inactive.c tests/mpx.c kernel/v7/tty.c kernel/v7/mpx_tty.inc kernel/v7/files.c kernel/v7/mpx.inc kernel/v7/mpx_io.inc include/nexix/mpx.h | build/.dir
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -ffunction-sections -fdata-sections -Wl,--gc-sections -Ikernel/include -Iinclude tests/mpx.c tests/packet-inactive.c kernel/v7/tty.c kernel/v7/tty_controller.c -o $@
 .PHONY: test-mpx-unit
-test-mpx-unit: build/mpx-unit-test
+build/signal-group-test: tests/signal-group.c kernel/v7/signals.c kernel/include/signals.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -ffunction-sections -fdata-sections -Wl,--gc-sections -Ikernel/include -Iinclude $(filter %.c,$^) -o $@
+test-mpx-unit: build/mpx-unit-test build/signal-group-test
 	./build/mpx-unit-test
+	./build/signal-group-test
 test-unit: test-mpx-unit
 test-mpx-data: test-mpx-unit
 
@@ -1335,7 +1338,7 @@ build/modem_program.o: user/modem-test.c | build/.dir
 
 # Task 83: manifest-driven installation staging and root-image equivalence.
 .PHONY: test-install-unit test-install
-test-install-unit: v7-userland
+test-install-unit: v7-userland $(INSTALL_INPUTS) build/root.img
 	$(PYTHON) tests/install_manifest.py
 test-install: test-install-unit stage test-rootfs test-inventory test-libc-interfaces
 test-unit: test-install-unit
@@ -2332,3 +2335,9 @@ test-man: build/nexix-multi.iso build/formatter-protocol.elf stage
 test: test-man
 .PHONY: test-manuals
 test-manuals: test-man-pages test-formatter-table-helpers test-formatter-core test-formatter-macros test-nroff test-troff test-eqn test-neqn test-public-data test-tc test-pager test-man
+
+include tools/mip.mk
+
+include tools/linker.mk
+
+include tools/pcc.mk

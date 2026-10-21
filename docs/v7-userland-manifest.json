@@ -1508,23 +1508,29 @@
           "name": "as",
           "install": "/bin/as",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/as/makefile"
+            "user/v7/cmd/as.c",
+            "tools/assembler.mk",
+            "tests/as_driver.py",
+            "tools/as_driver_smoke.py"
           ]
         },
         {
           "name": "as2",
           "install": "/lib/as2",
           "role": "helper",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/as/makefile"
+            "user/v7/cmd/as.c",
+            "tools/assembler.mk",
+            "tests/as_driver.py",
+            "tools/as_driver_smoke.py"
           ]
         }
       ],
       "priority": 6,
-      "status": "partial",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -1561,12 +1567,8 @@
         }
       ],
       "reference_includes": [],
-      "blockers": [
-        "Installed assembler driver and as2 helper integration remain task 184."
-      ],
-      "unresolved": [
-        "Complete the installed as/as2 pipeline and its CLI acceptance."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Assemble native instructions/labels/relocations, link them and run the result.",
         "Verify each installed output and its documented behavior; test helpers through their consuming pipeline."
@@ -1602,18 +1604,17 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        184
-      ],
+      "unresolved_tasks": [],
       "native_sources": [
         "user/as/parse.c",
         "user/as/as.h",
         "user/as/encode.c",
         "user/as/encode.h",
-        "user/as/object.c"
+        "user/as/object.c",
+        "user/v7/cmd/as.c"
       ],
       "scope_notes": [
-        "Tasks 181\u2013183 replace supplied PDP-11 assembly with native C parsing, x86_64 encoding and ELF64 relocatable output. Private native production and consumption pass; installed as/as2 integration remains task 184."
+        "Tasks 181\u2013184 replace PDP-11 assembly with native C parsing, x86_64 encoding, ELF64 objects and installed as/as2 pipeline."
       ]
     },
     {
@@ -7568,14 +7569,18 @@
           "name": "ld",
           "install": "/bin/ld",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/ld.c",
+            "user/ld/resolve.c",
+            "user/ld/output.c",
+            "user/ld/relocatable.c",
+            "tools/linker.mk"
           ]
         }
       ],
       "priority": 6,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -7589,23 +7594,41 @@
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/ld.c",
+            "user/ld/resolve.c",
+            "user/ld/output.c",
+            "user/ld/relocatable.c",
+            "tools/ld_driver_smoke.py"
+          ],
+          "note": "Native checked ELF readers and public libc allocation, I/O, string and diagnostic interfaces; installed source objects/crt0/libc are linked and executed in guest acceptance."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/ld.c",
+            "user/ld/resolve.c",
+            "user/ld/output.c",
+            "user/ld/relocatable.c",
+            "tools/ld_driver_smoke.py"
+          ],
+          "note": "Native checked ELF readers and public libc allocation, I/O, string and diagnostic interfaces; installed source objects/crt0/libc are linked and executed in guest acceptance."
         },
         {
           "target": "elf-toolchain",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/ld.c",
+            "user/ld/resolve.c",
+            "user/ld/output.c",
+            "user/ld/relocatable.c",
+            "tools/ld_driver_smoke.py"
+          ],
+          "note": "Native checked ELF readers and public libc allocation, I/O, string and diagnostic interfaces; installed source objects/crt0/libc are linked and executed in guest acceptance."
         }
       ],
       "reference_includes": [
@@ -7628,12 +7651,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Link native objects with relocations into a runnable ELF and reject unresolved symbols.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -7648,10 +7667,19 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        185,
-        186,
-        187
+      "unresolved_tasks": [],
+      "native_sources": [
+        "user/ld/resolve.c",
+        "user/ld/ld.h",
+        "user/ld/output.c",
+        "user/v7/cmd/ld.c",
+        "user/ld/relocatable.c"
+      ],
+      "port_notes": "docs/linker.md",
+      "scope_notes": [
+        "Task 185 resolution pass preserves reference selection/search algorithms with checked ELF64 and native symbol binding adaptations; private native consumption passes at 16/128 MiB.",
+        "Task 186 static executable layout and required AMD64 relocations pass host sanitizer/GNU oracle and native C/crt0/libc link-and-run tests at 16/128 MiB.",
+        "Task 187 installs the native command with static executable and relocatable output, checked publication, native option adaptations, GNU interoperability, root/user C/libc execution and linker self-link at 16/128 MiB; C compiler rebuild remains task 207."
       ]
     },
     {
@@ -9237,7 +9265,7 @@
     {
       "id": "cmd.mip",
       "kind": "prototype",
-      "summary": "mip source group",
+      "summary": "Shared native portable compiler infrastructure and compiler prototypes",
       "sources": [
         "reference/v7/usr/src/cmd/mip/INDEX",
         "reference/v7/usr/src/cmd/mip/allo.c",
@@ -9272,9 +9300,14 @@
           "name": "comp",
           "install": null,
           "role": "helper",
-          "status": "prototype",
+          "status": "partial",
           "evidence": [
-            "reference/v7/usr/src/cmd/mip/makefile"
+            "reference/v7/usr/src/cmd/mip/makefile",
+            "user/pcc/code.c",
+            "user/pcc/local2.c",
+            "user/pcc/output.c",
+            "tools/pcc.mk",
+            "tools/pcc_integer_smoke.py"
           ]
         },
         {
@@ -9315,7 +9348,7 @@
         }
       ],
       "priority": 6,
-      "status": "prototype",
+      "status": "partial",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -9437,15 +9470,15 @@
         }
       ],
       "blockers": [
-        "Shared infrastructure/prototype targets, not a separate installed user command.",
-        "Machine-dependent backend required."
+        "Complete the remaining native machine ABI and installed compiler/alternate-target integration under tasks 195/196."
       ],
       "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
+        "Tasks 195/196: aggregate argument/result classification, long-double machine operations, variadic-definition runtime lowering, and installed compiler/alternate-target/build-helper integration remain. Task 193 completes retained frontend native types, typed/K&R signatures, literal precision, builtin IR and the explicitly tested native-header source profile."
       ],
       "acceptance": [
-        "Verify shared compiler/lint consumers and explicitly separate prototype backend targets.",
-        "Verify each installed output and its documented behavior; test helpers through their consuming pipeline."
+        "make test-mip test-mip-infra test-mip-pass tests shared native contracts, serialization, streaming failures and independent producer/analysis consumers under sanitizers and at 16/128 MiB.",
+        "make test-pcc-front test-pcc-integer verifies real retained PCC source consumption, identical direct/split-pass assembly/diagnostics and native as/ld execution as root and ordinary user at 16/128 MiB.",
+        "Keep incomplete compiler prototypes and installed outputs under tasks 195/196; full lint and Fortran ports retain their separate component tasks."
       ],
       "source_files": [
         "reference/v7/usr/src/cmd/mip/allo.c",
@@ -9472,7 +9505,27 @@
       ],
       "source_availability": "supplied",
       "unresolved_tasks": [
-        192
+        195,
+        196
+      ],
+      "native_sources": [
+        "user/mip/manifest.h",
+        "user/mip/mip.h",
+        "user/mip/common.c",
+        "user/mip/trees.c",
+        "user/mip/match.c",
+        "user/mip/allo.c",
+        "user/mip/templates.h",
+        "user/mip/diagnostics.c",
+        "user/mip/diagnostics.h",
+        "user/mip/pass.h",
+        "user/mip/reader.c",
+        "user/pcc/output.c"
+      ],
+      "port_notes": "docs/mip.md",
+      "scope_notes": [
+        "Task 192 shared types/operators/IR, traversal/copy, diagnostics, templates/resources and tree/stream interfaces are consumed by actual retained-PCC compilation and a parser-independent analysis client. Independent alternate-producer fixtures validate the same interface without claiming a Fortran compiler or full lint pass.",
+        "Native one/two-pass contexts replace convert/fconvert source-edit instructions. Task 193 completes frontend type/header contracts; remaining compiler prototype output/helper reconciliation is explicitly owned by tasks 195/196."
       ]
     },
     {
@@ -10848,7 +10901,7 @@
         }
       ],
       "priority": 6,
-      "status": "not_ported",
+      "status": "partial",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -10929,14 +10982,15 @@
         }
       ],
       "blockers": [
-        "Complete native ABI/API and data-asset audit before porting."
+        "Complete the remaining native machine ABI and installed compiler/alternate-target integration under tasks 195/196."
       ],
       "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
+        "Tasks 195/196: aggregate argument/result classification, long-double machine operations, variadic-definition runtime lowering, and installed compiler/alternate-target/build-helper integration remain. Task 193 completes retained frontend native types, typed/K&R signatures, literal precision, builtin IR and the explicitly tested native-header source profile."
       ],
       "acceptance": [
         "Compile native C fixtures through shared mip and target backend, then assemble/link/run.",
-        "Verify each installed output and its documented behavior; test helpers through their consuming pipeline."
+        "Verify each installed output and its documented behavior; test helpers through their consuming pipeline.",
+        "make test-pcc-front validates all installed libc headers with user/pcc/native.h and --native-source, extended literal bits, prototype/builtin constraints and malformed-source paths at 16/128 MiB; test-pcc-integer executes typed-float/long-long/bool/math cases through native direct/split cpp/PCC/as/ld pipelines."
       ],
       "source_files": [
         "reference/v7/usr/src/cmd/pcc/code.c",
@@ -10953,10 +11007,37 @@
         }
       ],
       "unresolved_tasks": [
-        193,
-        194,
         195,
         196
+      ],
+      "native_sources": [
+        "user/pcc/backend.h",
+        "user/pcc/cgram.y",
+        "user/pcc/code.c",
+        "user/pcc/common.c",
+        "user/pcc/ir.c",
+        "user/pcc/local.c",
+        "user/pcc/local2.c",
+        "user/pcc/macdefs",
+        "user/pcc/manifest",
+        "user/pcc/mfile1",
+        "user/pcc/numbers.c",
+        "user/pcc/optim.c",
+        "user/pcc/pftn.c",
+        "user/pcc/prototypes.h",
+        "user/pcc/scan.c",
+        "user/pcc/trace.c",
+        "user/pcc/trees.c",
+        "user/pcc/xdefs.c",
+        "user/pcc/declarations.c",
+        "user/pcc/real.c",
+        "user/pcc/native.h",
+        "user/pcc/output.c"
+      ],
+      "port_notes": "docs/pcc.md",
+      "scope_notes": [
+        "Task 193 retained frontend closure: extended native types/layouts and binary80 literal precision, typed and legacy parameter semantics, checked variadic/math IR and all 49 libc headers with an explicit source adapter pass sanitizer/GCC and native 16/128 MiB tests as root and ordinary user. Full compiler/driver and machine ABI completion are not claimed.",
+        "Task 194 integer/pointer/control emission passes shared mip template/resource consumption, GCC ABI/execution oracles and complete native cpp/PCC/as/ld execution at 16/128 MiB as root and ordinary user."
       ]
     },
     {

@@ -105,7 +105,7 @@ static int64_t mx_output(struct mx_channel *c,uintptr_t address,size_t count,boo
     return done;
 }
 static void mx_pipe_signal(struct mx_channel *c)
-{if(c->process_group)signal_group(c->process_group,NX_SIGPIPE);else signal_post(proc_current(),NX_SIGPIPE);}
+{if(c->process_group)(void)signal_group_user(c->process_group,NX_SIGPIPE);else signal_post(proc_current(),NX_SIGPIPE);}
 static int64_t mx_endpoint_write(struct file *f,uintptr_t address,size_t count)
 {
     struct mx_channel *c=f->f_private;
@@ -276,10 +276,10 @@ static int mpx_open(struct file *f,const char *path,struct user *u)
 {
     struct mx_group *g=NULL;
     for(unsigned i=0;i<NX_MX_GROUPS;++i)
-        if(mx_groups[i].file && mx_groups[i].file->f_inode==f->f_inode){g=&mx_groups[i];break;}
+        if(mx_groups[i].file && mx_groups[i].file->f_count && mx_groups[i].file->f_inode==f->f_inode){g=&mx_groups[i];break;}
     if(!g)return -NX_ENXIO;
     struct mx_channel *c=mx_allocate(g);if(!c)return -NX_ENXIO;
-    c->pending=true;c->endpoint=f;f->f_private=c;f->f_flag=V7_FREAD|V7_FWRITE|V7_FMPY;
+    c->pending=true;c->endpoint=f;f->f_private=c;f->f_flag=V7_FMPY;
     (void)mx_event(c,g==mx_listener?NX_M_OPEN:NX_M_WATCH,u->u_uid,g==mx_listener?path:NULL);
     int error=0;
     while(c->pending && !c->closing){if(proc_sleep_interruptible(c,40)){error=-NX_EINTR;break;}}

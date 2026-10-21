@@ -8,7 +8,7 @@
 static uint8_t regs[8],wire[32768],input[32],received[32];
 static size_t used,head,count,got;
 static uint8_t rx_status[32],errors_seen[32],status_only;
-static bool ready;
+static bool ready,fifo=true;
 static unsigned modem_seen,modem_events;
 void tty_modem_status(unsigned s){modem_seen=s;++modem_events;}
 uint8_t inb(uint16_t port)
@@ -20,7 +20,7 @@ uint8_t inb(uint16_t port)
         status_only=0;return result;}
     if(r==6){unsigned s=regs[6];regs[6]&=0xf0;return s;}
     if(r==2 && (regs[1]&8) && (regs[6]&15))return 0;
-    if(r==2)return status_only?6:count?4:ready && (regs[1]&2)?2:1;
+    if(r==2)return (fifo?0xc0:0)|(status_only?6:count?4:ready && (regs[1]&2)?2:1);
     if(!r && !(regs[3]&128)){assert(count);uint8_t c=input[head++];--count;return c;}
     return regs[r];
 }
@@ -54,6 +54,7 @@ int main(void)
     assert(serial_enqueue((const uint8_t *)"x",1));serial_interrupt();
     assert(got==11 && errors_seen[7]==NX_RX_PARITY && errors_seen[8]==NX_RX_FRAME && errors_seen[9]==NX_RX_BREAK && errors_seen[10]==NX_RX_OVERRUN);
     status_only=16;serial_interrupt();assert(got==12 && !received[11] && errors_seen[11]==(NX_RX_BREAK|NX_RX_FRAME));
+    serial_format(134,0x19);assert(regs[0]==(857&255) && regs[3]==0x19); /* 134.5 baud. */
     serial_format(110,0x1e);assert(regs[3]==0x1e);
     serial_dtr(false);assert(!(regs[4]&1));serial_dtr(true);assert(regs[4]&1);
     ready=false;assert(serial_enqueue(bytes,8) && !serial_idle());serial_flush();assert(!(regs[1]&2));ready=true;assert(serial_idle());
@@ -62,5 +63,9 @@ int main(void)
     regs[6]=8;serial_interrupt();assert(!modem_seen);
     serial_modem_outputs(false,false);assert((regs[4]&3)==0);
     serial_modem_outputs(true,true);assert((regs[4]&3)==3);
-    puts("PASS: modem status interrupts, DTR/RTS, serial atomic TX capacity, ring wrap, RX/TX interrupts, IER clearing and ordered console/configuration drain");
+    /* An 8250/16450 without a FIFO takes one byte per THRE. */
+    fifo=false;serial_init();serial_receive_enable();size_t before=used;
+    assert(serial_enqueue(bytes,3) && used==before+1);serial_interrupt();
+    fifo=true;serial_init();serial_receive_enable();assert(serial_enqueue(bytes,3) && used==before+6);
+    puts("PASS: modem status interrupts, DTR/RTS, serial atomic TX capacity, FIFO-sized TX bursts, ring wrap, RX/TX interrupts, IER clearing and ordered console/configuration drain");
 }

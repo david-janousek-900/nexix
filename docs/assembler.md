@@ -91,3 +91,27 @@ fixtures preserve an existing output. Private 16/128 MiB guests produce the exac
 same object, exercise installed nm/size/ar/ranlib consumers and run an independently
 linked native program using its code. First-pass and encoder acceptance also run
 again. The installed as/as2 driver and helper boundary remain task 184.
+
+## Installed assembler pipeline (task 184)
+
+`/bin/as [-u] [-o object] [source ...]` executes the native `/lib/as2`
+worker. Both programs are native ELF64 executables. The worker shares parser
+state across source files, then encodes and lays out the complete translation
+unit before replacing the output. With no sources it reads standard input;
+`-- -` also selects standard input. The default output is `a.out`, containing
+an ELF64 relocatable object. A leading V7 `-`, `-u` and `--64` are accepted;
+undefined external symbols already have global binding under the native ABI.
+
+The historical two-pass interface is preserved through the installed helper,
+while its internal representation uses bounded C structures instead of PDP-11
+word overlays and temporary intermediate files. Unsupported options and invalid
+assembly fail without overwriting an existing object. Multiple files preserve
+section state and numeric local labels; diagnostics identify the input file and
+line. This assembler supports the documented native C instruction baseline;
+GNU macro processing, AVX, TLS and PDP-11 syntax remain outside that baseline.
+
+`make test-as` instruments the real public-driver/helper pipeline with address
+and undefined-behavior sanitizers, checks CLI and failure behavior, and tests
+installed programs as root and an ordinary user at 16/128 MiB. Produced objects
+match the host acceptance bytes; independent linking and execution verify the
+code and relocations. The guest also executes the independently linked result.

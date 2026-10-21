@@ -204,7 +204,9 @@ static int mpx_call(struct user *u,uint64_t command,uintptr_t address)
             e.channel->process_group=u->u_procp->p_pgrp;return u->u_procp->p_pgrp;
         }
         if(a.arg[2]<=0 || a.arg[2]>=NX_NSIG)return -NX_EINVAL;
-        if(!e.channel->port)signal_group(e.channel->process_group,a.arg[2]);
+        if(!e.channel->port && e.channel->process_group){
+            int error=signal_group_user(e.channel->process_group,a.arg[2]);if(error)return error;
+        }
         return a.arg[2];
     }
     if(command==NX_MX_DETACH){mx_detach(e,false);return 0;}

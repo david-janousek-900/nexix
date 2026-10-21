@@ -4,6 +4,7 @@
 struct ata {uint16_t io,control;unsigned slave;};
 static const struct ata ports[]={{0x1f0,0x3f6,0},{0x1f0,0x3f6,1},{0x170,0x376,0},{0x170,0x376,1}};
 #define BUSY 0x80
+#define DRDY 0x40
 #define DRQ 0x08
 #define FAULT 0x21
 #define POLLS 1000000U
@@ -22,6 +23,16 @@ static int ready(const struct ata *a,bool data, bool check_errors)
     }
     return -NX_EIO;
 }
+/* ATA requires DRDY before non-diagnostic commands; a drive without it is unusable. */
+static int drive_ready(const struct ata *a)
+{
+    for (unsigned i=0;i<POLLS;++i) {
+        uint8_t status=inb(a->control);
+        if (!status || status==0xff) return -NX_ENODEV;
+        if (!(status&BUSY) && (status&DRDY)) return 0;
+    }
+    return -NX_EIO;
+}
 static int transfer(struct block_device *device,uint32_t sector,void *buffer,bool write)
 {
     const struct ata *a=device->context;
@@ -29,7 +40,7 @@ static int transfer(struct block_device *device,uint32_t sector,void *buffer,boo
     outb(a->io+6,0xe0 | (a->slave<<4) | ((sector>>24)&15));
     delay(a);
     /* A previous command error is cleared by issuing the next command. */
-    if (ready(a,false,false)) return -NX_EIO;
+    if (ready(a,false,false) || drive_ready(a)) return -NX_EIO;
     outb(a->io+2,1);
     outb(a->io+3,sector);
     outb(a->io+4,sector>>8);
@@ -81,6 +92,7 @@ int ide_init_unit(struct block_device *device,unsigned index)
     delay(a);
     uint8_t status=inb(a->io+7);
     if (!status || status==0xff) return -NX_ENODEV;
+    int error=drive_ready(a);if (error) return error;
     outb(a->io+2,0);outb(a->io+3,0);outb(a->io+4,0);outb(a->io+5,0);
     outb(a->io+7,0xec);
     delay(a);

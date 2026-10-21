@@ -117,9 +117,12 @@ static int64_t invoke(uint64_t number, struct interrupt_frame *frame)
         return 0;
     }
     case NX_SYS_SETPGRP:
+    {
+        v7_pid_t old = p->p_pgrp;
         p->p_pgrp = p->p_pid;
-        tty_set_group(u->u_ttyp, p->p_pgrp);
+        tty_set_group(u->u_ttyp, old, p->p_pgrp, !u->u_uid);
         return p->p_pgrp;
+    }
     case NX_SYS_GETPGRP: return p->p_pgrp;
     case NX_SYS_GETPID: return p->p_pid;
     case NX_SYS_GETPPID: return p->p_ppid;

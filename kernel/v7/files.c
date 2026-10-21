@@ -26,6 +26,7 @@ static bool modem_file(const struct file *f)
 static bool output_file(const struct file *f)
 {return f->f_inode && (f->f_inode->i_mode&V7_IFMT)==V7_IFCHR && output_matches(f->f_inode->i_un.i_rdev);}
 static struct file table[V7_NFILE];
+static bool closing[V7_NFILE];
 static struct inode inodes[V7_NINODE];
 static struct v7fs *root;
 static bool root_exec;
@@ -114,7 +115,7 @@ int files_mountpoint_put(struct inode *inode)
 }
 static struct file *file_alloc(void)
 {
-    for (unsigned i = 0; i < V7_NFILE; ++i) if (!table[i].f_count) {
+    for (unsigned i = 0; i < V7_NFILE; ++i) if (!table[i].f_count && !closing[i]) {
         zero(&table[i], sizeof(table[i])); table[i].f_count = 1; return &table[i];
     }
     return NULL;
@@ -124,6 +125,8 @@ static int file_put(struct file *f)
 {
     if (!valid_file(f)) panic("invalid open file release");
     if (--f->f_count) return 0;
+    /* A closing slot is unavailable until sleeping device teardown finishes. */
+    unsigned slot=(unsigned)(f-table);closing[slot]=true;
     int error = 0;
     if(f->f_flag&V7_FMP) mpx_close(f);
     else if (f->f_private && !(f->f_flag & V7_FPIPE)) {
@@ -140,7 +143,7 @@ static int file_put(struct file *f)
         proc_wakeup(p);
         if (!p->readers && !p->writers) zero(p, sizeof(*p));
     }
-    zero(f, sizeof(*f)); return error;
+    zero(f, sizeof(*f));closing[slot]=false;return error;
 }
 static int close_fd(struct user *u, unsigned fd)
 {
@@ -350,10 +353,11 @@ static int open_path(struct user *u, uintptr_t address, uint64_t flags, uint64_t
     struct v7fs_inode disk={0};
     if (!error) error = node_inode_get(ino, &disk);
     unsigned access = flags & NX_O_ACCMODE;
+    if (!error && !created && !v7fs_access(&disk, u->u_uid, u->u_gid, access == 0 ? 4 : access == 1 ? 2 : 6)) error = -NX_EACCES;
+    /* Only a permitted writer may evict unused sticky text. */
     if(!error&&access&&(disk.mode&V7_IFMT)==V7_IFREG){
         error=node_volume(ino)->read_only?-NX_EROFS:text_write_check(ino);
     }
-    if (!error && !created && !v7fs_access(&disk, u->u_uid, u->u_gid, access == 0 ? 4 : access == 1 ? 2 : 6)) error = -NX_EACCES;
     if (!error && access && (disk.mode & V7_IFMT) == V7_IFDIR) error = -NX_EISDIR;
     unsigned type = error ? 0 : disk.mode & V7_IFMT;
     if (!error && type != V7_IFREG && type != V7_IFDIR && type != V7_IFCHR && type != V7_IFBLK) error = -NX_ENODEV;
@@ -487,7 +491,8 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
             if(write && copyin(vm,address+done,bytes,n))return done?(int64_t)done:-NX_EFAULT;
             error=storage_transfer(f->f_private,start+done,bytes,n,write,&moved);
             if(!write && moved && copyout(vm,address+done,bytes,moved))panic("storage output mapping changed");
-            done+=moved;f->f_offset+=moved;
+            /* Raw transfers start on a block boundary; keep the offset in step with them. */
+            done+=moved;f->f_offset=(int64_t)(start+done);
             if(error||moved<n)break;
         }
         return done?(int64_t)done:error;
@@ -513,11 +518,10 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
             error = v7fs_touch(node_volume(inode_node(f->f_inode)), inode.number, write ? V7FS_MTIME | V7FS_CTIME : V7FS_ATIME);
             if (error) return error;
         }
+        /* Reject an offset overflow before any memory is transferred. */
+        if(f->f_offset<0 || (uint64_t)count>(uint64_t)(INT64_MAX-f->f_offset))return -NX_EINVAL;
         int64_t moved=memdev_io(inode.addr[0],u,vm,f->f_offset,address,count,write);
-        if(moved>0){
-            if(f->f_offset>INT64_MAX-moved)return -NX_EINVAL;
-            f->f_offset+=moved;
-        }
+        if(moved>0)f->f_offset+=moved;
         return moved;
     }
     if (write && (f->f_open_flags & NX_O_APPEND)) f->f_offset = inode.size;
@@ -619,8 +623,8 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
         if (error) return error;
         if (access) {
             if ((args[1] & 2) && node_volume(ino)->read_only) return -NX_EROFS;
-            if(args[1]&2){error=text_write_check(ino);if(error)return error;}
-            return v7fs_access(&disk, u->u_ruid, u->u_rgid, args[1]) ? 0 : -NX_EACCES;
+            if (!v7fs_access(&disk, u->u_ruid, u->u_rgid, args[1])) return -NX_EACCES;
+            return (args[1] & 2) ? text_write_check(ino) : 0;
         }
         if ((number==NX_SYS_CHOWN || u->u_uid!=disk.uid) && !proc_superuser(u))return -NX_EPERM;
         if (number == NX_SYS_CHMOD) {
