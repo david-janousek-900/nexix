@@ -75,7 +75,10 @@ The per-file ledger lists the exact include names and consumers.
 
 ## LP64 and wire-format audit
 
-These are required adaptation points, not fixes already implemented:
+These are the baseline adaptation points. Task 413 supplies the private
+[type, wire and checksum primitives](networking-compat.md); subsequent ports
+must adopt them in their consumers. Mbuf and protocol overlays remain reference
+code until their owning tasks implement native replacements:
 
 - `netinet/in.h` uses `u_long` for IPv4 addresses and `tcp.h` uses it for
   `tcp_seq`; make protocol addresses and sequence arithmetic explicitly 32-bit.
