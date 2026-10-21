@@ -506,6 +506,11 @@ test-accton: build/accton-records.elf multi-iso rootfs
 	$(PYTHON) tools/accton_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/accton_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-accton
+.PHONY: test-update
+test-update: multi-iso rootfs
+	$(PYTHON) tools/update_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/update_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-update
 test-inventory:
 	$(PYTHON) tools/check_inventory.py
 	$(PYTHON) tests/inventory.py

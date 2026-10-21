@@ -10,17 +10,17 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 67 native ELF programs are
+to multi-user V7 login with persistent IDE storage. 68 native ELF programs are
 installed; the complete list and destinations are in [the installation manifest](native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
 The inventory accounts for **223 components, 2,144 distribution files and
-36 supporting/platform requirements**. Its component statuses are 70 implemented,
-4 partial, 1 prototype and 148 not ported; importing reference inputs does not
+36 supporting/platform requirements**. Its component statuses are 71 implemented,
+4 partial, 1 prototype and 147 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **388 tracking tasks: 180 done, 0 in progress
-and 208 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 219, 226, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **388 tracking tasks: 181 done, 0 in progress
+and 207 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 219, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -399,7 +399,7 @@ are accounted for. Final native rebuild acceptance is task 207.
 | 234 | Port restor | To do | Historical archive/media formats and full restore fixtures |
 | 235 | Port tar | To do | Both tar/v6tar; historical header fixtures and native round trips |
 | 236 | Port tp | To do | Native tape equivalent and historical directory format |
-| 237 | Port update | To do | Disposable storage fixtures; bounds, permissions and error paths |
+| 237 | Port update | Done | Git history; make test-update at 16/128 MiB; daemon fork/descriptor handling, real 30-second SIGALRM and persistent V7 superblock clock advancement; [contract](storage-commands.md) |
 
 ### Jobs, mail and accounting
 

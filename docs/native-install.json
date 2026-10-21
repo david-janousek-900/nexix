@@ -7827,6 +7827,19 @@
         "path": "v7-accton.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/etc/update",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.update",
+      "source": {
+        "root": "programs",
+        "path": "v7-update.elf"
+      },
+      "format": "elf"
     }
   ]
 }

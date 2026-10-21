@@ -37,3 +37,19 @@ can describe absent hardware; creating a node does not enable a driver.
 including real null-device I/O, the maximum encoded major/minor, root/ordinary
 user permissions, duplicate nodes, malformed arguments, umask and persistence
 across two cold boots. It never writes the working disk.
+
+## update (task 237)
+
+`/etc/update` retains V7's background sync daemon: fork once, let the parent
+return, close standard descriptors, keep available system directories open,
+sync immediately and repeat every 30 seconds using SIGALRM. A failed fork now
+reports an error and returns 1. Extra operands are ignored, as in the original.
+This command is installed for explicit service startup; it is not automatically
+added to existing installations' startup scripts.
+
+`make test-update` runs the installed daemon on disposable IDE roots at 16/128
+MiB. After its initial sync, the test sends no guest commands during a real
+33-second idle interval. It independently decodes the on-disk PDP-11-word-order
+superblock time and requires at least 29 seconds of advancement, then checks
+that the daemon and shell remain alive. This verifies actual periodic kernel
+sync and alarm delivery, rather than only the existence of a process.
