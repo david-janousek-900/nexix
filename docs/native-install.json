@@ -7840,6 +7840,19 @@
         "path": "v7-update.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/df",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.df",
+      "source": {
+        "root": "programs",
+        "path": "v7-df.elf"
+      },
+      "format": "elf"
     }
   ]
 }

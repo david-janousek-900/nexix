@@ -511,6 +511,11 @@ test-update: multi-iso rootfs
 	$(PYTHON) tools/update_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/update_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-update
+.PHONY: test-df
+test-df: multi-iso rootfs
+	$(PYTHON) tools/df_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/df_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-df
 test-inventory:
 	$(PYTHON) tools/check_inventory.py
 	$(PYTHON) tests/inventory.py

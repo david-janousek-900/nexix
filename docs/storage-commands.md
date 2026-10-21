@@ -53,3 +53,25 @@ MiB. After its initial sync, the test sends no guest commands during a real
 superblock time and requires at least 29 seconds of advancement, then checks
 that the daemon and shell remain alive. This verifies actual periodic kernel
 sync and alarm delivery, rather than only the existence of a process.
+
+## df (task 223)
+
+`/bin/df [device-or-image ...]` follows V7's free-block stack and chain, printing
+`name count` in 512-byte blocks. The native default is `/dev/root`, replacing
+the historical machine-specific `/dev/rp0` and `/dev/rp3`. Regular image files
+are accepted as well as block devices; device access follows file permissions.
+
+The port replaces historical C structure overlays with explicit little-endian
+short and PDP-11-word-order long decoding. It validates filesystem geometry,
+free-stack bounds and data-block ranges. A bounded bitmap detects duplicate
+blocks and chain cycles. Volumes use the native 24-bit block-address limit.
+Short reads, allocation failures and corrupt lists return failure without
+printing a misleading partial count; later operands are still processed.
+Unlike the original command, errors yield a nonzero status. Reads do not allocate
+blocks or consume the on-disk free list; sync runs before inspecting a volume.
+
+`make test-df` uses independent builder fixtures with known allocation counts
+and malformed counts, out-of-range blocks, duplicates, cycles and truncated
+media. Installed guest tests at 16/128 MiB also read the actual root device,
+check default selection and verify ordinary-user denial for raw root access
+while allowing readable image files. Working disks remain untouched.
