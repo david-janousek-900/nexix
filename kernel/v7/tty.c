@@ -70,8 +70,9 @@ void tty_modem_status(unsigned signals)
 int tty_modem_peer(unsigned signals)
 {
     if(signals&~31U)return -NX_EINVAL;
-    if(console.modem_mode!=NX_MDM_VIRTUAL)return -NX_EBUSY;
-    carrier_update(&console,signals,true);return 0;
+    struct tty *t=&terminals[tty_console_line];
+    if(t->modem_mode!=NX_MDM_VIRTUAL)return -NX_EBUSY;
+    carrier_update(t,signals,true);return 0;
 }
 static void defaults(struct tty *t,unsigned profile)
 {
