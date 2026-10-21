@@ -651,8 +651,12 @@ and inventory/roadmap consistency, including numbering, status totals and covera
 of every component, requirement and task. It does not prove native functional acceptance or
 completion of the ports.
 
-Version **0.2.0** adds PCI/e1000, lwIP IPv4/TCP/IP integration, sockets and
-basic network utilities.
+Version **0.2.0** adds PCI/e1000 and a direct **4.4BSD-Lite2** IPv4/TCP/IP
+port, blocking BSD-style sockets and static network configuration. This replaces
+the earlier lwIP proposal. The [0.2.0 networking roadmap](networking-roadmap.md)
+records implementation milestones, public interfaces and acceptance criteria.
+Those future-release milestones are separate from the numbered 0.1.0 tasks
+and their inventory/status totals above; networking is not yet implemented.
 
 Start with single-core QEMU i440fx, VGA/PS/2 (or selected serial console), and IDE storage. SMP,
 physical hardware, UEFI, IPv6, secure remote access, and complete Nexix self-hosting follow

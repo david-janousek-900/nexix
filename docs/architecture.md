@@ -128,10 +128,14 @@ documented in [syscall-abi.md](syscall-abi.md); the signal ABI is documented in 
 Native userland uses ELF64;
 PDP-11 a.out execution is deferred. `fork` uses eager copying.
 
-Networking will use an e1000 driver and lwIP's raw callback API. Serialize stack
-processing in kernel context with bounded queues, then expose blocking socket
-descriptors through V7 sleep/wakeup and file operations. Start with static IPv4
-configuration, ARP, ICMP, UDP, and TCP. Pin lwIP and retain its license at import.
+Networking is planned as a direct 4.4BSD-Lite2 stack port with an e1000 driver,
+replacing the earlier lwIP proposal. Adapt BSD packet buffers, socket state and
+protocol timers to Nexix's allocator, file descriptors and V7 sleep/wakeup.
+Serialize stack access on the supported single CPU; interrupt handlers queue
+bounded work for a schedulable kernel worker. Start with static IPv4, Ethernet
+and loopback, ARP, ICMP, UDP, TCP and blocking sockets. Pin upstream inputs,
+retain their notices and audit LP64 assumptions. See the
+[0.2.0 networking roadmap](networking-roadmap.md) for milestones and acceptance.
 
 Architecture references: [Intel system programming manuals](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html)
 and [Multiboot2 boot information format](https://www.gnu.org/software/grub/manual/multiboot2/html_node/Boot-information-format.html).
