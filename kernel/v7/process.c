@@ -291,6 +291,7 @@ void proc_trace_stop(void)
     p->p_stat=V7_SSTOP;p->p_flag&=~V7_SWTED;
     proc_wakeup(parent);
     switch_out();
+    if(p->p_trace_kill)proc_exit(NX_SIGKILL);
     if(p->p_trace_exit||p->p_ppid!=debugger)goto orphan;
     return;
 orphan:

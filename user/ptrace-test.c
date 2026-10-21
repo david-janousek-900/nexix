@@ -106,6 +106,11 @@ int ptrace_test(void)
     if(!child){ptrace(-1,0,0,0);raise(SIGINT);_exit(99);}
     CHECK(stopped(child,SIGINT));CHECK(ptrace(NX_PT_KILL,child,0,0)==0);
     CHECK(wait(&status)==child&&status==SIGINT);
+    /* SIGKILL sent to a stopped child survives the tracer's continue. */
+    child=fork();CHECK(child>=0);
+    if(!child){ptrace(0,0,0,0);raise(SIGINT);_exit(99);}
+    CHECK(stopped(child,SIGINT)&&kill(child,SIGKILL)==0&&resume(child,0)==0);
+    CHECK(wait(&status)==child&&WIFSIGNALED(status)&&WTERMSIG(status)==SIGKILL);
     /* V7 traces SIGKILL too; a selected ignored replacement stays ignored. */
     child=fork();CHECK(child>=0);
     if(!child){ptrace(0,0,0,0);signal(SIGTERM,SIG_IGN);raise(SIGKILL);raise(SIGTERM);_exit(74);}

@@ -33,6 +33,8 @@ void signal_post(struct proc *p, unsigned n)
     if (p->p_stat == V7_SSLEEP && p->p_interruptible) {
         p->p_wchan = NULL; p->p_timed_sleep = false; p->p_stat = V7_SRUN;
     }
+    /* The tracer already saw this stop; continuing must not discard a later SIGKILL. */
+    if (n == NX_SIGKILL && p->p_stat == V7_SSTOP && (p->p_flag & V7_STRC)) p->p_trace_kill = true;
 }
 void signal_group(v7_pid_t group, unsigned n)
 {
