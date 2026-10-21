@@ -582,7 +582,11 @@ static int mount_path(struct user *u,const uintptr_t args[6])
     if((disk.mode&V7_IFMT)!=V7_IFREG && (disk.mode&V7_IFMT)!=V7_IFDIR)return -NX_EBUSY;
     struct inode *pin=inode_get(point,&disk);if(!pin)return -NX_ENFILE;
     if(pin->i_count!=1)error=-NX_EBUSY;
-    else error=namespace_mount(dev,point,pin,!!(args[2]&1));
+    else if((disk.mode&V7_IFMT)==V7_IFREG){
+        struct fs_node parent;char name[V7_DIRSIZ];
+        error=parent_path(u,point_path,&parent,name);
+        if(!error)error=namespace_mount_file(dev,point,parent,pin,!!(args[2]&1));
+    }else error=namespace_mount(dev,point,pin,!!(args[2]&1));
     if(error)(void)files_inode_put(pin);
     return error;
 }

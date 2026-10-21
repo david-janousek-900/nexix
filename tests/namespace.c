@@ -45,6 +45,12 @@ int main(int argc,char **argv)
     assert(namespace_pins()==1&&(pins[0].i_flag&V7_IMOUNT));
     assert(node_equal(lookup(base,base,"/inner/data"),(struct fs_node){1,4}));
     assert(node_equal(lookup(base,base,"/inner/.."),base));
+    struct v7fs_inode covered;struct fs_node escaped;
+    assert(!v7fs_inode_get(&root,3,&covered));
+    covered.mode=V7_IFDIR;assert(!v7fs_metadata(&root,&covered));
+    assert(!namespace_lookup(base,base,"/inner/..",123,123,&escaped));
+    assert(node_equal(escaped,base));
+    covered.mode=V7_IFDIR|0755;assert(!v7fs_metadata(&root,&covered));
     pins[1]=(struct inode){.i_count=1,.i_dev=1,.i_number=3};
     assert(namespace_mount(2,(struct fs_node){1,3},&pins[1],false)==0);
     struct fs_node jail={1,2},nested={2,2};
@@ -95,6 +101,11 @@ int main(int argc,char **argv)
     for(unsigned i=0;i<7;++i)assert(!pins[i].i_count&&!(pins[i].i_flag&V7_IMOUNT));
     assert(node_equal(lookup(base,base,"/data"),(struct fs_node){0,4}));
     assert(namespace_lookup(base,base,"/inner/data",0,0,&result)==-NX_ENOENT);
+    pins[0]=(struct inode){.i_count=1,.i_dev=0,.i_number=4};
+    assert(!namespace_mount_file(1,(struct fs_node){0,4},base,&pins[0],false));
+    assert(!namespace_lookup(base,base,"/data/..",123,123,&escaped));
+    assert(node_equal(escaped,base));
+    assert(!namespace_reset());
     assert(v7fs_unmount(&root)==0&&namespace_root(NULL)==0);
     for(unsigned i=0;i<8;++i)assert(storage_bind(i,NULL,false)==0);
     puts("PASS: mount crossings, nested dotdot, chroot, permissions, device/inode identity, errors, bounded mounts and teardown");
