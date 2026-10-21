@@ -27,9 +27,11 @@ int main(void)
  key(30);key(158);key(42);key(30);key(54);key(170);key(48);key(182);
  key(58);key(58);key(186);key(46);key(42);key(32);key(170);
  key(29);key(46);key(32);key(21);key(157);key(14);key(28);
- unsigned n=used;key(0xe0);key(42);key(0xe0);key(72);key(0xe1);key(29);key(69);key(0xe1);key(157);key(197);assert(used==n);
+ unsigned n=used;key(0xe0);key(42);key(0xe1);key(29);key(69);key(0xe1);key(157);key(197);assert(used==n);
  key(0xe0);key(29);key(46);key(0xe0);key(157);
- const uint8_t expected[]={'a','A','B','C','d',3,4,25,127,'\r',3};
+ const uint8_t navigation[]={72,80,77,75,71,79,73,81,82,83};
+ for(unsigned i=0;i<sizeof(navigation);++i){key(0xe0);key(navigation[i]);key(0xe0);key(navigation[i]|128);}
+ const uint8_t expected[]={'a','A','B','C','d',3,4,25,127,'\r',3,27,'[','A',27,'[','B',27,'[','C',27,'[','D',27,'[','H',27,'[','F',27,'[','5','~',27,'[','6','~',27,'[','2','~',27,'[','3','~'};
  assert(used==sizeof(expected));for(unsigned i=0;i<used;++i)assert(output[i]==expected[i]);
  push(30);keyboard_interrupt();assert(output[used-1]=='A');
  no_ack=true;assert(!keyboard_init(receive));assert(mask&2);
