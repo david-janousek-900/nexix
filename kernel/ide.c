@@ -19,7 +19,7 @@ static int ready(const struct ata *a,bool data, bool check_errors)
         if (!status || status==0xff) return -NX_EIO;
         if (status&BUSY) continue;
         if (check_errors && (status&FAULT)) return -NX_EIO;
-        if (!!(status&DRQ)==data) return 0;
+        if ((status&DRDY) && !!(status&DRQ)==data) return 0;
     }
     return -NX_EIO;
 }
@@ -90,6 +90,9 @@ int ide_init_unit(struct block_device *device,unsigned index)
     outb(a->control,2); /* nIEN: disable device interrupts for polling. */
     outb(a->io+6,0xa0 | (a->slave<<4));
     delay(a);
+    /* An absent slave may mirror the master's status. Verify that the
+     * device/head register actually reports the selected device too. */
+    if((inb(a->io+6)&0x10)!=(a->slave<<4))return -NX_ENODEV;
     uint8_t status=inb(a->io+7);
     if (!status || status==0xff) return -NX_ENODEV;
     int error=drive_ready(a);if (error) return error;
