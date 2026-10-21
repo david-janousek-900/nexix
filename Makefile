@@ -1594,6 +1594,21 @@ build/dev-include/%: libc/include/% | build/.dir
 
 # Compile/link from the verified installed tree, with no compiler/host headers.
 DEVKIT_CFLAGS = $(filter-out -Ilibc/include -Iinclude -isystem $(shell $(CC) -print-file-name=include),$(USER_CFLAGS)) -I$(INSTALL_STAGE)/root/usr/include
+# Versioned native compiler/object ABI: use installed headers and real startup.
+build/toolchain-abi-caller.o: tests/toolchain-abi.c tests/toolchain-abi.h $(INSTALL_STAGE)/receipt.json
+	$(CC) $(filter-out -O2,$(DEVKIT_CFLAGS)) -O0 -c $< -o $@
+build/toolchain-abi-callee.o: tests/toolchain-abi-callee.c tests/toolchain-abi.h $(INSTALL_STAGE)/receipt.json
+	$(CC) $(DEVKIT_CFLAGS) -c $< -o $@
+build/toolchain-abi-inspect.o: tests/toolchain-abi.S | build/.dir
+	$(CC) -m64 -fno-pie -c $< -o $@
+build/toolchain-abi.elf: build/toolchain-abi-caller.o build/toolchain-abi-callee.o build/toolchain-abi-inspect.o $(INSTALL_STAGE)/receipt.json user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(INSTALL_STAGE)/root/lib/crt0.o $(filter %.o,$^) $(INSTALL_STAGE)/root/lib/libc.a -o $@
+.PHONY: test-toolchain-abi
+test-toolchain-abi: build/toolchain-abi.elf multi-iso rootfs
+	$(PYTHON) tests/toolchain_abi.py
+	$(PYTHON) tools/toolchain_abi_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/toolchain_abi_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-toolchain-abi
 build/devkit-consumer.o: tests/development-consumer.c $(INSTALL_STAGE)/receipt.json
 	$(CC) $(DEVKIT_CFLAGS) -pg -fno-optimize-sibling-calls -c $< -o $@
 build/devkit-%.elf: build/devkit-consumer.o $(INSTALL_STAGE)/receipt.json user/user.ld

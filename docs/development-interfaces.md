@@ -47,10 +47,10 @@ busy retries, script arguments, permission precedence and overflow bounds.
 
 This completes the native libc implementation and current development ABI.
 Remaining full application ports still require their own consumer acceptance;
-subsequent discovered integration defects must be fixed in those tasks. Seven
-original application-owned format headers (archive, dump/old dump, compiler
-identity, multiprecision, standalone I/O and tp) remain explicitly assigned to
-179/232/234/177/109/344/236. They do not belong to the libc ABI and are not
+subsequent discovered integration defects must be fixed in those tasks. Six
+original application-owned format headers (archive, dump/old dump,
+multiprecision, standalone I/O and tp) remain explicitly assigned to
+179/232/234/109/344/236. They do not belong to the libc ABI and are not
 installed as unsupported native record overlays. Their future tasks also own
 the remaining distribution.headers integration status.
 
@@ -60,3 +60,7 @@ The native [`uname`](uname.md) extension exports `uname(struct utsname *)` in
 
 `gethostname` and root-only `sethostname` are declared in `<unistd.h>`;
 see [hostname configuration and prompt behavior](hostname.md).
+
+Task 177 freezes the [native toolchain ABI](toolchain-abi.md) and installs
+`ident.h` with the native target identity. Future compiler ports must pass
+`make test-toolchain-abi`; bootstrap success alone does not complete those ports.

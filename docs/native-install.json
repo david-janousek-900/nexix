@@ -7853,6 +7853,19 @@
         "path": "v7-df.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/usr/include/ident.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.headers",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/ident.h"
+      }
     }
   ]
 }

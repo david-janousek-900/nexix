@@ -19,8 +19,8 @@ The inventory accounts for **223 components, 2,144 distribution files and
 4 partial, 1 prototype and 146 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **411 tracking tasks: 184 done, 0 in progress
-and 227 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 219, 223, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **411 tracking tasks: 185 done, 0 in progress
+and 226 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 177, 219, 223, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -329,7 +329,7 @@ are accounted for. Final native rebuild acceptance is task 207.
 
 | Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
-| 177 | Freeze native object/toolchain ABI | To do | ELF64 AMD64, SysV calls, LP64 and static linking; host bootstrap allowed |
+| 177 | Freeze native object/toolchain ABI | Done | Git history; [version 1 contract](toolchain-abi.md), installed ident.h; make test-toolchain-abi test-development test-inventory; LP64/ELF/relocations, independent register/stack/AL inspector, mixed/large aggregates, varargs, long-double and four startup variants at 16/128 MiB |
 | 178 | Port cpp | To do | Preprocessing, include paths and generated-source fixtures |
 | 179 | Port ar | To do | Native SysV/GNU archives plus explicit historical archive reading |
 | 180 | Port arcv | To do | Historical archive conversion; no object-code translation |
