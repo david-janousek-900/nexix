@@ -106,19 +106,15 @@ int ptrace_test(void)
     if(!child){ptrace(-1,0,0,0);raise(SIGINT);_exit(99);}
     CHECK(stopped(child,SIGINT));CHECK(ptrace(NX_PT_KILL,child,0,0)==0);
     CHECK(wait(&status)==child&&status==SIGINT);
-    /* SIGKILL bypasses tracing and cannot be suppressed by the parent. */
-    child=fork();CHECK(child>=0);
-    if(!child){ptrace(0,0,0,0);raise(SIGKILL);_exit(99);}
-    CHECK(wait(&status)==child && WIFSIGNALED(status) && WTERMSIG(status)==SIGKILL);
+    /* SIGKILL sent to a stopped child survives the tracer's continue. */
     child=fork();CHECK(child>=0);
     if(!child){ptrace(0,0,0,0);raise(SIGINT);_exit(99);}
-    CHECK(stopped(child,SIGINT) && kill(child,SIGKILL)==0);
-    CHECK(wait(&status)==child && WIFSIGNALED(status) && WTERMSIG(status)==SIGKILL);
-    CHECK(resume(child,0)==-1 && errno==ESRCH);
-    /* An ordinary ignored replacement remains suppressible. */
+    CHECK(stopped(child,SIGINT)&&kill(child,SIGKILL)==0&&resume(child,0)==0);
+    CHECK(wait(&status)==child&&WIFSIGNALED(status)&&WTERMSIG(status)==SIGKILL);
+    /* V7 traces SIGKILL too; a selected ignored replacement stays ignored. */
     child=fork();CHECK(child>=0);
-    if(!child){ptrace(0,0,0,0);signal(SIGTERM,SIG_IGN);raise(SIGINT);raise(SIGTERM);_exit(74);}
-    CHECK(stopped(child,SIGINT)&&resume(child,0)==0);
+    if(!child){ptrace(0,0,0,0);signal(SIGTERM,SIG_IGN);raise(SIGKILL);raise(SIGTERM);_exit(74);}
+    CHECK(stopped(child,SIGKILL)&&resume(child,0)==0);
     CHECK(stopped(child,SIGTERM)&&resume(child,SIGTERM)==0&&finished(child,74));
     child=fork();CHECK(child>=0);
     if(!child){alarm_seen=0;signal(SIGINT,tick);ptrace(0,0,0,0);raise(SIGINT);_exit(alarm_seen==SIGINT?75:76);}

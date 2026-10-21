@@ -28,7 +28,7 @@ int main(void)
     /* V7 traces SIGKILL: a trace stop waits for the tracer even for SIGKILL. */
     processes[3]=(struct proc){.p_stat=V7_SSTOP,.p_flag=V7_STRC,.p_pid=3,.p_pgrp=3,.p_user=&users[3]};
     signal_post(&processes[3],NX_SIGTERM);assert(processes[3].p_stat==V7_SSTOP);
-    signal_post(&processes[3],NX_SIGKILL);assert(processes[3].p_stat==V7_SSTOP && (processes[3].p_sig&(1U<<(NX_SIGKILL-1))));
+    signal_post(&processes[3],NX_SIGKILL);assert(processes[3].p_stat==V7_SSTOP && (processes[3].p_sig&(1U<<(NX_SIGKILL-1))) && processes[3].p_trace_kill);
     /* Ignored dispositions cannot suppress SIGKILL; it wakes interruptible sleep. */
     users[3].u_signal[NX_SIGKILL]=1;
     processes[3].p_sig=0;processes[3].p_stat=V7_SSLEEP;processes[3].p_interruptible=true;
