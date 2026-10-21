@@ -7814,6 +7814,19 @@
         "path": "v7-mknod.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/etc/accton",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.accton",
+      "source": {
+        "root": "programs",
+        "path": "v7-accton.elf"
+      },
+      "format": "elf"
     }
   ]
 }

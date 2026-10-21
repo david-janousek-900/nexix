@@ -497,6 +497,15 @@ test-mknod: multi-iso rootfs
 	$(PYTHON) tools/mknod_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/mknod_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-mknod
+build/accton-records.o: tests/accton-records.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/accton-records.elf: build/crt0.o build/accton-records.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+.PHONY: test-accton
+test-accton: build/accton-records.elf multi-iso rootfs
+	$(PYTHON) tools/accton_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/accton_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-accton
 test-inventory:
 	$(PYTHON) tools/check_inventory.py
 	$(PYTHON) tests/inventory.py

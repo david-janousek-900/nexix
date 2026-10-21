@@ -10,17 +10,17 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 66 native ELF programs are
+to multi-user V7 login with persistent IDE storage. 67 native ELF programs are
 installed; the complete list and destinations are in [the installation manifest](native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
 The inventory accounts for **223 components, 2,144 distribution files and
-36 supporting/platform requirements**. Its component statuses are 69 implemented,
-4 partial, 1 prototype and 149 not ported; importing reference inputs does not
+36 supporting/platform requirements**. Its component statuses are 70 implemented,
+4 partial, 1 prototype and 148 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **388 tracking tasks: 179 done, 0 in progress
-and 209 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 219, 226, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **388 tracking tasks: 180 done, 0 in progress
+and 208 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 219, 226, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -407,7 +407,7 @@ are accounted for. Final native rebuild acceptance is task 207.
 |---:|---|---|---|
 | 238 | Install native spool ownership and locking configuration | To do | Safe native fixtures, not historical user/mail contents |
 | 239 | Port ac | To do | Source-defined service/accounting fixtures |
-| 240 | Port accton | To do | Source-defined service/accounting fixtures |
+| 240 | Port accton | Done | Git history; make test-accton at 16/128 MiB; root enable/disable, error/privilege paths, first-operand compatibility, actual uid-101 process records and stable file after disabling; [contract](accounting.md) |
 | 241 | Port sa | To do | Source-defined service/accounting fixtures |
 | 242 | Port at | To do | Source-defined service/accounting fixtures |
 | 243 | Port atrun | To do | Source-defined service/accounting fixtures |
