@@ -250,9 +250,13 @@ again:
 	 * for a switch or a return
 	 */
 	case RFORCE:
+		modf = tree->type;
 		tree = tree->tr1;
 		if((r=rcexpr(tree, regtab, reg)) != 0)
 			movreg(r, 0, tree);
+		/* a float result is returned in single precision */
+		if (modf==FLOAT)
+			printf("\tcvtsd2ss\t%%xmm0,%%xmm0\n");
 		return(0);
 
 	/*
@@ -278,6 +282,11 @@ again:
 		if (table==regtab)
 			return(r);
 		goto fixup;
+
+	case CP_SINGLE:
+		r = rcexpr(tree->tr1, regtab, reg);
+		printf("\tcvtsd2ss\t%%xmm%d,%%xmm%d\n", r, r);
+		return(r);
 
 	case CP_VASTART:
 	case CP_VAARG:
@@ -324,7 +333,7 @@ again:
 	if (table!=regtab && (table!=cctab||(opdope[tree->op&0377]&RELAT)==0)) {
 		if((r=cexpr(tree, regtab, reg))>=0) {
 	fixup:
-			modf = isfloat(tree);
+			modf = isfvalue(tree);
 			dbprint(tree->op);
 			if (table==sptab || table==lsptab) {
 				if (modf)
@@ -704,6 +713,15 @@ emitfcon(struct tnode *p)
  * on the subtrees and then on the tree itself.
  * It returns non-zero if anything changed.
  */
+/*
+ * Is the value of the tree (not of its operands) floating?
+ */
+int
+isfvalue(struct tnode *t)
+{
+	return(t && (t->type==FLOAT || t->type==DOUBLE) && (opdope[t->op&0377]&RELAT)==0);
+}
+
 int
 reorder(struct tnode **treep, struct table *table, int reg)
 {
@@ -919,15 +937,32 @@ chkleaf(struct tnode *atree, struct table *table, int reg)
  * Compile a call.  Arguments are evaluated one at a time into their
  * final System V locations in a single aligned block: stack-class
  * arguments at the bottom, register-class values staged above them,
- * and the function address last.  No scratch register is live during
- * the call; live registers below reg are saved around it.
+ * and the function address last.  Structures are classified by c0
+ * (their eightbytes go to registers only if all fit) and copied; a
+ * MEMORY-class structure result is written through a hidden pointer
+ * to a frame temporary.  No scratch register is live during the call;
+ * live registers below reg are saved around it.
  */
+static void
+copyarg(struct tnode *a, int off)
+{
+	struct tnode *e;
+	int r;
+
+	e = strfunc(a->tr1);
+	r = rcexpr(optim(tnode(AMPER, STRUCT+PTR, e, NULL)), regtab, 0);
+	printf("\tmovq\t%s,%%rsi\n\tleaq\t%d(%%rsp),%%rdi\n\tmovq\t$%ld,%%rcx\n\tcld\n\trep movsb\n",
+	    regname[0][r], off, (long)a->mask);
+}
+
 void
 callexpr(struct tnode *tree, int reg)
 {
 	struct tnode *args[256], *a, *fn;
-	int nargs, i, ngp, nsse, slot[256], cls[256], nstk, total, fnslot, direct, saved;
+	int nargs, i, j, ngp, nsse, slot[256], memarg[256], gp[256][2], sse[256][2];
+	int nstk, total, fnslot, direct, saved, sclass, need[3], r;
 	static char *gpreg[] = { "%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9" };
+	static char *ret[] = { "%rax", "%rdx" };
 
 	nargs = 0;
 	a = tree->tr2;
@@ -946,25 +981,50 @@ callexpr(struct tnode *tree, int reg)
 		args[i] = args[nargs-1-i];
 		args[nargs-1-i] = a;
 	}
+	sclass = tree->mask ? tree->strclass : CP_CNONE;
 	ngp = nsse = nstk = 0;
+	if (CP_CLASS(sclass, 0)==CP_CMEM)
+		ngp = 1;		/* hidden result pointer */
 	for (i = 0; i < nargs; i++) {
-		if (args[i]->op==STRASG || args[i]->type==STRUCT) {
-			error("Unimplemented structure argument");
-			cls[i] = 0;
+		a = args[i];
+		gp[i][0] = gp[i][1] = sse[i][0] = sse[i][1] = -1;
+		memarg[i] = 0;
+		if (a->op==STRASG) {
+			int c = a->strclass;
+
+			need[CP_CINT] = need[CP_CSSE] = 0;
+			for (j = 0; j < 2; j++)
+				if (CP_CLASS(c, j)==CP_CINT || CP_CLASS(c, j)==CP_CSSE)
+					need[CP_CLASS(c, j)]++;
+			if (CP_CLASS(c, 0)!=CP_CMEM && ngp+need[CP_CINT] <= 6 && nsse+need[CP_CSSE] <= 8) {
+				for (j = 0; j < 2; j++) {
+					if (CP_CLASS(c, j)==CP_CINT)
+						gp[i][j] = ngp++;
+					else if (CP_CLASS(c, j)==CP_CSSE)
+						sse[i][j] = nsse++;
+				}
+			} else {
+				memarg[i] = 1;
+				slot[i] = 8*nstk;
+				nstk += (a->mask + 7) / 8;
+			}
 			continue;
 		}
-		if (isfloat(args[i]))
-			cls[i] = nsse<8 ? 0200|nsse++ : 0;
-		else
-			cls[i] = ngp<6 ? 0100|ngp++ : 0;
-		if (cls[i]==0)
+		if (isfvalue(a)) {
+			if (nsse < 8)
+				sse[i][0] = nsse++;
+		} else if (ngp < 6)
+			gp[i][0] = ngp++;
+		if (gp[i][0] < 0 && sse[i][0] < 0) {
+			memarg[i] = 1;
 			slot[i] = 8*nstk++;
+		}
 	}
 	total = 8*nstk;
 	for (i = 0; i < nargs; i++)
-		if (cls[i]) {
+		if (!memarg[i]) {
 			slot[i] = total;
-			total += 8;
+			total += args[i]->op==STRASG ? 16 : 8;
 		}
 	fn = tree->tr1;
 	direct = fn->op==NAME && (fn->class==EXTERN || fn->class==STATIC);
@@ -985,34 +1045,40 @@ callexpr(struct tnode *tree, int reg)
 	nstack += total/8;
 	if (!direct) {
 		fn = fn->op==STAR ? fn->tr1 : tnode(AMPER, incref(fn->type), fn, NULL);
-		i = rcexpr(optim(fn), regtab, 0);
-		printf("\tmovq\t%s,%d(%%rsp)\n", regname[0][i], fnslot);
+		r = rcexpr(optim(fn), regtab, 0);
+		printf("\tmovq\t%s,%d(%%rsp)\n", regname[0][r], fnslot);
 	}
 	for (i = 0; i < nargs; i++) {
 		a = args[i];
-		if (cls[i]==0 && (a->op==STRASG || a->type==STRUCT))
+		if (a->op==STRASG) {
+			copyarg(a, slot[i]);
 			continue;
-		ngp = rcexpr(a, regtab, 0);
-		if (isfloat(a))
-			printf("\tmovsd\t%%xmm%d,%d(%%rsp)\n", ngp, slot[i]);
+		}
+		r = rcexpr(a, regtab, 0);
+		if (a->op==CP_SINGLE || isfvalue(a))
+			printf("\tmovsd\t%%xmm%d,%d(%%rsp)\n", r, slot[i]);
 		else {
 			if (regwidth(a->type)==4) {
 				if (isunsigned(a->type))
-					printf("\tmovl\t%s,%s\n", regname[1][ngp], regname[1][ngp]);
+					printf("\tmovl\t%s,%s\n", regname[1][r], regname[1][r]);
 				else
-					printf("\tmovslq\t%s,%s\n", regname[1][ngp], regname[0][ngp]);
+					printf("\tmovslq\t%s,%s\n", regname[1][r], regname[0][r]);
 			}
-			printf("\tmovq\t%s,%d(%%rsp)\n", regname[0][ngp], slot[i]);
+			printf("\tmovq\t%s,%d(%%rsp)\n", regname[0][r], slot[i]);
 		}
 	}
-	nsse = 0;
 	for (i = 0; i < nargs; i++) {
-		if (cls[i]&0200) {
-			printf("\tmovsd\t%d(%%rsp),%%xmm%d\n", slot[i], cls[i]&077);
-			nsse++;
-		} else if (cls[i]&0100)
-			printf("\tmovq\t%d(%%rsp),%s\n", slot[i], gpreg[cls[i]&077]);
+		if (memarg[i])
+			continue;
+		for (j = 0; j < 2; j++) {
+			if (sse[i][j] >= 0)
+				printf("\tmovsd\t%d(%%rsp),%%xmm%d\n", slot[i]+8*j, sse[i][j]);
+			if (gp[i][j] >= 0)
+				printf("\tmovq\t%d(%%rsp),%s\n", slot[i]+8*j, gpreg[gp[i][j]]);
+		}
 	}
+	if (CP_CLASS(sclass, 0)==CP_CMEM)
+		printf("\tleaq\t%d(%%rbp),%%rdi\n", tree->nloc);
 	/* AL bounds the vector registers a variadic callee must save */
 	printf("\tmovl\t$%d,%%eax\n", nsse);
 	if (direct) {
@@ -1024,11 +1090,23 @@ callexpr(struct tnode *tree, int reg)
 	if (total)
 		printf("\taddq\t$%d,%%rsp\n", total);
 	nstack -= total/8;
-	switch (tree->type) {
+	if (tree->mask) {
+		/* a structure result is addressed in its frame temporary */
+		ngp = nsse = 0;
+		if (CP_CLASS(sclass, 0)!=CP_CMEM)
+			for (j = 0; j < 2; j++) {
+				if (CP_CLASS(sclass, j)==CP_CINT)
+					printf("\tmovq\t%s,%d(%%rbp)\n", ret[ngp++], tree->nloc+8*j);
+				else if (CP_CLASS(sclass, j)==CP_CSSE)
+					printf("\tmovsd\t%%xmm%d,%d(%%rbp)\n", nsse++, tree->nloc+8*j);
+			}
+		printf("\tleaq\t%d(%%rbp),%%rax\n", tree->nloc);
+	} else switch (tree->type) {
 	case CHAR: printf("\tmovsbl\t%%al,%%eax\n"); break;
 	case UCHAR: printf("\tmovzbl\t%%al,%%eax\n"); break;
 	case SHORT: printf("\tmovswl\t%%ax,%%eax\n"); break;
 	case USHORT: printf("\tmovzwl\t%%ax,%%eax\n"); break;
+	case FLOAT: printf("\tcvtss2sd\t%%xmm0,%%xmm0\n"); break;
 	}
 	if (saved) {
 		printf("\tmovq\t%%rax,%%r11\n\tmovapd\t%%xmm0,%%xmm15\n");
@@ -1036,12 +1114,16 @@ callexpr(struct tnode *tree, int reg)
 			printf("\tmovsd\t(%%rsp),%%xmm%d\n\taddq\t$8,%%rsp\n\tpopq\t%s\n", i, regname[0][i]);
 			nstack -= 2;
 		}
-		if (isfloat(tree))
+		if (isfvalue(tree) && !tree->mask)
 			printf("\tmovapd\t%%xmm15,%%xmm%d\n", reg);
 		else
 			printf("\tmovq\t%%r11,%s\n", regname[0][reg]);
-	} else if (reg != 0)
-		movreg(0, reg, tree);
+	} else if (reg != 0) {
+		if (tree->mask)
+			printf("\tmovq\t%%rax,%s\n", regname[0][reg]);
+		else
+			movreg(0, reg, tree);
+	}
 }
 
 struct tnode *
@@ -1145,7 +1227,7 @@ movreg(int r0, int r1, struct tnode *tree)
 {
 	if (r0==r1)
 		return;
-	if (isfloat(tree))
+	if (isfvalue(tree))
 		printf("\tmovapd\t%%xmm%d,%%xmm%d\n", r0, r1);
 	else
 		printf("\tmovq\t%s,%s\n", regname[0][r0], regname[0][r1]);
@@ -1181,7 +1263,7 @@ vaarg(struct tnode *tree, int reg)
 	printf("\tmovq\t8(%s),%%r11\n\taddq\t$8,8(%s)\n", r, r);
 	label(done);
 	if (isfloat(tree)) {
-		printf("\t%s\t(%%r11),%%xmm%d\n", tree->type==FLOAT ? "cvtss2sd" : "movsd", reg);
+		printf("\tmovsd\t(%%r11),%%xmm%d\n", reg);	/* float arguments are promoted */
 		return;
 	}
 	w = regwidth(tree->type);
@@ -1370,7 +1452,7 @@ native(int code, struct tnode *tree, struct tnode *p1, struct tnode *p2, int reg
 				l2 = isn++;
 				printf("\tmovabsq\t$4890909195324358656,%%r11\n\tmovq\t%%r11,%%xmm15\n");
 				printf("\tucomisd\t%%xmm15,%%xmm%d\n\tjb\t.L%d\n\tsubsd\t%%xmm15,%%xmm%d\n", reg, l1, reg);
-				printf("\tcvttsd2siq\t%%xmm%d,%s\n\tbtcq\t$63,%s\n\tjmp\t.L%d\n", reg, rn(reg, 8), rn(reg, 8), l2);
+				printf("\tcvttsd2siq\t%%xmm%d,%s\n\tmovabsq\t$-9223372036854775808,%%r11\n\txorq\t%%r11,%s\n\tjmp\t.L%d\n", reg, rn(reg, 8), rn(reg, 8), l2);
 				label(l1);
 				printf("\n\tcvttsd2siq\t%%xmm%d,%s\n", reg, rn(reg, 8));
 				label(l2);

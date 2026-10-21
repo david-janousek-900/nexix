@@ -19,8 +19,8 @@ The inventory accounts for **223 components, 2,144 distribution files and
 7 partial, 0 prototype and 134 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **411 tracking tasks: 208 done, 0 in progress
-and 203 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–170, 177–198, 202, 219, 223, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **411 tracking tasks: 209 done, 0 in progress
+and 202 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–170, 177–199, 202, 219, 223, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -351,7 +351,7 @@ are accounted for. Final native rebuild acceptance is task 207.
 | 196 | Complete PCC driver and supplied alternate targets | To do | pcc script/ccom/fort; native program acceptance |
 | 197 | Retarget original C c0 front end | Done | Git history; [native c0](c-compiler.md); `make test-c-compiler test-inventory test-install-unit`; LP64 widths/layout, 64-bit pass format, exact identifiers, V7 dialect and native header profile (all 49 libc headers); sanitizer, mutation and 90 supplied command sources; installed `/lib/c0` at 16/128 MiB as root/user |
 | 198 | Retarget original C c1 backend | Done | Git history; [table-driven AMD64 c1](c-compiler.md); `make test-c-compiler test-inventory test-install-unit`; cvopt-converted AMD64 table, integer/pointer/control/call/switch generation; GCC execution oracle through GNU and native as; native cpp/c0/c1/as/ld fixture and V7 commands as root/user at 16/128 MiB |
-| 199 | Retarget original C floating/aggregate generation | To do | Native ABI and compiler helper coverage |
+| 199 | Retarget original C floating/aggregate generation | Done | Git history; [floating and structure ABI](c-compiler.md); `make test-c-compiler test-inventory test-install-unit`; SSE floating values/conversions/unordered branches, System V structure classes, arguments/results/hidden pointers, prototype float parameters, variadic definitions; GCC oracle and GCC caller/callee fixtures; native execution as root/user at 16/128 MiB |
 | 200 | Retarget c2 optimizer and conversion helpers | To do | c2/fc1/cvopt targets; optimized/unoptimized comparison |
 | 201 | Port cc driver | To do | Preprocessor/compiler/assembler/linker and diagnostics |
 | 202 | Install/test lorder script | Done | Git history; [adapted script/native join](object-tools.md); make test-lorder test-install-unit test-inventory; definition/reference graphs including common/read-only symbols and cycles, original single-object self-pairs, long archive names and errors under ASan/UBSan and 16/128 MiB guests |

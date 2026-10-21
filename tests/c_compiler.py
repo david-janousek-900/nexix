@@ -76,55 +76,92 @@ with tempfile.TemporaryDirectory(prefix='nx-c-') as tmp:
         r=execute(asm,'fixture-'+assembler,assembler)
         assert r.returncode==0 and r.stdout==oracle,(assembler,r.stdout,oracle)
     (OUT/'fixture.c').write_bytes(fixture.read_bytes());(OUT/'fixture.exp').write_bytes(oracle)
-    # Bounded translation units keep the native assembler's working set
-    # within the 16 MiB baseline: shared types, globals as externs, and
-    # declarations of the functions that do not return int.
     import re
-    lines=fixture.read_text().split('\n')
-    first=next(i for i,l in enumerate(lines) if l=='int' and lines[i+1].startswith('add('))
-    head=lines[:first]
-    types,externs,inhead=[],[],False
-    for l in head:
-        if l.startswith(('struct ','union ')) and l.endswith('{'):
-            inhead=True
-        if inhead:
-            types.append(l)
-            if l.startswith('};'):
-                inhead=False
-            continue
-        m=re.match(r'^(\w[\w ]*?(?:\s|\*))\s*(\**\w+(?:\[\d*\])?)\s*(=.*)?;$',l.replace('\t',' '))
-        if m:
-            externs.append('extern '+m.group(1).strip()+' '+m.group(2)+';')
-    body=lines[first:]
-    starts=[i for i,l in enumerate(body) if re.match(r'^(int|long|unsigned|unsigned long|static int|static long)$',l) and i+1<len(body) and '(' in body[i+1] or l=='main()']
-    starts=[i for i in starts if body[i]=='main()' or not body[i].startswith('static')]
-    decls=[body[i]+' '+body[i+1].split('(')[0]+'();' for i in starts if body[i]!='main()' and body[i]!='int']
-    chunks=[]
-    for k,i in enumerate(starts):
-        j=starts[k+1] if k+1<len(starts) else len(body)
-        chunks.append('\n'.join(body[i:j]))
-    groups,size=[],0
-    for c in chunks:
-        n=c.count('\n')+1
-        if not groups or size+n>45:
-            groups.append([]);size=0
-        groups[-1].append(c);size+=n
-    parts=[]
-    for n,group in enumerate(groups):
-        text='\n'.join(types+(head[len(types):] if n==0 else []) if False else types)+'\n'
-        text+=('\n'.join(l for l in head if l not in types)+'\n') if n==0 else '\n'.join(externs)+'\n'
-        text+='\n'.join(decls)+'\n'+'\n'.join(group)+'\n'
-        name=f'fpart{n}';parts.append(name);(OUT/(name+'.c')).write_text(text)
-    objs=[]
-    for name in parts:
-        a2=compile(OUT/(name+'.c'),name)
-        lines_s=len(a2.read_text().splitlines());assert lines_s<900,(name,lines_s)
-        r=run([str(nas),'-o',str(d/(name+'.o')),str(a2)]);assert r.returncode==0,r.stderr
-        objs.append(str(d/(name+'.o')))
+    def split(path,prefix):
+        """Bounded translation units keep the native assembler's working
+        set within the 16 MiB baseline: shared types and declarations,
+        globals defined in the first unit and declared extern elsewhere."""
+        lines=path.read_text().split('\n')
+        rettype=r'^(int|long|unsigned|unsigned long|double|float|struct \w+|static int|static long)$'
+        first=next(i for i,l in enumerate(lines) if re.match(rettype,l) and i+1<len(lines) and re.match(r'^\w+\(',lines[i+1]))
+        head=lines[:first]
+        shared,defs,externs,intype=[],[],[],False
+        for l in head:
+            if l.startswith(('struct','union')) and '{' in l and '=' not in l and l.rstrip().endswith('};'):
+                shared.append(l)
+                continue
+            if l.startswith(('struct','union')) and l.rstrip().endswith('{'):
+                intype=True
+            if intype:
+                shared.append(l)
+                if l.startswith('};'):
+                    intype=False
+                continue
+            if l.rstrip().endswith(');'):
+                shared.append(l)
+                continue
+            m=re.match(r'^(\w[\w ]*?(?:\s|\*))\s*(\**\w+(?:\[\d*\])?)\s*(=.*)?;$',l.replace('\t',' '))
+            if m:
+                defs.append(l)
+                externs.append('extern '+m.group(1).strip()+' '+m.group(2)+';')
+        body=lines[first:]
+        starts=[i for i,l in enumerate(body) if (re.match(rettype,l) and i+1<len(body) and re.match(r'^\w+\(',body[i+1])) or l=='main()']
+        decls=[body[i]+' '+body[i+1].split('(')[0]+'();' for i in starts
+               if body[i] not in ('main()','int') and not body[i].startswith('static') and not body[i+1].split('(')[1].strip(')')[:4] in ('int ','floa','doub','stru')]
+        chunks=['\n'.join(body[i:(starts[k+1] if k+1<len(starts) else len(body))]) for k,i in enumerate(starts)]
+        groups,size=[],0
+        for c in chunks:
+            n=c.count('\n')+1
+            if not groups or size+n>45:
+                groups.append([]);size=0
+            groups[-1].append(c);size+=n
+        parts=[]
+        for n,group in enumerate(groups):
+            text='\n'.join(shared)+'\n'+'\n'.join(defs if n==0 else externs)+'\n'+'\n'.join(decls)+'\n'+'\n'.join(group)+'\n'
+            name=f'{prefix}{n}';parts.append(name);(OUT/(name+'.c')).write_text(text)
+        objs=[]
+        for name in parts:
+            a2=compile(OUT/(name+'.c'),name)
+            assert len(a2.read_text().splitlines())<900,name
+            r=run([str(nas),'-o',str(d/(name+'.o')),str(a2)]);assert r.returncode==0,r.stderr
+            objs.append(str(d/(name+'.o')))
+        (OUT/(prefix+'.txt')).write_text(' '.join(parts)+'\n')
+        return objs
+    objs=split(fixture,'fpart')
     subprocess.run(['cc','-no-pie',*objs,'-o',str(d/'parts')],check=True)
     r=subprocess.run([str(d/'parts')],capture_output=True,timeout=20)
     assert r.returncode==0 and r.stdout==oracle,r.stdout
-    (OUT/'parts.txt').write_text(' '.join(parts)+'\n')
+    # Task 199: floating values against GCC, and the System V structure,
+    # floating and variadic ABI against GCC callers and callees.
+    flt=ROOT/'tests/c_float_fixture.c'
+    asm=compile(flt,'float')
+    subprocess.run(['cc','-std=gnu89','-w','-fno-builtin','-no-pie',str(flt),'-o',str(d/'foracle')],check=True)
+    foracle=subprocess.run([str(d/'foracle')],capture_output=True,timeout=20,check=True).stdout
+    for assembler in ('gnu','native'):
+        r=execute(asm,'float-'+assembler,assembler)
+        assert r.returncode==0 and r.stdout==foracle,(assembler,r.stdout,foracle)
+    (OUT/'float.exp').write_bytes(foracle)
+    objs=split(flt,'flpart')
+    subprocess.run(['cc','-no-pie',*objs,'-o',str(d/'flparts')],check=True)
+    assert subprocess.run([str(d/'flparts')],capture_output=True,timeout=20).stdout==foracle
+    abi=ROOT/'tests/c_abi_fixture.c';driver=ROOT/'tests/c_abi_driver.c'
+    asm=compile(abi,'abi')
+    PASSABI=b'PASS: native V7 C structure, floating and variadic ABI\n'
+    for assembler in ('gnu','native'):
+        obj=d/('abi-'+assembler+'.o')
+        if assembler=='gnu':
+            subprocess.run(['as','--64',str(asm),'-o',str(obj)],check=True)
+        else:
+            r=run([str(nas),'-o',str(obj),str(asm)]);assert r.returncode==0,r.stderr
+        subprocess.run(['cc','-no-pie',str(driver),str(obj),'-o',str(d/'abi')],check=True)
+        r=subprocess.run([str(d/'abi')],capture_output=True,timeout=20)
+        assert r.returncode==0 and r.stdout==PASSABI,(assembler,r.stdout)
+    objs=split(abi,'apart')
+    subprocess.run(['cc','-no-pie',str(driver),*objs,'-o',str(d/'aparts')],check=True)
+    assert subprocess.run([str(d/'aparts')],capture_output=True,timeout=20).stdout==PASSABI
+    # Native caller for guest linking; the fixture bodies stay c1 output.
+    subprocess.run(['gcc','-std=c11','-O2','-ffreestanding','-fno-builtin','-fno-pie','-fno-stack-protector','-fno-asynchronous-unwind-tables',
+        '-mno-red-zone','-mno-avx','-nostdinc','-Ilibc/include','-Iinclude','-c',str(driver),'-o',str(OUT/'abidriver.o')],cwd=ROOT,check=True)
     asm=compile(ROOT/'tests/c_v7dialect.c','dialect')
     r=execute(asm,'dialect','native');assert r.stdout==DIALECT.encode(),r.stdout
     (OUT/'dialect.c').write_bytes((ROOT/'tests/c_v7dialect.c').read_bytes());(OUT/'dialect.exp').write_text(DIALECT)
@@ -162,9 +199,9 @@ with tempfile.TemporaryDirectory(prefix='nx-c-') as tmp:
     # Deterministic source mutations: any status is acceptable, memory errors are not.
     import random
     rng=random.Random(197)
-    text=fixture.read_text()
     tokens=['(',')','{','}',';',',','*','&','[',']','=','+','-','"','\'','0x','1e','struct','int','->','.','?',':','<<=','=+']
-    for i in range(300):
+    for i in range(600):
+        text=(fixture if i%2 else abi).read_text()
         t=list(text)
         for _ in range(rng.randint(1,4)):
             k=rng.randrange(len(t))
@@ -176,5 +213,5 @@ with tempfile.TemporaryDirectory(prefix='nx-c-') as tmp:
         r=run([str(c0),str(d/'m.c'),str(d/'m1'),str(d/'m2')])
         if r.returncode==0:
             run([str(c1),str(d/'m1'),str(d/'m2'),str(d/'m.s')])
-print('PASS: V7 C compiler c0/c1 sanitizers, GCC execution oracle through GNU and native as, V7 dialect, libc headers, '
-      f'{len(V7_SOURCES)} supplied command sources and malformed-input failures')
+print('PASS: V7 C compiler c0/c1 sanitizers, GCC integer/floating execution oracles, structure/floating/variadic ABI with GCC callers and callees through GNU and native as, V7 dialect, libc headers, '
+      f'{len(V7_SOURCES)} supplied command sources and malformed-input failures and 600 source mutations')

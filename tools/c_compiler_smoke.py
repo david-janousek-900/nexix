@@ -5,10 +5,14 @@ from private_guest import private_guest
 from multiuser_acceptance import login
 qemu,iso,ram=sys.argv[1:4]
 F=Path('build/fixtures-c')
-parts=(F/'parts.txt').read_text().split()
-names=parts+['dialect','wc','echo','cat']
+parts=(F/'fpart.txt').read_text().split()
+fparts=(F/'flpart.txt').read_text().split()
+aparts=(F/'apart.txt').read_text().split()
+linked=parts+fparts+aparts
+names=linked+['dialect','wc','echo','cat']
 artifacts={f'/tmp/{n}.c':f'fixtures-c/{n}.c' for n in names}
-artifacts.update({'/tmp/fixture.exp':'fixtures-c/fixture.exp','/tmp/dialect.exp':'fixtures-c/dialect.exp'})
+artifacts.update({'/tmp/fixture.exp':'fixtures-c/fixture.exp','/tmp/dialect.exp':'fixtures-c/dialect.exp',
+    '/tmp/float.exp':'fixtures-c/float.exp','/tmp/abidrv.o':'fixtures-c/abidriver.o'})
 expected=(F/'fixture.exp').read_text()
 words=len(expected.split());lines=expected.count('\n');chars=len(expected)
 def pipeline(guest,p,terminal):
@@ -17,14 +21,22 @@ def pipeline(guest,p,terminal):
         guest.command(f'/lib/c0 /tmp/{p}{n}.i /tmp/{p}{n}.1 /tmp/{p}{n}.2',terminal=terminal)
         guest.command(f'/lib/c1 /tmp/{p}{n}.1 /tmp/{p}{n}.2 /tmp/{p}{n}.s',terminal=terminal)
         guest.command(f'as -o /tmp/{p}{n}.o /tmp/{p}{n}.s',terminal=terminal)
-        if n not in parts:
+        guest.command(f'rm /tmp/{p}{n}.i /tmp/{p}{n}.1 /tmp/{p}{n}.2 /tmp/{p}{n}.s',terminal=terminal)
+        if n not in linked:
             guest.command(f'ld -o /tmp/{p}{n} /lib/crt0.o /tmp/{p}{n}.o -lc',terminal=terminal)
     # Short ld -r groups keep commands within the terminal line limit.
-    groups=[]
-    for k in range(0,len(parts),5):
-        groups.append(f'/tmp/{p}g{k}.o')
-        guest.command(f'ld -r -o /tmp/{p}g{k}.o '+' '.join(f'/tmp/{p}{n}.o' for n in parts[k:k+5]),terminal=terminal)
-    guest.command(f'ld -o /tmp/{p}fixture /lib/crt0.o '+' '.join(groups)+' -lc',terminal=terminal)
+    def link(output,units,extra=''):
+        groups=[]
+        for k in range(0,len(units),5):
+            groups.append(f'/tmp/{p}{output}{k}.o')
+            guest.command(f'ld -r -o /tmp/{p}{output}{k}.o '+' '.join(f'/tmp/{p}{n}.o' for n in units[k:k+5]),terminal=terminal)
+        guest.command(f'ld -o /tmp/{p}{output} /lib/crt0.o {extra}'+' '.join(groups)+' -lc',terminal=terminal)
+    link('fixture',parts)
+    link('float',fparts)
+    link('abi',aparts,'/tmp/abidrv.o ')
+    guest.command(f'/tmp/{p}float > /tmp/{p}fout',terminal=terminal)
+    guest.command(f'cmp /tmp/{p}fout /tmp/float.exp',terminal=terminal)
+    guest.command(f'/tmp/{p}abi',terminal=terminal,stdout='PASS: native V7 C structure, floating and variadic ABI\n')
     guest.command(f'/tmp/{p}fixture > /tmp/{p}out',terminal=terminal)
     guest.command(f'cmp /tmp/{p}out /tmp/fixture.exp',terminal=terminal)
     guest.command(f'/tmp/{p}dialect > /tmp/{p}dout',terminal=terminal)
@@ -37,6 +49,7 @@ def pipeline(guest,p,terminal):
 with private_guest(qemu,iso,ram,'c-compiler',artifacts,terminals=2,single_user=False) as guest:
     login(guest,'root','nexix')
     pipeline(guest,'r',0)
+    guest.command('rm -f /tmp/r*')
     login(guest,'bob','bob',line=1,prompt='$ ')
     pipeline(guest,'u',1)
-print(f'PASS: {ram} native cpp/c0/c1/as/ld V7 C fixture, dialect and supplied commands as root and ordinary user')
+print(f'PASS: {ram} native cpp/c0/c1/as/ld V7 C integer/floating fixtures, structure/floating/variadic ABI, dialect and supplied commands as root and ordinary user')

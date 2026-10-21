@@ -4,9 +4,9 @@ Tasks 197 and 198 retarget the supplied Ritchie compiler passes in
 `reference/v7/usr/src/cmd/c` to native AMD64. The installed passes are
 `/lib/c0` and `/lib/c1`. Both are bootstrapped with the host compiler and
 statically linked against native libc. The reference tree is unchanged.
-Task 199 owns structure values and the remaining floating-point and variadic
-ABI coverage. Task 200 owns the c2 optimizer, the native cvopt command and fc1.
-The `cc` driver is task 201.
+Task 199 completes floating-point values, structure values and the System V
+ABI with variadic definitions. Task 200 owns the c2 optimizer, the native cvopt
+command and fc1. The `cc` driver is task 201.
 
 ## Pass interface
 
@@ -66,11 +66,13 @@ without a source adapter:
 - `__builtin_offsetof`, checked `_Static_assert`, and `__builtin_va_list`
   with the va builtins.
 
-Prototype parameter types declare the parameters of a definition. At calls they
-are not applied: arguments follow the V7 rules. c1 sign- or zero-extends every
-integer argument to 64 bits, so int values passed to long or pointer parameters
-behave. `long double` maps to double; a float parameter of a
-GCC-compiled callee is not supported. Each structure has its own member names,
+Prototype parameter types declare the parameters of a definition. For a direct
+call they also convert arithmetic arguments to the parameter types, and a float
+parameter receives a float. Old-style calls follow the V7 rules. c1 sign- or
+zero-extends every integer argument to 64 bits, so int values passed to long or
+pointer parameters behave. Argument count mismatches against a native
+prototype are warnings, since V7 sources predate the headers. `long double`
+maps to double. Each structure has its own member names,
 as the headers require. A member reference through a non-structure pointer
 falls back to the first declaration of the name, the V7 rule. Conflicting
 function declarations between V7 sources and native prototypes are warnings.
@@ -130,6 +132,34 @@ The installed passes grow their arenas with `sbrk`, as in V7. stdio uses static
 buffers so the break stays contiguous. Symbol names live in a bounded pool, so
 the passes fit the 16 MiB baseline.
 
+## Floating-point values and structures (task 199)
+
+Floating values are doubles in xmm registers. float objects are converted with
+cvtss2sd/cvtsd2ss on load and store. Constants are read-only doubles.
+Comparisons use ucomisd, and branches treat unordered results as satisfying
+only `!=`. Conversions use cvtsi2sd and cvttsd2si; unsigned 64-bit values take
+the split/bias sequences. A function returning float returns a single, and the
+caller widens it. K&R float parameters arrive as doubles (the V7 rule).
+Prototype float parameters are stored as floats.
+
+c0 classifies structures and unions into System V eightbytes from their
+member layout. The class word travels with every structure argument, structure
+call and structure-returning function:
+- Arguments go to registers only when all their eightbytes fit; otherwise they
+  are copied to the stack area.
+- Structure parameters are stored into home slots, or addressed in the
+  caller's area.
+- Calls returning a structure use a frame temporary allocated by c0; a
+  MEMORY-class result passes its address as the hidden first argument.
+- Returns copy the exact size into the hidden pointer, or into a staging
+  temporary that is loaded into RAX/RDX and XMM0/XMM1.
+
+V7's static result area (`sfuncr`) and the PDP-11 helper routines
+(`csv`/`cret`, `lmul`/`ldiv`/`lrem` and their assignment forms, `fltused`)
+have no native counterpart: the native code is generated inline.
+Variadic definitions save all argument registers. `__builtin_va_arg` handles
+integer, pointer and floating arguments; structure va_arg is rejected.
+
 ## Acceptance
 
 `make TOOLCHAIN_PREFIX= test-c-compiler` runs:
@@ -139,12 +169,16 @@ the passes fit the 16 MiB baseline.
   with the same source compiled by GCC;
 - the sbrk-arena build, which must produce identical intermediate code and
   assembly;
+- `tests/c_float_fixture.c` against its GCC-compiled oracle;
+- `tests/c_abi_fixture.c` (every eightbyte class pattern, register exhaustion,
+  hidden result pointers, float parameters and results, variadic definitions
+  and va_copy) linked with the GCC caller/callee `tests/c_abi_driver.c`;
 - the V7 dialect fixture `tests/c_v7dialect.c` against hand-computed results;
 - every libc header, and 90 supplied V7 command sources, through c0, c1 and
   the native assembler;
-- malformed sources, truncated or garbage intermediate files and 300
+- malformed sources, truncated or garbage intermediate files and 600
   deterministic source mutations, which must fail without sanitizer reports;
 - in the guest at 16 and 128 MiB, as root and as an ordinary user: native
-  cpp, c0, c1, as and ld compile the fixture in bounded translation units,
-  the dialect test and the supplied `echo`, `wc` and `cat`, and the results
-  run with the expected output.
+  cpp, c0, c1, as and ld compile the integer, floating and ABI fixtures in
+  bounded translation units, the dialect test and the supplied `echo`, `wc`
+  and `cat`, and the results run with the expected output.

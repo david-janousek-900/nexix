@@ -73,6 +73,7 @@ struct tnode {
 	struct	tnode *tr2;	/* right operand */
 	LTYPE	value;		/* constant value */
 	char	*cstr;		/* floating constant text */
+	struct	str *rstrp;	/* structure returned by a call */
 };
 #define	cnode	tnode
 #define	lnode	tnode
@@ -91,6 +92,7 @@ struct hshtab {
 	int	hoffset;	/* post-allocation location */
 	struct	hshtab *hpdown;	/* Pushed-down name in outer block */
 	struct	hshtab *hnext;	/* argument list link */
+	int	*hproto;	/* prototype: count, variadic, parameter types */
 	int	hblklev;	/* Block level of definition */
 	char	*name;		/* ASCII name (pool); members carry @structure */
 };
@@ -121,6 +123,7 @@ extern char	symbuf[NCPS+16];
 extern int	hshused;
 extern struct	hshtab	hshtab[HSHSIZ];
 extern struct	tnode **cp;
+extern struct	tnode *cmstack[];
 extern int	isn;
 extern struct	swtab	swtab[SWSIZ];
 extern struct	swtab	*swp;
@@ -167,6 +170,7 @@ extern int	protolev;
 extern int	variadic;
 extern int	csymflag;
 extern int	protorec;
+extern int	protodef;
 extern int	vasave, vagp, vafp, vaover;
 extern int	stralign;
 extern struct str vastr;
@@ -521,3 +525,6 @@ struct	tnode *builtin(int);
 void	skipattr(void);
 int	protolist(struct hshtab *);
 void	memalias(struct hshtab *);
+int	strclass(struct str *);
+int	*saveproto(int *, int);
+struct	tnode *protocall(struct hshtab *, struct tnode *);
