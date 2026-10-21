@@ -129,10 +129,10 @@ int mip_align(uint64_t offset, unsigned alignment, uint64_t *out) {
 void mip_arena_init(struct mip_arena *a, struct mip_node *nodes, uint32_t capacity) {
     a->nodes=nodes; a->count=0; a->capacity=nodes ? capacity : 0;
 }
-int mip_node_add(struct mip_arena *a, const struct mip_node *n, uint32_t *out) {
+int mip_node_valid(const struct mip_arena *a, const struct mip_node *n) {
     unsigned arity;
     size_t name_length;
-    if (!a || !n || !out || !a->nodes || a->count>=a->capacity ||
+    if (!a || !n || !a->nodes || a->count>=a->capacity ||
         !mip_type_valid(n->type)) return -1;
     for (name_length=0; name_length<sizeof(n->name) && n->name[name_length]; ++name_length) {}
     if (name_length==sizeof(n->name)) return -1;
@@ -145,6 +145,12 @@ int mip_node_add(struct mip_arena *a, const struct mip_node *n, uint32_t *out) {
         if (mip_align(n->aggregate_size,n->aggregate_alignment,&size) ||
             size!=n->aggregate_size) return -1;
     }
+    if (n->op==REG && n->reg>=64) return -1;
+    if (n->op==FLD && (!n->field_size || n->field_size>64 || n->field_shift>64-n->field_size)) return -1;
+    return 0;
+}
+int mip_node_add(struct mip_arena *a,const struct mip_node *n,uint32_t *out) {
+    if(!out || mip_node_valid(a,n)) return -1;
     a->nodes[a->count]=*n;
     *out=a->count++;
     return 0;

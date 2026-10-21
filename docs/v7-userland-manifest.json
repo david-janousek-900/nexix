@@ -9469,7 +9469,7 @@
         "Machine-dependent backend required."
       ],
       "unresolved": [
-        "Task 192: shared state, diagnostics, traversal, instruction templates, register model and pass/alternate-target integration remain; task 193 supplies the PCC front end and tasks 194\u2013196 the backend/driver consumers."
+        "Task 192: full PCC/lint/alternate-target consumer integration remains with the frontend/backend work in tasks 193\u2013196; the shared service library is not a complete compiler."
       ],
       "acceptance": [
         "Verify shared compiler/lint consumers and explicitly separate prototype backend targets.",
@@ -9506,11 +9506,17 @@
       "native_sources": [
         "user/mip/manifest.h",
         "user/mip/mip.h",
-        "user/mip/common.c"
+        "user/mip/common.c",
+        "user/mip/trees.c",
+        "user/mip/match.c",
+        "user/mip/allo.c",
+        "user/mip/templates.h",
+        "user/mip/diagnostics.c",
+        "user/mip/diagnostics.h"
       ],
       "port_notes": "docs/mip.md",
       "scope_notes": [
-        "Private LP64 type/operator and bounded IR contracts implemented and tested; no installed compiler or complete mip port is claimed."
+        "Native LP64 type/operator, bounded IR, traversal/copy, diagnostic, template/resource and encoded pass services pass sanitizer and native generated-code execution at 16/128 MiB; full compiler/lint/alternate consumer integration remains."
       ]
     },
     {

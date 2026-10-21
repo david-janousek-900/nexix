@@ -36,6 +36,7 @@ struct mip_node {
     double floating;
     uint64_t aggregate_size;
     unsigned aggregate_alignment;
+    unsigned reg, label, field_size, field_shift, source_line;
     char name[MIP_NAME_MAX+1];
 };
 struct mip_arena {
@@ -44,5 +45,13 @@ struct mip_arena {
 };
 void mip_arena_init(struct mip_arena *, struct mip_node *, uint32_t capacity);
 /* Returns -1 without changing the arena or output on malformed/full input. */
+int mip_node_valid(const struct mip_arena *, const struct mip_node *);
 int mip_node_add(struct mip_arena *, const struct mip_node *, uint32_t *out);
+#define MIP_NODE_LIMIT 65536U
+#define MIP_WIRE_LIMIT (32UL*1024*1024)
+typedef int (*mip_visitor)(const struct mip_node *, uint32_t, void *);
+int mip_walk(const struct mip_arena *, uint32_t root, mip_visitor, void *);
+int mip_copy(const struct mip_arena *, uint32_t root, struct mip_arena *, uint32_t *);
+int mip_encode(const struct mip_arena *, uint32_t root, unsigned char **, size_t *);
+int mip_decode(const unsigned char *, size_t, struct mip_arena *, uint32_t *root);
 #endif
