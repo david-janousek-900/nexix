@@ -231,6 +231,9 @@ int main(void)
     assert(!file_put(terminal_file) && terminal_file->f_count==1);memset(user.u_ofile,0,sizeof(user.u_ofile));
     struct file reader={.f_private=c,.f_flag=V7_FMPY|V7_FREAD};
     assert(mx_endpoint_ioctl(&reader,&process.p_vm,NX_TIOCSETP,(uintptr_t)&settings)==-NX_EBADF);
+    const unsigned protected_controls[]={NX_TIOCEXCL,NX_TIOCHPCL,NX_TIOCFLUSH,NX_TIOCSETD};
+    for(unsigned i=0;i<sizeof(protected_controls)/sizeof(*protected_controls);++i)
+        assert(mx_endpoint_ioctl(&reader,&process.p_vm,protected_controls[i],(uintptr_t)&settings)==-NX_EBADF);
     struct file writer={.f_private=c,.f_flag=V7_FMPY|V7_FWRITE};
     unsigned opens=tty_open_count();uart_idle=false;on_sleep=disconnect_during_drain;
     assert(tty_mpx_write(t,(const uint8_t *)"x",1)==1);
