@@ -226,7 +226,7 @@ static int services(int ro)
         if (link("/", "/directory-link") != -1 || errno != EPERM) _exit(8);
         if (chroot("/") != -1 || errno != EPERM) _exit(9);
         if (setuid(0) != -1 || errno != EPERM || stime(&set) != -1 || errno != EPERM) _exit(3);
-        if (kill(getppid(), 0) != -1 || errno != EPERM) _exit(4);
+        if (kill(getppid(), 0) != -1 || errno != ESRCH) _exit(4);
         if (access("/hello", R_OK) || nice(1) || nice(-1) != -1 || errno != EPERM) _exit(5);
         if (chown("/hello", 0, 0) != -1 || errno != EPERM) _exit(6);
         _exit(0);
