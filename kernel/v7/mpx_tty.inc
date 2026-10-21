@@ -143,7 +143,7 @@ static int mx_endpoint_ioctl(struct file *f,struct address_space *vm,uint64_t re
     struct nx_mx_ioctl event={.code=NX_M_IOCTL,.command=request};
     if(!get && size){int error=copyin(vm,address,event.data,size);if(error)return error;}
     ++c->users;int error=0;bool acquired=false;
-    while(c->ioctl_busy || c->event_count==NX_MX_EVENTS){
+    while(c->ioctl_busy || c->event_count+c->event_reserved>=NX_MX_EVENTS){
         if(proc_sleep_interruptible(c,40)){error=-NX_EINTR;break;}
         if(c->closing){error=-NX_ENXIO;break;}
     }
@@ -154,7 +154,9 @@ static int mx_endpoint_ioctl(struct file *f,struct address_space *vm,uint64_t re
         if(t){
             uint64_t data=0;for(unsigned i=0;i<sizeof(event.data);++i)((uint8_t *)&data)[i]=event.data[i];
             struct file *pin=mx_tty_pin(c,t);
+            ++c->event_reserved;
             error=tty_control(t,request,&data);if(pin)(void)file_put(pin);
+            --c->event_reserved;
             if(!error){
                 for(unsigned i=0;i<sizeof(event.data);++i)event.data[i]=((uint8_t *)&data)[i];
                 (void)mx_event_payload(c,&event,sizeof(event));

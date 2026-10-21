@@ -72,6 +72,13 @@ static int disconnect_during_drain(void *channel)
     (void)channel;struct tty *t=bridged->output_tty;mx_bridge_clear(bridged,1);
     assert(tty_handle_valid(t));uart_idle=true;return 0;
 }
+static int fill_during_ioctl(void *channel)
+{
+    (void)channel;
+    for(unsigned i=0;i<NX_MX_EVENTS-1;++i)assert(mx_event(bridged,NX_M_EOT,0,NULL));
+    assert(!mx_event(bridged,NX_M_EOT,0,NULL));
+    uart_idle=true;return 0;
+}
 static int close_during_detach(void *channel)
 {
     (void)channel;
@@ -223,6 +230,17 @@ int main(void)
     assert(tty_mpx_write(t,(const uint8_t *)"x",1)==1);
     assert(!mx_endpoint_ioctl(&writer,&process.p_vm,NX_TIOCSETP,(uintptr_t)&settings));
     assert(!c->output_tty && tty_open_count()==opens-1);on_sleep=NULL;
+    /* Completion capacity survives a sleeping connected terminal ioctl. */
+    reset_mx();assert(!tty_open(NX_CONSOLE_DEV,&user,&t));
+    terminal_file=file_alloc();assert(terminal_file);
+    terminal_file->f_private=t;terminal_file->f_flag=V7_FREAD|V7_FWRITE;
+    g=&mx_groups[0];c=mx_allocate(g);bridged=c;
+    c->output_tty=t;c->output_file=terminal_file;
+    writer.f_private=c;uart_idle=false;on_sleep=fill_during_ioctl;
+    assert(!mx_endpoint_ioctl(&writer,&process.p_vm,NX_TIOCSETP,(uintptr_t)&settings));
+    assert(c->event_count==NX_MX_EVENTS && !c->event_reserved);
+    assert(c->events[NX_MX_EVENTS-1].size==sizeof(struct nx_mx_ioctl));
+    on_sleep=NULL;mx_bridge_clear(c,0);
     /* Endpoint close during last-bridge drain cannot reap the detacher. */
     reset_mx();assert(!tty_open(NX_CONSOLE_DEV,&user,&t));
     terminal_file=file_alloc();assert(terminal_file);

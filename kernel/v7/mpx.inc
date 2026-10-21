@@ -25,7 +25,7 @@ struct mx_channel {
     struct tty *input_tty,*output_tty;
     struct file *input_file,*output_file,*port_file;
     uint32_t signals;
-    unsigned users, event_head, event_count;
+    unsigned users, event_head, event_count, event_reserved;
     struct mx_queue x, y;
     struct mx_event events[NX_MX_EVENTS];
     struct mx_group *parent;
