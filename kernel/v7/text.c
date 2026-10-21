@@ -35,6 +35,12 @@ int text_purge_device(v7_dev_t dev)
         }
     return error;
 }
+bool text_active(const struct inode *inode)
+{
+    for(unsigned i=0;i<V7_NTEXT;++i)
+        if(texts[i].x_iptr==inode&&texts[i].x_count)return true;
+    return false;
+}
 int text_evict(struct inode *inode)
 {
     for(unsigned i=0;i<V7_NTEXT;++i)

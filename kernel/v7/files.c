@@ -191,6 +191,14 @@ static struct inode *cached_inode(struct fs_node ino)
     for(unsigned i=0;i<V7_NINODE;++i)if(inodes[i].i_count&&node_equal(inode_node(&inodes[i]),ino))return &inodes[i];
     return NULL;
 }
+/* V7 access() reports busy text before permission bits. This check has no
+ * side effects, so an unpermitted writer still cannot evict sticky text. */
+static int text_busy_check(struct fs_node ino)
+{
+    struct inode *inode=cached_inode(ino);
+    if(inode && (tape_image_busy(inode)||output_image_busy(inode)))return -NX_EBUSY;
+    return inode&&(inode->i_flag&V7_ITEXT)&&text_active(inode)?-NX_ETXTBSY:0;
+}
 static int text_write_check(struct fs_node ino)
 {
     struct inode *inode=cached_inode(ino);
@@ -353,6 +361,8 @@ static int open_path(struct user *u, uintptr_t address, uint64_t flags, uint64_t
     struct v7fs_inode disk={0};
     if (!error) error = node_inode_get(ino, &disk);
     unsigned access = flags & NX_O_ACCMODE;
+    if(!error&&access&&(disk.mode&V7_IFMT)==V7_IFREG)
+        error=node_volume(ino)->read_only?-NX_EROFS:text_busy_check(ino);
     if (!error && !created && !v7fs_access(&disk, u->u_uid, u->u_gid, access == 0 ? 4 : access == 1 ? 2 : 6)) error = -NX_EACCES;
     /* Only a permitted writer may evict unused sticky text. */
     if(!error&&access&&(disk.mode&V7_IFMT)==V7_IFREG){
@@ -491,8 +501,9 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
             if(write && copyin(vm,address+done,bytes,n))return done?(int64_t)done:-NX_EFAULT;
             error=storage_transfer(f->f_private,start+done,bytes,n,write,&moved);
             if(!write && moved && copyout(vm,address+done,bytes,moved))panic("storage output mapping changed");
-            /* Raw transfers start on a block boundary; keep the offset in step with them. */
-            done+=moved;f->f_offset=(int64_t)(start+done);
+            /* Raw transfers start on a block boundary (V7 physio), but as in V7
+             * rdwr the file offset advances by the bytes moved from where it was. */
+            done+=moved;f->f_offset+=(int64_t)moved;
             if(error||moved<n)break;
         }
         return done?(int64_t)done:error;
@@ -623,6 +634,7 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
         if (error) return error;
         if (access) {
             if ((args[1] & 2) && node_volume(ino)->read_only) return -NX_EROFS;
+            if ((args[1] & 2) && (error = text_busy_check(ino))) return error;
             if (!v7fs_access(&disk, u->u_ruid, u->u_rgid, args[1])) return -NX_EACCES;
             return (args[1] & 2) ? text_write_check(ino) : 0;
         }

@@ -83,8 +83,10 @@ void signal_deliver(struct interrupt_frame *frame)
     struct proc *p = proc_current();
     if (!p || (frame->cs & 3) != 3 || !signal_pending(p)) return;
     const uint32_t kill = 1U << (NX_SIGKILL - 1);
-    if (p->p_sig & kill) proc_exit(NX_SIGKILL);
     if(p->p_flag&V7_STRC){
+        /* As in V7, a traced process stops for SIGKILL too and the tracer may
+         * cancel it. A SIGKILL posted during the stop releases it (signal_post)
+         * and cannot be continued away. */
         proc_trace_stop();
         if (p->p_sig & kill) proc_exit(NX_SIGKILL);
         /* Continue replaces the pending set, including suppression with 0.
