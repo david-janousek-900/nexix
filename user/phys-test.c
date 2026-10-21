@@ -108,9 +108,10 @@ int phys_test(void)
         CHECK(setuid(123)==0);
         CHECK(phys(0,0,0)==-1 && errno==EPERM);
         CHECK(phys(2,1,pa)==-1 && errno==EPERM);
-        CHECK(a[0]==0x9999);a[0]=0x7777;_exit(37);
+        /* Dropping root revoked the inherited window. */
+        a[0]=0x7777;_exit(37);
     }
-    CHECK(finished(p,37) && a[0]==0x7777);
+    CHECK(wait(&status)==p && WIFSIGNALED(status) && WTERMSIG(status)==SIGSEGV && a[0]==0x9999);
     CHECK(phys(0,0,0)==0 && b[0]==0xaaaa && phys(1,0,0)==0);
     CHECK(phys(0,1,pa)==0 && a[0]==0 && phys(0,0,0)==0); /* Last release frees, next claim zeroes. */
     static const char marker[]="NEXIX_PHYS_OK\n";
