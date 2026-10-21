@@ -28,18 +28,19 @@ struct tty {
     bool stopped,flow_blocked,flow_release,exclusive,hangup,pumping;
     uint8_t flow_resume;
     unsigned profile,out_head,out_count,waiting,modem_mode,modem_signals;
-    bool carrier,hungup;
+    bool carrier,hungup,closing;
     unsigned modem_outputs;
     uint16_t output[OUTPUT_CAPACITY];
     uint64_t delay_until;
     struct tty_parameters parameters;
     void *mpx_owner;
-    char input_channel, output_channel;
+    char input_channel, output_channel, close_channel;
 };
 static struct tty terminals[TTY_LINES];
 unsigned tty_console_line;
 #define console terminals[0]
 static bool valid_tty(struct tty *t){for(unsigned i=0;i<TTY_LINES;++i)if(t==&terminals[i])return t->driver!=NULL;return false;}
+bool tty_handle_valid(struct tty *t){return valid_tty(t) && t->opens && !t->closing;}
 static void receive(struct tty *,uint8_t);
 static bool immediate(const struct tty *t) { return t->settings.flags & (NX_RAW | NX_CBREAK); }
 static void start(struct tty *);
@@ -57,7 +58,7 @@ static void carrier_update(struct tty *t,unsigned signals,bool notify)
     bool old=t->carrier;t->modem_signals=signals;
     t->carrier=!t->hungup && (t->modem_mode==NX_MDM_LOCAL || (signals&NX_MDM_DCD));
     if(old && !t->carrier && notify && t->opens>t->waiting){
-        packet_close(t);t->flow_blocked=t->flow_release=false;
+        packet_abort(t);t->flow_blocked=t->flow_release=false;
         flush_output(t);flush(t);t->stopped=false;
         if(t->mpx_owner)mpx_tty_notify(t->mpx_owner,NX_SIGHUP);else signal_group(t->group,NX_SIGHUP);
         modem_outputs(t,false);
@@ -113,6 +114,7 @@ int tty_open(v7_dev_t dev,struct user *u,struct tty **out)
     if(dev==NX_CONSOLE_DEV)t=&terminals[tty_console_line];
     if(dev==NX_CTTY_DEV){if(!valid_tty(u->u_ttyp))return -NX_ENXIO;t=u->u_ttyp;}
     if(!t->driver)return -NX_ENODEV;
+    while(t->closing)if(proc_sleep_interruptible(&t->close_channel,28))return -NX_EINTR;
     unsigned profile=dev==NX_CTTY_DEV?t->profile:t->opens?t->profile:NX_TTY_NATIVE,line;
     if((dev>>8)!=1 && dev!=NX_CTTY_DEV){int error=tty_controller_device(dev,&profile,&line);if(error)return error;}
     if(t->opens && t->profile!=profile)return -NX_EBUSY;
@@ -163,12 +165,14 @@ void tty_close(struct tty *t)
 {
     if(!valid_tty(t) || !t->opens)panic("invalid tty close");
     if(t->opens==1){
+        t->closing=true;
         packet_close(t);if(t->stopped)flush_output(t);if(drain(t))flush_output(t);
         flush(t);resume(t);if(drain(t))flush_output(t);t->group=0;t->exclusive=false;
         if(t->hangup)modem_outputs(t,false);
         t->hangup=false;
     }
     --t->opens;
+    if(t->closing){t->closing=false;proc_wakeup(&t->close_channel);}
 }
 static void token(struct tty *t,uint16_t c)
 {t->output[(t->out_head+t->out_count)%OUTPUT_CAPACITY]=c;++t->out_count;}
@@ -378,7 +382,8 @@ int tty_control(struct tty *t,uint64_t request,void *argument)
         uint32_t allowed=NX_TANDEM|NX_CBREAK|NX_LCASE|NX_ECHO|NX_CRMOD|NX_RAW|NX_ODDP|NX_EVENP|
             NX_NLDELAY|NX_TBDELAY|NX_CRDELAY|NX_VTDELAY|NX_BSDELAY|
             NX_TTY_NOSIG|NX_TTY_PASS8|NX_TTY_SPLITCR|NX_TTY_ICRNL|NX_TTY_ONLCR;
-        if(state.settings.flags&~allowed || tty_parameters(t->profile,&state.settings,&parameters))return -NX_EINVAL;
+        bool b0=!state.settings.ispeed && !state.settings.ospeed && (t->profile==NX_TTY_DH || t->profile==NX_TTY_DZ);
+        if(state.settings.flags&~allowed || (!b0 && tty_parameters(t->profile,&state.settings,&parameters)))return -NX_EINVAL;
         if(packet_active(t))return -NX_EBUSY;
         if(state.action==1 && t->carrier){int error=drain(t);if(error)return error;}
         int error=tty_control(t,state.action==2?NX_TIOCSETP:NX_TIOCSETN,&state.settings);

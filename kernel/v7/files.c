@@ -26,6 +26,7 @@ static bool modem_file(const struct file *f)
 static bool output_file(const struct file *f)
 {return f->f_inode && (f->f_inode->i_mode&V7_IFMT)==V7_IFCHR && output_matches(f->f_inode->i_un.i_rdev);}
 static struct file table[V7_NFILE];
+static bool closing[V7_NFILE];
 static struct inode inodes[V7_NINODE];
 static struct v7fs *root;
 static bool root_exec;
@@ -114,7 +115,7 @@ int files_mountpoint_put(struct inode *inode)
 }
 static struct file *file_alloc(void)
 {
-    for (unsigned i = 0; i < V7_NFILE; ++i) if (!table[i].f_count) {
+    for (unsigned i = 0; i < V7_NFILE; ++i) if (!table[i].f_count && !closing[i]) {
         zero(&table[i], sizeof(table[i])); table[i].f_count = 1; return &table[i];
     }
     return NULL;
@@ -124,6 +125,8 @@ static int file_put(struct file *f)
 {
     if (!valid_file(f)) panic("invalid open file release");
     if (--f->f_count) return 0;
+    /* A closing slot is unavailable until sleeping device teardown finishes. */
+    unsigned slot=(unsigned)(f-table);closing[slot]=true;
     int error = 0;
     if(f->f_flag&V7_FMP) mpx_close(f);
     else if (f->f_private && !(f->f_flag & V7_FPIPE)) {
@@ -140,7 +143,7 @@ static int file_put(struct file *f)
         proc_wakeup(p);
         if (!p->readers && !p->writers) zero(p, sizeof(*p));
     }
-    zero(f, sizeof(*f)); return error;
+    zero(f, sizeof(*f));closing[slot]=false;return error;
 }
 static int close_fd(struct user *u, unsigned fd)
 {

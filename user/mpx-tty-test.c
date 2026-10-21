@@ -2,6 +2,8 @@
 #include <sgtty.h>
 #include <sys/kinfo.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
+#include <nexix/output.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <signal.h>
@@ -83,6 +85,15 @@ static int ports(int t)
 static int connections(int t)
 {
     int g=mpx("",0600),id=chan(g),e=extract(id,g,1);CHECK(g>=0 && id>=0 && e>=0);
+    int rd=open("/dev/console",O_RDONLY),wr=open("/dev/console",O_WRONLY);CHECK(rd>=0 && wr>=0);
+    CHECK(connect(rd,e,1)==-1 && errno==EBADF && join(rd,g)==-1 && errno==EBADF);
+    CHECK(connect(wr,e,-1)==-1 && errno==EBADF && join(wr,g)==-1 && errno==EBADF);
+    CHECK(connect(rd,e,-1)==0 && disconnect(rd,e,-1)==0);
+    CHECK(connect(wr,e,1)==0 && disconnect(wr,e,1)==0 && close(rd)==0 && close(wr)==0);
+    CHECK(mknod("/tmp/mx-cat",S_IFCHR|0600,NX_CAT_DEV)==0);
+    int out=open("/tmp/mx-cat",O_WRONLY);CHECK(out>=0);
+    CHECK(connect(out,e,1)==-1 && errno==ENXIO && join(out,g)==-1 && errno==ENXIO);
+    CHECK(close(out)==0 && unlink("/tmp/mx-cat")==0);
     CHECK(connect(t,e,-1)==0 && inject("input\n",6)==0);uint8_t b[128];
     CHECK(read(g,b,sizeof(b))==12 && !memcmp(b+6,"input\n",6));
     CHECK(send(g,id,"pipe",4)==16 && read(e,b,sizeof(b))==4 && !memcmp(b,"pipe",4));
@@ -178,7 +189,14 @@ static int groups(void)
     CHECK(ckill(id,g,0)==-1 && errno==EINVAL && npgrp(id,g,-1)==-1 && errno==EINVAL);
     pid_t pid=fork();CHECK(pid>=0);
     if(!pid){signal(SIGALRM,handler);CHECK(npgrp(id,g,0)==getpid());CHECK(pause()==-1 && errno==EINTR);_exit(0);}
-    CHECK(sleeping(pid) && ckill(id,g,SIGALRM)==SIGALRM && finished(pid));
+    CHECK(sleeping(pid));
+    pid_t attacker=fork();CHECK(attacker>=0);
+    if(!attacker){
+        CHECK(npgrp(id,g,pid)==pid && npgrp(-1,-1,0)==getpid() && setuid(123)==0);
+        CHECK(ckill(id,g,SIGALRM)==-1 && errno==EPERM);_exit(0);
+    }
+    CHECK(finished(attacker) && sleeping(pid));
+    CHECK(ckill(id,g,SIGALRM)==SIGALRM && finished(pid));
     CHECK(close(e)==0 && close(g)==0);return 0;
 }
 int mpx_tty_test(void)

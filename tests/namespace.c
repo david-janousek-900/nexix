@@ -37,6 +37,8 @@ int main(int argc,char **argv)
     }
     assert(v7fs_mount(&root,&devices[0].device,false)==0&&namespace_root(&root)==0);
     struct fs_node base={0,V7_ROOTINO};
+    /* Empty lookup is deliberate V7 compatibility, used by rmdir. */
+    assert(node_equal(lookup(base,base,""),base));
     assert(node_equal(lookup(base,base,"/inner/.."),base));
     pins[0]=(struct inode){.i_count=1,.i_dev=0,.i_number=3};
     assert(namespace_mount(1,(struct fs_node){0,3},&pins[0],false)==0);
