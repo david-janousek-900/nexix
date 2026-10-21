@@ -5,7 +5,7 @@
 #include <string.h>
 static uint8_t regs[2][8],status[4],media[4][2][512];
 static unsigned word[4],sector[4],resets;
-static bool identify[4],absent[4],fail,mirror_slave;
+static bool identify[4],absent[4],fail,mirror_slave,alias_identify;
 static unsigned channel(uint16_t port)
 {assert((port>=0x1f0 && port<=0x1f7)||port==0x3f6||(port>=0x170 && port<=0x177)||port==0x376);return port==0x376 || port<0x1f0?1:0;}
 static unsigned drive(unsigned c){return c*2+((regs[c][6]>>4)&1);}
@@ -30,7 +30,7 @@ void outb(uint16_t port,uint8_t value)
 uint16_t inw(uint16_t port)
 {
     unsigned u=drive(channel(port)),i=word[u]++;assert((port&7)==0 && i<256 && status[u]==0x48);
-    uint16_t result=identify[u]?(i==49?512:i==60?2:i==83?0x5000:0):
+    uint16_t result=identify[u]?(i==10?(uint16_t)(alias_identify?(u&~1U)+1:u+1):i==49?512:i==60?2:i==83?0x5000:0):
         media[u][sector[u]][i*2]|((uint16_t)media[u][sector[u]][i*2+1]<<8);
     if(word[u]==256)status[u]=0x40;
     return result;
@@ -52,7 +52,9 @@ int main(void)
     fail=true;assert(block_read(&d[3],1,1,out)==-NX_EIO && resets==1);
     assert(!block_read(&d[3],1,1,out) && out[0]==0x43);
     mirror_slave=true;assert(ide_init_unit(&missing,1)==-NX_ENODEV && !missing.blocks);
-    mirror_slave=false;assert(!ide_init_unit(&missing,1));
+    mirror_slave=false;alias_identify=true;
+    assert(ide_init_unit(&missing,1)==-NX_ENODEV && !missing.blocks);
+    alias_identify=false;assert(!ide_init_unit(&missing,1));
     absent[2]=true;assert(ide_init_unit(&missing,2)==-NX_ENODEV && !missing.blocks);
     assert(ide_init_unit(&missing,4)==-NX_EINVAL);
     puts("PASS: ATA primary/secondary master/slave selection, independent media, reset/error recovery and absent unit");
