@@ -7,7 +7,7 @@
 #define COM2 0x2f8
 #define TX_CAPACITY 4096
 static uint8_t tx[TX_CAPACITY],pending_status;
-static unsigned tx_head,tx_count;
+static unsigned tx_head,tx_count,tx_burst=1;
 static bool attached;
 static uint8_t line_status(void)
 {
@@ -18,7 +18,7 @@ static uint8_t line_status(void)
 static void transmit(void)
 {
     if(!(line_status()&0x20))return;
-    for(unsigned n=0;n<16 && tx_count;++n){
+    for(unsigned n=0;n<tx_burst && tx_count;++n){
         outb(COM2,tx[tx_head]);tx_head=(tx_head+1)%TX_CAPACITY;--tx_count;
     }
     if(!tx_count)outb(COM2+1,inb(COM2+1)&~2U);
@@ -40,7 +40,8 @@ static void format(void *context,unsigned rate,uint8_t control)
     while(tx_count)transmit();
     while(!(line_status()&0x40))__asm__ volatile("pause");
     uint8_t ier=inb(COM2+1);outb(COM2+1,0);
-    uint16_t divisor=115200/rate;
+    /* Rate 134 is 134.5 baud: 115200/134.5 rounds to 857. */
+    uint16_t divisor=rate==134?857:115200/rate;
     outb(COM2+3,0x80);outb(COM2,divisor&255);outb(COM2+1,divisor>>8);
     outb(COM2+3,control);outb(COM2+1,ier);
 }
@@ -64,6 +65,8 @@ bool serial_secondary_init(void)
     if(!present)return false;
     outb(COM2+1,0);outb(COM2+3,0x80);outb(COM2,1);outb(COM2+1,0);
     outb(COM2+3,3);outb(COM2+2,7);outb(COM2+4,0x0b);
+    /* Only a working 16550 FIFO accepts more than one byte per THRE. */
+    tx_burst=(inb(COM2+2)&0xc0)==0xc0?16:1;
     pending_status=0;tx_head=tx_count=0;
     if(tty_attach(1,&driver))return false;
     attached=true;

@@ -105,7 +105,9 @@ int tty_attach(unsigned line,const struct tty_driver *driver)
 }
 void tty_init(void)
 {(void)tty_attach(0,&console_driver);serial_receive_enable();}
-void tty_set_group(struct tty *t,v7_pid_t group){if(valid_tty(t))t->group=group;}
+/* Only the foreground group, or root, may move a terminal to a new group. */
+void tty_set_group(struct tty *t,v7_pid_t old,v7_pid_t group,bool privileged)
+{if(valid_tty(t) && (privileged || !t->group || t->group==old))t->group=group;}
 unsigned tty_open_count(void){unsigned n=0;for(unsigned i=0;i<TTY_LINES;++i)n+=terminals[i].opens;return n;}
 int tty_open(v7_dev_t dev,struct user *u,struct tty **out)
 {
@@ -121,7 +123,8 @@ int tty_open(v7_dev_t dev,struct user *u,struct tty **out)
     if(t->exclusive && u->u_uid)return -NX_EBUSY;
     if(!t->opens)defaults(t,profile);
     ++t->opens;++t->waiting;
-    while(!t->carrier)if(proc_sleep_interruptible(&t->input_channel,28)){
+    /* A carrier waiter must not finish opening while an earlier last close is still resetting the line. */
+    while(!t->carrier || t->closing)if(proc_sleep_interruptible(t->closing?&t->close_channel:&t->input_channel,28)){
         --t->waiting;if(!--t->opens)modem_outputs(t,false);return -NX_EINTR;
     }
     --t->waiting;
@@ -164,7 +167,8 @@ static int drain(struct tty *t)
 void tty_close(struct tty *t)
 {
     if(!valid_tty(t) || !t->opens)panic("invalid tty close");
-    if(t->opens==1){
+    /* Carrier waiters are not opens yet, so the last real close still resets the line. */
+    if(t->opens-t->waiting==1){
         t->closing=true;
         packet_close(t);if(t->stopped)flush_output(t);if(drain(t))flush_output(t);
         flush(t);resume(t);if(drain(t))flush_output(t);t->group=0;t->exclusive=false;

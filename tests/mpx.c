@@ -66,6 +66,12 @@ static int allocate_during_close(void *channel)
     replacement=file_alloc();assert(replacement && replacement!=closing_file);
     replacement->f_open_flags=NX_O_APPEND;uart_idle=true;return 0;
 }
+static struct mx_channel *bridged;
+static int disconnect_during_drain(void *channel)
+{
+    (void)channel;struct tty *t=bridged->output_tty;mx_bridge_clear(bridged,1);
+    assert(tty_handle_valid(t));uart_idle=true;return 0;
+}
 static int accept_open(void *channel)
 {((struct mx_channel *)channel)->pending=false;return 0;}
 int main(void)
@@ -194,5 +200,20 @@ int main(void)
     assert(mx_ioctl_control(c,&request)==-NX_EINTR && !c->ioctl_pending && !c->ioctl_busy);
     c->closing=true;struct file endpoint={.f_private=c,.f_flag=V7_FMPY};
     assert(mx_endpoint_ioctl(&endpoint,&process.p_vm,NX_TIOCGETP,(uintptr_t)&settings)==-NX_ENXIO);
-    puts("PASS: mpx record validation, queue bounds/wrap, low-water wakeups, control retention, nonblocking retry, interrupted writes and pinned detach lifetime, TTY data/EOF/signals/flow and ioctl replies");return 0;
+    /* A sleeping endpoint ioctl keeps a disconnected bridge's terminal open. */
+    reset_mx();assert(tty_open(NX_CONSOLE_DEV,&user,&t)==0);
+    terminal_file=file_alloc();assert(terminal_file);terminal_file->f_private=t;terminal_file->f_flag=V7_FREAD|V7_FWRITE;
+    g=&mx_groups[0];c=mx_allocate(g);assert(c);bridged=c;
+    struct file connected_rw={.f_private=c,.f_flag=V7_FMPY};
+    user.u_ofile[0]=terminal_file;user.u_ofile[1]=&connected_rw;connection=(struct nx_mx_args){.arg={0,1,1}};
+    assert(!mx_connect(&user,&connection,false) && c->output_tty==t);
+    assert(!file_put(terminal_file) && terminal_file->f_count==1);memset(user.u_ofile,0,sizeof(user.u_ofile));
+    struct file reader={.f_private=c,.f_flag=V7_FMPY|V7_FREAD};
+    assert(mx_endpoint_ioctl(&reader,&process.p_vm,NX_TIOCSETP,(uintptr_t)&settings)==-NX_EBADF);
+    struct file writer={.f_private=c,.f_flag=V7_FMPY|V7_FWRITE};
+    unsigned opens=tty_open_count();uart_idle=false;on_sleep=disconnect_during_drain;
+    assert(tty_mpx_write(t,(const uint8_t *)"x",1)==1);
+    assert(!mx_endpoint_ioctl(&writer,&process.p_vm,NX_TIOCSETP,(uintptr_t)&settings));
+    assert(!c->output_tty && tty_open_count()==opens-1);on_sleep=NULL;
+    puts("PASS: mpx record validation, queue bounds/wrap, low-water wakeups, control retention, nonblocking retry, interrupted writes and pinned detach lifetime, TTY data/EOF/signals/flow, ioctl replies and pinned bridge ioctls");return 0;
 }

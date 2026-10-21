@@ -25,5 +25,9 @@ int main(void)
     assert(signal_group_user(0,NX_SIGTERM)==-NX_EINVAL);
     assert(signal_group_user(2,V7_NSIG)==-NX_EINVAL);
     assert(!signal_kill(-1,0));
-    puts("PASS: user group signals enforce UID permissions, root access, mixed groups and group 1 isolation");
+    /* SIGKILL releases a trace stop instead of waiting for the tracer. */
+    processes[3]=(struct proc){.p_stat=V7_SSTOP,.p_flag=V7_STRC,.p_pid=3,.p_pgrp=3,.p_user=&users[3]};
+    signal_post(&processes[3],NX_SIGTERM);assert(processes[3].p_stat==V7_SSTOP);
+    signal_post(&processes[3],NX_SIGKILL);assert(processes[3].p_stat==V7_SRUN && (processes[3].p_sig&(1U<<(NX_SIGKILL-1))));
+    puts("PASS: user group signals enforce UID permissions, root access, mixed groups, group 1 isolation and SIGKILL trace-stop release");
 }

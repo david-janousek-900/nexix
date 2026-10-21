@@ -5,7 +5,7 @@
 #define COM1 0x3f8
 #define TX_CAPACITY 4096
 static uint8_t tx[TX_CAPACITY];
-static unsigned tx_head,tx_count;
+static unsigned tx_head,tx_count,tx_burst=1;
 /* LSR error bits clear on read. TX/idle polling must preserve the receive
  * head's status until the corresponding RBR byte (or break event) is taken. */
 static uint8_t pending_status;
@@ -14,7 +14,7 @@ static uint8_t line_status(void)
 static void transmit(void)
 {
     if(!(line_status()&0x20))return;
-    for(unsigned n=0;n<16 && tx_count;++n){
+    for(unsigned n=0;n<tx_burst && tx_count;++n){
         outb(COM1,tx[tx_head]);tx_head=(tx_head+1)%TX_CAPACITY;--tx_count;
     }
     if(!tx_count)outb(COM1+1,inb(COM1+1)&~2U);
@@ -34,6 +34,8 @@ void serial_init(void)
     outb(COM1 + 1, 0);
     outb(COM1 + 3, 3);
     outb(COM1 + 2, 0xc7);
+    /* Only a working 16550 FIFO accepts more than one byte per THRE. */
+    tx_burst = (inb(COM1 + 2) & 0xc0) == 0xc0 ? 16 : 1;
     outb(COM1 + 4, 0x0b);
 }
 void serial_putc(uint8_t byte)
@@ -50,7 +52,8 @@ void serial_format(unsigned rate,uint8_t line_control)
     while (!(line_status() & 0x40)) __asm__ volatile ("pause");
     uint8_t ier = inb(COM1 + 1);
     outb(COM1 + 1, 0);
-    uint16_t divisor = 115200 / rate;
+    /* Rate 134 is 134.5 baud: 115200/134.5 rounds to 857. */
+    uint16_t divisor = rate == 134 ? 857 : 115200 / rate;
     outb(COM1 + 3, 0x80);
     outb(COM1, divisor & 255); outb(COM1 + 1, divisor >> 8);
     outb(COM1 + 3, line_control);

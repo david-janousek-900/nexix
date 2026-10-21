@@ -65,7 +65,8 @@ Missing targets return ESRCH; denied matching targets return EPERM. Kernel
 helper processes and unpublished/zombie slots are excluded.
 
 `setpgrp()` creates the caller's group using its PID and associates its
-controlling terminal with that group; `getpgrp()` reports it. Fork inherits the
+controlling terminal with that group when the caller is root, already belongs
+to the terminal's group, or the terminal has no group yet; `getpgrp()` reports it. Fork inherits the
 group. This fills V7's reserved call 39 with a native no-argument interface.
 Cooked and cbreak Ctrl-C/Ctrl-backslash flush input, release output stop, and
 post SIGINT/SIGQUIT to the terminal group. RAW treats these bytes as data.

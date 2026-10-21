@@ -15,6 +15,7 @@ static void *ctl;
 static unsigned script,steps,digits,hangups,outputs,uart_signals;
 static uint8_t number[16],wire[8192];static size_t used;
 static uintptr_t readonly;
+static struct tty *closing;
 struct proc *proc_current(void){return &process;}
 uint64_t timer_ticks(void){return ticks;}
 int copyin(const struct address_space *v,uintptr_t a,void *p,size_t n)
@@ -53,6 +54,8 @@ int proc_sleep_interruptible(void *p,unsigned priority)
     else if(script==4)signals(NX_DU_DEV,0);
     else if(script==5){struct nx_modem_peer data={.device=NX_DU_DEV,.operation=NX_PEER_END};assert(!command(&data));}
     else if(script==6)tty_link(NX_MDM_DCD|NX_MDM_SECONDARY);
+    else if(script==8){tty_close(closing);script=0;}
+    else if(script==9){tty_close(closing);tty_link(NX_MDM_DCD);}
     return 0;
 }
 int main(void)
@@ -123,6 +126,15 @@ int main(void)
     s.ispeed=s.ospeed=NX_B300;assert(!tty_control(tty,NX_TIOCSETP,&s) && outputs);
     mode.mode=NX_MDM_UART;uart_signals=NX_MDM_DCD;assert(!tty_control(tty,NX_MDM_SET,&mode));
     tty_modem_status(0);assert(hangups==3);mode.mode=NX_MDM_LOCAL;assert(!tty_control(tty,NX_MDM_SET,&mode));
-    tty_modem_status(0);assert(hangups==3);tty_close(tty);modem_close(ctl);
-    puts("PASS: DN dialing/pause/completion/errors, DU ownership/records/flow/timeouts, peer atomicity, carrier waits/hangup, local/UART modes and B0");
+    tty_modem_status(0);assert(hangups==3);
+    /* The last real close resets exclusive use and the group even while a carrier waiter holds an open. */
+    mode.mode=NX_MDM_VIRTUAL;assert(!tty_control(tty,NX_MDM_SET,&mode));tty_link(0);
+    assert(!tty_control(tty,NX_TIOCEXCL,NULL));struct tty *waiter;closing=tty;script=8;
+    assert(tty_open(NX_TTY_CONTROLLER_DEV(NX_TTY_DH,0),&user,&waiter)==-NX_EINTR);
+    user.u_uid=1;assert(tty_open(NX_TTY_CONTROLLER_DEV(NX_TTY_DH,0),&user,&waiter)==-NX_EINTR);user.u_uid=0;
+    tty_link(NX_MDM_DCD);assert(!tty_open(NX_TTY_CONTROLLER_DEV(NX_TTY_DH,0),&user,&tty));tty_link(0);
+    closing=tty;script=9;process.p_pid=19;process.p_pgrp=0;
+    assert(!tty_open(NX_TTY_CONTROLLER_DEV(NX_TTY_DH,0),&user,&tty) && process.p_pgrp==19);
+    tty_close(tty);process.p_pid=process.p_pgrp=17;script=0;modem_close(ctl);
+    puts("PASS: DN dialing/pause/completion/errors, DU ownership/records/flow/timeouts, peer atomicity, carrier waits/hangup, last close with carrier waiters, local/UART modes and B0");
 }
