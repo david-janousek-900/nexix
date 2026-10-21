@@ -482,6 +482,40 @@ test-unit: build/ide-test
 
 # Task 21: read-only source inventory and coverage checks.
 .PHONY: test-inventory
+.PHONY: test-boot-artifacts
+test-boot-artifacts:
+	$(PYTHON) tools/check_boot_artifacts.py
+	$(PYTHON) tests/boot_artifacts.py
+test-inventory: test-boot-artifacts
+.PHONY: test-sum
+test-sum: multi-iso rootfs
+	$(PYTHON) tools/sum_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/sum_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-sum
+.PHONY: test-mknod
+test-mknod: multi-iso rootfs
+	$(PYTHON) tools/mknod_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/mknod_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-mknod
+build/accton-records.o: tests/accton-records.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/accton-records.elf: build/crt0.o build/accton-records.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+.PHONY: test-accton
+test-accton: build/accton-records.elf multi-iso rootfs
+	$(PYTHON) tools/accton_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/accton_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-accton
+.PHONY: test-update
+test-update: multi-iso rootfs
+	$(PYTHON) tools/update_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/update_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-update
+.PHONY: test-df
+test-df: multi-iso rootfs
+	$(PYTHON) tools/df_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/df_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-df
 test-inventory:
 	$(PYTHON) tools/check_inventory.py
 	$(PYTHON) tests/inventory.py
