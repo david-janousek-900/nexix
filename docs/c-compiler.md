@@ -1,0 +1,150 @@
+# Native V7 C compiler (c0, c1)
+
+Tasks 197 and 198 retarget the supplied Ritchie compiler passes in
+`reference/v7/usr/src/cmd/c` to native AMD64. The installed passes are
+`/lib/c0` and `/lib/c1`. Both are bootstrapped with the host compiler and
+statically linked against native libc. The reference tree is unchanged.
+Task 199 owns structure values and the remaining floating-point and variadic
+ABI coverage. Task 200 owns the c2 optimizer, the native cvopt command and fc1.
+The `cc` driver is task 201.
+
+## Pass interface
+
+`c0 source temp1 temp2 [profile]` and `c1 temp1 temp2 output.s` keep the
+supplied command lines and the split between expression/code and string files.
+The PDP-11 passes exchanged 16-bit words. `user/c/cpass.h` defines the native
+contract instead: every item is a 64-bit little-endian word. Operator words
+carry a marker in their upper bits, as the original 0376 byte did. Names and
+floating literals are NUL-terminated strings. Constants, offsets and types keep
+native widths, and a long constant is one word rather than two halves. Native
+additions are explicit operators: register parameter homes, the variadic save
+area, va_start/va_arg/va_end/va_copy and source file names. c1 rejects unknown
+operators, unmarked or truncated files and malformed expression stacks.
+
+## c0: native widths and types
+
+`user/c/c00.c`–`c05.c` keep the supplied lexer, the priority-driven expression
+parser, conversion insertion, constant folding, declarations, statements and
+tree output. The type word keeps the original packing, with a four-bit basic
+type and two bits per pointer/function/array level. Native layout is LP64:
+
+| Type | Bytes | Align |
+| --- | --- | --- |
+| char, unsigned char | 1 | 1 |
+| short, unsigned short | 2 | 2 |
+| int, unsigned, float, enum | 4 | 4 |
+| long, unsigned long, pointers, double | 8 | 8 |
+
+Structures and unions use natural member alignment, and their size is rounded
+to their own alignment. Bit fields pack into 32-bit units (or 8-bit units for
+char fields). A field that does not fit starts a new unit, as in the supplied
+`align`. Initialized data pads holes from the recorded member offsets.
+
+The conversion table gains a separate class for long. Integer-to-pointer
+assignments widen, pointer-to-integer assignments truncate, and pointer
+differences are long. Pointer arithmetic scales a widened index. Integer constant
+folding is 32-bit two's complement, with explicit unsigned division, shifts
+and comparisons. Decimal constants above INT_MAX become long; U, L and UL
+suffixes are accepted. Identifiers are exact up to 255 bytes.
+
+V7 semantics are retained deliberately. Old assignment operators (`=+`, `=-`, and so on)
+are recognised, with V7's warning when `=-`, `=&` or `=*` lack a following
+space, so write `x = -1`. Initializers may omit `=`. `\/` and `/\` are max and
+min. Plain int bit fields are unsigned, and `char` is signed. A cast from char
+to unsigned masks to 8 bits. `switch` requires an int, and members may be used
+through pointers of other types.
+
+### Native header profile
+
+The installed libc headers are modern C. c0 accepts the constructs they use
+without a source adapter:
+- `void`, `signed`, `short`, `unsigned char/short/long` and `long long`
+  (as long);
+- `const`, `volatile`, `restrict` and `inline` qualifiers, and GNU
+  `__attribute__` lists, all ignored;
+- prototypes with named or unnamed parameters, `(void)` and `...`;
+- `__builtin_offsetof`, checked `_Static_assert`, and `__builtin_va_list`
+  with the va builtins.
+
+Prototype parameter types declare the parameters of a definition. At calls they
+are not applied: arguments follow the V7 rules. c1 sign- or zero-extends every
+integer argument to 64 bits, so int values passed to long or pointer parameters
+behave. `long double` maps to double; a float parameter of a
+GCC-compiled callee is not supported. Each structure has its own member names,
+as the headers require. A member reference through a non-structure pointer
+falls back to the first declaration of the name, the V7 rule. Conflicting
+function declarations between V7 sources and native prototypes are warnings.
+All 49 libc headers are consumed by the tests.
+
+## c1: the table-driven AMD64 backend
+
+`user/c/c10.c`–`c13.c` keep the supplied reader, the expression optimizer
+(commutative-tree reassociation, distribution, constant folding, power-of-two
+strength reduction, field rewriting, `reg = x+y` reordering, postfix delay),
+the Sethi-Ullman degree calculation and the `rcexpr`/`cexpr`/`match`
+machinery over the regtab, efftab, cctab and sptab code tables.
+
+Register numbers name the scratch registers rax, rdx, rcx, rsi, rdi, r8, r9 and
+r10. Floating values use the same numbers as xmm registers and are held as
+doubles, as on the PDP-11. c0's register variables use the callee-saved rbx and
+r12–r15. r11 and xmm15 are template temporaries. Long values need one
+register, so the PDP-11 register pairs, odd registers, long helper routines and
+long-comparison sequences are gone. Optimizer rewrites that only suited the
+PDP-11 are replaced by native forms:
+- `&~` via `bic`, and right shifts as negative left shifts;
+- int*size pointer conversion and big-endian long halves;
+- floating-point bit tricks and the autoincrement and deferred addressing
+  modes.
+
+`user/c/table.s` is a new AMD64 table in the supplied cvopt description
+language. Templates use AT&T syntax with the original macros: operand
+addresses, instruction mnemonics, size suffixes, subtree evaluation into
+registers or onto the stack, register names and offsets. Native additions to
+the macros:
+- `R.q`, `R.l`, `R.1` and similar select a register width;
+- a `p` shape flag excludes immediate operands;
+- `Y` escapes name machine sequences in `c10.c`: loads with extension,
+  constants, division and shifts with their fixed registers, popping stacked
+  operands, conversions, floating negation and max/min.
+
+At build time `user/c/cvopt.c` converts the table into ELF assembler data. It
+keeps the input language but adapts it to the native table:
+- `struct optab` is four bytes, padding and a pointer;
+- strings go to `.rodata` and the lists to `.data`;
+- the list buffer is in memory instead of `cvopt.tmp`;
+- macros and `%` are recognised only in shape and template lines, so the table
+  can name `%registers`.
+
+Calls evaluate each argument into its System V location in one aligned block.
+Stack arguments go at the bottom, register arguments are staged above them,
+and the callee address is last. AL carries the vector register count. Live
+scratch registers are saved around calls. Narrow return values are extended.
+Functions save the callee-saved registers. They store incoming register
+arguments into home slots after the frame has been allocated, keeping V7's
+branch to the frame-size code at the end of each function. Absolute 32-bit
+addresses are used for externals and statics, because the native link places
+user text below 2 GiB. Switches use V7's direct, compare-chain and hashed jump
+table forms. Floating comparisons branch correctly for unordered values.
+
+The installed passes grow their arenas with `sbrk`, as in V7. stdio uses static
+buffers so the break stays contiguous. Symbol names live in a bounded pool, so
+the passes fit the 16 MiB baseline.
+
+## Acceptance
+
+`make TOOLCHAIN_PREFIX= test-c-compiler` runs:
+- the passes under ASan/UBSan, with `tests/c_fixture.c` (integer, pointer,
+  control-flow, switch, call, structure and bit-field cases) linked and run
+  through both GNU as and the native assembler, and compared line by line
+  with the same source compiled by GCC;
+- the sbrk-arena build, which must produce identical intermediate code and
+  assembly;
+- the V7 dialect fixture `tests/c_v7dialect.c` against hand-computed results;
+- every libc header, and 90 supplied V7 command sources, through c0, c1 and
+  the native assembler;
+- malformed sources, truncated or garbage intermediate files and 300
+  deterministic source mutations, which must fail without sanitizer reports;
+- in the guest at 16 and 128 MiB, as root and as an ordinary user: native
+  cpp, c0, c1, as and ld compile the fixture in bounded translation units,
+  the dialect test and the supplied `echo`, `wc` and `cat`, and the results
+  run with the expected output.

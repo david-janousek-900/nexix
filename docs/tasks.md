@@ -19,8 +19,8 @@ The inventory accounts for **223 components, 2,144 distribution files and
 7 partial, 0 prototype and 134 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **411 tracking tasks: 206 done, 0 in progress
-and 205 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–170, 177–195, 202, 219, 223, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **411 tracking tasks: 208 done, 0 in progress
+and 203 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–170, 177–198, 202, 219, 223, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -349,8 +349,8 @@ are accounted for. Final native rebuild acceptance is task 207.
 | 194 | PCC integer/pointer/control-flow backend | Done | Git history; [native integer backend](pcc.md); `make test-pcc-integer test-pcc-front test-mip-infra test-inventory`; sanitizer/GCC execution oracle, GP/stack ABI, exact native assembly and cpp/PCC/as/ld execution as root/user at 16/128 MiB; calls/floating/aggregate remain 195 |
 | 195 | PCC calls, structures and floating-point backend | Done | Git history; [aggregate/x87/variadic ABI](pcc.md); `make test-pcc-abi test-pcc-integer test-pcc-front test-mip test-mip-infra test-mip-pass test-inventory`; System V aggregate classes, structure arguments/results, x87 long double, variadic definitions/va_copy against GCC callers/callees/oracle; exact native cpp/PCC/as/ld execution as root/user at 16/128 MiB |
 | 196 | Complete PCC driver and supplied alternate targets | To do | pcc script/ccom/fort; native program acceptance |
-| 197 | Retarget original C c0 front end | To do | Native widths and pass format |
-| 198 | Retarget original C c1 backend | To do | Integer/control/call/pointer generation |
+| 197 | Retarget original C c0 front end | Done | Git history; [native c0](c-compiler.md); `make test-c-compiler test-inventory test-install-unit`; LP64 widths/layout, 64-bit pass format, exact identifiers, V7 dialect and native header profile (all 49 libc headers); sanitizer, mutation and 90 supplied command sources; installed `/lib/c0` at 16/128 MiB as root/user |
+| 198 | Retarget original C c1 backend | Done | Git history; [table-driven AMD64 c1](c-compiler.md); `make test-c-compiler test-inventory test-install-unit`; cvopt-converted AMD64 table, integer/pointer/control/call/switch generation; GCC execution oracle through GNU and native as; native cpp/c0/c1/as/ld fixture and V7 commands as root/user at 16/128 MiB |
 | 199 | Retarget original C floating/aggregate generation | To do | Native ABI and compiler helper coverage |
 | 200 | Retarget c2 optimizer and conversion helpers | To do | c2/fc1/cvopt targets; optimized/unoptimized comparison |
 | 201 | Port cc driver | To do | Preprocessor/compiler/assembler/linker and diagnostics |
