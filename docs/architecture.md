@@ -139,7 +139,8 @@ retain their notices and audit LP64 assumptions. See the
 The private [compatibility foundation](networking-compat.md) supplies fixed-width
 protocol types, byte-array wire records, byte-order/checksum helpers, sequence
 comparisons and checked size arithmetic. Bounded
-[packet and socket pools](networking-pools.md) replace BSD VM-backed mbufs; hardware and stack integration remain
+[packet and socket pools](networking-pools.md) replace BSD VM-backed mbufs, and a serialized
+[network worker](networking-worker.md) runs protocol work and timers; hardware and stack integration remain
 planned work.
 
 Architecture references: [Intel system programming manuals](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html)

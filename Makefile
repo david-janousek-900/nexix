@@ -31,7 +31,7 @@ CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-stack-protector 
 OBJECTS = build/klog.o build/console.o build/packet.o build/packet_tty.o build/packet_image.o build/boot.o build/main.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o build/elf.o build/exec.o build/exec_test.o build/exec_image.o build/libc_test.o build/libc_image.o build/block.o build/v7fs.o build/fs_test.o build/root_image.o build/files.o build/files_test.o build/files_image.o build/tty.o build/tty_test.o build/tty_image.o build/signals.o build/signals_test.o build/signals_image.o build/catalog.o build/v7_userland_test.o build/v7_test_image.o
 include build/native-config.mk
 OBJECTS += $(NATIVE_CONFIG_OBJECTS)
-OBJECTS += build/net_compat.o build/net_pool.o build/net_mbuf.o build/net_kernel.o
+OBJECTS += build/net_compat.o build/net_pool.o build/net_mbuf.o build/net_kernel.o build/net_sched.o build/net_worker.o build/net_worker_test.o
 
 build/native-config.mk: config/kernel.json tools/mkconf.py
 	$(PYTHON) tools/mkconf.py config/kernel.json $@
@@ -567,6 +567,21 @@ test-net-pools-guest: check build/test-selftest.iso
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso net 16M
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-selftest.iso net 128M
 test: test-net-pools-guest
+
+# Task 415: serialized network worker, bounded work queue and protocol timers.
+build/net_sched.o: kernel/net/sched.c kernel/include/net/types.h kernel/include/net/sched.h | build/.dir
+	$(CC) $(CFLAGS) -nostdinc -isystem $(shell $(CC) -print-file-name=include) -c $< -o $@
+build/net_worker.o: kernel/net/worker.c kernel/include/net/worker.h kernel/include/net/sched.h | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+build/net_worker_test.o: kernel/net/worker_test.c kernel/include/net/worker.h kernel/include/net/sched.h | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+build/net-sched-test: tests/net_sched.c kernel/net/sched.c kernel/include/net/types.h kernel/include/net/sched.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -g -Wall -Wextra -Werror -fno-omit-frame-pointer -fno-pie -no-pie -fsanitize=address,undefined -fno-sanitize-recover=all -Ikernel/include tests/net_sched.c kernel/net/sched.c -o $@
+.PHONY: test-net-sched test-net-worker-guest
+test-net-sched: build/net_sched.o build/net-sched-test build/net-header-sched.o
+	./build/net-sched-test
+test-unit: test-net-sched
+test-net-worker-guest: test-net-pools-guest
 
 # Task 22: boot RTC and shared epoch clock.
 build/rtc.o: kernel/arch/x86_64/rtc.c | build/.dir

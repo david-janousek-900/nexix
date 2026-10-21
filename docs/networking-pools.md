@@ -85,6 +85,7 @@ every page to be back in the allocator. Both passes must print `NET POOLS OK`.
 Observed limits are 119 pages, 198 clusters and 885 mbufs at 16 MiB, and 2048
 pages, 3412 clusters and 15360 mbufs at 128 MiB.
 
-Remaining limits: serialization and IRQ handoff belong to task 415. Slab pages
+Remaining limits: callers serialize pool access by running on the
+[network worker](networking-worker.md) (task 415). Slab pages
 are not returned until teardown. A free looks up the page among the slab's
 pages, which takes time proportional to the number of pages.

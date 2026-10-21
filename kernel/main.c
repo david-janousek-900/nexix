@@ -5,6 +5,7 @@
 #include "clock.h"
 #include "signals.h"
 #include "net/kernel.h"
+#include "net/worker.h"
 #include "userland.h"
 #include "exec.h"
 #include "libc_test.h"
@@ -199,6 +200,7 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
     tty_selftest(test);
     signals_selftest();
     net_pool_selftest();
+    net_worker_selftest();
     v7_userland_selftest();
     rootfs_selftest();
     root_exec_selftest();

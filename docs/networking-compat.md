@@ -62,7 +62,8 @@ UDP's zero-checksum semantics and zero-to-`ffff` encoding belong to task 422.
 The [task 412 audit](bsd-networking-audit.md) remains the source/dependency
 baseline. Task 413 resolves the primitive type, byte-order, checksum and wire
 representation hazards. BSD VM allocation, mbuf geometry and queue ownership
-are replaced by the [task 414 pools](networking-pools.md); interrupt levels, waits and timers remain task 415. Protocol
+are replaced by the [task 414 pools](networking-pools.md); interrupt levels, waits and timers are replaced by the
+[task 415 worker](networking-worker.md). Protocol
 control blocks and reassembly metadata will use these types in tasks 418–423.
 Nexix credentials, copyin/copyout, descriptors and errors will be adapted when
 their socket consumers are implemented. No permissive allocator, locking,
