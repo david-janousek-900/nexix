@@ -22,5 +22,11 @@ int main(void)
     timer_advance_to(&frame,1600);assert(ticks==6 && callbacks==6);
     frame.cs=8;timer_advance_to(&frame,2000);
     assert(ticks==10 && user.u_stime==4 && cpu_system==4);
+    frame.cs=3;frame.vector=0x80;frame.rip=0x100000;
+    syscall_timer(&frame,2200,false);
+    syscall_timer(&frame,2900,true);
+    assert(user.u_utime==8 && cpu_user==8);
+    assert(user.u_stime==11 && cpu_system==11);
+    assert(frame.cs==3 && frame.vector==0x80 && frame.rip==0x100000);
     puts("PASS: delayed IRQ replays all elapsed periods, timers and CPU charges");
 }

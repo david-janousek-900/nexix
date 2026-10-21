@@ -126,6 +126,12 @@ static void timer_advance_to(struct interrupt_frame *frame,uint64_t now)
 }
 void timer_poll(struct interrupt_frame *frame)
 {timer_advance_to(frame,cycles());}
+static void syscall_timer(struct interrupt_frame *frame,uint64_t now,bool kernel)
+{
+    struct interrupt_frame sample=*frame;
+    if(kernel){sample.cs=8;sample.vector=32;}
+    timer_advance_to(&sample,now);
+}
 static void dispatch(struct interrupt_frame *frame)
 {
     if (frame->vector == 8 || frame->vector == 2) {
@@ -148,7 +154,11 @@ static void dispatch(struct interrupt_frame *frame)
     }
     if (frame->vector == 0x80) {
         bool stepping=(frame->rflags&0x100)!=0;
+        /* Drain preceding user time before entering the interrupt-masked
+         * syscall; drain elapsed kernel time before IRET changes CPL again. */
+        syscall_timer(frame,cycles(),false);
         syscall_dispatch(frame);
+        syscall_timer(frame,cycles(),true);
         /* INT clears hardware TF on entry. Report the completed user syscall
          * before another user instruction, never single-step kernel code.
          * Exec supplies its own trap; sigreturn may independently restore TF. */
