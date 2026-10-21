@@ -6,6 +6,7 @@
 static const struct mip_arena *current_ir;
 static unsigned depth;
 static int floating(TWORD type) {return type==FLOAT || type==DOUBLE;}
+static int aggregate(TWORD type) {return type==STRTY || type==UNIONTY;}
 static const struct mip_node *node_at(uint32_t i) {if(i>=current_ir->count)cerror("invalid target node");return current_ir->nodes+i;}
 static void push(const char *reg) {printf(" pushq %%%s\n",reg);depth++;}
 static void pop(const char *reg) {if(!depth)cerror("target stack underflow");printf(" popq %%%s\n",reg);depth--;}
@@ -15,7 +16,7 @@ static unsigned width(TWORD type) {
     return (unsigned)l.size;
 }
 static void normalize(TWORD type) {
-    if(floating(type))return;
+    if(floating(type) || aggregate(type))return;
     unsigned n=width(type);int uns=ISUNSIGNED(type);
     if(n==1)puts(uns?" movzbq %al,%rax":" movsbq %al,%rax");
     else if(n==2)puts(uns?" movzwq %ax,%rax":" movswq %ax,%rax");
@@ -247,6 +248,10 @@ static void generate(uint32_t root,unsigned nesting) {
     const struct mip_node *n=node_at(root);unsigned op=n->op;unsigned initial=depth;
     switch(op) {
     case CALL:case UNARY CALL:call(n,nesting+1);break;
+    case STASG:
+        address(n->left,nesting+1);push("rax");generate(n->right,nesting+1);
+        puts(" movq %rax,%rsi");pop("rdi");
+        printf(" movq %%rdi,%%r10\n movq $%lu,%%rcx\n cld\n rep movsb\n movq %%r10,%%rax\n",(unsigned long)n->aggregate_size);break;
     case FCON: {
         uint64_t bits;
         if(n->type==FLOAT) {float f=(float)n->floating;uint32_t v;memcpy(&v,&f,4);bits=v;}
@@ -257,9 +262,9 @@ static void generate(uint32_t root,unsigned nesting) {
         if(n->name[0])address(root,nesting+1);else printf(" movq $%ld,%%rax\n",(long)n->value);
         normalize(n->type);break;
     case NAME:
-        address(root,nesting+1);if(!ISARY(n->type) && !ISFTN(n->type))load(n->type);break;
+        address(root,nesting+1);if(!ISARY(n->type) && !ISFTN(n->type) && !aggregate(n->type))load(n->type);break;
     case UNARY AND:address(n->left,nesting+1);break;
-    case UNARY MUL:address(root,nesting+1);load(n->type);break;
+    case UNARY MUL:address(root,nesting+1);if(!aggregate(n->type))load(n->type);break;
     case FLD:
         address(root,nesting+1);load_left(root);break;
     case PCONV:case SCONV:case FORCE:generate(n->left,nesting+1);scalar_convert(node_at(n->left)->type,n->type);normalize(n->type);break;

@@ -47,6 +47,10 @@ int lazy(a) int a;{return a && (12/a);}
 int dispatch(a) long a;{switch(a){case -1L:return 2;case 4294967297L:return 3;default:return 4;}}
 int static_value(){static int value=3;value++;return value;}
 int tiny_update(p) struct tiny *p;{return p->value+=2;}
+struct bundle {char tag;long values[3];char tail;};
+int copy_bundle(p,q) struct bundle *p,*q;{*p = *q;return p->tag+p->tail;}
+struct triplet {char a,b,c;};
+int copy_triplet(p,q) struct triplet *p,*q;{*p = *q;return p->c;}
 struct fields {unsigned a:3;int b:5;unsigned c:9;};
 int fields_less(p) struct fields *p;{return p->a < -1;}
 int fields_update(p) struct fields *p;{p->a=7;p->b= -9;p->c=300;return p->a+p->b+p->c;}
@@ -77,6 +81,8 @@ struct tiny {unsigned char value:3;}; extern int tiny_update(struct tiny *),fiel
 struct fields {unsigned a:3;int b:5;unsigned c:9;};extern int fields_update(struct fields *),fields_less(struct fields *);
 #define CHECK(x) do{if(!(x)){printf("FAIL integer line %d\\n",__LINE__);return 1;}}while(0)
 long callback_target(long a,long b,long c,long d,long e,long f,long g,long h,long i){return a+2*b+3*c+4*d+5*e+6*f+7*g+8*h+9*i;}
+struct bundle {char tag;long values[3];char tail;};extern int copy_bundle(struct bundle *,struct bundle *);
+struct triplet {char a,b,c;};extern int copy_triplet(struct triplet *,struct triplet *);
 extern long callback_call(long (*)(),long);
 extern double fp_math(double,double),unsigned_to_fp(unsigned long),fp_callback(double (*)(),double);
 extern float fp_float(double,double);
@@ -88,6 +94,11 @@ double fp_variadic(int first,...){va_list ap;double a,b;int i;va_start(ap,first)
 
 int main(void){
  long a[8];unsigned cast_value=0;int p[2]={10,22};unsigned char guarded[2]={7,90};struct fields f={0};
+ {struct bundle from={3,{4294967297L,-2,99},7},to={0};
+ CHECK(copy_bundle(&to,&from)==10 && to.values[0]==4294967297L && to.values[1]== -2 && to.values[2]==99);
+ CHECK(copy_bundle(&to,&to)==10);}
+ {struct {struct triplet v;char guard;} to={{0,0,0},99};struct triplet from={1,2,3};
+ CHECK(copy_triplet(&to.v,&from)==3 && to.v.a==1 && to.v.b==2 && to.guard==99);}
  CHECK(callback_call(callback_target,1)==292);
  p[0]= -7;CHECK(fp_int_compound(p,2.5)== -2 && p[0]== -2);p[0]=10;
  CHECK(fp_math(7.5,2.5)== -20.0);CHECK(fp_float(1.25,2.5)==3.75f);

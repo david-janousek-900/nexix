@@ -152,6 +152,16 @@ ANSI prototypes and extended native types remain part of task 193.
 callers/callees, including a GCC variadic consumer, mixed GP/SSE register
 exhaustion, nested floating calls, float rounding/stores, NaNs/signed zero and
 unsigned conversion boundaries. Host sanitizer/oracle and native root/user
-16/128 MiB gates run the same cases. Aggregate classification/copy/return,
+16/128 MiB gates run the same cases. Aggregate argument/result classification,
 long-double support and variadic function definitions remain open; this scalar
 increment does not complete task 195.
+
+
+The next task 195 increment implements STASG as an exact-size byte copy, leaving
+the destination address as the aggregate expression value. Aggregate lvalues
+retain their addresses rather than passing through scalar loads. The native
+copy uses only caller-saved registers, evaluates each address once, supports
+self-assignment and copies complete nested arrays and padding. GCC/native tests
+cover a three-byte struct with a neighboring guard byte and a larger structure
+containing a native-long array. This closes aggregate assignment only; argument
+and result ABI classification remains open.
