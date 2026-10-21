@@ -110,6 +110,10 @@ void signal_deliver(struct interrupt_frame *frame)
         copyout(&p->p_vm, stack, &restorer, 8) ||
         copyout(&p->p_vm, stack + 8, frame, sizeof(*frame)) ||
         copyout(&p->p_vm, stack + 8 + sizeof(*frame), &fp, sizeof(fp))) proc_exit(NX_SIGSEGV|(core_dump(NX_SIGSEGV,frame)?0200:0));
+    /* The saved frame retains the faulting environment for sigreturn. Give
+     * handlers a clean live environment, including masked x87/SSE exceptions. */
+    struct nx_fpu_state clean;
+    fpu_default(&clean);fpu_restore(&clean);
     if (n != NX_SIGILL && n != NX_SIGTRAP) p->p_user->u_signal[n] = 0;
     frame->rip = handler; frame->rsp = stack; frame->rdi = n;
     frame->rflags &= ~0x500UL; /* SysV requires DF clear; do not single-step entry. */

@@ -2285,3 +2285,11 @@ include tools/mip.mk
 include tools/linker.mk
 
 include tools/pcc.mk
+
+# Signal handlers start with a clean live FPU state while retaining the fault.
+build/signal-fpu-test: tests/signal-fpu.c kernel/v7/signals.c | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -ffunction-sections -fdata-sections -Wl,--gc-sections -Ikernel/include -Iinclude $^ -o $@
+test-signal-fpu-unit: build/signal-fpu-test
+	./build/signal-fpu-test
+test-unit: test-signal-fpu-unit
+.PHONY: test-signal-fpu-unit
