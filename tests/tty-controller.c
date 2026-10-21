@@ -130,7 +130,11 @@ int main(void)
     assert(!tty_open(NX_CONSOLE_DEV,&u,&t));tty_receive(003);assert(signalled==17);
     tty_set_group(t,99,100,false);tty_receive(003);assert(signalled==17);
     tty_set_group(t,17,18,false);tty_receive(003);assert(signalled==18);
-    tty_set_group(t,99,100,true);tty_receive(003);assert(signalled==100);tty_close(t);
+    tty_set_group(t,99,100,true);tty_receive(003);assert(signalled==100);
+    tty_set_group(t,99,101,false);tty_receive(003);assert(signalled==100);
+    tty_set_group(t,100,0,true);
+    tty_set_group(t,99,101,false);tty_receive(003);assert(signalled==101);
+    tty_close(t);
     puts("PASS: controller plans/parity, source escapes, TANDEM, delayed/blocked output, timer drain/flush, exclusive opens, hangup, profile ownership and foreground group changes");
     return 0;
 }
