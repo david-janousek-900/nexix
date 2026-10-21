@@ -6,6 +6,8 @@
 #include "signals.h"
 #include "net/kernel.h"
 #include "net/worker.h"
+#include "net/e1000.h"
+#include "pci.h"
 #include "userland.h"
 #include "exec.h"
 #include "libc_test.h"
@@ -165,6 +167,7 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
             __asm__ volatile ("mov (%0), %%rax" : : "r"(address) : "rax", "memory");
         panic("expected paging fault did not occur");
     }
+    pci_init();
     if (clock_init()) {
         console_puts("RTC UTC epoch="); console_hex(clock_now()); console_puts("\r\n");
         console_puts("RTC OK\r\n");
@@ -201,6 +204,7 @@ void kernel_main(uint32_t magic, uintptr_t boot_info)
     signals_selftest();
     net_pool_selftest();
     net_worker_selftest();
+    e1000_selftest();
     v7_userland_selftest();
     rootfs_selftest();
     root_exec_selftest();

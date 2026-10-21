@@ -38,5 +38,14 @@ bool vm_translate(const struct address_space *space, uintptr_t virtual_address,
  * Returns false on an invalid space or when the callback stops traversal. */
 bool vm_walk_user(const struct address_space *space,
                   bool (*visit)(uintptr_t, uintptr_t, unsigned, void *), void *argument);
+/* Device MMIO window: uncached, supervisor-only, NX mappings shared by every
+ * address space (PML4 entry 511). Maps [physical, physical + size) and
+ * returns the virtual address of physical, or 0. Rejects anything below
+ * PHYSICAL_LIMIT (identity-mapped write-back RAM), empty or overflowing
+ * ranges and exhaustion of the 1 GiB window; mappings are
+ * permanent. Early, single-core init with IRQs disabled. */
+#define MMIO_BASE 0xffffff8000000000UL
+#define MMIO_SIZE (1UL << 30)
+uintptr_t paging_map_mmio(uint64_t physical, size_t size);
 void paging_selftest(bool exhaustion);
 #endif

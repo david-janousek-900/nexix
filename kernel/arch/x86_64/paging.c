@@ -12,7 +12,8 @@
 #define ADDRESS 0x000ffffffffff000ULL
 #define ENTRIES 512
 static struct address_space kernel_space;
-static uintptr_t kernel_directory;
+static uintptr_t kernel_directory, mmio_pdpt;
+static uintptr_t mmio_next = MMIO_BASE;
 extern char kernel_start[], kernel_text_start[], kernel_text_end[];
 extern char kernel_rodata_start[], kernel_rodata_end[];
 
@@ -125,6 +126,9 @@ void paging_init(void)
         panic("insufficient memory for kernel page tables");
     table(kernel_space.root)[0] = pdpt | PRESENT | WRITE;
     table(pdpt)[0] = kernel_directory | PRESENT | WRITE;
+    if (!(mmio_pdpt = new_table()))
+        panic("insufficient memory for MMIO page tables");
+    table(kernel_space.root)[511] = mmio_pdpt | PRESENT | WRITE;
     for (unsigned directory = 0; directory < ENTRIES; ++directory) {
         uintptr_t pt = new_table();
         if (!pt)
@@ -165,6 +169,7 @@ bool vm_create(struct address_space *space)
     table(root)[0] = pdpt | PRESENT | WRITE | USER;
     /* Supervisor-only at this level, regardless of parent U/S bits. */
     table(pdpt)[0] = kernel_directory | PRESENT | WRITE;
+    table(root)[511] = mmio_pdpt | PRESENT | WRITE; /* Supervisor-only device window. */
     space->root = root;
     return true;
 }
@@ -232,7 +237,7 @@ bool vm_unmap(struct address_space *space, uintptr_t address)
 
 static void destroy_table(uintptr_t address, unsigned level)
 {
-    if (address == kernel_directory)
+    if (address == kernel_directory || address == mmio_pdpt)
         return;
     if (level > 1)
         for (unsigned i = 0; i < ENTRIES; ++i)
@@ -340,3 +345,32 @@ bool vm_map_physical(struct address_space *space,uintptr_t va,uintptr_t pa)
 {return physical_leaf(space,va,pa,false);}
 bool vm_rebind_physical(struct address_space *space,uintptr_t va,uintptr_t pa)
 {return physical_leaf(space,va,pa,true);}
+
+uintptr_t paging_map_mmio(uint64_t physical, size_t size)
+{
+    uint64_t offset = physical & (PAGE_SIZE - 1), first = physical - offset;
+    if (!size || size > MMIO_SIZE || physical > ADDRESS || ADDRESS - physical < size - 1)
+        return 0;
+    uint64_t pages = (offset + size + PAGE_SIZE - 1) / PAGE_SIZE;
+    if (pages > (MMIO_BASE + MMIO_SIZE - mmio_next) / PAGE_SIZE)
+        return 0;
+    /* The identity map covers [0, PHYSICAL_LIMIT) write-back; an uncached
+     * alias there would mix memory types, and the range holds our RAM. */
+    if (first < PHYSICAL_LIMIT)
+        return 0;
+    for (uint64_t i = 0; i < pages; ++i) {
+        uint64_t *entry = walk(&kernel_space, mmio_next + i * PAGE_SIZE, true);
+        if (!entry) {
+            /* Leave tables for reuse; clear only the leaves set so far. */
+            while (i--) {
+                *walk(&kernel_space, mmio_next + i * PAGE_SIZE, false) = 0;
+                __asm__ volatile ("invlpg (%0)" : : "r"(mmio_next + i * PAGE_SIZE) : "memory");
+            }
+            return 0;
+        }
+        *entry = (first + i * PAGE_SIZE) | PRESENT | WRITE | NX | UNCACHED;
+    }
+    uintptr_t virtual_address = mmio_next + offset;
+    mmio_next += pages * PAGE_SIZE;
+    return virtual_address;
+}

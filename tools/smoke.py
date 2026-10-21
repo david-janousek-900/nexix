@@ -21,9 +21,12 @@ fault_modes = ("ud", "pf", "wp", "nx", "unmap", "null", "protect")
 if mode not in full_boot_modes and mode not in fault_modes and mode not in user_faults:
     sys.exit("FAIL: unknown smoke mode")
 ram = sys.argv[4] if len(sys.argv) > 4 else "128M"
+# Optional QEMU -nic value (e.g. "none" or "user,model=e1000"); QEMU's default
+# for -machine pc is one e1000 on user networking.
+nic = sys.argv[5] if len(sys.argv) > 5 else None
 command = [sys.argv[1], "-machine", "pc", "-accel", "tcg", "-cpu", "qemu64",
            "-smp", "1", "-m", ram, "-cdrom", sys.argv[2], "-display", "none",
-           "-serial", "stdio", "-monitor", "none", "-no-reboot"]
+           "-serial", "stdio", "-monitor", "none", "-no-reboot"] + (["-nic", nic] if nic else [])
 try:
     process = subprocess.Popen(command, stdin=subprocess.PIPE if mode in ("tty", "tty-demo") else None,
                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -78,7 +81,7 @@ else:
             process.kill()
             output, _ = process.communicate()
 log = Path("build") / (f"memory-{ram}.log" if mode == "memory" else
-                        f"{mode}-{ram}.log" if mode in ("process", "syscall", "exec", "libc", "fs", "files", "signals", "net", "v7", "rootfs", "tty", "tty-demo") else f"{mode}.log")
+                        f"{mode}-{ram}{'-nic-' + nic.split(',')[0] if nic else ''}.log" if mode in ("process", "syscall", "exec", "libc", "fs", "files", "signals", "net", "v7", "rootfs", "tty", "tty-demo") else f"{mode}.log")
 log.write_bytes(output)
 sys.stdout.buffer.write(output)
 # Keep raw timestamped transcripts; comparisons below ignore only the log prefix.
@@ -121,6 +124,10 @@ if mode in full_boot_modes:
     if any(f"{marker}\r\n".encode() not in output for marker in
            ("SIGNALS OK", "HEAP OK", "INIT SYSCALLS OK", "SIGNALS CLEANUP OK")):
         sys.exit(f"FAIL: signals/heap/init syscalls check failed; see {log}")
+    if b"PCI SCAN OK\r\n" not in output or b"PCI OK\r\n" not in output:
+        sys.exit(f"FAIL: PCI enumeration/e1000 discovery check failed; see {log}")
+    if nic and (b"E1000 ABSENT\r\n" if nic == "none" else b"E1000 FOUND\r\n") not in output:
+        sys.exit(f"FAIL: e1000 presence does not match -nic {nic}; see {log}")
     if b"NET POOLS OK\r\n" not in output:
         sys.exit(f"FAIL: network packet/socket pool check failed; see {log}")
     if any(f"{marker}\r\n".encode() not in output for marker in
@@ -147,7 +154,7 @@ if mode in full_boot_modes:
         sys.exit(f"FAIL: page-table allocation rollback failed; see {log}")
     if mode == "user-bad-stack" and b"USER BAD STACK OK\r\n" not in output:
         sys.exit(f"FAIL: TSS handoff with unusable user stack failed; see {log}")
-    print("PASS: boot, scheduling, fork/exit/wait, native syscalls, user copies, ELF exec, native libc, V7 filesystem, file descriptors, pipes, serial TTY, signals, heap, init services, network pools, network worker, rebuilt V7 userland, and packaged root image")
+    print("PASS: boot, scheduling, fork/exit/wait, native syscalls, user copies, ELF exec, native libc, V7 filesystem, file descriptors, pipes, serial TTY, signals, heap, init services, PCI/e1000 discovery, network pools, network worker, rebuilt V7 userland, and packaged root image")
 elif mode in user_faults:
     vector, error = user_faults[mode]
     fault = re.search(rb"exception vector=(0x[0-9a-f]{16}) error=(0x[0-9a-f]{16})"
