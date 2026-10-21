@@ -74,7 +74,30 @@ with tempfile.TemporaryDirectory(prefix='nx-archives-') as temp:
             assert run('r','bad.a','a',ok=False).returncode!=0
             assert p.read_bytes()==data
         (folder/'guest.a').write_bytes(saved)
+    if TOOL=='arcv':
+        old=struct.pack('<H',0o177555)+b'old.o\0\0\0'+struct.pack('<HHBBH',0x1234,0x5678,7,0o644&255,3)+b'xyz\0'
+        (folder/'v6.a').write_bytes(old)
+        for name in ('v6.a','historical.a'):
+            before=(folder/name).read_bytes();(folder/('read-'+name)).write_bytes(before)
+            run(name);after=(folder/name).read_bytes()
+            assert after.startswith(b'!<arch>\n')
+            expected=b'xyz' if name=='v6.a' else obj.read_bytes()
+            assert subprocess.check_output(['ar','p',str(folder/name)])==expected
+            assert int(after[8+16:8+28])==(0x12345678 if name=='v6.a' else 0)
+            assert int(after[8+28:8+34])==(7 if name=='v6.a' else 0)
+            assert int(after[8+34:8+40])==(1 if name=='v6.a' else 0)
+            assert run(name,ok=False).returncode!=0
+            assert (folder/name).read_bytes()==after
+        assert run(ok=False).returncode==2
+        for data in [old[:-1],old[:17],b'not archive',struct.pack('<H',0o177545)+b'bad']:
+            (folder/'bad.a').write_bytes(data)
+            assert run('bad.a',ok=False).returncode!=0
+            assert (folder/'bad.a').read_bytes()==data
+        # A failure on one input does not prevent later inputs from converting.
+        (folder/'v6.a').write_bytes(old)
+        assert run('absent.a','v6.a',ok=False).returncode==1
+        assert (folder/'v6.a').read_bytes().startswith(b'!<arch>\n')
     out=ROOT/'build'/('fixtures-'+TOOL);out.mkdir(exist_ok=True)
     for p in folder.iterdir():
         if p.is_file() and p!=binary:(out/p.name).write_bytes(p.read_bytes())
-print('PASS: '+TOOL+' production ASan/UBSan, GNU interoperability/link execution, historical archives, operations and failure preservation')
+print('PASS: '+TOOL+' production ASan/UBSan, independently checked archives, native format and failure preservation')

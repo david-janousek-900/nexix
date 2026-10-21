@@ -37,5 +37,21 @@ not install set-id permissions.
 an independently linked/executed C program, explicit V6/V7/BSD fixtures, all main
 operations, long names, odd/empty members, malformed input and failed-update byte
 preservation. Installed tests run at 16 and 128 MiB, including `nm` consumption and
-ordinary-user access on disposable roots. Native `ranlib`, archive conversion and
-assembler/linker acceptance remain separate roadmap tasks.
+ordinary-user access on disposable roots. Native `ranlib` and assembler/linker acceptance remain separate roadmap tasks.
+
+## Historical conversion
+
+Task 180 installs `/bin/arcv`. It converts either historical magic (0177555 or
+0177545) to the native GNU/SysV container in place, using the checked reader and
+replacement procedure above. It preserves payload bytes, names and available
+metadata, including PDP-endian dates. V6 records only contain a byte of mode bits;
+the converter preserves those available bits and uses the historical default gid
+of 1. It cannot recover metadata absent from the old format. Native/BSD containers
+are rejected as already converted, and malformed inputs remain unchanged.
+Multiple input files are processed even if an earlier file fails; any failure
+produces a nonzero final status.
+
+`make test-arcv` checks independently constructed V6/V7 records, metadata and payload
+preservation, truncation rejection and mixed-success input lists under sanitizers.
+Guest tests at 16/128 MiB compare converted bytes against the independently checked
+host result and consume a converted ELF payload with installed `nm`.

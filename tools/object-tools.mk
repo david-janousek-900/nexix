@@ -74,3 +74,17 @@ test-ar: test-ar-unit multi-iso rootfs
 	$(PYTHON) tools/archives_smoke.py $(QEMU) build/nexix-multi.iso 128M ar
 test: test-ar
 test-unit: test-ar-unit
+
+build/v7-arcv.o: user/v7/cmd/arcv.c user/toolchain/archive.h | build/.dir
+	$(CC) $(USER_CFLAGS) -Iuser/toolchain -c $< -o $@
+build/v7-arcv.elf: build/crt0.o build/v7-arcv.o build/toolchain-archive.o build/toolchain-object.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+-include build/v7-arcv.d
+.PHONY: test-arcv-unit test-arcv
+test-arcv-unit:
+	$(PYTHON) tests/archives.py arcv
+test-arcv: test-arcv-unit multi-iso rootfs
+	$(PYTHON) tools/archives_smoke.py $(QEMU) build/nexix-multi.iso 16M arcv
+	$(PYTHON) tools/archives_smoke.py $(QEMU) build/nexix-multi.iso 128M arcv
+test: test-arcv
+test-unit: test-arcv-unit

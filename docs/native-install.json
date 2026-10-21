@@ -7944,6 +7944,19 @@
         "root": "programs",
         "path": "v7-ar.elf"
       }
+    },
+    {
+      "path": "/bin/arcv",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.arcv",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-arcv.elf"
+      }
     }
   ]
 }
