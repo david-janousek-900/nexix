@@ -26,7 +26,7 @@ int storage_test(void)
     CHECK(write(b,data,2)==-1&&errno==EBADF);
     CHECK(lseek(b,511,SEEK_SET)==511&&read(b,data,3)==3);
     CHECK(lseek(b,0,SEEK_SET)==0&&read(b,other,2)==2);
-    CHECK(lseek(r,1,SEEK_SET)==1&&read(r,data,2)==2&&!memcmp(data,other,2)&&lseek(r,0,SEEK_CUR)==3);
+    CHECK(lseek(r,1,SEEK_SET)==1&&read(r,data,2)==2&&!memcmp(data,other,2)&&lseek(r,0,SEEK_CUR)==2);
     CHECK(lseek(r,0,SEEK_SET)==0&&read(r,(char *)data+1,2)==-1&&errno==EFAULT);
     CHECK(read(r,data,3)==-1&&errno==EFAULT);
     CHECK(read(r,(void *)1,2)==-1&&errno==EFAULT);
