@@ -278,7 +278,19 @@ static int bmap(struct v7fs *fs, struct v7fs_inode *inode, uint32_t logical, boo
             if (error) return error;
             v7_disk_put32(pointers + entry * 4, next);
             error = write_block(fs, block, pointers);
-            if (error) return error;
+            if (error) {
+                /* A failed write may have reached disk. Reclaim only after an
+                 * uncached read proves the old parent is entirely intact. */
+                uint8_t actual[V7_BSIZE];
+                v7_disk_put32(pointers + entry * 4,0);
+                bool unchanged=!block_read(fs->device,block,1,actual);
+                for(unsigned i=0;unchanged && i<V7_BSIZE;++i)
+                    if(actual[i]!=pointers[i])unchanged=false;
+                if(unchanged){
+                    fs->failed=false;(void)v7fs_free_block(fs,next);fs->failed=true;
+                }
+                return error;
+            }
         }
         block = next; --depth;
     }
@@ -341,17 +353,20 @@ static int write_file(struct v7fs *fs, v7_ino_t number, int64_t offset, const vo
     if ((inode.mode & V7_IFMT) == V7_IFDIR && !directory) return -NX_EISDIR;
     if ((inode.mode & V7_IFMT) != V7_IFREG && !directory) return -NX_ENODEV;
     uint8_t bytes[V7_BSIZE];
-    if (count && (uint64_t)offset > inode.size && inode.size % V7_BSIZE) {
+    /* Failed metadata publication can leave allocated whole blocks beyond
+     * EOF after remount. Zero every allocated byte exposed by a later gap. */
+    for(uint64_t gap=inode.size;count && gap<(uint64_t)offset;){
         uint32_t tail;
-        error = bmap(fs, &inode, inode.size / V7_BSIZE, false, &tail);
-        if (error) return error;
-        if (tail) {
-            error = read_block(fs, tail, bytes);
-            if (error) return error;
-            for (unsigned i = inode.size % V7_BSIZE; i < V7_BSIZE; ++i) bytes[i] = 0;
-            error = write_block(fs, tail, bytes);
-            if (error) return error;
+        error=bmap(fs,&inode,gap/V7_BSIZE,false,&tail);if(error)return error;
+        unsigned start=gap%V7_BSIZE;
+        size_t n=V7_BSIZE-start;
+        if(n>(uint64_t)offset-gap)n=(uint64_t)offset-gap;
+        if(tail){
+            error=read_block(fs,tail,bytes);if(error)return error;
+            for(unsigned i=0;i<n;++i)bytes[start+i]=0;
+            error=write_block(fs,tail,bytes);if(error)return error;
         }
+        gap+=n;
     }
     while (*done < count) {
         uint32_t block;

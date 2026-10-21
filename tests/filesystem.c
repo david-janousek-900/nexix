@@ -142,6 +142,28 @@ int main(int argc, char **argv)
     assert(v7fs_mount(&fs, &fault.device, false) == 0);
     assert(v7fs_write(&fs, 8, 0, "x", 1, &done) == 0 && done == 1);
     reset();
+    /* Failed indirect publication reclaims only a proven unlinked block. */
+    reset();assert(!v7fs_mount(&fs,&fault.device,false));
+    assert(!v7fs_write(&fs,8,10*512,"a",1,&done));
+    struct v7fs_inode before;assert(!v7fs_inode_get(&fs,8,&before));
+    uint32_t free_before=v7_disk_u32(fs.super.tfree);
+    fault.bad_write=before.addr[10];
+    assert(v7fs_write(&fs,8,11*512,"b",1,&done)==-NX_EIO && fs.failed);
+    assert(v7_disk_u32(fs.super.tfree)==free_before);
+    fault.bad_write=UINT32_MAX;
+    /* Recreate an allocated whole block beyond EOF left by metadata failure. */
+    reset();assert(!v7fs_mount(&fs,&fault.device,false));
+    assert(!v7fs_write(&fs,8,512,"secret",6,&done));
+    assert(!v7fs_unmount(&fs));v7_disk_put32(disk_inode(8)->size,0);
+    assert(!v7fs_mount(&fs,&fault.device,false));
+    fault.bad_write=v7_itod(8);
+    assert(v7fs_write(&fs,8,512,"secret",6,&done)==-NX_EIO && fs.failed);
+    fault.bad_write=UINT32_MAX;assert(!v7fs_unmount(&fs));
+    assert(!v7fs_mount(&fs,&fault.device,false));
+    assert(!v7fs_write(&fs,8,1536,"end",3,&done));
+    assert(!v7fs_read(&fs,8,0,buf,1536,&done) && done==1536);
+    for(unsigned i=0;i<done;++i)assert(!buf[i]);
+    reset();
     /* ENOSPC after allocating an indirect root keeps it owned and reusable. */
     uint32_t reserve[4];
     assert(v7fs_mount(&fs, &ram.device, false) == 0);
