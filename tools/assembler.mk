@@ -56,3 +56,21 @@ test-as-object: test-as-object-unit build/as-object-test.elf build/as-object-run
 	$(PYTHON) tools/as_objects_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-as-object
 test-unit: test-as-object-unit
+
+build/v7-as.o: user/v7/cmd/as.c user/as/as.h user/toolchain/archive.h | build/.dir
+	$(CC) $(USER_CFLAGS) -Iuser/as -Iuser/toolchain -c $< -o $@
+build/v7-as2.o: user/v7/cmd/as.c user/as/as.h user/toolchain/archive.h | build/.dir
+	$(CC) $(USER_CFLAGS) -Iuser/as -Iuser/toolchain -DAS_WORKER -c $< -o $@
+build/v7-as.elf: build/crt0.o build/v7-as.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+build/v7-as2.elf: build/crt0.o build/v7-as2.o build/as-parse.o build/as-encode.o build/as-object.o build/toolchain-archive.o build/toolchain-object.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+-include build/v7-as.d build/v7-as2.d
+.PHONY: test-as-unit test-as
+test-as-unit:
+	$(PYTHON) tests/as_driver.py
+test-as: test-as-unit build/as-object-runtime.elf multi-iso rootfs
+	$(PYTHON) tools/as_driver_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/as_driver_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-as
+test-unit: test-as-unit

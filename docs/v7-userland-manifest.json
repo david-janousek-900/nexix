@@ -1508,23 +1508,29 @@
           "name": "as",
           "install": "/bin/as",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/as/makefile"
+            "user/v7/cmd/as.c",
+            "tools/assembler.mk",
+            "tests/as_driver.py",
+            "tools/as_driver_smoke.py"
           ]
         },
         {
           "name": "as2",
           "install": "/lib/as2",
           "role": "helper",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/as/makefile"
+            "user/v7/cmd/as.c",
+            "tools/assembler.mk",
+            "tests/as_driver.py",
+            "tools/as_driver_smoke.py"
           ]
         }
       ],
       "priority": 6,
-      "status": "partial",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -1561,12 +1567,8 @@
         }
       ],
       "reference_includes": [],
-      "blockers": [
-        "Installed assembler driver and as2 helper integration remain task 184."
-      ],
-      "unresolved": [
-        "Complete the installed as/as2 pipeline and its CLI acceptance."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Assemble native instructions/labels/relocations, link them and run the result.",
         "Verify each installed output and its documented behavior; test helpers through their consuming pipeline."
@@ -1602,18 +1604,17 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        184
-      ],
+      "unresolved_tasks": [],
       "native_sources": [
         "user/as/parse.c",
         "user/as/as.h",
         "user/as/encode.c",
         "user/as/encode.h",
-        "user/as/object.c"
+        "user/as/object.c",
+        "user/v7/cmd/as.c"
       ],
       "scope_notes": [
-        "Tasks 181\u2013183 replace supplied PDP-11 assembly with native C parsing, x86_64 encoding and ELF64 relocatable output. Private native production and consumption pass; installed as/as2 integration remains task 184."
+        "Tasks 181\u2013184 replace PDP-11 assembly with native C parsing, x86_64 encoding, ELF64 objects and installed as/as2 pipeline."
       ]
     },
     {

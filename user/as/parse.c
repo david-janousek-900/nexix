@@ -7,7 +7,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
-struct parser {struct as_program *p;const char *path;char *s;unsigned line,depth;size_t section,previous;unsigned local[10];};
+struct parser {struct as_program *p;const char *path;char *s;unsigned line,depth;size_t section,previous;unsigned local[10];size_t total;};
 struct as_expr as_absolute(uint64_t n) {struct as_expr e={n,AS_NONE,AS_NONE};return e;}
 static char *copy(const char *s) {size_t n=strlen(s)+1;char *p=malloc(n);if(p)memcpy(p,s,n);return p;}
 static void error(struct parser *c,const char *why) {
@@ -271,27 +271,39 @@ again:
     if(!*c->s||*c->s=='#'||*c->s==';')return;
     do {if(r->count>=3){error(c,"too many operands");return;}operand(c,r->operands+r->count++);blank(c);if(*c->s!=',')break;c->s++;}while(!c->p->errors);
 }
-int as_parse(const char *path,struct as_program *p) {
-    memset(p,0,sizeof(*p));FILE *f=fopen(path,"r");if(!f){fprintf(stderr,"as: cannot read %s\n",path);return -1;}
-    struct parser c={0};c.p=p;c.path=path;c.section=section(&c,".text",6,1);c.previous=c.section;
-    char line[16384];size_t total=0;
+static int parse_file(struct parser *c,const char *path) {
+    struct as_program *p=c->p;
+    FILE *f=!strcmp(path,"-")?stdin:fopen(path,"r");
+    if(!f){fprintf(stderr,"as: cannot read %s\n",path);p->errors++;return -1;}
+    c->path=!strcmp(path,"-")?"<stdin>":path;c->line=0;
+    char line[16384];
     while(!p->errors) {
-        size_t n=0;int ch=EOF;c.line++;
+        size_t n=0;int ch=EOF;c->line++;
         while(n+1<sizeof(line)&&(ch=fgetc(f))!=EOF) {
-            if(!ch){error(&c,"NUL in assembly source");break;}
+            if(!ch){error(c,"NUL in assembly source");break;}
             if(ch=='\n')break;
             line[n++]=(char)ch;
         }
         if(p->errors||(!n&&ch==EOF))break;
-        total+=n+1;line[n]=0;
-        if(total>AS_LIMIT||n+1==sizeof(line)){error(&c,"source or line too long");break;}
-        c.s=line;
-        while(!p->errors) {blank(&c);if(!*c.s||*c.s=='#')break;statement(&c);blank(&c);if(*c.s==';'){c.s++;continue;}if(*c.s&&*c.s!='#')error(&c,"unexpected trailing text");break;}
+        c->total+=n+1;line[n]=0;
+        if(c->total>AS_LIMIT||n+1==sizeof(line)){error(c,"source or line too long");break;}
+        c->s=line;
+        while(!p->errors) {blank(c);if(!*c->s||*c->s=='#')break;statement(c);blank(c);if(*c->s==';'){c->s++;continue;}if(*c->s&&*c->s!='#')error(c,"unexpected trailing text");break;}
     }
-    if(ferror(f))error(&c,"input read failed");
-    if(fclose(f))error(&c,"input close failed");
+    if(ferror(f))error(c,"input read failed");
+    if(f!=stdin&&fclose(f))error(c,"input close failed");
     return p->errors?-1:0;
 }
+int as_parse_files(size_t count,const char *const *paths,struct as_program *p) {
+    memset(p,0,sizeof(*p));struct parser c={0};c.p=p;c.path=count?paths[0]:"<stdin>";
+    c.section=section(&c,".text",6,1);c.previous=c.section;
+    if(!p->errors) {
+        if(!count)return parse_file(&c,"-");
+        for(size_t i=0;i<count;i++)if(parse_file(&c,paths[i]))return -1;
+    }
+    return p->errors?-1:0;
+}
+int as_parse(const char *path,struct as_program *p) {return as_parse_files(1,&path,p);}
 void as_free(struct as_program *p) {
     for(size_t i=0;i<p->count;i++)free(p->records[i].bytes);
     for(size_t i=0;i<p->symbol_count;i++)free(p->symbols[i].name);
