@@ -19,6 +19,7 @@ void archive_free(struct archive *);
 void archive_member_free(struct archive_member *);
 int archive_load(const char *,struct archive *);
 int archive_file(const char *,struct archive_member *);
+int archive_replace(const char *,const unsigned char *,size_t);
 int archive_write(const char *,const struct archive *,int);
 int archive_safe_name(const char *);
 #endif

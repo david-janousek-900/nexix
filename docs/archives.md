@@ -71,3 +71,32 @@ strong/common/weak definitions and excluded symbols, links and executes a C
 program against the result, and tests malformed-ELF failure preservation under
 ASan/UBSan. Installed 16/128 MiB fixtures compare native bytes and exercise nm,
 repeat indexing and historical/BSD conversion.
+
+## ELF stripping
+
+Task 190 installs `/bin/strip file ...`. It strips native ELF64 objects,
+executables and archive members through checked section/program tables. Static
+symbol tables, their unused strings, debug sections, section groups and static
+relocations are discarded. Retained section indexes/links are remapped, including
+dynamic symbol section indexes. Program load offsets, addresses and code/data stay fixed; ELF section-table
+metadata and dynamic-symbol section indexes are updated. Dynamic symbols and
+allocated relocations remain available. Stripped host ELF/PIE executables and
+native Nexix executables are executed in acceptance tests.
+
+As with V7 strip, stripping a relocatable object removes the static symbol and
+relocation information required for subsequent linking. Apply it to finished
+programs; stripped archive objects are likewise no longer useful as linker inputs.
+Archive containers are rewritten as GNU/SysV and any existing index is rebuilt.
+A malformed or non-ELF member rejects the entire archive update. Existing file
+permissions are preserved, and standalone files use the same temporary/link
+replacement and recovery procedure as archives. Unusual layouts where removed
+non-allocated sections overlap program load bytes are rejected rather than risk
+changing executable contents.
+
+`make test-strip` uses ASan/UBSan, real ELF/PIE execution, program-load byte checks,
+section-table inspection, historical/BSD/GNU containers, malformed and mutated ELF
+fixtures, idempotence and failed-update byte preservation. Installed 16/128 MiB
+tests execute the stripped native program as root and an ordinary user, compare
+exact host/native output bytes and section sizes, and consume stripped archives
+with `nm`. The shared replacement-path change is also covered by rerunning the
+complete ar/arcv/ranlib acceptance suites before this task's commit.

@@ -11,6 +11,10 @@ for name in ('a','b','guest.a','bad.a','v6.a','v6data','historical.a','bsd.a','n
         source='read-'+name if (f/('read-'+name)).exists() else name
         artifacts['/tmp/'+name]='fixtures-'+tool+'/'+source
 longname='object_with_a_very_long_member_name.o'
+if tool=='strip':
+    artifacts['/tmp/app']='fixtures-strip/read-native.elf'
+    artifacts['/tmp/expected']='fixtures-strip/native.elf'
+    artifacts['/tmp/broken.a']='fixtures-strip/broken.a'
 if tool=='ranlib':
     artifacts['/tmp/expected.a']='fixtures-ranlib/native.a'
     artifacts['/tmp/broken.a']='fixtures-ranlib/broken.a'
@@ -75,4 +79,23 @@ with private_guest(qemu,iso,ram,tool,artifacts,terminals=2,single_user=False) as
         for name in ('bsd.a','historical.a'):
             guest.command('ranlib /tmp/'+name)
             guest.command("nm -go /tmp/"+name+" | grep -c 'function_with_a_very_long_symbol_name$'",stdout='1\n')
+    if tool=='strip':
+        guest.command('/tmp/app alpha beta',stdout='alpha beta\n')
+        guest.command('size /tmp/app > /tmp/size1')
+        guest.command('strip /tmp/app')
+        guest.command('cmp /tmp/app /tmp/expected')
+        guest.command('/tmp/app alpha beta',stdout='alpha beta\n')
+        guest.command('nm -u /tmp/app')
+        guest.command('size /tmp/app > /tmp/size2')
+        guest.command('cmp /tmp/size1 /tmp/size2')
+        guest.command('strip /tmp/app')
+        guest.command('cmp /tmp/app /tmp/expected')
+        for name in ('native.a','bsd.a','historical.a'):
+            guest.command('strip /tmp/'+name)
+            guest.command('nm -uo /tmp/'+name)
+        guest.command('cp /tmp/broken.a /tmp/saved.a')
+        guest.command('strip /tmp/broken.a',stdout='strip: cannot strip /tmp/broken.a\n',status=1)
+        guest.command('cmp /tmp/broken.a /tmp/saved.a')
+        login(guest,'bob','bob',line=1,prompt='$ ')
+        guest.command('/tmp/app ordinary user',terminal=1,stdout='ordinary user\n')
 print(f'PASS: {ram} native {tool} archive operations, formats, symbols, failures and unprivileged use')

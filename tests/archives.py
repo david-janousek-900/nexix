@@ -129,6 +129,47 @@ with tempfile.TemporaryDirectory(prefix='nx-archives-') as temp:
         saved=(folder/'broken.a').read_bytes()
         assert run('broken.a',ok=False).returncode!=0
         assert (folder/'broken.a').read_bytes()==saved
+    if TOOL=='strip':
+        (folder/'app.c').write_text('static const char text[]="strip-execution-ok"; int main(void){return text[0]!=115;}\n')
+        subprocess.run(['cc','-g','-no-pie',str(folder/'app.c'),'-o',str(folder/'app')],check=True)
+        before=(folder/'app').read_bytes();mode=(folder/'app').stat().st_mode&0o777
+        run('app');after=(folder/'app').read_bytes();assert len(after)<len(before)
+        assert (folder/'app').stat().st_mode&0o777==mode
+        subprocess.run([str(folder/'app')],check=True)
+        output=subprocess.check_output(['readelf','-S',str(folder/'app')]);assert b'.symtab' not in output and b'.debug' not in output
+        # Every executable program segment retains identical load bytes/addresses.
+        phoff=struct.unpack_from('<Q',before,32)[0];phnum=struct.unpack_from('<H',before,56)[0]
+        for i in range(phnum):
+            p=struct.unpack_from('<IIQQQQQQ',before,phoff+56*i)
+            if p[0]==1:
+                start=max(p[2],64);assert before[start:p[2]+p[5]]==after[start:p[2]+p[5]]
+        run('app');assert (folder/'app').read_bytes()==after
+        subprocess.run(['cc','-g',str(folder/'app.c'),'-o',str(folder/'pie')],check=True)
+        run('pie');subprocess.run([str(folder/'pie')],check=True)
+        # Native ET_REL stripping matches the V7 loss of static relocation info.
+        original=obj.read_bytes();run(obj.name)
+        output=subprocess.check_output(['readelf','-S',str(obj)]);assert b'.symtab' not in output and b'.rela' not in output
+        for archive in ('native.a','bsd.a','historical.a'):
+            (folder/('read-'+archive)).write_bytes((folder/archive).read_bytes())
+            run(archive)
+            assert subprocess.check_output(['ar','p',str(folder/archive)])==obj.read_bytes()
+        for name in bads:
+            p=folder/name;saved=p.read_bytes();assert run(name,ok=False).returncode!=0;assert p.read_bytes()==saved
+        subprocess.run(['ar','rcS',str(folder/'broken.a'),str(folder/'string-offset')],check=True)
+        saved=(folder/'broken.a').read_bytes();assert run('broken.a',ok=False).returncode!=0
+        assert (folder/'broken.a').read_bytes()==saved
+        assert run(ok=False).returncode==2
+        rng=random.Random(190)
+        for _ in range(100):
+            data=bytearray(original)
+            for _ in range(3):data[rng.randrange(len(data))]=rng.randrange(256)
+            (folder/'mutated.o').write_bytes(data);r=run('mutated.o',ok=False)
+            if r.returncode:assert (folder/'mutated.o').read_bytes()==data
+        # Exact ELF fixture compiled for the guest loader; run there after stripping.
+        subprocess.run(['make','build/v7-echo.elf'],cwd=ROOT,check=True,stdout=subprocess.DEVNULL)
+        (folder/'native.elf').write_bytes((ROOT/'build/v7-echo.elf').read_bytes())
+        (folder/'read-native.elf').write_bytes((folder/'native.elf').read_bytes())
+        run('native.elf')
     out=ROOT/'build'/('fixtures-'+TOOL);out.mkdir(exist_ok=True)
     for p in folder.iterdir():
         if p.is_file() and p!=binary:(out/p.name).write_bytes(p.read_bytes())

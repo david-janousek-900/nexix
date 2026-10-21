@@ -131,7 +131,7 @@ static int bigword(int fd,uint32_t n) {unsigned char b[]={n>>24,n>>16,n>>8,n};re
 static int padding(int fd,size_t size) {return size&1?put(fd,"\n",1):0;}
 /* Same-directory hard links implement replacement on V7, which has no rename.
  * The backup remains available until the complete new archive has been linked. */
-int archive_write(const char *path,const struct archive *a,int indexed) {
+static int write_file(const char *path,const struct archive *a,int indexed,const unsigned char *raw,size_t rawsize) {
     void (*handlers[4])(int);int signals[]={SIGHUP,SIGINT,SIGQUIT,SIGTERM};
     for(unsigned i=0;i<4;i++)handlers[i]=signal(signals[i],SIG_IGN);
     struct index_entry *index=NULL;size_t capacity=0,count=0,namesize=0,stringbytes=0,total=8;
@@ -139,7 +139,7 @@ int archive_write(const char *path,const struct archive *a,int indexed) {
     size_t *longoff=calloc(a->count?a->count:1,sizeof(*longoff));
     const char *stage="archive validation";
     struct stat old;int exists=!stat(path,&old),fd=-1,result=-1;char temp[4096],backup[4096];
-    if(!offsets||!longoff||strlen(path)>4000)goto out;
+    if(!offsets||!longoff||strlen(path)>4000||rawsize>ARCHIVE_LIMIT)goto out;
     const char *slash=strrchr(path,'/');size_t dir=slash?(size_t)(slash-path+1):0;
     if(exists&&(!S_ISREG(old.st_mode)||access(path,W_OK)))goto out;
     for(size_t i=0;i<a->count;i++) {
@@ -177,6 +177,7 @@ int archive_write(const char *path,const struct archive *a,int indexed) {
     }
     if(fd<0)goto out;
     stage="archive write";
+    if(raw) {if(put(fd,raw,rawsize))goto cleanup;goto finish_output;}
     if(put(fd,"!<arch>\n",8))goto cleanup;
     if(indexed) {
         if(header(fd,"/",indexsize,NULL)||bigword(fd,count))goto cleanup;
@@ -195,6 +196,7 @@ int archive_write(const char *path,const struct archive *a,int indexed) {
         else snprintf(name,sizeof(name),"%s/",m->name);
         if(header(fd,name,m->size,m)||put(fd,m->data,m->size)||padding(fd,m->size))goto cleanup;
     }
+finish_output:
     stage="archive close";
     if(close(fd)) {fd=-1;goto cleanup;}fd=-1;
     stage="archive chmod";
@@ -226,4 +228,9 @@ out:
     free(index);free(offsets);free(longoff);
     for(unsigned i=0;i<4;i++)if(handlers[i]!=SIG_ERR)signal(signals[i],handlers[i]);
     return result;
+}
+
+int archive_write(const char *path,const struct archive *a,int indexed) {return write_file(path,a,indexed,NULL,0);}
+int archive_replace(const char *path,const unsigned char *data,size_t size) {
+    struct archive empty={0};return write_file(path,&empty,0,data,size);
 }

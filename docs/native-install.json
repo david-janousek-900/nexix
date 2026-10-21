@@ -7970,6 +7970,19 @@
         "root": "programs",
         "path": "v7-ranlib.elf"
       }
+    },
+    {
+      "path": "/bin/strip",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.strip",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-strip.elf"
+      }
     }
   ]
 }

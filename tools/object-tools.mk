@@ -102,3 +102,17 @@ test-ranlib: test-ranlib-unit multi-iso rootfs
 	$(PYTHON) tools/archives_smoke.py $(QEMU) build/nexix-multi.iso 128M ranlib
 test: test-ranlib
 test-unit: test-ranlib-unit
+
+build/v7-strip.o: user/v7/cmd/strip.c user/toolchain/archive.h user/toolchain/object.h | build/.dir
+	$(CC) $(USER_CFLAGS) -Iuser/toolchain -c $< -o $@
+build/v7-strip.elf: build/crt0.o build/v7-strip.o build/toolchain-archive.o build/toolchain-object.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+-include build/v7-strip.d
+.PHONY: test-strip-unit test-strip
+test-strip-unit:
+	$(PYTHON) tests/archives.py strip
+test-strip: test-strip-unit multi-iso rootfs
+	$(PYTHON) tools/archives_smoke.py $(QEMU) build/nexix-multi.iso 16M strip
+	$(PYTHON) tools/archives_smoke.py $(QEMU) build/nexix-multi.iso 128M strip
+test: test-strip
+test-unit: test-strip-unit
