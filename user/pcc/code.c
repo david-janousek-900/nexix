@@ -31,17 +31,18 @@ int defnam(struct symtab *p) {
 }
 int bfcode(int *args,int count) {
     struct symtab *function=stab+curftn;TWORD result=DECREF(function->stype);struct mip_layout layout;
-    if(mip_scalar_layout(result,&layout) || result==FLOAT || result==DOUBLE) {uerror("non-integer function result requires floating/aggregate backend");return 0;}
+    if(mip_scalar_layout(result,&layout)) {uerror("function result requires aggregate backend");return 0;}
     frame_size=0;autooff=0;locctr(PROG);
     if(function->sclass==EXTDEF)printf(".globl %s\n",function->sname);
     printf(".type %s,@function\n%s:\n pushq %%rbp\n movq %%rsp,%%rbp\n subq $.F%d,%%rsp\n",function->sname,function->sname,ftnno);
-    retlab=getlab();static const char *gp[]={"rdi","rsi","rdx","rcx","r8","r9"};int i;
+    retlab=getlab();static const char *gp[]={"rdi","rsi","rdx","rcx","r8","r9"};int i;unsigned ngp=0,nsse=0,stack=16;
     for(i=0;i<count;i++) {
         struct symtab *p=stab+args[i];
-        if(mip_scalar_layout(p->stype,&layout) || p->stype==FLOAT || p->stype==DOUBLE) {uerror("non-integer parameter requires floating/aggregate backend");continue;}
+        if(mip_scalar_layout(p->stype,&layout)) {uerror("parameter requires aggregate backend");continue;}
         autooff+=64;p->offset=-autooff;p->sclass=PARAM;
-        if(i<6)printf(" movq %%%s,%d(%%rbp)\n",gp[i],p->offset/8);
-        else printf(" movq %u(%%rbp),%%rax\n movq %%rax,%d(%%rbp)\n",16U+(unsigned)(i-6)*8,p->offset/8);
+        if((p->stype==FLOAT || p->stype==DOUBLE) && nsse<8)printf(" mov%s %%xmm%u,%d(%%rbp)\n",p->stype==FLOAT?"ss":"sd",nsse++,p->offset/8);
+        else if(p->stype!=FLOAT && p->stype!=DOUBLE && ngp<6)printf(" movq %%%s,%d(%%rbp)\n",gp[ngp++],p->offset/8);
+        else {printf(" movq %u(%%rbp),%%rax\n movq %%rax,%d(%%rbp)\n",stack,p->offset/8);stack+=8;}
     }
     pcc_note_frame((unsigned)autooff/8);return 0;
 }
@@ -82,7 +83,12 @@ int vfdzero(int bits) {
     if(bits>=32) {printf(".zero %u\n",(unsigned)bits/32*4);bits%=32;}
     initial_bits+=(unsigned)bits;return 0;
 }
-int fincode(double value,int bits) {(void)value;(void)bits;uerror("floating data requires floating backend");return 0;}
+int fincode(double value,int bits) {
+    if(bits==32) {float f=(float)value;uint32_t v;memcpy(&v,&f,4);printf(".long %u\n",v);}
+    else if(bits==64) {uint64_t v;memcpy(&v,&value,8);printf(".quad %lu\n",(unsigned long)v);}
+    else cerror("invalid floating initializer width");
+    inoff+=bits;return 0;
+}
 int ecode(NODE *tree) {
     if(nerrors)return 0;
     struct mip_node *nodes=calloc(TREESZ,sizeof(*nodes));if(!nodes)cerror("no memory for target IR");

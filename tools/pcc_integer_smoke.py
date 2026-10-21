@@ -25,7 +25,7 @@ with private_guest(qemu,iso,ram,'pcc-integer',artifacts,terminals=2,single_user=
     guest.command('/tmp/pccc /tmp/prog.i > /tmp/prog.s 2> /tmp/warnings')
     guest.command('cmp /tmp/prog.s /tmp/prog.exp')
     guest.command('as -o /tmp/prog.o /tmp/prog.s')
-    guest.command('ld -o /tmp/program /lib/crt0.o /tmp/prog.o -lc')
+    guest.command('ld -o /tmp/program /lib/crt0.o /tmp/prog.o '+objects+' -lc')
     guest.command('/tmp/program')
     login(guest,'bob','bob',line=1,prompt='$ ')
     for i in range(len(modules)):

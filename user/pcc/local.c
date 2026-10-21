@@ -8,6 +8,10 @@ NODE *clocal(NODE *p) {
         if(ISPTR(p->left->type) || ISPTR(p->right->type))p->op+=ULT-LT;
         break;
     case PCONV:case SCONV:
+        if(q->op==FCON && (p->type==FLOAT || p->type==DOUBLE)) {
+            if(p->type==FLOAT)q->dval=(double)(float)q->dval;
+            q->type=p->type;q->cdim=p->cdim;q->csiz=p->csiz;p->op=FREE;return q;
+        }
         if(!mip_scalar_layout(p->type,&to) && !mip_scalar_layout(q->type,&from) &&
            p->type!=FLOAT && p->type!=DOUBLE && q->type!=FLOAT && q->type!=DOUBLE) {
             if(q->op==ICON) {

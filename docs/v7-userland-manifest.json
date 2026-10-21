@@ -10976,7 +10976,7 @@
         "Complete native ABI/API and data-asset audit before porting."
       ],
       "unresolved": [
-        "Tasks 193/195/196: native extended type/header closure, floating/call/aggregate/variadic ABI and installed driver/alternate targets remain."
+        "Tasks 193/195/196: native extended type/header closure, aggregate/long-double/variadic-definition ABI and installed driver/alternate targets remain; integer and float/double scalar calls are tested."
       ],
       "acceptance": [
         "Compile native C fixtures through shared mip and target backend, then assemble/link/run.",

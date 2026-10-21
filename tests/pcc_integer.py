@@ -50,8 +50,20 @@ int tiny_update(p) struct tiny *p;{return p->value+=2;}
 struct fields {unsigned a:3;int b:5;unsigned c:9;};
 int fields_less(p) struct fields *p;{return p->a < -1;}
 int fields_update(p) struct fields *p;{p->a=7;p->b= -9;p->c=300;return p->a+p->b+p->c;}
+double fp_math(a,b) double a,b;{double x;x=(a+b)*(a-b);x/=b;return -x;}
+float fp_float(a,b) double a,b;{static float scale=1.0;float x;x=a*scale;x+=b;return x++;}
+unsigned long fp_to_unsigned(a) double a;{return (unsigned long)a;}
+double unsigned_to_fp(a) unsigned long a;{return (double)a;}
+long fp_to_signed(a) double a;{return (long)a;}
+int fp_int_compound(p,b) int *p;double b;{return *p/=b;}
+int fp_cmp(a,b) double a,b;{return (a==b)+2*(a!=b)+4*(a<b)+8*(a<=b)+16*(a>b)+32*(a>=b)+64*(!a);}
+int fp_truth(a,b) double a,b;{if(a && b)return 1;if(a || b)return 2;return 3;}
+double fp_callback(f,x) double (*f)();double x;{return (*f)(1,x,2,3.5);}
+double fp_many(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q) double a,b,c,d,e,f,g,h,i,j;long k,l,m,n,o,p,q;{return a+2*b+3*c+4*d+5*e+6*f+7*g+8*h+9*i+10*j+k+l+m+n+o+p+q;}
+
 '''
 DRIVER='''#include <stdio.h>
+#include <stdarg.h>
 #include <stdint.h>
 extern long calc(long,unsigned),many(long,long,long,long,long,long,long,long),signed_divide(long,long),signed_remainder(long,long),signed_shift(long,int),distance(long *,long *);
 extern unsigned long unsigned_divide(unsigned long,unsigned long),unsigned_remainder(unsigned long,unsigned long),unsigned_shift(unsigned long,int),bits(unsigned long,unsigned long,int);
@@ -66,9 +78,28 @@ struct fields {unsigned a:3;int b:5;unsigned c:9;};extern int fields_update(stru
 #define CHECK(x) do{if(!(x)){printf("FAIL integer line %d\\n",__LINE__);return 1;}}while(0)
 long callback_target(long a,long b,long c,long d,long e,long f,long g,long h,long i){return a+2*b+3*c+4*d+5*e+6*f+7*g+8*h+9*i;}
 extern long callback_call(long (*)(),long);
+extern double fp_math(double,double),unsigned_to_fp(unsigned long),fp_callback(double (*)(),double);
+extern float fp_float(double,double);
+extern unsigned long fp_to_unsigned(double);
+extern long fp_to_signed(double);
+extern int fp_cmp(double,double),fp_truth(double,double),fp_int_compound(int *,double);
+extern double fp_many(double,double,double,double,double,double,double,double,double,double,long,long,long,long,long,long,long);
+double fp_variadic(int first,...){va_list ap;double a,b;int i;va_start(ap,first);a=va_arg(ap,double);i=va_arg(ap,int);b=va_arg(ap,double);va_end(ap);return first+a+i+b;}
+
 int main(void){
  long a[8];unsigned cast_value=0;int p[2]={10,22};unsigned char guarded[2]={7,90};struct fields f={0};
  CHECK(callback_call(callback_target,1)==292);
+ p[0]= -7;CHECK(fp_int_compound(p,2.5)== -2 && p[0]== -2);p[0]=10;
+ CHECK(fp_math(7.5,2.5)== -20.0);CHECK(fp_float(1.25,2.5)==3.75f);
+ CHECK(fp_to_unsigned(9223372036854775808.0)==0x8000000000000000UL);
+ CHECK(fp_to_unsigned(18446744073709549568.0)==0xfffffffffffff800UL);
+ CHECK(unsigned_to_fp(0xffffffffffffffffUL)==18446744073709551616.0);
+ CHECK(fp_to_signed(-1234.75)== -1234);CHECK(fp_to_unsigned(1234.75)==1234UL);
+ CHECK(fp_cmp(2.0,3.0)==14 && fp_cmp(3.0,2.0)==50 && fp_cmp(3.0,3.0)==41);
+ CHECK(fp_cmp(0.0/0.0,2.0)==2);CHECK(fp_cmp(-0.0,0.0)==105);
+ CHECK(fp_truth(0.0,0.0)==3 && fp_truth(1.0,0.0)==2 && fp_truth(1.0,2.0)==1);
+ CHECK(fp_callback((double (*)())fp_variadic,1.25)==7.75);
+ CHECK(fp_many(1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7)==413);
  CHECK(huge_address()==(unsigned long)&global_value+0x100000000UL);
  CHECK(indirect()==4294967297L && literal()==211);CHECK(wrap32(0xffffffffU,1)==0);
  CHECK(cast_assignment(&cast_value)== -1L && cast_value==0xffffffffU);CHECK(unary(7)==6);
@@ -96,12 +127,16 @@ struct pair object;
 long sum9(a,b,c,d,e,f,g,h,i) long a,b,c,d,e,f,g,h,i;{return a+2*b+3*c+4*d+5*e+6*f+7*g+8*h+9*i;}
 long recurse(n) long n;{if(n<2)return 1;return n*recurse(n-1);}
 long leaf(){return 4294967297L;}
+double fp_sum(a,b,c,d,e,f,g,h,i) double a,b,c,d,e,f,g,h,i;{return a+b+c+d+e+f+g+h+i;}
+double fp_leaf(){return 2.5;}
 long nest(n) long n;{return sum9(n,leaf(),3L,4L,recurse(3L),6L,7L,8L,9L);}
 int main(){
  int array[4];int i;int sum;int lazy_value;long *pointer;long (*fp)();
  fp = sum9;
  if((*fp)(1L,2L,3L,4L,5L,6L,7L,8L,9L)!=285L)return 20;
  if(recurse(10L)!=3628800L)return 21;
+ if(fp_sum(1.0,fp_leaf(),3.0,4.0,5.0,6.0,7.0,8.0,9.0)!=45.5)return 24;
+ if(fp_leaf()+fp_leaf()*2.0!=7.5)return 25;
  if(leaf()+recurse(4L)!=4294967321L)return 22;
  if(nest(1L)!=8589934880L)return 23;
  array[0]=3;array[1]= -7;array[2]=11;array[3]=9;
@@ -119,6 +154,9 @@ int main(){
  finish:return 0;
 }
 '''
+helper_lines=[line for line in PROGRAM.splitlines() if line.startswith(('long sum9(', 'long recurse(', 'long leaf(', 'long nest(', 'double fp_sum(', 'double fp_leaf('))]
+PROGRAM='\n'.join(line for line in PROGRAM.splitlines() if line not in helper_lines)
+PROGRAM=PROGRAM.replace('int main(){','long sum9(),recurse(),leaf(),nest();double fp_sum(),fp_leaf();\nint main(){')
 (OUT/'integer.c').write_text(FUNCTIONS);(OUT/'int-driver.c').write_text(DRIVER);(OUT/'program.c').write_text(PROGRAM)
 with tempfile.TemporaryDirectory(prefix='nx-pcc-integer-') as tmp:
     d=Path(tmp);binary=d/'ccom';flags=['cc','-std=gnu89','-O1','-g','-w','-fcommon','-fsanitize=address,undefined','-fno-pie','-no-pie','-Iuser/pcc']
@@ -144,6 +182,11 @@ with tempfile.TemporaryDirectory(prefix='nx-pcc-integer-') as tmp:
         prefix='long global_value = 4294967297L;\nint zeros[8];\nlong *global_pointer = &global_value;\nchar *greeting = "native";\n' if start==0 else 'extern long global_value;\nextern int zeros[8];\nextern long *global_pointer;\nextern char *greeting;\n'
         (OUT/(name+'.c')).write_text(prefix+'\n'.join(types+functions[start:start+4])+'\n')
         compile(name)
+    helpers=[]
+    for start in range(0,len(helper_lines),3):
+        name='helper'+str(start//3);helpers.append(name);modules.append(name)
+        (OUT/(name+'.c')).write_text('long sum9(),recurse(),leaf(),nest();double fp_sum(),fp_leaf();\n'+'\n'.join(helper_lines[start:start+3])+'\n')
+        compile(name)
     (OUT/'modules.json').write_text(json.dumps(modules))
     subprocess.run(['cc','-no-pie','-O2',str(OUT/'int-driver.c'),*[str(OUT/(name+'.o')) for name in modules],'-o',str(d/'modular')],check=True)
     subprocess.run([str(d/'modular')],check=True)
@@ -152,7 +195,7 @@ with tempfile.TemporaryDirectory(prefix='nx-pcc-integer-') as tmp:
     # The same driver and sources through GCC form a separate behavior oracle.
     subprocess.run(['cc','-std=gnu89','-no-pie','-O2',str(OUT/'int-driver.c'),str(OUT/'integer.c'),'-o',str(d/'oracle')],check=True)
     subprocess.run([str(d/'oracle')],check=True)
-    subprocess.run(['cc','-no-pie',str(OUT/'program.o'),'-o',str(d/'program')],check=True)
+    subprocess.run(['cc','-no-pie',str(OUT/'program.o'),*[str(OUT/(name+'.o')) for name in helpers],'-o',str(d/'program')],check=True)
     subprocess.run([str(d/'program')],check=True)
     # Bootstrap only the external native caller; generated bodies remain PCC output.
     subprocess.run(['gcc','-std=c11','-O2','-ffreestanding','-fno-builtin','-fno-pie','-fno-stack-protector','-fno-asynchronous-unwind-tables','-mno-red-zone','-mno-avx','-nostdinc','-Ilibc/include','-Iinclude','-c',str(OUT/'int-driver.c'),'-o',str(OUT/'int-driver.o')],cwd=ROOT,check=True)

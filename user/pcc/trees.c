@@ -423,6 +423,8 @@ strargs( p ) register NODE *p;  { /* rewrite structure flavored arguments */
 		p->left = buildtree( UNARY AND, p->left, NIL );
 		p = clocal(p);
 		}
+	else if( p->type == FLOAT ) p = makety(p,DOUBLE,0,DOUBLE);
+	else if( p->type == CHAR || p->type == UCHAR || p->type == SHORT || p->type == USHORT ) p = makety(p,INT,0,INT);
 	return( p );
 	}
 

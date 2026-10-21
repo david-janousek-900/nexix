@@ -1,12 +1,13 @@
-# Native PCC front end
+# Native PCC compiler implementation
 
 Task 193 is **in progress**. `user/pcc` adapts the supplied mip grammar, scanner,
 semantic tables, tree builder and optimizer to native LP64 and the checked shared
 mip interface. The private front-end consumer runs after installed cpp and emits
-semantic/IR inspection records. It is not an installed C compiler or an assembly
-producer. Integer/pointer/control backend work remains task 194, floating/call/
-aggregate ABI work remains 195, and command/alternate-target integration remains
-196. Native header adapters and required extended language types are not yet
+semantic/IR inspection records. A separate private backend produces native
+assembly and completes integer/pointer/control task 194. Scalar float/double and
+call generation are implemented increments of task 195; aggregate, long-double
+and variadic-definition ABI work remains. Installed command/alternate-target
+integration remains task 196. Native header adapters and required extended language types are not yet
 complete, so task 193 is not marked done.
 
 ## Implemented adaptations
@@ -62,7 +63,7 @@ same bridge; no separate test-only parser implements C semantics.
 | mip `pftn.c`, `trees.c`, `optim.c`, `xdefs.c` | Retained working copies with native widths, conversion/bounds and member-namespace adaptations |
 | mip `manifest`, `mfile1`, `common`, `comm1.c` | Shared `user/mip` contracts plus `manifest`, `mfile1`, `prototypes.h` and native mutable-tree/diagnostic adapter `common.c` |
 | pcc `macdefs`, `local.c` | `macdefs` and `local.c`: native target sizes, pointer/scalar conversion and offset helpers; no PDP-11 name prefixes or short/int collapsing |
-| pcc `code.c`, `local2.c`, `order.c`, `table.c`, `mac2defs` | Private semantic target `trace.c` enables front-end tests; actual machine emission/ordering/calls remain 194–195 |
+| pcc `code.c`, `local2.c`, `order.c`, `table.c`, `mac2defs` | `trace.c` enables semantic tests; `code.c`/`local2.c` emit native scalar code through shared mip templates; aggregate/variadic/extended floating work remains 195 |
 | pcc makefile/prototype/fort targets | Native front-end rules in `tools/pcc.mk`; complete installed command and alternate consumers remain 196 |
 
 ## Acceptance evidence and remaining work
@@ -78,8 +79,8 @@ cpp into the native front end, compare exact semantic/shared-IR records, and
 check error diagnostics. No machine-code acceptance is claimed by these tests.
 
 Task 193 still needs the extended native type/header contracts required by ABI
-version 1 and their backend integration. Actual compiled-program, mixed-register,
-variadic, long-double and installed driver acceptance stay open in 193–196;
+version 1 and their backend integration. Aggregate, variadic-definition,
+long-double and installed driver acceptance stay open in 193–196;
 full supported-tool rebuild remains 207. The shared mip task also stays in
 progress until its compiler/alternate consumer gates pass. Commit/test evidence
 is recorded in Git history.
@@ -135,3 +136,22 @@ nine arguments, a separately compiled GCC callback, recursion, zero-argument
 calls and nested calls. `make TOOLCHAIN_PREFIX= test-pcc-integer` passes host
 ASan/UBSan/GCC oracles and native root/user 16/128 MiB execution. Floating,
 aggregate and variadic call classification remain pending; task 195 is open.
+
+
+Task 195 scalar floating increment adds SSE float/double loads, stores,
+arithmetic, negation, comparisons (including unordered NaNs), truth tests,
+compound assignments and conversions to/from native integer widths. Unsigned
+64-bit conversions handle the range above INT64_MAX. Static floating data is
+emitted as exact bit patterns. Calls and parameter entry independently allocate
+six GP/eight SSE registers, then ordered overflow stack slots, and set AL to the
+SSE argument count for calls into variadic callees. Default argument promotions
+apply to unprototyped calls. The retained K&R parameter model is still in use;
+ANSI prototypes and extended native types remain part of task 193.
+
+`make TOOLCHAIN_PREFIX= test-pcc-integer test-pcc-front` verifies independent GCC
+callers/callees, including a GCC variadic consumer, mixed GP/SSE register
+exhaustion, nested floating calls, float rounding/stores, NaNs/signed zero and
+unsigned conversion boundaries. Host sanitizer/oracle and native root/user
+16/128 MiB gates run the same cases. Aggregate classification/copy/return,
+long-double support and variadic function definitions remain open; this scalar
+increment does not complete task 195.
