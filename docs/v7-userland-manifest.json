@@ -290,7 +290,7 @@
       "id": "yacc-skeleton",
       "category": "data",
       "status": "supplied",
-      "description": "Original yaccpar is installed unchanged by task 281; native yacc generation remains tasks 169/170/173.",
+      "description": "Original yaccpar is installed unchanged by task 281; native generator task 169 is complete, with parser-skeleton and combined-consumer acceptance remaining in tasks 170/173.",
       "evidence": [
         "reference/v7/usr/lib/yaccpar"
       ],
@@ -19486,44 +19486,64 @@
           "name": "yacc",
           "install": "/bin/yacc",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/yacc/makefile"
+            "user/yacc/y1.c",
+            "user/yacc/y2.c",
+            "user/yacc/y3.c",
+            "user/yacc/y4.c",
+            "tests/yacc.py",
+            "tools/yacc_smoke.py",
+            "docs/yacc.md"
           ]
         }
       ],
       "priority": 5,
-      "status": "not_ported",
+      "status": "partial",
       "dependencies": [
         {
           "target": "native-build-tools",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/yacc/dextern",
+            "user/yacc/files",
+            "tools/yacc.mk"
+          ],
+          "note": "Host compiler bootstraps the supplied native LALR generator."
         },
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/yacc/dextern",
+            "user/yacc/files",
+            "tools/yacc.mk"
+          ],
+          "note": "Native public stdio, ctype, stdlib, unistd, stdarg, string and limits interfaces."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/yacc/dextern",
+            "user/yacc/files",
+            "tools/yacc.mk"
+          ],
+          "note": "Native formatted file I/O, byte classification and diagnostics."
         },
         {
           "target": "yacc-skeleton",
           "phase": "runtime",
           "certainty": "confirmed",
           "evidence": [
-            "reference/v7/usr/src/cmd/yacc/files"
+            "user/yacc/dextern",
+            "user/yacc/files",
+            "tools/yacc.mk"
           ],
-          "note": "Direct reference recipe/source dependency."
+          "note": "Default /usr/lib/yaccpar; native skeleton acceptance is task 170."
         }
       ],
       "reference_includes": [
@@ -19538,10 +19558,10 @@
         }
       ],
       "blockers": [
-        "Adapt native widths and supplied yaccpar skeleton; parser generation remains unported."
+        "Native generated-parser stack/error recovery acceptance remains task 170; combined lex/yacc acceptance remains task 173."
       ],
       "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
+        "Adapt and test the supplied parser skeleton and combined native generator consumers."
       ],
       "acceptance": [
         "Generate a parser from a small grammar, compile it and verify valid/error inputs.",
@@ -19561,9 +19581,16 @@
         }
       ],
       "unresolved_tasks": [
-        169,
         170,
         173
+      ],
+      "native_sources": [
+        "user/yacc/y1.c",
+        "user/yacc/y2.c",
+        "user/yacc/y3.c",
+        "user/yacc/y4.c",
+        "user/yacc/dextern",
+        "user/yacc/files"
       ]
     },
     {

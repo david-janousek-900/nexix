@@ -226,7 +226,7 @@ their sources alone does not provide a working native equivalent.
 | `historical-devices` | pending_assessment | Native disk/tape/DECtape, TTY/modem/packet and typesetter/printer/plotter equivalents exist; remaining command consumers and final device-node dispositions stay with their owners and task 359. |
 | `elf-toolchain` | missing | Retarget retained compiler/assembler/linker and archive/symbol utilities to native x86_64 ELF. |
 | `spool-locks` | missing | Historical spool and UUCP configuration fixtures are supplied; native services, ownership and locking remain pending. |
-| `yacc-skeleton` | supplied | Original yaccpar is installed unchanged by task 281; native yacc generation remains tasks 169/170/173. |
+| `yacc-skeleton` | supplied | Original yaccpar is installed unchanged by task 281; native generator task 169 is complete, with parser-skeleton and combined-consumer acceptance remaining in tasks 170/173. |
 | `lex-skeletons` | supplied | Supplied ncform plus separately pinned/adapted illumos nrform and tested native extended-byte ebcform equivalent. Exact historical ebcform text remains unrecovered; no mode is waived. Full generator/Ratfor/Fortran acceptance stays in consumer tasks. |
 | `lint-descriptions` | supplied | Original llib-lc, llib-lm and llib-port are installed unchanged by task 281; native lint consumers remain tasks 261/262. |
 | `word-dictionary` | supplied | Original inputs are supplied in the full archive. Native integration, generated formats and functional acceptance remain pending. |
