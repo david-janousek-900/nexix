@@ -36,3 +36,24 @@ undefined/common/weak/read-only symbols, sorting/selection/prefix modes and
 malformed/truncated input rejection. LSan is disabled because it requires
 ptrace support absent from the managed host; address/undefined-behavior checks
 remain enabled. A sanitizer crash is a test failure, including for bad inputs.
+
+## size (task 189)
+
+`size [file ...]` retains V7's `text+data+bss = totalb = 0octalb` format, using
+64-bit byte counts. The default is `a.out`; multiple files gain a filename
+prefix and archive members use `archive(member)`. Errors return 1 and later
+operands are still processed; unsupported options return 2.
+
+ELF SHF_ALLOC sections determine sizes: nonwritable initialized sections count
+as text (including read-only data), writable initialized sections as data, and
+SHT_NOBITS as BSS. Nonallocated metadata is excluded. A sectionless executable
+is measured from PT_LOAD file/memory sizes, separating writable initialized
+bytes and zero-fill; these are segment sizes, including any segment padding,
+rather than fabricated section sizes. Integer overflows and out-of-file ranges
+are rejected. Symbol-table contents are unnecessary for size measurement.
+
+`make test-size` compares real object sizes with GNU size, checks independently
+encoded archive containers and a sectionless static executable, and exercises
+default/multiple operands and malformed inputs. ASan/UBSan host checks and
+installed guest checks at 16/128 MiB must pass. Shared reader changes also run
+`make test-nm` to protect symbol inspection.

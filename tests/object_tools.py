@@ -37,6 +37,8 @@ def fixtures(folder):
             struct.pack_into('<I',corrupt,symoff+24,0xffffffff)
             break
     bads['string-offset']=bytes(corrupt)
+    corrupt=bytearray(data);struct.pack_into('<Q',corrupt,shoff+64+24,0xffffffffffffffff)
+    bads['section-range']=bytes(corrupt)
     for name,content in bads.items(): (folder/name).write_bytes(content)
     return obj,bads
 
@@ -65,6 +67,35 @@ def check(tool,binary,folder):
             r=run(folder/name);assert r.returncode!=0,(name,r.stdout)
         assert run('-z').returncode==2
         assert run(folder/'missing',obj).returncode==1
+    if tool=='size':
+        values=list(map(int,subprocess.check_output(['size','-B',str(obj)],text=True).splitlines()[1].split()[:3]))
+        text,data,bss=values;total=sum(values)
+        line=f'{text}+{data}+{bss} = {total}b = 0{total:o}b\n'
+        r=run(obj);assert r.returncode==0 and r.stdout==line,r
+        assert run(folder/'missing',obj).returncode==1
+        for archive,membername in (('native.a',obj.name),('bsd.a',obj.name),('historical.a','fixture.o')):
+            r=run(folder/archive)
+            assert r.returncode==0 and r.stdout==f'{folder/archive}({membername}): '+line,r
+        for name in bads:
+            if name=='string-offset':continue # Symbol names do not affect sizes.
+            r=run(folder/name);assert r.returncode==1,(name,r)
+        assert run('-z').returncode==2
+        (folder/'expected.txt').write_text(line)
+        asm=folder/'exec.S';asm.write_text('.global _start\n.text\n_start: nop; ret\n.data\n.quad 7\n.bss\n.zero 64\n.section .note.GNU-stack,"",@progbits\n')
+        subprocess.run(['gcc','-c',str(asm),'-o',str(folder/'exec.o')],check=True)
+        subprocess.run(['ld','-T',str(ROOT/'user/user.ld'),str(folder/'exec.o'),'-o',str(folder/'exec.elf')],check=True)
+        raw=bytearray((folder/'exec.elf').read_bytes())
+        phoff=struct.unpack_from('<Q',raw,32)[0];phnum=struct.unpack_from('<H',raw,56)[0]
+        sizes=[0,0,0]
+        for i in range(phnum):
+            p=struct.unpack_from('<IIQQQQQQ',raw,phoff+i*56)
+            if p[0]==1:
+                sizes[1 if p[1]&2 else 0]+=p[5];sizes[2]+=p[6]-p[5]
+        struct.pack_into('<Q',raw,40,0);struct.pack_into('<HHH',raw,58,0,0,0)
+        (folder/'sectionless').write_bytes(raw)
+        a,b,c=sizes;s=sum(sizes);expected=f'{a}+{b}+{c} = {s}b = 0{s:o}b\n'
+        r=run(folder/'sectionless');assert r.returncode==0 and r.stdout==expected,r
+        (folder/'segment.txt').write_text(expected)
     return obj,bads
 
 

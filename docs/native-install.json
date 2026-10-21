@@ -7879,6 +7879,19 @@
         "root": "programs",
         "path": "v7-nm.elf"
       }
+    },
+    {
+      "path": "/bin/size",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.size",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-size.elf"
+      }
     }
   ]
 }

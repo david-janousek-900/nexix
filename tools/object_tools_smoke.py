@@ -11,6 +11,7 @@ for n in ('object_with_a_very_long_member_name.o','native.a','bsd.a','historical
     artifact='fixtures-'+tool+'/'+n
     path='/tmp/fixture.o' if n.endswith('.o') else '/tmp/'+n
     artifacts[path]=artifact
+if tool=='size':artifacts['/tmp/sectionless']='fixtures-size/sectionless'
 with private_guest(qemu,iso,ram,tool,artifacts,single_user=False) as guest:
     login(guest,'root','nexix')
     if tool=='nm':
@@ -21,4 +22,18 @@ with private_guest(qemu,iso,ram,tool,artifacts,single_user=False) as guest:
         for name in ('truncated','machine','archive-short','string-offset'):
             guest.command('nm /tmp/'+name,stdout='nm: cannot read object/archive /tmp/'+name+'\n',status=1)
         guest.command('nm -z',stdout='usage: nm [-goprun] [file ...]\n',status=2)
+        guest.command('cp /tmp/fixture.o a.out')
+        guest.command('nm -u',stdout='unresolved_external\n')
+    if tool=='size':
+        line=(folder/'expected.txt').read_text()
+        guest.command('size /tmp/fixture.o',stdout=line)
+        for archive,member in (('native.a','object_with_a_very_long_member_name.o'),
+                               ('bsd.a','object_with_a_very_long_member_name.o'),('historical.a','fixture.o')):
+            guest.command('size /tmp/'+archive,stdout=f'/tmp/{archive}({member}): '+line)
+        for name in ('truncated','machine','archive-short'):
+            guest.command('size /tmp/'+name,stdout='size: cannot read object/archive /tmp/'+name+'\n',status=1)
+        guest.command('size -z',stdout='usage: size [file ...]\n',status=2)
+        guest.command('cp /tmp/fixture.o a.out')
+        guest.command('size',stdout=line)
+        guest.command('size /tmp/sectionless',stdout=(folder/'segment.txt').read_text())
 print(f'PASS: {ram} installed {tool} ELF/archive behavior, long names and malformed inputs')

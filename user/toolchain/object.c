@@ -150,7 +150,20 @@ bad:
 int object_sizes(const struct object *o,uint64_t *text,uint64_t *data,uint64_t *bss)
 {
     *text=*data=*bss=0;
-    if (!o->h.e_shnum) return -1; /* No invented section sizes for stripped files. */
+    if (!o->h.e_shnum) {
+        unsigned loads=0;
+        for (unsigned i=0;i<o->h.e_phnum;++i) {
+            struct program { uint32_t type,flags;uint64_t offset,addr,physical,filesz,memsz,align; } p;
+            memcpy(&p,o->bytes+o->h.e_phoff+(uint64_t)i*56,sizeof(p));
+            if (p.type!=1) continue;
+            ++loads;
+            if (p.filesz>p.memsz || !span(p.offset,p.filesz,o->size)) return -1;
+            uint64_t *sum=(p.flags&2)?data:text;
+            if (*sum>UINT64_MAX-p.filesz || *bss>UINT64_MAX-(p.memsz-p.filesz)) return -1;
+            *sum+=p.filesz;*bss+=p.memsz-p.filesz;
+        }
+        return loads?0:-1;
+    }
     for (unsigned i=0;i<o->h.e_shnum;++i) {
         Elf64_Shdr s;object_section(o,i,&s);
         if (!(s.sh_flags&SHF_ALLOC)) continue;
