@@ -344,6 +344,7 @@ build/signals_abi.o: user/signals-test-abi.S include/nexix/syscall.h | build/.di
 	$(CC) -m64 -ffreestanding -fno-pie -Iinclude -c $< -o $@
 
 # Native builds of retained V7 K&R sources; original reference/ stays pristine.
+include tools/object-tools.mk
 V7_CFLAGS = $(filter-out -std=c11 -Werror,$(USER_CFLAGS)) -std=gnu89 -funsigned-char -fcommon -fno-strict-aliasing -Wno-implicit-int -Wno-implicit-function-declaration -Wno-return-type -Wno-incompatible-pointer-types -Wno-int-conversion -Wno-pointer-sign -Wno-unused-parameter -Wno-parentheses -Wno-missing-field-initializers
 INSTALL_COMMANDS := $(shell $(PYTHON) tools/install_manifest.py --manifest $(INSTALL_MANIFEST) --commands)
 INSTALL_INPUTS := $(shell $(PYTHON) tools/install_manifest.py --manifest $(INSTALL_MANIFEST) --config $(INSTALL_CONFIG) --inputs)

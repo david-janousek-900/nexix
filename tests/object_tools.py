@@ -1,0 +1,83 @@
+"""Real ELF and archive fixtures plus sanitizer checks of production tools."""
+from pathlib import Path
+import os
+import struct
+import subprocess
+import sys
+import tempfile
+ROOT=Path(__file__).resolve().parents[1]
+
+
+def fixtures(folder):
+    source=folder/'long_source.c'
+    source.write_text('extern int unresolved_external; int initialized_global=7; int zero_global; '
+                      'static int local_data=3; const char read_only_global[]="abc"; '
+                      'int weak_function(void) __attribute__((weak)); '
+                      'int weak_function(void){return local_data;} '
+                      'int function_with_a_very_long_symbol_name(void){return unresolved_external;}\n')
+    obj=folder/'object_with_a_very_long_member_name.o'
+    subprocess.run(['gcc','-fcommon','-fno-pie','-fno-asynchronous-unwind-tables','-c',str(source),'-o',str(obj)],check=True)
+    archive=folder/'native.a';subprocess.run(['ar','rcs',str(archive),str(obj)],check=True)
+    data=obj.read_bytes(); name=obj.name.encode()
+    def member(label,body):
+        return label.ljust(16,b' ')+b'0'.ljust(12,b' ')+b'0'.ljust(6,b' ')*2+b'644'.ljust(8,b' ')+str(len(body)).encode().ljust(10,b' ')+b'`\n'+body+(b'\n' if len(body)%2 else b'')
+    (folder/'bsd.a').write_bytes(b'!<arch>\n'+member(b'#1/'+str(len(name)).encode(),name+data))
+    # A historical container carrying an ELF member exercises archive reading;
+    # it does not claim PDP-11 object-code compatibility.
+    n=len(data)
+    hdr=b'fixture.o'.ljust(14,b'\0')+b'\0'*6+struct.pack('<H',0o644)+struct.pack('<HH',n>>16,n&65535)
+    (folder/'historical.a').write_bytes(struct.pack('<H',0o177545)+hdr+data+(b'\0' if n%2 else b''))
+    bads={'truncated':data[:63],'machine':data[:18]+b'\x03\x00'+data[20:],
+          'archive-short':archive.read_bytes()[:-5],'string-offset':None}
+    corrupt=bytearray(data); shoff=struct.unpack_from('<Q',data,40)[0]; shnum=struct.unpack_from('<H',data,60)[0]
+    for i in range(shnum):
+        entry=shoff+i*64
+        if struct.unpack_from('<I',data,entry+4)[0]==2:
+            symoff=struct.unpack_from('<Q',data,entry+24)[0]
+            struct.pack_into('<I',corrupt,symoff+24,0xffffffff)
+            break
+    bads['string-offset']=bytes(corrupt)
+    for name,content in bads.items(): (folder/name).write_bytes(content)
+    return obj,bads
+
+
+def check(tool,binary,folder):
+    obj,bads=fixtures(folder)
+    def run(*args):
+        # LSan's ptrace dependency is unavailable in the managed sandbox.
+        env=dict(os.environ,ASAN_OPTIONS='detect_leaks=0:abort_on_error=1',UBSAN_OPTIONS='halt_on_error=1')
+        result=subprocess.run([str(binary),*map(str,args)],capture_output=True,text=True,timeout=5,env=env)
+        assert result.returncode>=0 and 'AddressSanitizer' not in result.stderr and 'runtime error:' not in result.stderr,result
+        return result
+    if tool=='nm':
+        result=run('-g',obj);assert result.returncode==0,result.stderr
+        for row in (' D initialized_global',' C zero_global',' R read_only_global',' W weak_function',' U unresolved_external'):
+            assert row in result.stdout,(row,result.stdout)
+        assert 'local_data' not in result.stdout and 'function_with_a_very_long_symbol_name' in result.stdout
+        assert run('-u',obj).stdout=='unresolved_external\n'
+        normal=run('-g',obj).stdout.splitlines()
+        assert run('-gr',obj).stdout.splitlines()==list(reversed(normal))
+        assert run('-gp',obj).returncode==0
+        for archive in ('native.a','bsd.a','historical.a'):
+            r=run('-go',folder/archive)
+            assert r.returncode==0 and 'function_with_a_very_long_symbol_name' in r.stdout,(archive,r)
+        for name in bads:
+            r=run(folder/name);assert r.returncode!=0,(name,r.stdout)
+        assert run('-z').returncode==2
+        assert run(folder/'missing',obj).returncode==1
+    return obj,bads
+
+
+if __name__=='__main__':
+    tool=sys.argv[1]
+    with tempfile.TemporaryDirectory(prefix='nx-object-tools-') as temp:
+        folder=Path(temp);binary=folder/tool
+        subprocess.run(['gcc','-std=c11','-O1','-g','-Wall','-Wextra','-Werror',
+            '-fsanitize=address,undefined','-fno-pie','-no-pie','-Iuser/toolchain',
+            'user/v7/cmd/'+tool+'.c','user/toolchain/object.c','-o',str(binary)],cwd=ROOT,check=True)
+        check(tool,binary,folder)
+        # Keep exact fixtures for native guest acceptance.
+        out=ROOT/'build'/('fixtures-'+tool);out.mkdir(exist_ok=True)
+        for p in folder.iterdir():
+            if p.is_file() and p!=binary:(out/p.name).write_bytes(p.read_bytes())
+    print('PASS: '+tool+' production source with ASan/UBSan, ELF symbols and GNU/BSD/V7 archives; malformed-input rejection')
