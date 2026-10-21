@@ -41,6 +41,11 @@ int text_evict(struct inode *inode)
         if(texts[i].x_iptr==inode&&!texts[i].x_count)return discard(&texts[i]);
     return 0;
 }
+bool text_active(struct inode *inode)
+{
+    for(unsigned i=0;i<V7_NTEXT;++i)if(texts[i].x_iptr==inode&&texts[i].x_count)return true;
+    return false;
+}
 int text_acquire(struct inode *inode,size_t size,struct text **out)
 {
     *out=NULL;
