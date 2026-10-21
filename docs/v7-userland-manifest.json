@@ -3818,44 +3818,51 @@
           "name": "cpp",
           "install": "/lib/cpp",
           "role": "helper",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cpp/makefile"
+            "user/cpp/cpp.c",
+            "user/cpp/expr.c",
+            "tests/cpp.py",
+            "tools/cpp_smoke.py",
+            "docs/cpp.md"
           ]
         }
       ],
       "priority": 5,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/cpp/cpp.c",
+            "user/cpp/expr.c",
+            "tools/object-tools.mk"
+          ],
+          "note": "Host compiler bootstraps the native scanner and evaluator."
         },
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/cpp/cpp.c",
+            "user/cpp/expr.c",
+            "tools/object-tools.mk"
+          ],
+          "note": "Native stdio, string, stdlib, unistd, fcntl, errno, limits and stdarg interfaces."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
-        },
-        {
-          "target": "cmd.yacc",
-          "phase": "build",
           "certainty": "confirmed",
           "evidence": [
-            "reference/v7/usr/src/cmd/cpp/makefile"
+            "user/cpp/cpp.c",
+            "user/cpp/expr.c",
+            "tools/object-tools.mk"
           ],
-          "note": "Direct reference recipe/source dependency."
+          "note": "Static native I/O, allocation-free string operations, integer conversion and diagnostics."
         }
       ],
       "reference_includes": [
@@ -3878,12 +3885,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Complete native ABI/API and data-asset audit before porting."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Test includes, defines, conditionals and target macros against native headers.",
         "Verify each installed output and its documented behavior; test helpers through their consuming pipeline."
@@ -3900,8 +3903,13 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        178
+      "unresolved_tasks": [],
+      "native_sources": [
+        "user/cpp/cpp.c",
+        "user/cpp/expr.c"
+      ],
+      "scope_notes": [
+        "The V7 scanner is retained; a native recursive-descent evaluator replaces cpy.y/yylex.c to provide LP64 integers and lazy evaluation without a yacc build dependency. Traditional V7 macro semantics are retained; ANSI stringizing, token-pasting, variadic macros and elif are outside the supplied cpp interface."
       ]
     },
     {

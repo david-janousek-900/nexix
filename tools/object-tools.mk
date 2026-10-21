@@ -40,3 +40,21 @@ test-lorder: test-lorder-unit multi-iso rootfs
 	$(PYTHON) tools/object_tools_smoke.py $(QEMU) build/nexix-multi.iso 128M lorder
 test: test-lorder
 test-unit: test-lorder-unit
+
+# V7 cpp scanner with a native LP64, short-circuit expression evaluator.
+CPP_PORT_FLAGS = $(filter-out -std=c11 -Werror,$(USER_CFLAGS)) -std=gnu89 -funsigned-char -fcommon -Wno-comment -Wno-implicit-int -Wno-return-type
+build/cpp-scanner.o: user/cpp/cpp.c | build/.dir
+	$(CC) $(CPP_PORT_FLAGS) -c $< -o $@
+build/cpp-expr.o: user/cpp/expr.c | build/.dir
+	$(CC) $(CPP_PORT_FLAGS) -c $< -o $@
+build/v7-cpp.elf: build/crt0.o build/cpp-scanner.o build/cpp-expr.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+-include build/cpp-scanner.d build/cpp-expr.d
+.PHONY: test-cpp-unit test-cpp
+test-cpp-unit:
+	$(PYTHON) tests/cpp.py
+test-cpp: test-cpp-unit multi-iso rootfs
+	$(PYTHON) tools/cpp_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/cpp_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-cpp
+test-unit: test-cpp-unit

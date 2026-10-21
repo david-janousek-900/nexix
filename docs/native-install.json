@@ -7918,6 +7918,19 @@
         "root": "programs",
         "path": "v7-lorder-native.elf"
       }
+    },
+    {
+      "path": "/lib/cpp",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.cpp",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-cpp.elf"
+      }
     }
   ]
 }

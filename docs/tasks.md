@@ -10,17 +10,17 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 72 native ELF programs are
+to multi-user V7 login with persistent IDE storage. 73 native ELF programs are
 installed; the complete list and destinations are in [the installation manifest](native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
 The inventory accounts for **223 components, 2,144 distribution files and
-36 supporting/platform requirements**. Its component statuses are 75 implemented,
-4 partial, 1 prototype and 143 not ported; importing reference inputs does not
+36 supporting/platform requirements**. Its component statuses are 76 implemented,
+4 partial, 1 prototype and 142 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **411 tracking tasks: 188 done, 0 in progress
-and 223 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 177, 188–189, 202, 219, 223, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **411 tracking tasks: 189 done, 0 in progress
+and 222 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 177–178, 188–189, 202, 219, 223, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -330,7 +330,7 @@ are accounted for. Final native rebuild acceptance is task 207.
 | Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 177 | Freeze native object/toolchain ABI | Done | Git history; [version 1 contract](toolchain-abi.md), installed ident.h; make test-toolchain-abi test-development test-inventory; LP64/ELF/relocations, independent register/stack/AL inspector, mixed/large aggregates, varargs, long-double and four startup variants at 16/128 MiB |
-| 178 | Port cpp | To do | Preprocessing, include paths and generated-source fixtures |
+| 178 | Port cpp | Done | Git history; native V7 scanner, LP64 lazy expressions, includes and generated-source fixtures; `make test-cpp` at 16/128 MiB; [port notes](cpp.md) |
 | 179 | Port ar | To do | Native SysV/GNU archives plus explicit historical archive reading |
 | 180 | Port arcv | To do | Historical archive conversion; no object-code translation |
 | 181 | Port assembler parser, symbols and directives | To do | Rewrite supplied PDP-11 assembly in native code |

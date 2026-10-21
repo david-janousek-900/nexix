@@ -8,7 +8,7 @@ ELF64 executables; Nexix does not emulate PDP-11 binaries.
 
 The current development version is **0.1.0**. It boots in QEMU to multi-user login
 on a VGA/PS/2 console by default, with optional serial mode. It provides persistent
-IDE storage, the V7 Bourne shell and 72 native ELF programs. The kernel provides protected process
+IDE storage, the V7 Bourne shell and 73 native ELF programs. The kernel provides protected process
 address spaces, scheduling, fork/exec, signals, pipes, permissions and filesystem
 operations. Native libc, libm, startup objects and headers support the ported
 programs. The complete V7 port and guest self-hosting are still unfinished.
@@ -248,6 +248,7 @@ only the expected diagnostic. See [validation](docs/validation.md) for details.
 - [Architecture](docs/architecture.md), [boot sequence](docs/booting.md) and [storage](docs/storage.md)
 - [Userland](docs/userland.md), [multi-user sessions](docs/multi-user.md) and [time/timezones](docs/time.md)
 - [Kernel messages and dmesg](docs/kernel-log.md)
+- [Native C preprocessor](docs/cpp.md)
 - [Development interfaces](docs/development-interfaces.md) and [syscall ABI](docs/syscall-abi.md)
 - [Tasks and release scope](docs/tasks.md) and [task coverage rules](docs/roadmap-coverage.md)
 - [Historical source provenance](reference/README.md) and [supplemental inputs](docs/support-inputs.md)
