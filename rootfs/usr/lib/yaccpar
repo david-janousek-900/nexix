@@ -1,4 +1,4 @@
-#
+#include <stdio.h>
 # define YYFLAG -1000
 # define YYERROR goto yyerrlab
 # define YYACCEPT return(0)
@@ -7,14 +7,15 @@
 /*	parser for yacc output	*/
 
 int yydebug = 0; /* 1 for debugging */
-YYSTYPE yyv[YYMAXDEPTH]; /* where the values are stored */
+YYSTYPE yyv[YYMAXDEPTH+1];
+static YYSTYPE yyzero; /* where the values are stored */
 int yychar = -1; /* current input token number */
 int yynerrs = 0;  /* number of errors */
 short yyerrflag = 0;  /* error recovery flag */
 
 yyparse() {
 
-	short yys[YYMAXDEPTH];
+	short yys[YYMAXDEPTH+1];
 	short yyj, yym;
 	register YYSTYPE *yypvt;
 	register short yystate, *yyps, yyn;
@@ -25,8 +26,8 @@ yyparse() {
 	yychar = -1;
 	yynerrs = 0;
 	yyerrflag = 0;
-	yyps= &yys[-1];
-	yypv= &yyv[-1];
+	yyps=yys; *yyps=0;
+	yypv=yyv;
 
  yystack:    /* put a state and value onto the stack */
 
@@ -86,7 +87,7 @@ yyparse() {
 
 			/* find a state where "error" is a legal shift action */
 
-			while ( yyps >= yys ) {
+			while ( yyps > yys ) {
 			   yyn = yypact[*yyps] + YYERRCODE;
 			   if( yyn>= 0 && yyn < YYLAST && yychk[yyact[yyn]] == YYERRCODE ){
 			      yystate = yyact[yyn];  /* simulate a shift of "error" */
@@ -125,7 +126,7 @@ yyparse() {
 		yyps -= yyr2[yyn];
 		yypvt = yypv;
 		yypv -= yyr2[yyn];
-		yyval = yypv[1];
+		yyval = yyr2[yyn] ? yypv[1] : yyzero;
 		yym=yyn;
 			/* consult goto table to find next state */
 		yyn = yyr1[yyn];

@@ -13,3 +13,16 @@ test-yacc: test-yacc-unit multi-iso rootfs
 	$(PYTHON) tools/yacc_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-yacc
 test-unit: test-yacc-unit
+
+# Private acceptance programs compiled from the exact generated C compared in guests.
+build/yacc-runtime.o: build/fixtures-yacc/runtime.c | build/.dir
+	$(CC) $(V7_CFLAGS) -c $< -o $@
+build/yacc-recovery.o: build/fixtures-yacc/recovery.c | build/.dir
+	$(CC) $(V7_CFLAGS) -c $< -o $@
+build/yacc-runtime.elf: build/crt0.o build/yacc-runtime.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+build/yacc-recovery.elf: build/crt0.o build/yacc-recovery.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+# These files are emitted by the sanitizer acceptance generator, not make's
+# implicit host-yacc rule for the adjacent grammar fixtures.
+build/fixtures-yacc/runtime.c build/fixtures-yacc/recovery.c: ;

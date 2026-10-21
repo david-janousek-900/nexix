@@ -22,5 +22,26 @@ its typed/precedence parser on valid and invalid input, crosses every 32-bit
 lookahead boundary with 80 terminals, and checks malformed grammars and storage
 limits, output failures and the supplied PCC grammar. Disposable 16/128 MiB guests compare generated C, headers and state reports
 byte-for-byte with the checked host output and exercise ordinary-user generation.
-Task 170 separately completes the generated-parser stack/error/overflow acceptance;
-task 173 remains the combined lex/yacc consumer acceptance gate.
+Task 170 completes the generated-parser stack/error/overflow acceptance described
+below; task 173 remains the combined lex/yacc consumer acceptance gate.
+
+## Native parser skeleton
+
+Task 170 adapts the installed `/usr/lib/yaccpar` while preserving the immutable
+reference template. A real sentinel slot replaces pointers formed before the
+stack arrays; overflow is checked before a state/value write. Empty reductions
+use a zero semantic value rather than reading past a full stack. Error recovery
+stops at the real stack base and can safely report debug state information.
+The table generator also tests terminal slot 2 (`error`), rather than slot 1
+(`$end`), before choosing a default reduction in a recoverable error state.
+The supplied code's wrong-slot test otherwise prematurely reduced away the
+state needed to recover malformed input.
+
+The extended acceptance compiles generated parsers with ASan/UBSan and tests
+pointer-valued union actions, nesting, empty rules, recovery with `yyerrok`, and
+stack exhaustion. The same C is bootstrapped against native headers/libc into
+private guest ELF fixtures. Each guest generates those C files itself and compares
+them byte-for-byte before running the matching native parser, including overflow
+and recovery cases. Native cpp also preprocesses generated C. Host GCC remains
+the bootstrap C compiler until the compiler/driver tasks are complete; these
+tests do not claim task 207's in-guest toolchain rebuild acceptance.

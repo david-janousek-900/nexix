@@ -281,7 +281,7 @@ wract(i){ /* output state i */
 
 	/* for error recovery, arrange that, if there is a shift on the
 	/* error recovery token, `error', that the default be the error action */
-	if( temp1[1] > 0 ) lastred = 0;
+	if( temp1[2] > 0 ) lastred = 0;
 
 	/* clear out entries in temp1 which equal lastred */
 	TLOOP(p) if( temp1[p]+lastred == 0 )temp1[p]=0;
