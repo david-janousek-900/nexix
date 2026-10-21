@@ -16,6 +16,9 @@ with tempfile.TemporaryDirectory(prefix='nx-man-') as temp:
    for args,pattern in [('cat','concatenate'),('2 read','read from file'),('3 printf','formatted output'),('7 nexix','native manual-reading'),('uptime','exponentially damped'),('more','screen at a time'),('vi','screen oriented'),('view','screen oriented'),('ex','ex, edit')]:
     g.command('man '+args+' > /tmp/manual')
     g.command("grep -c '"+pattern+"' /tmp/manual",stdout='1\n')
+   # The guest RTC is fixed at 2024-02-29; yr must not print as 124.
+   g.command('man cat > /tmp/manual')
+   g.command("grep -c 'Printed 2/29/24' /tmp/manual",stdout='2\n')
    for args in ['0 intro','0 pref','0 title','0 permindex']:
     g.command('man '+args+' > /tmp/manual')
     g.command('test -s /tmp/manual')

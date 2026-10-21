@@ -14,6 +14,7 @@ ARG=\\$1
 REGISTER=\n(xx
 DAY=\n(dy
 MONTH=\n(mo
+YEAR=\n(yr
 .ev 1
 .nf
 ENVIRONMENT=one
@@ -29,7 +30,7 @@ with private_guest(qemu,iso,ram,'formatter',{'/tmp/nroff':'v7-nroff.elf','/tmp/i
  g.command("echo 'Hello Nexix' | /tmp/nroff -Tlp > /tmp/out")
  g.command("grep 'Hello Nexix' /tmp/out",stdout='Hello Nexix\n')
  g.command('/tmp/nroff -Tlp /tmp/input > /tmp/out')
- for line in ['ARG=native','REGISTER=42','ENVIRONMENT=one','ENVIRONMENT=zero','DIVERTED=text']:
+ for line in ['ARG=native','REGISTER=42','YEAR=24','ENVIRONMENT=one','ENVIRONMENT=zero','DIVERTED=text']:
   g.command("grep '"+line+"' /tmp/out",stdout=line+'\n')
  g.command('TZ=UTC14 /tmp/nroff -Tlp /tmp/input > /tmp/out')
  g.command("grep 'DAY=' /tmp/out",stdout='DAY=28\n')

@@ -393,7 +393,8 @@ cvtime(){
     struct tm *calendar=localtime(&epoch);
     if(!calendar){prstr("Cannot read local date.\n");done3(1);}
     v.dy=calendar->tm_mday;v.dw=calendar->tm_wday+1;
-    v.mo=calendar->tm_mon+1;v.yr=calendar->tm_year;
+    /* The historical yr register is the year within the century. */
+    v.mo=calendar->tm_mon+1;v.yr=calendar->tm_year%100;
 }
 
 cnum(a)
