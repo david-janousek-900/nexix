@@ -416,6 +416,7 @@ int tty_control(struct tty *t,uint64_t request,void *argument)
         else if(parameters.rate!=t->parameters.rate || parameters.format!=t->parameters.format){
             while(!t->driver->idle(t->driver->context))if(proc_sleep_interruptible(&t->output_channel,29))return -NX_EINTR;
         }
+        if(packet_active(t))return -NX_EBUSY;
         if(request==NX_TIOCSETP || ((settings.flags^t->settings.flags)&(NX_RAW|NX_CBREAK|NX_LCASE)))flush(t);
         bool configure=parameters.rate!=t->parameters.rate || parameters.format!=t->parameters.format;
         t->settings=settings;t->parameters=parameters;
