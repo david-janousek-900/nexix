@@ -37,7 +37,7 @@ not install set-id permissions.
 an independently linked/executed C program, explicit V6/V7/BSD fixtures, all main
 operations, long names, odd/empty members, malformed input and failed-update byte
 preservation. Installed tests run at 16 and 128 MiB, including `nm` consumption and
-ordinary-user access on disposable roots. Native `ranlib` and assembler/linker acceptance remain separate roadmap tasks.
+ordinary-user access on disposable roots. Assembler/linker acceptance remains a separate roadmap task.
 
 ## Historical conversion
 
@@ -55,3 +55,19 @@ produces a nonzero final status.
 preservation, truncation rejection and mixed-success input lists under sanitizers.
 Guest tests at 16/128 MiB compare converted bytes against the independently checked
 host result and consume a converted ELF payload with installed `nm`.
+
+## Symbol-index generation
+
+Task 191 installs `/bin/ranlib archive ...`. It rebuilds a GNU/SysV index from
+native ELF definitions without invoking `ar`, preserving member ordering, bytes
+and metadata. Undefined weak/global symbols and local symbols are excluded;
+common, strong and defined weak symbols are included. Historical and BSD
+containers become native GNU/SysV containers. Non-object data members remain
+opaque. An ELF-looking member with invalid headers or symbol tables rejects the
+update before replacement. Repeated indexing produces identical bytes.
+
+`make test-ranlib` checks actual big-endian index entries and member offsets,
+strong/common/weak definitions and excluded symbols, links and executes a C
+program against the result, and tests malformed-ELF failure preservation under
+ASan/UBSan. Installed 16/128 MiB fixtures compare native bytes and exercise nm,
+repeat indexing and historical/BSD conversion.

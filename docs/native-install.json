@@ -7957,6 +7957,19 @@
         "root": "programs",
         "path": "v7-arcv.elf"
       }
+    },
+    {
+      "path": "/bin/ranlib",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.ranlib",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-ranlib.elf"
+      }
     }
   ]
 }

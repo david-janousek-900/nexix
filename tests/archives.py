@@ -97,6 +97,38 @@ with tempfile.TemporaryDirectory(prefix='nx-archives-') as temp:
         (folder/'v6.a').write_bytes(old)
         assert run('absent.a','v6.a',ok=False).returncode==1
         assert (folder/'v6.a').read_bytes().startswith(b'!<arch>\n')
+    if TOOL=='ranlib':
+        # Generate the archive independently, omitting its index deliberately.
+        (folder/'index.c').write_text('int common; int strong=4; static int local=3; int weak(void) __attribute__((weak)); int weak(void){return local;} extern int undef_weak(void) __attribute__((weak)); int call(void){return undef_weak?undef_weak():strong;}\n')
+        subprocess.run(['cc','-fcommon','-fno-pie','-c',str(folder/'index.c'),'-o',str(folder/'index.o')],check=True)
+        subprocess.run(['ar','rcS',str(folder/'unindexed.a'),str(obj),str(folder/'index.o')],check=True)
+        (folder/'read-native.a').write_bytes((folder/'unindexed.a').read_bytes())
+        run('unindexed.a');data=(folder/'unindexed.a').read_bytes()
+        n=int(data[8+48:8+58]);index=data[68:68+n];count=struct.unpack_from('>I',index)[0]
+        names=index[4+count*4:].split(b'\0')[:-1]
+        assert all(x in names for x in [b'common',b'strong',b'weak',b'call',b'function_with_a_very_long_symbol_name'])
+        assert all(x not in names for x in [b'local',b'undef_weak',b'unresolved_external'])
+        for i in range(count):
+            offset=struct.unpack_from('>I',index,4+4*i)[0]
+            assert data[offset+58:offset+60]==b'`\n'
+        (folder/'main.c').write_text('int unresolved_external=13; int undef_weak(void){return 4;} extern int function_with_a_very_long_symbol_name(void),call(void); int main(void){return function_with_a_very_long_symbol_name()!=13 || call()!=4;}\n')
+        subprocess.run(['cc','-no-pie',str(folder/'main.c'),str(folder/'unindexed.a'),'-o',str(folder/'linked')],check=True)
+        subprocess.run([str(folder/'linked')],check=True)
+        run('unindexed.a');assert (folder/'unindexed.a').read_bytes()==data
+        (folder/'native.a').write_bytes(data)
+        for name in ('bsd.a','historical.a'):
+            (folder/('read-'+name)).write_bytes((folder/name).read_bytes())
+            run(name);assert subprocess.check_output(['ar','p',str(folder/name)])==obj.read_bytes()
+        assert run(ok=False).returncode==2
+        for data in [b'bad',b'!<arch>\ntruncated']:
+            (folder/'bad.a').write_bytes(data)
+            assert run('bad.a',ok=False).returncode!=0
+            assert (folder/'bad.a').read_bytes()==data
+        # A corrupt ELF symbol table must not replace a valid archive container.
+        subprocess.run(['ar','rcS',str(folder/'broken.a'),str(folder/'string-offset')],check=True)
+        saved=(folder/'broken.a').read_bytes()
+        assert run('broken.a',ok=False).returncode!=0
+        assert (folder/'broken.a').read_bytes()==saved
     out=ROOT/'build'/('fixtures-'+TOOL);out.mkdir(exist_ok=True)
     for p in folder.iterdir():
         if p.is_file() and p!=binary:(out/p.name).write_bytes(p.read_bytes())

@@ -11,6 +11,9 @@ for name in ('a','b','guest.a','bad.a','v6.a','v6data','historical.a','bsd.a','n
         source='read-'+name if (f/('read-'+name)).exists() else name
         artifacts['/tmp/'+name]='fixtures-'+tool+'/'+source
 longname='object_with_a_very_long_member_name.o'
+if tool=='ranlib':
+    artifacts['/tmp/expected.a']='fixtures-ranlib/native.a'
+    artifacts['/tmp/broken.a']='fixtures-ranlib/broken.a'
 if tool=='arcv':
     artifacts['/tmp/expected.a']='fixtures-arcv/historical.a'
     artifacts['/tmp/expected6.a']='fixtures-arcv/v6.a'
@@ -59,4 +62,17 @@ with private_guest(qemu,iso,ram,tool,artifacts,terminals=2,single_user=False) as
         guest.command('arcv /tmp/bad.a',stdout='arcv: invalid archive /tmp/bad.a\n',status=1)
         guest.command('cmp /tmp/bad.a /tmp/saved.a')
         guest.command('arcv /tmp/historical.a',stdout='arcv: not a historical archive: /tmp/historical.a\n',status=1)
+    if tool=='ranlib':
+        guest.command('ranlib /tmp/native.a')
+        guest.command('cmp /tmp/native.a /tmp/expected.a')
+        guest.command('ranlib /tmp/native.a')
+        guest.command('cmp /tmp/native.a /tmp/expected.a')
+        guest.command("nm -go /tmp/native.a | grep -c 'function_with_a_very_long_symbol_name$'",stdout='1\n')
+        guest.command('cp /tmp/broken.a /tmp/saved.a')
+        guest.command('ranlib /tmp/broken.a',stdout='ranlib: cannot index /tmp/broken.a\n',status=1)
+        guest.command('cmp /tmp/broken.a /tmp/saved.a')
+        guest.command('ranlib /tmp/bad.a',stdout='ranlib: invalid archive /tmp/bad.a\n',status=1)
+        for name in ('bsd.a','historical.a'):
+            guest.command('ranlib /tmp/'+name)
+            guest.command("nm -go /tmp/"+name+" | grep -c 'function_with_a_very_long_symbol_name$'",stdout='1\n')
 print(f'PASS: {ram} native {tool} archive operations, formats, symbols, failures and unprivileged use')

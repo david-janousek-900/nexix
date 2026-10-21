@@ -88,3 +88,17 @@ test-arcv: test-arcv-unit multi-iso rootfs
 	$(PYTHON) tools/archives_smoke.py $(QEMU) build/nexix-multi.iso 128M arcv
 test: test-arcv
 test-unit: test-arcv-unit
+
+build/v7-ranlib.o: user/v7/cmd/ranlib.c user/toolchain/archive.h | build/.dir
+	$(CC) $(USER_CFLAGS) -Iuser/toolchain -c $< -o $@
+build/v7-ranlib.elf: build/crt0.o build/v7-ranlib.o build/toolchain-archive.o build/toolchain-object.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+-include build/v7-ranlib.d
+.PHONY: test-ranlib-unit test-ranlib
+test-ranlib-unit:
+	$(PYTHON) tests/archives.py ranlib
+test-ranlib: test-ranlib-unit multi-iso rootfs
+	$(PYTHON) tools/archives_smoke.py $(QEMU) build/nexix-multi.iso 16M ranlib
+	$(PYTHON) tools/archives_smoke.py $(QEMU) build/nexix-multi.iso 128M ranlib
+test: test-ranlib
+test-unit: test-ranlib-unit

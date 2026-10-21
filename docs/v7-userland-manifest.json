@@ -12205,44 +12205,51 @@
           "name": "ranlib",
           "install": "/bin/ranlib",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/ranlib.c",
+            "user/toolchain/archive.c",
+            "tests/archives.py",
+            "tools/archives_smoke.py",
+            "docs/archives.md"
           ]
         }
       ],
       "priority": 6,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
           "phase": "build",
           "certainty": "confirmed",
           "evidence": [
-            "Makefile"
+            "user/v7/cmd/ranlib.c",
+            "user/toolchain/archive.c",
+            "tools/object-tools.mk"
           ],
-          "note": "Existing Nexix bootstrap uses host GCC/binutils."
+          "note": "Host compiler builds native C11 code."
         },
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/ranlib.c",
+            "user/toolchain/archive.c",
+            "tools/object-tools.mk"
+          ],
+          "note": "Public native headers and ELF format declarations."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
-        },
-        {
-          "target": "elf-toolchain",
-          "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/ranlib.c",
+            "user/toolchain/archive.c",
+            "tools/object-tools.mk"
+          ],
+          "note": "Static native archive I/O, allocation and replacement; no external ar process is needed."
         }
       ],
       "reference_includes": [
@@ -12265,12 +12272,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Index a native archive and link against a member through that index.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -12285,8 +12288,15 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        191
+      "unresolved_tasks": [],
+      "native_sources": [
+        "user/v7/cmd/ranlib.c",
+        "user/toolchain/archive.c",
+        "user/toolchain/archive.h",
+        "user/toolchain/object.c"
+      ],
+      "scope_notes": [
+        "Replaces V7 __.SYMDEF with a native GNU/SysV big-endian ELF symbol index using the checked archive writer; preserves opaque members and safely rewrites existing indexes."
       ]
     },
     {

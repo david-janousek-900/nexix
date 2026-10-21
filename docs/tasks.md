@@ -10,17 +10,17 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 75 native ELF programs are
+to multi-user V7 login with persistent IDE storage. 76 native ELF programs are
 installed; the complete list and destinations are in [the installation manifest](native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
 The inventory accounts for **223 components, 2,144 distribution files and
-36 supporting/platform requirements**. Its component statuses are 78 implemented,
-4 partial, 1 prototype and 140 not ported; importing reference inputs does not
+36 supporting/platform requirements**. Its component statuses are 79 implemented,
+4 partial, 1 prototype and 139 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **411 tracking tasks: 191 done, 0 in progress
-and 220 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 177–180, 188–189, 202, 219, 223, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **411 tracking tasks: 192 done, 0 in progress
+and 219 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168, 177–180, 188–189, 191, 202, 219, 223, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -343,7 +343,7 @@ are accounted for. Final native rebuild acceptance is task 207.
 | 188 | Port nm | Done | Git history; [native ELF/archive modes](object-tools.md); make test-nm test-inventory; ASan/UBSan and 16/128 MiB installed selection/sort/prefix, long-name, GNU/BSD/V7-container and malformed-input fixtures |
 | 189 | Port size | Done | Git history; [native object sizes](object-tools.md); make test-size test-nm test-inventory; GNU size oracle, archive long names, sectionless executable segments, default a.out and malformed input under ASan/UBSan and 16/128 MiB guests |
 | 190 | Port strip | To do | Native ELF/archive fixtures and toolchain integration |
-| 191 | Port ranlib | To do | Native ELF/archive fixtures and toolchain integration |
+| 191 | Port ranlib | Done | Git history; [native ELF archive indexes](archives.md); make test-ranlib test-inventory test-install-unit; independent big-endian index/offset checks, linked C execution, malformed ELF preservation, 16/128 MiB installed acceptance |
 | 192 | Retarget shared mip compiler infrastructure | To do | Native types, IR, templates and supplied prototype helpers |
 | 193 | Retarget PCC front end | To do | Native widths, declarations and shared mip integration |
 | 194 | PCC integer/pointer/control-flow backend | To do | x86_64 code generation |
