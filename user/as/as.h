@@ -37,6 +37,7 @@ struct as_program {
 struct as_expr as_absolute(uint64_t);
 size_t as_symbol(struct as_program *,const char *);
 int as_parse(const char *,struct as_program *);
+int as_parse_files(size_t,const char *const *,struct as_program *);
 int as_object(struct as_program *,unsigned char **,size_t *);
 void as_free(struct as_program *);
 #endif

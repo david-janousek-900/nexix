@@ -21,5 +21,6 @@ int archive_load(const char *,struct archive *);
 int archive_file(const char *,struct archive_member *);
 int archive_replace(const char *,const unsigned char *,size_t);
 int archive_write(const char *,const struct archive *,int);
+int archive_replace_mode(const char *,const unsigned char *,size_t,unsigned);
 int archive_safe_name(const char *);
 #endif

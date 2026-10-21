@@ -40,6 +40,8 @@ struct tty;struct address_space;
 bool packet_active(struct tty *);
 int packet_open(struct tty *,struct nx_piocb *);
 void packet_close(struct tty *);
+/* Immediate detach for interrupt-context carrier loss; never sleeps. */
+void packet_abort(struct tty *);
 int packet_status(struct tty *,struct nx_piocb *);
 void packet_receive(struct tty *,uint8_t);
 void packet_changed(struct tty *);

@@ -8,6 +8,7 @@ bool packet_active(struct tty *t){(void)t;return false;}
 int packet_open(struct tty *t,struct nx_piocb *p){(void)t;(void)p;return -NX_ENXIO;}
 void packet_changed(struct tty *t){(void)t;}
 void packet_close(struct tty *t){(void)t;}
+void packet_abort(struct tty *t){(void)t;}
 int packet_status(struct tty *t,struct nx_piocb *p){(void)t;(void)p;return -NX_ENXIO;}
 void packet_receive(struct tty *t,uint8_t b){(void)t;(void)b;}
 int64_t packet_io(struct tty *t,struct address_space *v,uintptr_t a,size_t n,bool w)

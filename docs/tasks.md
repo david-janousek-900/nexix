@@ -10,17 +10,17 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 78 native ELF programs are
+to multi-user V7 login with persistent IDE storage. 80 native ELF programs are
 installed; the complete list and destinations are in [the installation manifest](native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
 The inventory accounts for **223 components, 2,144 distribution files and
-36 supporting/platform requirements**. Its component statuses are 80 implemented,
-6 partial, 1 prototype and 136 not ported; importing reference inputs does not
+36 supporting/platform requirements**. Its component statuses are 82 implemented,
+7 partial, 0 prototype and 134 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **431 tracking tasks: 200 done, 0 in progress
-and 231 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–170, 177–183, 188–191, 202, 219, 223, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–413** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **431 tracking tasks: 207 done, 1 in progress
+and 223 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–170, 177–194, 202, 219, 223, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–413** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -336,18 +336,18 @@ are accounted for. Final native rebuild acceptance is task 207.
 | 181 | Port assembler parser, symbols and directives | Done | Git history; [native first-pass model](assembler.md); make test-as-parse test-inventory test-install-unit; GNU syntax oracle, sanitizer, operands/expressions/symbols/directives and private native consumer at 16/128 MiB; encoding completed in 182; object output completed in 183; pipeline remains 184 |
 | 182 | Implement x86_64 instruction encoding | Done | Git history; [native integer/SSE2/x87 encoder](assembler.md); make test-as-encode test-as-parse test-inventory test-install-unit; production sanitizers, GNU byte/relocation oracle, randomized addressing and encoded System V functions at 16/128 MiB |
 | 183 | Implement assembler ELF relocatable output | Done | Git history; [ELF producer](assembler.md); make test-as-object test-as-encode test-as-parse test-inventory test-install-unit; sanitizer, independent section/relocation inspection and linked execution, exact native production and nm/size/ar/ranlib consumption at 16/128 MiB |
-| 184 | Complete assembler pass/helper integration | To do | as/as2 equivalent outputs and native assembly acceptance |
-| 185 | Port linker symbol/archive resolution | To do | Retained ld logic adapted to ELF64 |
-| 186 | Implement linker relocations and executable layout | To do | Static executable sections, entry, permissions and errors |
-| 187 | Complete native linker acceptance | To do | Execute linked fixtures; reject malformed inputs |
+| 184 | Complete assembler pass/helper integration | Done | Git history; installed /bin/as and /lib/as2; make test-as test-as-object test-as-encode test-as-parse test-inventory test-install-unit; sanitizer CLI tests, multi-file/stdin, native exact ELF bytes and linked execution at 16/128 MiB |
+| 185 | Port linker symbol/archive resolution | Done | Git history; [native resolution pass](linker.md); `make test-ld-resolve test-inventory`; GNU ld/nm oracle, sanitizer, archive search/order, strong/weak/common and error fixtures; private native consumers at 16/128 MiB; output/install remain 186–187 |
+| 186 | Implement linker relocations and executable layout | Done | Git history; [ELF64 executable pass](linker.md); `make test-ld-output test-ld-resolve test-inventory`; GNU relocation oracle, host execution, sanitizer/error fixtures and native C/crt0/libc linking/execution at 16/128 MiB; installed command remains 187 |
+| 187 | Complete native linker acceptance | Done | Git history; installed `/bin/ld`; [command/native adaptations](linker.md); `make test-ld test-ar-unit test-strip-unit test-install-unit test-inventory`; sanitizer/GNU -r interoperability, native as/ar pipeline, C/libc execution and linker self-link at 16/128 MiB |
 | 188 | Port nm | Done | Git history; [native ELF/archive modes](object-tools.md); make test-nm test-inventory; ASan/UBSan and 16/128 MiB installed selection/sort/prefix, long-name, GNU/BSD/V7-container and malformed-input fixtures |
 | 189 | Port size | Done | Git history; [native object sizes](object-tools.md); make test-size test-nm test-inventory; GNU size oracle, archive long names, sectionless executable segments, default a.out and malformed input under ASan/UBSan and 16/128 MiB guests |
 | 190 | Port strip | Done | Git history; [native ELF/archive stripping](archives.md); make test-strip test-ar test-arcv test-ranlib test-inventory test-install-unit; sanitizer/mutated ELF, ELF/PIE execution, preservation/idempotence and native execution at 16/128 MiB |
 | 191 | Port ranlib | Done | Git history; [native ELF archive indexes](archives.md); make test-ranlib test-inventory test-install-unit; independent big-endian index/offset checks, linked C execution, malformed ELF preservation, 16/128 MiB installed acceptance |
-| 192 | Retarget shared mip compiler infrastructure | To do | Native types, IR, templates and supplied prototype helpers |
-| 193 | Retarget PCC front end | To do | Native widths, declarations and shared mip integration |
-| 194 | PCC integer/pointer/control-flow backend | To do | x86_64 code generation |
-| 195 | PCC calls, structures and floating-point backend | To do | SysV AMD64 ABI and variadic mixed-register cases |
+| 192 | Retarget shared mip compiler infrastructure | Done | Git history; [native shared services and consumer ownership](mip.md); `make test-mip test-mip-infra test-mip-pass test-pcc-front test-pcc-integer test-inventory`; sanitizer/independent stream oracle, real direct/split PCC compilation, alternate producer and independent analysis consumption at 16/128 MiB as root/user; full compiler/lint/Fortran commands retain separate tasks |
+| 193 | Retarget PCC front end | Done | Git history; [retained frontend and native header profile](pcc.md); `make test-pcc-front test-pcc-integer test-mip test-mip-infra test-mip-pass test-inventory`; typed/K&R signatures, native extended types/literals, all 49 libc headers, safe failures and scalar execution/oracles at 16/128 MiB as root/user; remaining machine ABI/driver/rebuild work is 195/196/207 |
+| 194 | PCC integer/pointer/control-flow backend | Done | Git history; [native integer backend](pcc.md); `make test-pcc-integer test-pcc-front test-mip-infra test-inventory`; sanitizer/GCC execution oracle, GP/stack ABI, exact native assembly and cpp/PCC/as/ld execution as root/user at 16/128 MiB; calls/floating/aggregate remain 195 |
+| 195 | PCC calls, structures and floating-point backend | In progress | Integer and float/double code/calls, mixed GP/SSE overflow and GCC variadic callees tested with native 16/128 MiB execution; aggregate/long-double/variadic definitions remain; [evidence](pcc.md) |
 | 196 | Complete PCC driver and supplied alternate targets | To do | pcc script/ccom/fort; native program acceptance |
 | 197 | Retarget original C c0 front end | To do | Native widths and pass format |
 | 198 | Retarget original C c1 backend | To do | Integer/control/call/pointer generation |

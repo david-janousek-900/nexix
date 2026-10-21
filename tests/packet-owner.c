@@ -10,9 +10,9 @@
 #include <string.h>
 #include <stdio.h>
 #include <nexix/errno.h>
-static unsigned pages,peak,wakes,sigpipe,changes;
+static unsigned pages,peak,wakes,sigpipe,changes,sleeps;
 static uint64_t ticks;
-static bool nomem,interrupt,disconnect,silent,congested,unblock;
+static bool nomem,interrupt,disconnect,silent,congested,unblock,idle_context;
 static struct packet peer;
 static struct tty *terminal;
 static uint8_t toward_peer[16384],toward_kernel[16384];
@@ -22,7 +22,7 @@ uintptr_t page_alloc(void)
 {if(nomem)return 0;void *p=aligned_alloc(PAGE_SIZE,PAGE_SIZE);assert(p);++pages;if(pages>peak)peak=pages;return (uintptr_t)p;}
 bool page_free(uintptr_t p){assert(pages);--pages;free((void *)p);return true;}
 uint64_t timer_ticks(void){return ticks;}
-struct proc *proc_current(void){return &process;}
+struct proc *proc_current(void){return idle_context?NULL:&process;}
 void signal_post(struct proc *p,unsigned sig){assert(p==&process && sig==NX_SIGPIPE);++sigpipe;}
 unsigned proc_wakeup(void *p){assert(p);++wakes;return 0;}
 bool tty_packet_reader(struct tty *t){assert(t==terminal);return true;}
@@ -44,8 +44,9 @@ static void pump(void)
 int proc_sleep_interruptible(void *channel,unsigned priority)
 {
     assert(channel && (priority==28 || priority==29));
+    assert(!idle_context);++sleeps;
     if(interrupt){interrupt=false;return 1;}
-    if(disconnect){disconnect=false;packet_close(terminal);return 0;}
+    if(disconnect){disconnect=false;packet_abort(terminal);return 0;}
     ticks+=100;if(unblock){congested=false;unblock=false;}
     if(!silent){pump();uint8_t bytes[512];bool eof;(void)pk_take(&peer,bytes,sizeof(bytes),&eof);pump();}
     packet_timer(ticks);return 0;
@@ -95,6 +96,12 @@ int main(void)
     reset();p=parameters();assert(!packet_open(terminal,&p));
     assert(packet_put(terminal,(const uint8_t *)"lost",4)==4);silent=true;before=ticks;
     packet_close(terminal);assert(!pages && ticks-before>=PK_RETRY*PK_RETRIES);
+    reset();p=parameters();assert(!packet_open(terminal,&p));
+    assert(packet_put(terminal,(const uint8_t *)"pending",7)==7);
+    congested=true;idle_context=true;unsigned slept=sleeps;
+    packet_abort(terminal);
+    assert(!packet_active(terminal) && !pages && sleeps==slept);
+    packet_abort(terminal);idle_context=false;
     assert(peak==1 && wakes && changes>=8);
     puts("PASS: packet ownership, ENOMEM, invalid open, EINTR, startup timeout, pinned detach, repeated EOF, SIGPIPE and close drain");
 }

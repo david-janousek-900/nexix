@@ -9,7 +9,7 @@
 static uint8_t regs[8],wire[32768],input[32],received[32];
 static size_t used,head,count,got;
 static uint8_t rx_status[32],errors_seen[32],status_only;
-static bool ready,present;
+static bool ready,present,fifo=true;
 static uint8_t pic_mask=255;
 static const struct tty_driver *bound;
 int tty_attach(unsigned line,const struct tty_driver *driver){assert(line==1);bound=driver;return 0;}
@@ -30,7 +30,7 @@ uint8_t inb(uint16_t port)
         status_only=0;return result;}
     if(r==6){unsigned s=regs[6];regs[6]&=0xf0;return s;}
     if(r==2 && (regs[1]&8) && (regs[6]&15))return 0;
-    if(r==2)return status_only?6:count?4:ready && (regs[1]&2)?2:1;
+    if(r==2)return (fifo?0xc0:0)|(status_only?6:count?4:ready && (regs[1]&2)?2:1);
     if(!r && !(regs[3]&128)){assert(count);uint8_t c=input[head++];--count;return c;}
     return regs[r];
 }
