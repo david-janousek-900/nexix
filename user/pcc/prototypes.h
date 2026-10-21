@@ -18,3 +18,5 @@ uint32_t pcc_lower(NODE *,struct mip_arena *);
 int lookup(char *,int),pcc_lookup_owner(char *,int,int),pcc_member(int,const char *);
 
 int pcc_newline(void);
+
+TWORD pcc_value_type(NODE *);

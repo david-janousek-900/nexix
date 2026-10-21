@@ -18,7 +18,7 @@ NODE *clocal(NODE *p) {
                 }
                 q->lval=(int64_t)bits;q->type=p->type;q->cdim=p->cdim;q->csiz=p->csiz;p->op=FREE;return q;
             }
-            if(to.size==from.size && (p->type&TMASK)==(q->type&TMASK)) {
+            if(q->op!=FLD && to.size==from.size && (p->type&TMASK)==(q->type&TMASK)) {
                 q->type=p->type;q->cdim=p->cdim;q->csiz=p->csiz;p->op=FREE;return q;
             }
         }

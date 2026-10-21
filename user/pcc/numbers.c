@@ -5,6 +5,10 @@ TWORD pcc_promote(TWORD t) {
     if(t==CHAR || t==SHORT || t==UCHAR || t==USHORT || t==ENUMTY || t==MOETY)return INT;
     return t;
 }
+TWORD pcc_value_type(NODE *n) {
+    if(n->op==FLD && n->type==UNSIGNED && UPKFSZ(n->rval)<SZINT)return INT;
+    return pcc_promote(n->type);
+}
 TWORD pcc_arithmetic(TWORD a,TWORD b) {
     a=pcc_promote(a);b=pcc_promote(b);
     if(a==DOUBLE || b==DOUBLE)return DOUBLE;

@@ -10976,7 +10976,7 @@
         "Complete native ABI/API and data-asset audit before porting."
       ],
       "unresolved": [
-        "Tasks 193\u2013196: native extended type/header closure, x86_64 integer/floating/call/aggregate backend and installed driver/alternate targets remain."
+        "Tasks 193/195/196: native extended type/header closure, floating/call/aggregate/variadic ABI and installed driver/alternate targets remain."
       ],
       "acceptance": [
         "Compile native C fixtures through shared mip and target backend, then assemble/link/run.",
@@ -10998,15 +10998,17 @@
       ],
       "unresolved_tasks": [
         193,
-        194,
         195,
         196
       ],
       "native_sources": [
+        "user/pcc/backend.h",
         "user/pcc/cgram.y",
+        "user/pcc/code.c",
         "user/pcc/common.c",
         "user/pcc/ir.c",
         "user/pcc/local.c",
+        "user/pcc/local2.c",
         "user/pcc/macdefs",
         "user/pcc/manifest",
         "user/pcc/mfile1",
@@ -11021,7 +11023,8 @@
       ],
       "port_notes": "docs/pcc.md",
       "scope_notes": [
-        "Retained PCC/mip front-end sources parse native-width declarations/control/aggregates and lower to shared mip IR; private native cpp/frontend consumption passes at 16/128 MiB. No complete compiler is claimed."
+        "Retained PCC/mip front-end sources parse native-width declarations/control/aggregates and lower to shared mip IR; private native cpp/frontend consumption passes at 16/128 MiB. No complete compiler is claimed.",
+        "Task 194 integer/pointer/control emission passes shared mip template/resource consumption, GCC ABI/execution oracles and complete native cpp/PCC/as/ld execution at 16/128 MiB as root and ordinary user."
       ]
     },
     {

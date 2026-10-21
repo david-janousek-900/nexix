@@ -83,3 +83,44 @@ variadic, long-double and installed driver acceptance stay open in 193–196;
 full supported-tool rebuild remains 207. The shared mip task also stays in
 progress until its compiler/alternate consumer gates pass. Commit/test evidence
 is recorded in Git history.
+
+## Integer/pointer/control backend (task 194)
+
+`code.c`, `local2.c` and `backend.h` implement the native replacement for the
+PDP-11 code/local2/order/table target. The retained front end lowers real C
+expressions into shared mip IR; ordered templates and the generic resource
+allocator select checked integer operations. The initial target conservatively
+spills live values, using RAX/RCX/RDX scratch registers and preserving callee-saved
+registers. Frames and incoming GP/stack parameters follow SysV AMD64; frame size
+tracks block high-water marks and stays 16-byte aligned. This is a private backend
+consumer until task 196 installs the compiler command.
+
+Integer generation covers native-width loads/stores/conversions, arithmetic,
+signed/unsigned division/remainder, bit operations/shifts, comparisons, unary
+operations, conditional/comma/short-circuit expressions, assignments and pre/post
+updates. Compound lvalue addresses are evaluated once. Narrow compound operations
+use promoted arithmetic types before narrowing; unsigned bitfield values promote
+correctly, and stores preserve neighboring objects. Pointer indexing/differences
+retain 64-bit intermediates. Global addresses use full-width relocations and
+local address additions avoid host signed overflow.
+
+Labels, if/loops, break/continue, goto and 64-bit switch cases emit native control
+flow. Data hooks emit integer initializers, symbolic pointers, strings, zeroes,
+commons and static locals in native sections without PDP-11 symbol prefixes or
+runtime helpers. Floating values, aggregate copying/classification, call
+instructions and variadic handling remain task 195; extended types/header and
+public driver gates remain 193/196. Unsupported remaining operations fail rather
+than emitting placeholder code.
+
+`make TOOLCHAIN_PREFIX= test-pcc-integer test-pcc-front test-mip-infra
+ test-inventory` checks production front-end/backend code under host sanitizers.
+A separately compiled GCC caller and a GCC build of the same C functions verify
+GP/overflow-stack arguments, signed/unsigned arithmetic, pointer/field stores,
+byte-sized field boundaries, compound promotions, short-circuiting, loops,
+switch/goto, static data and symbolic addresses above 4 GiB. Native 16/128 MiB
+acceptance runs cpp -> private PCC -> installed as -> installed ld -> execution
+as root and an ordinary user, comparing exact host/native assembly. It also
+compiles a complete C main program and executes it with native crt0/libc.
+Fixtures use ordinary separate translation units to keep assembler working sets
+within the 16 MiB baseline; larger complete-tool rebuilds remain the 128 MiB
+acceptance gate. This completes task 194, not the remaining compiler family.

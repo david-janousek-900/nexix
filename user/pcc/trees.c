@@ -154,7 +154,10 @@ buildtree( o, l, r ) register NODE *l, *r; {
 
 	/* its real; we must make a new node */
 
-	p = block( o, l, r, INT, 0, INT );
+    if(l && l->op==FLD && l->type==UNSIGNED && UPKFSZ(l->rval)<SZINT && !asgop(o) && o!=UNARY AND)
+        l=makety(l,INT,0,INT);
+    if(r && r->op==FLD && r->type==UNSIGNED && UPKFSZ(r->rval)<SZINT)r=makety(r,INT,0,INT);
+    p = block( o, l, r, INT, 0, INT );
 
 	actions = opact(p);
 
@@ -797,18 +800,15 @@ tymatch(p)  register NODE *p; {
 	t1 = p->left->type;
 	t2 = p->right->type;
 
+    if(asgop(o) && o!=ASSIGN && o!=RETURN && o!=CAST) {
+        tu=pcc_arithmetic(pcc_value_type(p->left),pcc_value_type(p->right));
+        if(p->right->type!=tu)p->right=makety(p->right,tu,0,(int)BTYPE(tu));
+        p->type=p->left->type;p->cdim=p->left->cdim;p->csiz=p->left->csiz;return p;
+    }
     t=pcc_arithmetic(t1,t2);
     tu=asgop(o)?p->left->type:t;
-    if(asgop(o))t=pcc_promote(t1);
-
-	/* because expressions have values that are at least as wide
-	   as INT or UNSIGNED, the only conversions needed
-	   are those involving FLOAT/DOUBLE, and those
-	   from LONG to INT and ULONG to UNSIGNED */
-
-	if( t != t1 ) p->left = makety( p->left, tu, 0, (int)tu );
-
-	if( t != t2 || o==CAST ) p->right = makety( p->right, tu, 0, (int)tu );
+    if(!asgop(o) && t1!=tu)p->left=makety(p->left,tu,0,(int)BTYPE(tu));
+    if(t2!=tu || o==CAST)p->right=makety(p->right,tu,0,(int)BTYPE(tu));
 
 	if( asgop(o) ){
 		p->type = p->left->type;
