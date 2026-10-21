@@ -62,7 +62,9 @@ int ld_require(struct ld_state *s,const char *name) {
     if(s->failed)return -1;
     if(!*name)return fail(s,"empty required symbol");
     size_t i=intern(s,name);if(i==LD_NONE)return -1;
-    s->symbols[i].required=1;return 0;
+    s->symbols[i].required=1;
+    if(!s->symbols[i].defined)s->symbols[i].bind=STB_GLOBAL;
+    return 0;
 }
 const char *ld_symbol_name(const struct ld_input *o,size_t i) {
     return (const char *)o->data+o->strings.sh_offset+o->symbols[i].st_name;

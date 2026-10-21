@@ -27,6 +27,8 @@ struct ld_state {
     struct ld_symbol *symbols;
     size_t symbol_count, symbol_capacity;
     uint32_t *hash;
+    unsigned strip; /* 1: locals, 2: L/.L locals, 4: all executable symbols; 8: debug data */
+    uint64_t minimum_data;
     int failed;
     char error[512];
 };
@@ -39,6 +41,7 @@ int ld_require(struct ld_state *, const char *name);
 size_t ld_lookup(const struct ld_state *, const char *name);
 int ld_check(struct ld_state *);
 /* On success returns caller-owned ELF64 bytes; outputs stay unchanged on error. */
+int ld_relocatable(struct ld_state *, int allocate_common, unsigned char **, size_t *);
 int ld_executable(struct ld_state *, const char *entry, unsigned char **, size_t *);
 const char *ld_symbol_name(const struct ld_input *, size_t);
 #endif

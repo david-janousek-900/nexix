@@ -7569,14 +7569,18 @@
           "name": "ld",
           "install": "/bin/ld",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/ld.c",
+            "user/ld/resolve.c",
+            "user/ld/output.c",
+            "user/ld/relocatable.c",
+            "tools/linker.mk"
           ]
         }
       ],
       "priority": 6,
-      "status": "partial",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -7590,23 +7594,41 @@
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/ld.c",
+            "user/ld/resolve.c",
+            "user/ld/output.c",
+            "user/ld/relocatable.c",
+            "tools/ld_driver_smoke.py"
+          ],
+          "note": "Native checked ELF readers and public libc allocation, I/O, string and diagnostic interfaces; installed source objects/crt0/libc are linked and executed in guest acceptance."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/ld.c",
+            "user/ld/resolve.c",
+            "user/ld/output.c",
+            "user/ld/relocatable.c",
+            "tools/ld_driver_smoke.py"
+          ],
+          "note": "Native checked ELF readers and public libc allocation, I/O, string and diagnostic interfaces; installed source objects/crt0/libc are linked and executed in guest acceptance."
         },
         {
           "target": "elf-toolchain",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/ld.c",
+            "user/ld/resolve.c",
+            "user/ld/output.c",
+            "user/ld/relocatable.c",
+            "tools/ld_driver_smoke.py"
+          ],
+          "note": "Native checked ELF readers and public libc allocation, I/O, string and diagnostic interfaces; installed source objects/crt0/libc are linked and executed in guest acceptance."
         }
       ],
       "reference_includes": [
@@ -7629,12 +7651,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Task 187: public driver, reference-option adaptation, installation and complete installed native acceptance remain."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Link native objects with relocations into a runnable ELF and reject unresolved symbols.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -7649,18 +7667,19 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        187
-      ],
+      "unresolved_tasks": [],
       "native_sources": [
         "user/ld/resolve.c",
         "user/ld/ld.h",
-        "user/ld/output.c"
+        "user/ld/output.c",
+        "user/v7/cmd/ld.c",
+        "user/ld/relocatable.c"
       ],
       "port_notes": "docs/linker.md",
       "scope_notes": [
         "Task 185 resolution pass preserves reference selection/search algorithms with checked ELF64 and native symbol binding adaptations; private native consumption passes at 16/128 MiB.",
-        "Task 186 static executable layout and required AMD64 relocations pass host sanitizer/GNU oracle and native C/crt0/libc link-and-run tests at 16/128 MiB."
+        "Task 186 static executable layout and required AMD64 relocations pass host sanitizer/GNU oracle and native C/crt0/libc link-and-run tests at 16/128 MiB.",
+        "Task 187 installs the native command with static executable and relocatable output, checked publication, native option adaptations, GNU interoperability, root/user C/libc execution and linker self-link at 16/128 MiB; C compiler rebuild remains task 207."
       ]
     },
     {

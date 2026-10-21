@@ -131,7 +131,7 @@ static int bigword(int fd,uint32_t n) {unsigned char b[]={n>>24,n>>16,n>>8,n};re
 static int padding(int fd,size_t size) {return size&1?put(fd,"\n",1):0;}
 /* Same-directory hard links implement replacement on V7, which has no rename.
  * The backup remains available until the complete new archive has been linked. */
-static int write_file(const char *path,const struct archive *a,int indexed,const unsigned char *raw,size_t rawsize) {
+static int write_file(const char *path,const struct archive *a,int indexed,const unsigned char *raw,size_t rawsize,int permissions) {
     void (*handlers[4])(int);int signals[]={SIGHUP,SIGINT,SIGQUIT,SIGTERM};
     for(unsigned i=0;i<4;i++)handlers[i]=signal(signals[i],SIG_IGN);
     struct index_entry *index=NULL;size_t capacity=0,count=0,namesize=0,stringbytes=0,total=8;
@@ -201,7 +201,7 @@ finish_output:
     if(close(fd)) {fd=-1;goto cleanup;}fd=-1;
     stage="archive chmod";
     mode_t mask=umask(0);umask(mask);
-    if(chmod(temp,exists?(old.st_mode&07777):(0666&~mask)))goto cleanup;
+    if(chmod(temp,permissions>=0?((mode_t)permissions&~mask):(exists?(old.st_mode&07777):(0666&~mask))))goto cleanup;
     stage="archive replace";
     if(exists) {
         int linked=0;
@@ -230,7 +230,11 @@ out:
     return result;
 }
 
-int archive_write(const char *path,const struct archive *a,int indexed) {return write_file(path,a,indexed,NULL,0);}
+int archive_write(const char *path,const struct archive *a,int indexed) {return write_file(path,a,indexed,NULL,0,-1);}
 int archive_replace(const char *path,const unsigned char *data,size_t size) {
-    struct archive empty={0};return write_file(path,&empty,0,data,size);
+    struct archive empty={0};return write_file(path,&empty,0,data,size,-1);
+}
+
+int archive_replace_mode(const char *path,const unsigned char *data,size_t size,unsigned mode) {
+    struct archive empty={0};return write_file(path,&empty,0,data,size,(int)(mode&0777));
 }

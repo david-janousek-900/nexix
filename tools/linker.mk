@@ -30,3 +30,19 @@ test-ld-output: test-ld-output-unit build/ld-output-test.elf multi-iso rootfs
 	$(PYTHON) tools/ld_output_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test-unit: test-ld-output-unit
 test: test-ld-output
+
+build/ld-relocatable.o: user/ld/relocatable.c user/ld/ld.h | build/.dir
+	$(CC) $(USER_CFLAGS) -Iuser/ld -Iuser/toolchain -c $< -o $@
+build/v7-ld.o: user/v7/cmd/ld.c user/ld/ld.h user/toolchain/archive.h | build/.dir
+	$(CC) $(USER_CFLAGS) -Iuser/ld -Iuser/toolchain -c $< -o $@
+build/v7-ld.elf: build/crt0.o build/v7-ld.o build/ld-resolve.o build/ld-output.o build/ld-relocatable.o build/toolchain-object.o build/toolchain-archive.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+-include build/ld-relocatable.d build/v7-ld.d
+.PHONY: test-ld-unit test-ld
+test-ld-unit: test-ld-output-unit test-ld-resolve-unit
+	$(PYTHON) tests/ld_driver.py
+test-ld: test-ld-unit multi-iso rootfs
+	$(PYTHON) tools/ld_driver_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/ld_driver_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test-unit: test-ld-unit
+test: test-ld

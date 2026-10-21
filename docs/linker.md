@@ -84,3 +84,50 @@ with native crt0/libc and executes it in Nexix at 16/128 MiB as root and an ordi
 user. Guests compare exact host/native output, consume installed native assembler
 output and verify failure preservation. This completes layout/relocation work;
 installed command/options and broader native acceptance remain task 187.
+
+## Installed command and partial links (task 187)
+
+`/bin/ld` links native ELF64 objects and GNU/SysV, BSD or V7 archives directly;
+it never invokes a host linker. Default output is executable `a.out`, with entry
+`_start`. `-o`, `-e`, `-u`, `-l` and `-L` select output, entry, forced references,
+libraries and search directories. Library defaults are `/lib` and `/usr/lib`;
+explicit search directories apply throughout the command, while object/archive
+resolution retains argument order. `--` ends options; attached option values and
+combined switches are accepted. `-t` traces inputs. `-D` sets an overall minimum
+initialized-data size, using zero padding. Unlike the original position-dependent
+PDP-11 data counter, it applies to the complete native output.
+
+`-r` emits relocatable ELF and permits unresolved symbols. Each selected input
+section retains its own identity; local/global symbol indices, section indices,
+RELA links and relocation symbol indices are rewritten. This avoids guessing
+addend adjustments for section-relative references and allows repeated partial
+links, including GNU linker interoperability. Commons remain SHN_COMMON unless
+`-d` allocates them in an additional aligned BSS section. Unsupported relocation
+kinds and malformed target/symbol/entry spans fail before publication.
+
+`-x` removes local names, `-X` removes `L`/`.L` local names, `-s` strips executable
+symbols, and `-S` removes debug data. Partial links retain global definitions and
+symbols needed by relocations; stripped local references use anonymous symbols.
+PDP-11 `-n`, `-i` and `-O` map to the mandatory native flat ELF address space and
+separate RX/RW pages. PDP-11 overlay selection (`-v`) is rejected: native programs
+use resident, flat-address-space objects, as specified by the release's native
+segmentation adaptation. It does not select executable variants or emit PDP-11
+magic numbers. Dynamic/PIE/TLS, linker scripts and platform-specific GNU switches
+are outside the static ABI version 1 command contract.
+
+Output uses the shared checked same-directory temporary/backup writer. Requested
+executable or object permissions are set **before** publication, subject to umask;
+set-ID bits are not inherited. Invalid input, unresolved/duplicate symbols,
+relocation overflow, output permissions and failed replacement report nonzero
+status and preserve existing destinations. No shell commands implement linking.
+
+`make TOOLCHAIN_PREFIX= test-ld test-ar-unit test-strip-unit test-install-unit
+ test-inventory` verifies the installed command and regressions. Host sanitizer
+tests cover options, libraries, repeat partial links, GNU interoperability,
+common allocation, stripping, DWARF retention/removal and transactional errors.
+At 16/128 MiB, root and ordinary users build and run C/crt0/libc executables,
+compare exact host/native partial links, relink stripped/unstripped results,
+and consume the native as/ar/ranlib pipeline. The native linker also links its
+own bootstrap-produced object files and uses that executable to link and run
+another C/libc program. This is a linker self-link, not a claim that a native C
+compiler has rebuilt the sources; tasks 192–201 and 207 retain those gates.

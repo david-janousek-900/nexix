@@ -70,6 +70,10 @@ static int place(struct layout *l) {
                 l->map[oi][i]=(struct mapping){cursor,PAGE+cursor-BASE,group};cursor+=h.sh_size;
             }
         }
+        if(group==2 && cursor-BASE-l->start[2]<s->minimum_data) {
+            if(s->minimum_data>IMAGE_LIMIT-l->start[2])return error(s,"minimum data exceeds image limit");
+            cursor=BASE+l->start[2]+s->minimum_data;
+        }
         if(group==3) {
             for(size_t i=0;i<s->symbol_count;i++) {
                 struct ld_symbol *g=s->symbols+i;if(!g->common)continue;
@@ -158,7 +162,8 @@ static int symbols(struct layout *l,struct buffer *syms,struct buffer *strs,unsi
         struct ld_input *o=s->inputs+oi;if(!o->selected)continue;
         for(size_t i=1;i<o->symbol_count;i++) {
             Elf64_Sym n=o->symbols[i];const char *text=ld_symbol_name(o,i);
-            if(ELF64_ST_BIND(n.st_info)!=STB_LOCAL || !*text || n.st_shndx==SHN_UNDEF ||
+            if((s->strip&1) || ((s->strip&2) && (text[0]=='L' || !strncmp(text,".L",2))) ||
+               ELF64_ST_BIND(n.st_info)!=STB_LOCAL || !*text || n.st_shndx==SHN_UNDEF ||
                (n.st_shndx!=SHN_ABS && !l->map[oi][n.st_shndx].group))continue;
             unsigned section;
             if(local_value(l,oi,i,&n.st_value,&section) || name(strs,text,&n.st_name))return -1;
@@ -205,8 +210,8 @@ int ld_executable(struct ld_state *s,const char *entry,unsigned char **bytes,siz
         }
     }
     if(relocate(&l,&out))goto cleanup;
-    unsigned first_global;
-    if(symbols(&l,&syms,&strs,&first_global)) {if(!s->failed)error(s,"cannot build symbol output");goto cleanup;}
+    unsigned first_global=0;
+    if(!(s->strip&4) && symbols(&l,&syms,&strs,&first_global)) {if(!s->failed)error(s,"cannot build symbol output");goto cleanup;}
     Elf64_Shdr h[7]={{0}};
     const char *names[]={"",".text",".data",".bss",".symtab",".strtab",".shstrtab"};
     for(unsigned i=1;i<7;i++)if(name(&shnames,names[i],&h[i].sh_name))goto memory;
@@ -229,6 +234,7 @@ int ld_executable(struct ld_state *s,const char *entry,unsigned char **bytes,siz
         {0x6474e551,6,0,0,0,0,0,16}};
     /* BSS starts immediately after data, including alignment padding in size[3]. */
     memcpy(out.p,&e,sizeof(e));memcpy(out.p+64,ph,sizeof(ph));
+    if(s->strip&4) {memset(h+4,0,sizeof(h[4]));memset(h+5,0,sizeof(h[5]));}
     if(add(&out,h,sizeof(h)))goto memory;
     *bytes=out.p;*length=out.n;out.p=NULL;result=0;goto cleanup;
 memory:
