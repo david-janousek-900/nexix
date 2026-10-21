@@ -64,7 +64,8 @@ uncached (PCD|PWT).
   (11 on QEMU), and returns the same device on every later call. With no
   supported adapter it returns NULL and nothing is enabled.
 
-Reset, link and DMA belong to task 417, and interface attachment to task 418.
+The [task 417 driver](networking-e1000.md) handles reset, link and DMA;
+interface attachment belongs to task 418.
 
 ## Validation
 

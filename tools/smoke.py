@@ -128,6 +128,10 @@ if mode in full_boot_modes:
         sys.exit(f"FAIL: PCI enumeration/e1000 discovery check failed; see {log}")
     if nic and (b"E1000 ABSENT\r\n" if nic == "none" else b"E1000 FOUND\r\n") not in output:
         sys.exit(f"FAIL: e1000 presence does not match -nic {nic}; see {log}")
+    if b"E1000 FOUND\r\n" in output and any(f"{marker}\r\n".encode() not in output for marker in
+            ("E1000 ARP OK", "E1000 TRAFFIC OK", "E1000 RINGS FULL OK", "E1000 MALFORMED OK",
+             "E1000 CLEANUP OK", "E1000 DMA OK")):
+        sys.exit(f"FAIL: e1000 DMA/IRQ/teardown check failed; see {log}")
     if b"NET POOLS OK\r\n" not in output:
         sys.exit(f"FAIL: network packet/socket pool check failed; see {log}")
     if any(f"{marker}\r\n".encode() not in output for marker in
@@ -154,7 +158,7 @@ if mode in full_boot_modes:
         sys.exit(f"FAIL: page-table allocation rollback failed; see {log}")
     if mode == "user-bad-stack" and b"USER BAD STACK OK\r\n" not in output:
         sys.exit(f"FAIL: TSS handoff with unusable user stack failed; see {log}")
-    print("PASS: boot, scheduling, fork/exit/wait, native syscalls, user copies, ELF exec, native libc, V7 filesystem, file descriptors, pipes, serial TTY, signals, heap, init services, PCI/e1000 discovery, network pools, network worker, rebuilt V7 userland, and packaged root image")
+    print("PASS: boot, scheduling, fork/exit/wait, native syscalls, user copies, ELF exec, native libc, V7 filesystem, file descriptors, pipes, serial TTY, signals, heap, init services, PCI/e1000 discovery and DMA, network pools, network worker, rebuilt V7 userland, and packaged root image")
 elif mode in user_faults:
     vector, error = user_faults[mode]
     fault = re.search(rb"exception vector=(0x[0-9a-f]{16}) error=(0x[0-9a-f]{16})"

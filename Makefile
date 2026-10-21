@@ -31,7 +31,7 @@ CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-stack-protector 
 OBJECTS = build/klog.o build/console.o build/packet.o build/packet_tty.o build/packet_image.o build/boot.o build/main.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o build/elf.o build/exec.o build/exec_test.o build/exec_image.o build/libc_test.o build/libc_image.o build/block.o build/v7fs.o build/fs_test.o build/root_image.o build/files.o build/files_test.o build/files_image.o build/tty.o build/tty_test.o build/tty_image.o build/signals.o build/signals_test.o build/signals_image.o build/catalog.o build/v7_userland_test.o build/v7_test_image.o
 include build/native-config.mk
 OBJECTS += $(NATIVE_CONFIG_OBJECTS)
-OBJECTS += build/net_compat.o build/net_pool.o build/net_mbuf.o build/net_kernel.o build/net_sched.o build/net_worker.o build/net_worker_test.o build/pci.o build/pci_port.o build/net_e1000.o
+OBJECTS += build/net_compat.o build/net_pool.o build/net_mbuf.o build/net_kernel.o build/net_sched.o build/net_worker.o build/net_worker_test.o build/pci.o build/pci_port.o build/net_e1000.o build/net_e1000_test.o
 
 build/native-config.mk: config/kernel.json tools/mkconf.py
 	$(PYTHON) tools/mkconf.py config/kernel.json $@
@@ -590,6 +590,16 @@ build/pci_port.o: kernel/pci_port.c kernel/include/pci.h | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 build/net_e1000.o: kernel/net/e1000.c kernel/include/net/e1000.h kernel/include/pci.h | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
+# Task 417: e1000 reset, DMA rings, IRQ handoff and teardown.
+build/net_e1000_test.o: kernel/net/e1000_test.c kernel/include/net/e1000.h kernel/include/pci.h | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+build/e1000-test: tests/e1000.c kernel/include/net/e1000.h kernel/include/net/mbuf.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -g -Wall -Wextra -Werror -fno-omit-frame-pointer -fno-pie -no-pie -fsanitize=address,undefined -fno-sanitize-recover=all -Ikernel/include tests/e1000.c -o $@
+.PHONY: test-e1000 test-e1000-guest
+test-e1000: build/e1000-test
+	./build/e1000-test
+test-unit: test-e1000
+test-e1000-guest: test-pci-guest
 build/pci-test: tests/pci.c kernel/pci.c kernel/include/pci.h | build/.dir
 	$(HOST_CC) -std=c11 -O2 -g -Wall -Wextra -Werror -fno-omit-frame-pointer -fno-pie -no-pie -fsanitize=address,undefined -fno-sanitize-recover=all -Ikernel/include tests/pci.c kernel/pci.c -o $@
 .PHONY: test-pci test-pci-guest

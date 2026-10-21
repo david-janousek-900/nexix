@@ -89,6 +89,36 @@ void timer_init(void)
     outb(0x21, inb(0x21) & ~1U);
 }
 uint64_t timer_ticks(void) { return ticks; }
+static struct { void (*handler)(void *); void *argument; } irq_handlers[16];
+static void irq_mask_set(unsigned irq, bool masked)
+{
+    uint16_t port = irq < 8 ? 0x21 : 0xa1;
+    uint8_t bit = 1U << (irq & 7), value = inb(port);
+    outb(port, masked ? value | bit : value & ~bit);
+    if (irq >= 8 && !masked) outb(0x21, inb(0x21) & ~4U);   /* cascade */
+}
+bool irq_attach(unsigned irq, void (*handler)(void *), void *argument)
+{
+    if (irq < 5 || irq >= 14 || !handler) return false;
+    uintptr_t flags = proc_irq_save();
+    bool ok = !irq_handlers[irq].handler;
+    if (ok) {
+        irq_handlers[irq].handler = handler;
+        irq_handlers[irq].argument = argument;
+        irq_mask_set(irq, false);
+    }
+    proc_irq_restore(flags);
+    return ok;
+}
+void irq_detach(unsigned irq)
+{
+    if (irq < 5 || irq >= 14) return;
+    uintptr_t flags = proc_irq_save();
+    irq_mask_set(irq, true);
+    irq_handlers[irq].handler = NULL;
+    irq_handlers[irq].argument = NULL;
+    proc_irq_restore(flags);
+}
 static void dispatch(struct interrupt_frame *frame)
 {
     if (frame->vector == 8 || frame->vector == 2) {
@@ -166,6 +196,8 @@ static void dispatch(struct interrupt_frame *frame)
         if (frame->vector == 33) keyboard_interrupt();
         if (frame->vector == 35) serial_secondary_interrupt();
         if (frame->vector == 36) serial_interrupt();
+        unsigned irq = frame->vector - 32;
+        if (irq_handlers[irq].handler) irq_handlers[irq].handler(irq_handlers[irq].argument);
         if (frame->vector >= 40)
             outb(0xa0, 0x20);
         outb(0x20, 0x20);
