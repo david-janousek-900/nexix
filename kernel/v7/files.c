@@ -477,6 +477,13 @@ static int64_t pipe_io(struct file *f, uintptr_t address, size_t count, bool wri
     }
     return done;
 }
+/* V7 never failed device I/O on an inode update. A failed volume must not
+ * cut off the console, terminals, memory devices or raw disk recovery. */
+static void device_stamp(struct file *f, bool write)
+{
+    (void)v7fs_touch(node_volume(inode_node(f->f_inode)), f->f_inode->i_number,
+        write ? V7FS_MTIME | V7FS_CTIME : V7FS_ATIME);
+}
 static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count, bool write)
 {
     if (fd >= V7_NOFILE || !u->u_ofile[fd] || !(u->u_ofile[fd]->f_flag & (write ? V7_FWRITE : V7_FREAD))) return -NX_EBADF;
@@ -485,19 +492,13 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
     if (!user_access_ok(vm, address, count, !write)) return -NX_EFAULT;
     struct file *f = u->u_ofile[fd];
     if (f->f_flag & V7_FMP) {
-        if(write || count){
-            int error=v7fs_touch(node_volume(inode_node(f->f_inode)),f->f_inode->i_number,
-                write?V7FS_MTIME|V7FS_CTIME:V7FS_ATIME);
-            if(error)return error;
-        }
+        if(write || count)device_stamp(f,write);
         return mpx_io(f,address,count,write);
     }
     if (f->f_flag & V7_FPIPE) return pipe_io(f, address, count, write);
     if(f->f_flag & FILE_TAPE){
         if(count>(uint64_t)(INT64_MAX-f->f_offset))return -NX_EINVAL;
-        int error=0;
-        if(count)error=v7fs_touch(node_volume(inode_node(f->f_inode)),f->f_inode->i_number,write?V7FS_MTIME|V7FS_CTIME:V7FS_ATIME);
-        if(error)return error;
+        if(count)device_stamp(f,write);
         int64_t n=tape_io(f->f_private,vm,address,count,write,f->f_offset);
         if(n>0)f->f_offset+=n;
         return n;
@@ -506,8 +507,7 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
         bool raw=(f->f_inode->i_mode & V7_IFMT)==V7_IFCHR;
         if(raw && count && ((address|count)&1))return -NX_EFAULT;
         if(!count)return 0;
-        int error=v7fs_touch(node_volume(inode_node(f->f_inode)),f->f_inode->i_number,write?V7FS_MTIME|V7FS_CTIME:V7FS_ATIME);
-        if(error)return error;
+        device_stamp(f,write);int error=0;
         uint64_t start=raw?((uint64_t)f->f_offset & ~(uint64_t)(BLOCK_SIZE-1)):(uint64_t)f->f_offset;
         size_t done=0;uint8_t bytes[BLOCK_SIZE];
         while(done<count){
@@ -524,30 +524,25 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
     if (f->f_private) {
         /* V7 readi/writei also stamp character-device inodes. Pipes have no
          * persistent inode. Keep the established zero-count TTY behavior. */
-        if (write || count) {
-            int error = v7fs_touch(node_volume(inode_node(f->f_inode)), f->f_inode->i_number,
-                write ? V7FS_MTIME | V7FS_CTIME : V7FS_ATIME);
-            if (error) return error;
-        }
+        if (write || count) device_stamp(f, write);
         if(output_file(f))return output_io(f->f_private,vm,address,count,write);
         if(modem_file(f))return modem_io(f->f_private,vm,address,count,write);
         return tty_io(f->f_private, vm, address, count, write);
     }
-    struct v7fs_inode inode;
-    int error = node_inode_get(inode_node(f->f_inode), &inode);
-    if (error) return error;
-    if ((inode.mode & V7_IFMT) == V7_IFCHR && memdev_matches(inode.addr[0])) {
-        error=memdev_open(inode.addr[0],u);if(error)return error;
-        if (write || count) {
-            error = v7fs_touch(node_volume(inode_node(f->f_inode)), inode.number, write ? V7FS_MTIME | V7FS_CTIME : V7FS_ATIME);
-            if (error) return error;
-        }
+    /* Memory devices use the in-core device number, not the volume. */
+    v7_dev_t rdev = f->f_inode->i_un.i_rdev;
+    if ((f->f_inode->i_mode & V7_IFMT) == V7_IFCHR && memdev_matches(rdev)) {
+        int error=memdev_open(rdev,u);if(error)return error;
+        if (write || count) device_stamp(f, write);
         /* Reject an offset overflow before any memory is transferred. */
         if(f->f_offset<0 || (uint64_t)count>(uint64_t)(INT64_MAX-f->f_offset))return -NX_EINVAL;
-        int64_t moved=memdev_io(inode.addr[0],u,vm,f->f_offset,address,count,write);
+        int64_t moved=memdev_io(rdev,u,vm,f->f_offset,address,count,write);
         if(moved>0)f->f_offset+=moved;
         return moved;
     }
+    struct v7fs_inode inode;
+    int error = node_inode_get(inode_node(f->f_inode), &inode);
+    if (error) return error;
     if (write && (f->f_open_flags & NX_O_APPEND)) f->f_offset = inode.size;
     size_t done = 0; uint8_t bytes[512];
     while (done < count) {
@@ -606,11 +601,7 @@ static int mount_path(struct user *u,const uintptr_t args[6])
     if((disk.mode&V7_IFMT)!=V7_IFREG && (disk.mode&V7_IFMT)!=V7_IFDIR)return -NX_EBUSY;
     struct inode *pin=inode_get(point,&disk);if(!pin)return -NX_ENFILE;
     if(pin->i_count!=1)error=-NX_EBUSY;
-    else if((disk.mode&V7_IFMT)==V7_IFREG){
-        struct fs_node parent;char name[V7_DIRSIZ];
-        error=parent_path(u,point_path,&parent,name);
-        if(!error)error=namespace_mount_file(dev,point,parent,pin,!!(args[2]&1));
-    }else error=namespace_mount(dev,point,pin,!!(args[2]&1));
+    else error=namespace_mount(dev,point,pin,!!(args[2]&1));
     if(error)(void)files_inode_put(pin);
     return error;
 }

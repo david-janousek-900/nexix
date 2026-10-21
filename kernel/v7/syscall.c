@@ -103,6 +103,11 @@ static int64_t invoke(uint64_t number, struct interrupt_frame *frame)
         uintptr_t id = u->u_arg[0];
         if (id > UINT16_MAX) return -NX_EINVAL;
         if (id != (number == NX_SYS_SETUID ? u->u_ruid : u->u_rgid) && !proc_superuser(u)) return -NX_EPERM;
+        /* Physical windows are a root capability; dropping root revokes them
+         * before fork can hand them to unprivileged children. */
+        if (number == NX_SYS_SETUID && id && proc_superuser(u))
+            for (unsigned slot = 0; slot < NX_PHYS_WINDOWS; ++slot)
+                (void)phys_request(slot, 0, 0);
         if (number == NX_SYS_SETUID) p->p_uid = u->u_uid = u->u_ruid = id;
         else u->u_gid = u->u_rgid = id;
         return 0;
