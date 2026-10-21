@@ -276,24 +276,28 @@ static void receive(struct tty *t,uint8_t c)
         if(t->mpx_owner)mpx_tty_notify(t->mpx_owner,0);
         return;
     }
+    /* 0377 disables a control; PASS8 can also deliver it as ordinary data. */
     uint8_t echoed=c;bool quoted=t->length && t->line[t->length-1]=='\\';
     if(quoted){
-        uint8_t mapped=tty_mapping(c);if(c==t->settings.erase || c==t->settings.kill)mapped=c;
+        uint8_t mapped=tty_mapping(c);
+        if((t->settings.erase!=0377 && c==t->settings.erase) ||
+           (t->settings.kill!=0377 && c==t->settings.kill))mapped=c;
         if(mapped && (mapped==c || (t->settings.flags&NX_LCASE))){
             if(t->length<2 || t->line[t->length-2]!='\\')c=mapped;
             --t->length;
         }
     }
-    if (!quoted && (c == t->settings.erase || (t->settings.erase == 0177 && c == '\b'))) {
+    if (!quoted && t->settings.erase != 0377 &&
+        (c == t->settings.erase || (t->settings.erase == 0177 && c == '\b'))) {
         if (t->length) {
             --t->length;
             echo(t, '\b'); echo(t, ' '); echo(t, '\b');
         }
         return;
     }
-    if (!quoted && c == t->settings.kill) { t->length = 0; echo(t, '\n'); return; }
-    if (!quoted && c == t->chars.eof) { commit(t); return; }
-    bool delimiter = c == t->chars.eof || c == '\n' || (t->chars.brk != 0377 && c == t->chars.brk);
+    if (!quoted && t->settings.kill != 0377 && c == t->settings.kill) { t->length = 0; echo(t, '\n'); return; }
+    if (!quoted && t->chars.eof != 0377 && c == t->chars.eof) { commit(t); return; }
+    bool delimiter = (t->chars.eof != 0377 && c == t->chars.eof) || c == '\n' || (t->chars.brk != 0377 && c == t->chars.brk);
     /* Reserve a byte for a delimiter, so an overlong line remains readable. */
     if (t->length >= TTY_LINE_CAPACITY - (delimiter ? 0 : 1)) { ++t->dropped; return; }
     t->line[t->length++] = c; echo(t, echoed);

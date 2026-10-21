@@ -67,6 +67,19 @@ int main(void)
     state.settings.flags=NX_CBREAK|NX_TTY_NOSIG|NX_TTY_PASS8;
     assert(control(t,NX_TIOCSETA,&state)==0);
     feed("\003\351",2);expect(t,"\003\351",2);assert(signals==0);
+    /* Disabled canonical controls must preserve an eight-bit 0xff byte. */
+    for(unsigned disabled=0;disabled<3;++disabled){
+        state=initial;state.settings.flags=NX_TTY_PASS8;
+        if(disabled==0)state.chars.eof=0377;
+        if(disabled==1)state.settings.erase=0377;
+        if(disabled==2)state.settings.kill=0377;
+        assert(control(t,NX_TIOCSETA,&state)==0);
+        const uint8_t literal[]={ 'a',0xff,'b','\n' };
+        feed(literal,sizeof(literal));expect(t,literal,sizeof(literal));
+        const uint8_t quoted[]={ 'a','\\',0xff,'b','\n' };
+        feed(quoted,sizeof(quoted));expect(t,quoted,sizeof(quoted));
+        assert(signals==0);
+    }
     assert(control(t,NX_TIOCSETA,&initial)==0);
     output_size = 0;
     struct nx_kinfo_io before={0},after={0};tty_statistics(&before);
