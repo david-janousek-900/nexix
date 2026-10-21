@@ -169,7 +169,15 @@ static void directive(struct parser *c,const char *name) {
             if(!n||n>=sizeof(sectionname)){free(text);error(c,"invalid section name");return;}
             for(size_t i=0;i<n;i++)if(!text[i])error(c,"invalid section name");
             memcpy(sectionname,text,n);sectionname[n]=0;free(text);
-        } else if(identifier(c,sectionname,sizeof(sectionname)))return;
+        } else {
+            if(identifier(c,sectionname,sizeof(sectionname)))return;
+            size_t n=strlen(sectionname);
+            while(*c->s=='-'||idchar(*c->s)) {
+                if(n+1>=sizeof(sectionname)){error(c,"section name too long");return;}
+                sectionname[n++]=*c->s++;
+            }
+            sectionname[n]=0;
+        }
         uint64_t flags=!strncmp(sectionname,".rodata",7)?2:0;unsigned type=1;blank(c);
         if(*c->s==',') {
             c->s++;unsigned char *text;size_t n;if(quoted(c,&text,&n))return;
@@ -181,7 +189,7 @@ static void directive(struct parser *c,const char *name) {
         c->previous=c->section;c->section=section(c,sectionname,flags,type);return;
     }
     if(!strcmp(name,".globl")||!strcmp(name,".global")||!strcmp(name,".weak")||!strcmp(name,".local")) {
-        do {size_t i=symbol_name(c);if(i==AS_NONE)return;c->p->symbols[i].binding=!strcmp(name,".weak")?2:!strcmp(name,".local")?0:1;blank(c);if(*c->s!=',')break;c->s++;}while(!c->p->errors);return;
+        do {size_t i=symbol_name(c);if(i==AS_NONE)return;c->p->symbols[i].binding_explicit=1;c->p->symbols[i].binding=!strcmp(name,".weak")?2:!strcmp(name,".local")?0:1;blank(c);if(*c->s!=',')break;c->s++;}while(!c->p->errors);return;
     }
     if(!strcmp(name,".type")) {
         size_t i=symbol_name(c);if(i==AS_NONE)return;comma(c);blank(c);if(*c->s=='@'||*c->s=='%')c->s++;
@@ -194,9 +202,13 @@ static void directive(struct parser *c,const char *name) {
         size_t i=symbol_name(c);if(i==AS_NONE)return;comma(c);struct as_expr e=expression(c,1);struct as_symbol *s=c->p->symbols+i;
         if(!strcmp(name,".comm")||!strcmp(name,".lcomm")) {
             if(e.plus!=AS_NONE||e.minus!=AS_NONE||s->defined){error(c,"invalid common symbol");return;}
-            s->defined=1;s->common=1;s->size=e.value;s->alignment=1;s->binding=!strcmp(name,".comm")?1:0;
+            s->defined=1;s->common=1;s->size=e.value;s->alignment=1;
+            while(s->alignment<(!strcmp(name,".comm")?16U:8U)&&s->alignment*2<=s->size)s->alignment*=2;
+            if(!strcmp(name,".lcomm"))s->binding=0;
+            else if(!s->binding_explicit)s->binding=1;
+            else if(s->binding==2)error(c,"weak common symbol");
             blank(c);if(*c->s==','){c->s++;e=expression(c,1);if(e.plus!=AS_NONE||e.minus!=AS_NONE||!e.value||(e.value&(e.value-1)))error(c,"invalid common alignment");s->alignment=e.value;}
-        } else {struct as_record *r=record(c,!strcmp(name,".size")?AS_SIZE:AS_EQUATE);if(!r)return;r->symbol=i;r->expression=e;if(r->kind==AS_EQUATE){if(s->defined)error(c,"duplicate symbol");s->defined=2;s->expression=e;}}
+        } else {struct as_record *r=record(c,!strcmp(name,".size")?AS_SIZE:AS_EQUATE);if(!r)return;r->symbol=i;r->expression=e;if(r->kind==AS_EQUATE){if(s->defined)error(c,"duplicate symbol");s->defined=2;s->expression=e;s->record=c->p->count-1;}}
         return;
     }
     if(!strcmp(name,".ascii")||!strcmp(name,".asciz")||!strcmp(name,".string")) {
@@ -223,7 +235,7 @@ static void directive(struct parser *c,const char *name) {
         uint64_t n=r->expression.value;
         if(!strcmp(name,".p2align")){if(n>23){error(c,"alignment too large");return;}n=1UL<<n;r->expression.value=n;}
         if(r->expression.plus!=AS_NONE||r->expression.minus!=AS_NONE||!n||n>AS_LIMIT||(n&(n-1)))error(c,"invalid alignment");
-        blank(c);if(*c->s==','){c->s++;struct as_expr e=expression(c,1);if(e.plus!=AS_NONE||e.minus!=AS_NONE||e.value>255)error(c,"invalid alignment fill");r->width=e.value;}return;
+        blank(c);if(*c->s==','){c->s++;struct as_expr e=expression(c,1);if(e.plus!=AS_NONE||e.minus!=AS_NONE||e.value>255)error(c,"invalid alignment fill");r->width=e.value;r->count=1;}return;
     }
     if(!strcmp(name,".file")||!strcmp(name,".ident")) {blank(c);if(!strcmp(name,".file")&&isdigit((unsigned char)*c->s)){struct as_expr e=expression(c,1);if(e.plus!=AS_NONE||e.minus!=AS_NONE)error(c,"invalid file number");}unsigned char *p;size_t n;if(!quoted(c,&p,&n))free(p);return;}
     error(c,"unsupported directive");
@@ -246,7 +258,7 @@ again:
     if(*c->s=='=') {
         c->s++;size_t i=as_symbol(c->p,name);if(i==AS_NONE){error(c,"out of symbol space");return;}
         struct as_expr e=expression(c,1);struct as_symbol *s=c->p->symbols+i;if(s->defined)error(c,"duplicate symbol");s->defined=2;s->expression=e;
-        struct as_record *r=record(c,AS_EQUATE);if(r){r->symbol=i;r->expression=e;}return;
+        struct as_record *r=record(c,AS_EQUATE);if(r){r->symbol=i;r->expression=e;s->record=c->p->count-1;}return;
     }
     if(*name=='.'){directive(c,name);return;}
     if(!strcmp(name,"rep")) {

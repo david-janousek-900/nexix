@@ -34,7 +34,7 @@ static void number(struct encoder *e,struct as_expr x,unsigned width,unsigned ty
     if(!absolute(x)||relative) {
         if(width<4){e->failed=1;return;}
         if(e->out->fixup_count>=2){e->failed=1;return;}
-        e->out->fixups[e->out->fixup_count++]=(struct as_fixup){off,width,type,x};
+        e->out->fixups[e->out->fixup_count++]=(struct as_fixup){off,width,type,0,x};
         for(unsigned i=0;i<width;i++)byte(e,0);
     } else for(unsigned i=0;i<width;i++)byte(e,(unsigned)(x.value>>(8*i)));
 }
@@ -315,6 +315,6 @@ int as_encode(const struct as_record *r,struct as_code *out) {
     memset(out,0,sizeof(*out));if(r->kind!=AS_INSTRUCTION)return -1;
     struct encoder e={out,0};if(encode(r,&e)||e.failed||out->length>15)return -1;
     for(unsigned i=0;i<out->fixup_count;i++)if(out->fixups[i].type==PC32||out->fixups[i].type==PLT32)
-        out->fixups[i].expression.value-=out->length-out->fixups[i].offset;
+        {out->fixups[i].pc_bias=out->length-out->fixups[i].offset;out->fixups[i].expression.value-=out->fixups[i].pc_bias;}
     return 0;
 }

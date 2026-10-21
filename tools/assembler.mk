@@ -36,3 +36,23 @@ test-as-encode: test-as-encode-unit build/as-encode-test.elf build/as-code-runti
 	$(PYTHON) tools/as_encoding_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-as-encode
 test-unit: test-as-encode-unit
+
+build/as-object.o: user/as/object.c user/as/as.h user/as/encode.h | build/.dir
+	$(CC) $(USER_CFLAGS) -Iuser/as -c $< -o $@
+build/as-object-test.o: tests/as-object.c user/as/as.h user/toolchain/archive.h | build/.dir
+	$(CC) $(USER_CFLAGS) -Iuser/as -Iuser/toolchain -c $< -o $@
+build/as-object-test.elf: build/crt0.o build/as-object-test.o build/as-object.o build/as-parse.o build/as-encode.o build/toolchain-archive.o build/toolchain-object.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+build/as-object-runtime.o: build/fixtures-as/object-main.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/as-object-runtime.elf: build/crt0.o build/as-object-runtime.o build/fixtures-as/object.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+-include build/as-object.d build/as-object-test.d build/as-object-runtime.d
+.PHONY: test-as-object-unit test-as-object
+test-as-object-unit:
+	$(PYTHON) tests/as_objects.py
+test-as-object: test-as-object-unit build/as-object-test.elf build/as-object-runtime.elf multi-iso rootfs
+	$(PYTHON) tools/as_objects_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/as_objects_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-as-object
+test-unit: test-as-object-unit

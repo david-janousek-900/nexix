@@ -3,8 +3,8 @@
 Task 181 implements the native first-pass parser and symbol/directive model in
 `user/as/parse.c` and `user/as/as.h`. It replaces the supplied PDP-11 assembly scanner
 with a C implementation for the agreed ELF64 x86_64 toolchain. The immutable
-reference sources remain untouched. The encoder is completed in task 182 below; object output and the installed
-as/as2 pipeline remain tasks 183–184; this first pass is currently tested
+reference sources remain untouched. The encoder is completed in task 182 below; object output is completed in task 183 below, and the installed as/as2 pipeline
+remains task 184; this first pass is currently tested
 through a private native consumer rather than installed as a usable assembler.
 
 The language uses AT&T operands: `%register`, `$immediate`, symbolic addresses,
@@ -39,8 +39,7 @@ first-pass task only; no native executable/object generation is claimed yet.
 ## x86_64 encoding
 
 Task 182 implements `user/as/encode.c` and `encode.h`. The encoder returns bounded
-instruction bytes plus typed relocation requests; section layout and ELF emission
-remain task 183. It covers the native compiler's general-register integer moves,
+instruction bytes plus typed relocation requests; section layout and ELF emission are completed in task 183 below. It covers the native compiler's general-register integer moves,
 arithmetic, tests, multiply/divide, shifts/rotates, extensions, conditional moves,
 setcc, direct/indirect calls and jumps, stack/frame operations and system-call
 entry. SSE2 scalar/packed moves, scalar arithmetic/comparisons/conversions and x87
@@ -64,5 +63,31 @@ addressing combinations, all with production ASan/UBSan. Encoded integer and SSE
 functions are executed under the host System V ABI. Private native fixtures
 compare the complete encoding output and execute those exact encoded functions
 at 16/128 MiB as root and an ordinary user. The full first-pass suite is rerun for
-x87 register syntax and REP-prefix parsing changes. No installed assembler or
-ELF relocatable output is claimed until tasks 183–184.
+x87 register syntax and REP-prefix parsing changes. Installed as/as2 integration remains task 184; task 183 completes object output
+below.
+
+## ELF relocatable objects
+
+Task 183 adds `user/as/object.c`: checked section layout, local/common allocation,
+label/equate/size resolution, symbol tables and ELF64 AMD64 ET_REL output. It
+preserves allocated section flags/alignment, separates NOBITS BSS from file bytes,
+orders local symbols before global/weak symbols, and emits explicit RELA sections
+with symbol indexes, addends and target-section links. Global common symbols keep
+size/alignment; local common symbols allocate BSS. Defined local branches resolve
+in section; inter-object references retain the ABI's 64/32/32S/PC32/PLT32 kinds.
+Current-location/label differences and supported cross-section PC-relative data
+are resolved or represented explicitly. Circular/deep aliases, missing local
+labels, unsupported symbolic differences, nonzero BSS initialization and oversized
+sections/objects fail before replacing an output. Each section and the complete
+serialized object are limited to 8 MiB.
+
+`make test-as-object` runs production code with ASan/UBSan. An independent GNU
+assembler produces matching text/data/rodata/BSS contents, flags, sizes and
+alignment for the acceptance source. `readelf` inspects the complete object, and
+an independent host linker links it into an executed C program testing code,
+RIP-relative data, calls, aliases, pointers, BSS and common allocation. Repeated
+serialization of the same parsed program must produce identical bytes. Negative
+fixtures preserve an existing output. Private 16/128 MiB guests produce the exact
+same object, exercise installed nm/size/ar/ranlib consumers and run an independently
+linked native program using its code. First-pass and encoder acceptance also run
+again. The installed as/as2 driver and helper boundary remain task 184.

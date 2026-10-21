@@ -8,7 +8,7 @@
 struct as_expr {uint64_t value;size_t plus,minus;};
 struct as_symbol {
     char *name;
-    unsigned defined,binding,type,common;
+    unsigned defined,binding,type,common,binding_explicit;
     size_t section,record;
     uint64_t value,size,alignment;
     struct as_expr expression;
@@ -37,5 +37,6 @@ struct as_program {
 struct as_expr as_absolute(uint64_t);
 size_t as_symbol(struct as_program *,const char *);
 int as_parse(const char *,struct as_program *);
+int as_object(struct as_program *,unsigned char **,size_t *);
 void as_free(struct as_program *);
 #endif
