@@ -33,7 +33,7 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6]);
  * allocating; install takes ownership of the socket on success only. */
 int files_socket_reserve(struct user *);
 int files_socket_install(struct user *, void *socket);
-void *files_socket(struct user *, int64_t fd, int *error);   /* EBADF, ENOTSOCK */
+void *files_socket(struct user *, int64_t fd, int *error, uint32_t *open_flags);   /* EBADF, ENOTSOCK */
 void files_selftest(void);
 bool files_test_gate(struct interrupt_frame *frame);
 #endif

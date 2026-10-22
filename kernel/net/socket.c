@@ -4,6 +4,7 @@
 #include "process.h"
 #include <nexix/socket.h>
 #include <nexix/errno.h>
+#include <nexix/syscall.h>
 
 /* Protocol results as native errors, for the context they arise in. */
 static int errno_of(enum nx_net_result r)
@@ -39,7 +40,8 @@ static void socket_event(void *argument)
 /* One request to the worker: function, socket and operands. */
 struct request {
     struct nx_socket *s, *child;
-    int type, how, backlog;
+    struct nx_net_mbuf *chain;
+    int type, how, backlog, level, name;
     bool privileged, peer;
     nx_net_addr_t addr;
     nx_net_port_t port;
@@ -75,7 +77,8 @@ static void create(void *argument)
     struct request *r = argument;
     struct nx_socket *s = nx_net_slab_alloc(net_socket_slab());
     if (!s) { r->result = -NX_ENOBUFS; return; }
-    *s = (struct nx_socket){ .type = (uint8_t)r->type };
+    /* A datagram/raw SO_SNDBUF caps each datagram, as in BSD (udp_sendspace, RIPSNDQ). */
+    *s = (struct nx_socket){ .type = (uint8_t)r->type, .send_size = r->type == NX_SOCK_RAW ? 8192 : NX_NET_UDP_SNDMAX };
     enum nx_net_result result;
     if (r->type == NX_SOCK_STREAM) result = nx_net_tcp_open(socket_event, s, &s->pcb.tcp);
     else if (r->type == NX_SOCK_DGRAM) result = nx_net_udp_open(socket_event, s, &s->pcb.udp);
@@ -196,6 +199,11 @@ static void connect(void *argument)
     struct nx_net_tcp *t = s->pcb.tcp;
     if (s->connecting && t->state == NX_NET_TCP_SYN_SENT) { r->result = -NX_EALREADY; return; }
     if (t->state == NX_NET_TCP_LISTEN) { r->result = -NX_EOPNOTSUPP; return; }
+    if (t->state == NX_NET_TCP_CLOSED && t->foreign_port && t->error != NX_NET_OK) {
+        r->result = errno_of(nx_net_tcp_take_error(t));   /* a failed non-blocking connect */
+        s->connecting = false;
+        return;
+    }
     if (t->state != NX_NET_TCP_CLOSED || t->foreign_port) { r->result = -NX_EISCONN; return; }
     if (!r->addr) { r->result = -NX_EAFNOSUPPORT; return; }   /* AF_UNSPEC: streams cannot disconnect */
     result = nx_net_tcp_connect(t, r->addr, r->port);
@@ -266,6 +274,12 @@ static void receive(void *argument)
         return;
     }
     size_t done;
+    if (r->peer && t->receive.cc) {   /* MSG_PEEK: copy without consuming */
+        done = r->length < t->receive.cc ? r->length : t->receive.cc;
+        nx_net_mbuf_copydata(t->receive.head, 0, done, r->out);
+        r->result = (int64_t)done;
+        return;
+    }
     enum nx_net_result result = nx_net_tcp_read(t, r->out, r->length, &done);
     if (result == NX_NET_OK) r->result = (int64_t)done;
     else if (result == NX_NET_RESET || result == NX_NET_TIMED_OUT || result == NX_NET_REFUSED ||
@@ -274,9 +288,9 @@ static void receive(void *argument)
     else if (result == NX_NET_NOT_CONNECTED && s->connected_once) r->result = 0;   /* closed after use */
     else r->result = errno_of(result);
 }
-int64_t net_socket_receive(struct nx_socket *s, void *data, size_t length)
+int64_t net_socket_receive(struct nx_socket *s, void *data, size_t length, bool peek)
 {
-    struct request r = { .s = s, .out = data, .length = length };
+    struct request r = { .s = s, .out = data, .length = length, .peer = peek };
     return call(receive, &r);
 }
 
@@ -344,4 +358,220 @@ int net_socket_name(struct nx_socket *s, bool peer, nx_net_addr_t *addr, nx_net_
     int64_t result = call(name, &r);
     if (!result) { *addr = r.addr; *port = r.port; }
     return (int)result;
+}
+
+/* Datagram and raw sockets (task 426). */
+static void stage(void *argument)
+{
+    struct request *r = argument;
+    struct nx_net_mbuf *m = r->chain;
+    if (!m && !(m = nx_net_mbuf_get(net_pool(), true))) { r->result = -NX_ENOBUFS; return; }
+    if (!nx_net_mbuf_append(m, r->in, r->length)) {
+        if (!r->chain) nx_net_mbuf_freem(m);
+        r->result = -NX_ENOBUFS;
+        return;
+    }
+    r->chain = m;
+    r->result = 0;
+}
+int net_socket_stage(struct nx_net_mbuf **chain, const void *data, size_t length)
+{
+    struct request r = { .chain = *chain, .in = data, .length = length };
+    int64_t result = call(stage, &r);
+    if (!result) *chain = r.chain;
+    return (int)result;
+}
+static void discard(void *argument)
+{
+    struct request *r = argument;
+    if (r->chain) nx_net_mbuf_freem(r->chain);
+    r->result = 0;
+}
+void net_socket_discard(struct nx_net_mbuf *chain)
+{
+    struct request r = { .chain = chain };
+    if (chain && call(discard, &r)) panic("socket chain lost its worker");
+}
+
+static void send_datagram(void *argument)
+{
+    struct request *r = argument;
+    struct nx_socket *s = r->s;
+    struct nx_net_mbuf *m = r->chain;
+    r->chain = NULL;
+    if (!m && !(m = nx_net_mbuf_get(net_pool(), true))) { r->result = -NX_ENOBUFS; return; }   /* empty datagram */
+    size_t length = nx_net_mbuf_length(m);
+    enum nx_net_result result;
+    if (s->shut_write) { nx_net_mbuf_freem(m); r->result = -NX_EPIPE; return; }
+    if (s->type == NX_SOCK_DGRAM) {
+        struct nx_net_udp *u = s->pcb.udp;
+        enum nx_net_result pending = nx_net_udp_take_error(u);
+        if (pending != NX_NET_OK) { nx_net_mbuf_freem(m); r->result = errno_of(pending); return; }
+        if (r->peer && u->foreign_addr) { nx_net_mbuf_freem(m); r->result = -NX_EISCONN; return; }
+        if (!r->peer && !u->foreign_addr) { nx_net_mbuf_freem(m); r->result = -NX_EDESTADDRREQ; return; }
+        if (length > NX_NET_UDP_SNDMAX || length > s->send_size) { nx_net_mbuf_freem(m); r->result = -NX_EMSGSIZE; return; }
+        result = nx_net_udp_send(u, m, r->peer ? r->addr : 0, r->peer ? r->port : 0);
+    } else {
+        struct nx_net_raw *w = s->pcb.raw;
+        if (r->peer && w->foreign) { nx_net_mbuf_freem(m); r->result = -NX_EISCONN; return; }
+        if (!r->peer && !w->foreign) { nx_net_mbuf_freem(m); r->result = -NX_EDESTADDRREQ; return; }
+        if (length > NX_NET_IP_MAXPACKET - 20 || length > s->send_size) { nx_net_mbuf_freem(m); r->result = -NX_EMSGSIZE; return; }
+        result = nx_net_raw_send(w, m, r->peer ? r->addr : 0);
+    }
+    /* INVALID is a short ICMP message, else an unusable destination. */
+    if (result == NX_NET_INVALID) r->result = s->type == NX_SOCK_RAW && length < 8 ? -NX_EINVAL : -NX_EADDRNOTAVAIL;
+    else r->result = result == NX_NET_OK ? (int64_t)length : errno_of(result);
+}
+int net_socket_send_datagram(struct nx_socket *s, struct nx_net_mbuf *chain, bool addressed, nx_net_addr_t addr,
+                             nx_net_port_t port)
+{
+    struct request r = { .s = s, .chain = chain, .peer = addressed, .addr = addr, .port = port };
+    int64_t result = call(send_datagram, &r);
+    if (r.chain) net_socket_discard(r.chain);   /* the worker never ran */
+    return (int)result;
+}
+
+static void receive_datagram(void *argument)
+{
+    struct request *r = argument;
+    struct nx_socket *s = r->s;
+    r->chain = NULL;
+    if (s->type == NX_SOCK_DGRAM) {
+        struct nx_net_udp *u = s->pcb.udp;
+        enum nx_net_result pending = nx_net_udp_take_error(u);
+        if (pending != NX_NET_OK) { r->result = errno_of(pending); return; }
+        if (!u->receive.head) { r->result = s->shut_read ? 0 : -NX_EAGAIN; return; }
+        if (s->shut_read) { nx_net_sockbuf_flush(&u->receive); r->result = 0; return; }
+        if (r->peer) {   /* peek: a copy, with the queued source prefix removed */
+            struct nx_net_mbuf *copy = nx_net_mbuf_copym(u->receive.head, 0, nx_net_mbuf_length(u->receive.head));
+            uint8_t meta[8];
+            if (!copy) { r->result = -NX_ENOBUFS; return; }
+            nx_net_mbuf_copydata(copy, 0, sizeof(meta), meta);
+            nx_net_mbuf_adj_head(copy, sizeof(meta));
+            r->addr = (nx_net_addr_t)meta[0] << 24 | (nx_net_addr_t)meta[1] << 16 | (nx_net_addr_t)meta[2] << 8 | meta[3];
+            r->port = (nx_net_port_t)(meta[4] << 8 | meta[5]);
+            r->chain = copy;
+        } else {
+            r->chain = nx_net_udp_receive(u, &r->addr, &r->port);
+        }
+    } else {
+        struct nx_net_raw *w = s->pcb.raw;
+        if (!w->receive.head) { r->result = s->shut_read ? 0 : -NX_EAGAIN; return; }
+        if (s->shut_read) { nx_net_sockbuf_flush(&w->receive); r->result = 0; return; }
+        r->chain = r->peer ? nx_net_mbuf_copym(w->receive.head, 0, nx_net_mbuf_length(w->receive.head))
+                           : nx_net_raw_receive(w);
+        if (!r->chain) { r->result = -NX_ENOBUFS; return; }
+        uint8_t source[4];
+        nx_net_mbuf_copydata(r->chain, 12, 4, source);
+        r->addr = (nx_net_addr_t)source[0] << 24 | (nx_net_addr_t)source[1] << 16 | (nx_net_addr_t)source[2] << 8 | source[3];
+        r->port = 0;
+    }
+    r->result = 0;
+}
+int net_socket_receive_datagram(struct nx_socket *s, bool peek, struct nx_net_mbuf **chain, nx_net_addr_t *addr,
+                                nx_net_port_t *port)
+{
+    struct request r = { .s = s, .peer = peek };
+    int64_t result = call(receive_datagram, &r);
+    *chain = r.chain;
+    *addr = r.addr;
+    *port = r.port;
+    return (int)result;
+}
+
+/* Options. Buffer sizes are clamped to [512, 262144] bytes. */
+#define BUFFER_MIN 512u
+#define BUFFER_MAX 262144u
+static struct nx_net_sockbuf *receive_buffer(struct nx_socket *s)
+{
+    return s->type == NX_SOCK_STREAM ? &s->pcb.tcp->receive : s->type == NX_SOCK_DGRAM ? &s->pcb.udp->receive
+                                                                                    : &s->pcb.raw->receive;
+}
+static void set_option(void *argument)
+{
+    struct request *r = argument;
+    struct nx_socket *s = r->s;
+    int32_t value = 0;
+    struct nx_timeval time = {0};
+    if (r->level == NX_SOL_SOCKET && (r->name == NX_SO_SNDTIMEO || r->name == NX_SO_RCVTIMEO))
+        time = *(const struct nx_timeval *)r->in;
+    else
+        value = *(const int32_t *)r->in;
+    r->result = 0;
+    if (r->level == NX_IPPROTO_TCP) {
+        if (s->type != NX_SOCK_STREAM) r->result = -NX_ENOPROTOOPT;
+        else nx_net_tcp_set_nodelay(s->pcb.tcp, value != 0);
+        return;
+    }
+    switch (r->name) {
+    case NX_SO_REUSEADDR:
+        if (s->type == NX_SOCK_STREAM) nx_net_tcp_set_reuse(s->pcb.tcp, value != 0);
+        else if (s->type == NX_SOCK_DGRAM) nx_net_udp_set_reuse(s->pcb.udp, value != 0);
+        else r->result = -NX_ENOPROTOOPT;   /* raw sockets have no ports */
+        return;
+    case NX_SO_SNDBUF: case NX_SO_RCVBUF: {
+        if ((uint32_t)value > BUFFER_MAX) { r->result = -NX_ENOBUFS; return; }
+        size_t size = (uint32_t)value < BUFFER_MIN ? BUFFER_MIN : (uint32_t)value;
+        struct nx_net_sockbuf *b = r->name == NX_SO_RCVBUF ? receive_buffer(s)
+                                 : s->type == NX_SOCK_STREAM ? &s->pcb.tcp->send : NULL;
+        if (b) { b->hiwat = size; b->mbmax = 4 * size; }
+        else s->send_size = (uint32_t)size;
+        ++s->events;   /* room may have appeared */
+        proc_wakeup(s);
+        return;
+    }
+    case NX_SO_SNDTIMEO: case NX_SO_RCVTIMEO: {
+        /* Round up to whole ticks so a nonzero timeout never means "none". */
+        uint64_t ticks = (uint64_t)time.sec * NX_CLK_TCK + ((uint64_t)time.usec * NX_CLK_TCK + 999999) / 1000000;
+        if (r->name == NX_SO_SNDTIMEO) s->send_timeout = ticks; else s->receive_timeout = ticks;
+        return;
+    }
+    default: r->result = -NX_ENOPROTOOPT;
+    }
+}
+int net_socket_set_option(struct nx_socket *s, int level, int name, const void *value)
+{
+    struct request r = { .s = s, .level = level, .name = name, .in = value };
+    return (int)call(set_option, &r);
+}
+static void get_option(void *argument)
+{
+    struct request *r = argument;
+    struct nx_socket *s = r->s;
+    int32_t *value = r->out;
+    r->result = 0;
+    if (r->level == NX_IPPROTO_TCP) {
+        if (s->type != NX_SOCK_STREAM) r->result = -NX_ENOPROTOOPT;
+        else *value = s->pcb.tcp->nodelay;
+        return;
+    }
+    switch (r->name) {
+    case NX_SO_REUSEADDR:
+        *value = s->type == NX_SOCK_STREAM ? s->pcb.tcp->reuse : s->type == NX_SOCK_DGRAM ? s->pcb.udp->reuse : 0;
+        return;
+    case NX_SO_SNDBUF:
+        *value = s->type == NX_SOCK_STREAM ? (int32_t)s->pcb.tcp->send.hiwat : (int32_t)s->send_size;
+        return;
+    case NX_SO_RCVBUF: *value = (int32_t)receive_buffer(s)->hiwat; return;
+    case NX_SO_TYPE: *value = s->type; return;
+    case NX_SO_ERROR: {   /* read and clear, as in BSD */
+        enum nx_net_result e = s->type == NX_SOCK_STREAM ? nx_net_tcp_take_error(s->pcb.tcp)
+                             : s->type == NX_SOCK_DGRAM ? nx_net_udp_take_error(s->pcb.udp) : NX_NET_OK;
+        *value = -errno_of(e);
+        if (e != NX_NET_OK && s->connecting) s->connecting = false;
+        return;
+    }
+    case NX_SO_SNDTIMEO: case NX_SO_RCVTIMEO: {
+        uint64_t ticks = r->name == NX_SO_SNDTIMEO ? s->send_timeout : s->receive_timeout;
+        *(struct nx_timeval *)r->out = (struct nx_timeval){ (int64_t)(ticks / NX_CLK_TCK),
+                                                            (int64_t)(ticks % NX_CLK_TCK * (1000000 / NX_CLK_TCK)) };
+        return;
+    }
+    default: r->result = -NX_ENOPROTOOPT;
+    }
+}
+int net_socket_get_option(struct nx_socket *s, int level, int name, void *value)
+{
+    struct request r = { .s = s, .level = level, .name = name, .out = value };
+    return (int)call(get_option, &r);
 }

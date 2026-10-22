@@ -1,30 +1,35 @@
 /* Socket syscall boundary. Task 424 decodes and validates every argument
  * before any descriptor is consulted, so malformed calls fail the same way
- * whatever the descriptor. Task 425 backs descriptors with socket objects:
- * creation, connection setup and stream read/write, blocking interruptibly.
- * sendto/recvfrom and the option calls, and datagram/raw I/O, are task 426's. */
+ * whatever the descriptor. Task 425 backs descriptors with socket objects,
+ * connection setup and stream I/O; task 426 adds send/recv/sendto/recvfrom,
+ * datagram and raw I/O, flags, options, timeouts and non-blocking use. */
 #include "socket.h"
 #include "process.h"
 #include "accounting.h"
 #include "uaccess.h"
 #include "files.h"
+#include "interrupts.h"
 #include "signals.h"
 #include "v7/core.h"
 #include "net/socket.h"
 #include <nexix/socket.h>
+#include <nexix/file.h>
 #include <nexix/signal.h>
 #include <nexix/syscall.h>
 #include <nexix/errno.h>
 #define SOCKET_PRIORITY 30
 #define CHUNK 1024
 
-/* Sleep until a protocol event newer than seen, or a signal (EINTR). The
- * worker cannot run between the caller's check and this sleep. */
-static int wait_event(struct nx_socket *s, uint32_t seen)
+/* Sleep until a protocol event newer than seen: 0 to retry, -EINTR on a
+ * signal, -EAGAIN once the deadline (0: none) has passed. The worker cannot
+ * run between the caller's check and this sleep. */
+static int wait_event(struct nx_socket *s, uint32_t seen, uint64_t deadline)
 {
     if (s->events != seen) return 0;
-    return proc_sleep_interruptible(s, SOCKET_PRIORITY) ? -NX_EINTR : 0;
+    int error = proc_sleep_until(s, SOCKET_PRIORITY, deadline);
+    return error < 0 ? -NX_EINTR : error > 0 ? -NX_EAGAIN : 0;
 }
+static uint64_t deadline_after(uint64_t ticks) { return ticks ? timer_ticks() + ticks : 0; }
 
 static int64_t socket_create(struct user *u, int64_t domain, int64_t type, int64_t protocol)
 {
@@ -146,9 +151,10 @@ static int64_t address_publish(const struct address_space *vm, uintptr_t address
     return 0;
 }
 
-static int64_t do_accept(struct user *u, const struct address_space *vm, struct nx_socket *s, uintptr_t address,
-                         uintptr_t length_pointer)
+static int64_t do_accept(struct user *u, const struct address_space *vm, struct nx_socket *s, bool nonblock,
+                         uintptr_t address, uintptr_t length_pointer)
 {
+    uint64_t deadline = deadline_after(s->receive_timeout);
     for (;;) {
         int error = files_socket_reserve(u);
         if (error < 0) return error;
@@ -158,7 +164,8 @@ static int64_t do_accept(struct user *u, const struct address_space *vm, struct 
         nx_net_port_t port;
         error = net_socket_accept(s, &child, &addr, &port);
         if (error == -NX_EAGAIN) {
-            if ((error = wait_event(s, seen))) return error;
+            if (nonblock) return error;
+            if ((error = wait_event(s, seen, deadline))) return error;
             continue;
         }
         if (error) return error;
@@ -168,49 +175,154 @@ static int64_t do_accept(struct user *u, const struct address_space *vm, struct 
         return error ? error : fd;   /* a fault after the accept still leaves the descriptor */
     }
 }
-static int64_t do_connect(struct nx_socket *s, const struct nx_sockaddr_in *a)
+/* A non-blocking connect, or one whose SO_SNDTIMEO expires, is EINPROGRESS;
+ * the outcome is then read from SO_ERROR. */
+static int64_t do_connect(struct nx_socket *s, const struct nx_sockaddr_in *a, bool nonblock)
 {
     nx_net_addr_t addr = a->family == NX_AF_UNSPEC ? 0 : __builtin_bswap32(a->addr);
     int error = net_socket_connect(s, addr, a->family == NX_AF_UNSPEC ? 0 : __builtin_bswap16(a->port));
     if (error) return error;
+    uint64_t deadline = deadline_after(s->send_timeout);
     for (;;) {
         uint32_t seen = s->events;
         error = net_socket_connected(s);
         if (error != -NX_EAGAIN) return error;
-        if ((error = wait_event(s, seen))) return error;   /* the attempt continues; retry is EALREADY */
+        if (nonblock) return -NX_EINPROGRESS;
+        error = wait_event(s, seen, deadline);   /* the attempt continues; retry is EALREADY */
+        if (error) return error == -NX_EAGAIN ? -NX_EINPROGRESS : error;
     }
 }
 
-int64_t socket_file_io(void *object, uintptr_t address, uint64_t count, bool write)
+struct transfer {
+    struct nx_socket *s;
+    const struct address_space *vm;
+    uintptr_t buffer;
+    size_t length;
+    bool nonblock, peek, waitall, nosignal;
+    uint64_t deadline;
+    const struct nx_sockaddr_in *to;             /* sendto destination, or NULL */
+    uintptr_t from, from_length;                 /* recvfrom source, or 0 */
+};
+/* What a failed call returns once some bytes have moved: the count. */
+static int64_t partial(size_t done, int64_t error) { return done ? (int64_t)done : error; }
+
+static int64_t stream_send(const struct transfer *t)
 {
-    struct nx_socket *s = object;
-    const struct address_space *vm = &proc_current()->p_vm;
-    if (s->type != NX_SOCK_STREAM) return -NX_EOPNOTSUPP;   /* datagram/raw I/O is task 426's */
     uint8_t buffer[CHUNK];
     size_t done = 0;
-    while (done < count) {
-        size_t part = count - done < CHUNK ? count - done : CHUNK;
-        if (write && copyin(vm, address + done, buffer, part)) return done ? (int64_t)done : -NX_EFAULT;
-        uint32_t seen = s->events;
-        int64_t n = write ? net_socket_send(s, buffer, part) : net_socket_receive(s, buffer, part);
+    while (done < t->length) {
+        size_t part = t->length - done < CHUNK ? t->length - done : CHUNK;
+        if (copyin(t->vm, t->buffer + done, buffer, part)) return partial(done, -NX_EFAULT);
+        uint32_t seen = t->s->events;
+        int64_t n = net_socket_send(t->s, buffer, part);
         if (n == -NX_EAGAIN) {
-            if (!write && done) return done;   /* a read returns what has arrived */
-            int error = wait_event(s, seen);
-            if (error) return done ? (int64_t)done : error;
+            if (t->nonblock) return partial(done, n);
+            int error = wait_event(t->s, seen, t->deadline);
+            if (error) return partial(done, error);
             continue;
         }
         if (n < 0) {
-            if (n == -NX_EPIPE) signal_post(proc_current(), NX_SIGPIPE);
-            return done ? (int64_t)done : n;
-        }
-        if (!write) {
-            if (!n) return done;   /* end of stream */
-            if (copyout(vm, address + done, buffer, (size_t)n)) return done ? (int64_t)done : -NX_EFAULT;
+            if (n == -NX_EPIPE && !t->nosignal) signal_post(proc_current(), NX_SIGPIPE);
+            return partial(done, n);
         }
         done += (size_t)n;
-        if (!write && (size_t)n < part) return done;
     }
     return done;
+}
+static int64_t stream_receive(const struct transfer *t)
+{
+    uint8_t buffer[CHUNK];
+    size_t done = 0;
+    while (done < t->length) {
+        size_t part = t->length - done < CHUNK ? t->length - done : CHUNK;
+        uint32_t seen = t->s->events;
+        int64_t n = net_socket_receive(t->s, buffer, part, t->peek);
+        if (n == -NX_EAGAIN) {
+            if (done && !t->waitall) break;   /* return what has arrived */
+            if (t->nonblock) return partial(done, n);
+            int error = wait_event(t->s, seen, t->deadline);
+            if (error) return partial(done, error);
+            continue;
+        }
+        if (n < 0) return partial(done, n);
+        if (!n) break;   /* end of stream */
+        if (copyout(t->vm, t->buffer + done, buffer, (size_t)n)) return partial(done, -NX_EFAULT);
+        done += (size_t)n;
+        if (t->peek) break;   /* a peek is one look; MSG_WAITALL does not apply */
+        if ((size_t)n < part && !t->waitall) break;
+    }
+    if (t->from) {
+        nx_net_addr_t addr;
+        nx_net_port_t port;
+        if (!net_socket_name(t->s, true, &addr, &port) && address_publish(t->vm, t->from, t->from_length, addr, port))
+            return partial(done, -NX_EFAULT);
+    }
+    return done;
+}
+static int64_t datagram_send(const struct transfer *t)
+{
+    if (t->length > NX_NET_IP_MAXPACKET - 20) return -NX_EMSGSIZE;   /* before copying anything */
+    uint8_t buffer[CHUNK];
+    struct nx_net_mbuf *chain = NULL;
+    for (size_t done = 0; done < t->length;) {
+        size_t part = t->length - done < CHUNK ? t->length - done : CHUNK;
+        int error = copyin(t->vm, t->buffer + done, buffer, part) ? -NX_EFAULT : net_socket_stage(&chain, buffer, part);
+        if (error) { net_socket_discard(chain); return error; }
+        done += part;
+    }
+    nx_net_addr_t addr = t->to ? __builtin_bswap32(t->to->addr) : 0;
+    nx_net_port_t port = t->to ? __builtin_bswap16(t->to->port) : 0;
+    int64_t n = net_socket_send_datagram(t->s, chain, t->to != NULL, addr, port);
+    if (n == -NX_EPIPE && !t->nosignal) signal_post(proc_current(), NX_SIGPIPE);
+    return n;
+}
+static int64_t datagram_receive(const struct transfer *t)
+{
+    struct nx_net_mbuf *chain;
+    nx_net_addr_t addr;
+    nx_net_port_t port;
+    for (;;) {
+        uint32_t seen = t->s->events;
+        int error = net_socket_receive_datagram(t->s, t->peek, &chain, &addr, &port);
+        if (!error) break;
+        if (error != -NX_EAGAIN) return error;
+        if (t->nonblock) return error;
+        if ((error = wait_event(t->s, seen, t->deadline))) return error;
+    }
+    if (!chain) return 0;   /* SHUT_RD */
+    /* The chain is ours now; reading it needs no worker. A datagram longer
+     * than the buffer is truncated and the rest discarded, as in BSD. */
+    size_t size = nx_net_mbuf_length(chain), n = t->length < size ? t->length : size;
+    uint8_t buffer[CHUNK];
+    int64_t result = (int64_t)n;
+    for (size_t done = 0; done < n && result >= 0;) {
+        size_t part = n - done < CHUNK ? n - done : CHUNK;
+        nx_net_mbuf_copydata(chain, done, part, buffer);
+        if (copyout(t->vm, t->buffer + done, buffer, part)) result = -NX_EFAULT;
+        done += part;
+    }
+    net_socket_discard(chain);
+    if (result >= 0 && t->from && address_publish(t->vm, t->from, t->from_length, addr, port)) result = -NX_EFAULT;
+    return result;
+}
+static int64_t transfer(struct transfer *t, uint32_t open_flags, uint64_t flags, bool write)
+{
+    t->nonblock = (open_flags & NX_O_NONBLOCK) || (flags & NX_MSG_DONTWAIT);
+    t->peek = flags & NX_MSG_PEEK;
+    t->waitall = flags & NX_MSG_WAITALL;
+    t->nosignal = flags & NX_MSG_NOSIGNAL;
+    t->deadline = deadline_after(write ? t->s->send_timeout : t->s->receive_timeout);
+    if (t->s->type == NX_SOCK_STREAM) {
+        if (!t->length) return 0;
+        return write ? stream_send(t) : stream_receive(t);   /* a sendto address is ignored (POSIX) */
+    }
+    return write ? datagram_send(t) : datagram_receive(t);
+}
+
+int64_t socket_file_io(void *object, uint32_t open_flags, uintptr_t address, uint64_t count, bool write)
+{
+    struct transfer t = { .s = object, .vm = &proc_current()->p_vm, .buffer = address, .length = count };
+    return transfer(&t, open_flags, 0, write);
 }
 void socket_file_close(void *object) { net_socket_release(object); }
 
@@ -221,6 +333,7 @@ int64_t socket_syscall(uint64_t number, const uintptr_t a[6])
     const struct address_space *vm = &p->p_vm;
     int64_t fd = (int32_t)a[0], error = 0;
     struct nx_sockaddr_in address;
+    bool addressed = false;
     switch (number) {
     case NX_SYS_SOCKET: return socket_create(u, (int32_t)a[0], (int32_t)a[1], (int32_t)a[2]);
     case NX_SYS_BIND: error = address_in(vm, a[1], a[2], false, &address); break;
@@ -229,8 +342,10 @@ int64_t socket_syscall(uint64_t number, const uintptr_t a[6])
     case NX_SYS_ACCEPT: error = address_out(vm, a[1], a[2], false); break;
     case NX_SYS_SHUTDOWN: if (a[1] > NX_SHUT_RDWR) error = -NX_EINVAL; break;
     case NX_SYS_SENDTO:
-        if (!(error = flags_ok(a[3])) && !(error = buffer_ok(vm, a[1], a[2], false)) && a[4])
+        if (!(error = flags_ok(a[3])) && !(error = buffer_ok(vm, a[1], a[2], false)) && a[4]) {
             error = address_in(vm, a[4], a[5], false, &address);
+            addressed = true;
+        }
         break;
     case NX_SYS_RECVFROM:
         if (!(error = flags_ok(a[3])) && !(error = buffer_ok(vm, a[1], a[2], true)))
@@ -243,8 +358,10 @@ int64_t socket_syscall(uint64_t number, const uintptr_t a[6])
     }
     if (error) return error;
     int lookup;
-    struct nx_socket *s = files_socket(u, fd, &lookup);
+    uint32_t open_flags;
+    struct nx_socket *s = files_socket(u, fd, &lookup, &open_flags);
     if (!s) return lookup;
+    bool nonblock = open_flags & NX_O_NONBLOCK;
     switch (number) {
     case NX_SYS_BIND: {
         nx_net_port_t port = __builtin_bswap16(address.port);
@@ -252,8 +369,8 @@ int64_t socket_syscall(uint64_t number, const uintptr_t a[6])
         return net_socket_bind(s, __builtin_bswap32(address.addr), port, privileged);
     }
     case NX_SYS_LISTEN: return net_socket_listen(s, (int32_t)a[1]);
-    case NX_SYS_ACCEPT: return do_accept(u, vm, s, a[1], a[2]);
-    case NX_SYS_CONNECT: return do_connect(s, &address);
+    case NX_SYS_ACCEPT: return do_accept(u, vm, s, nonblock, a[1], a[2]);
+    case NX_SYS_CONNECT: return do_connect(s, &address, nonblock);
     case NX_SYS_SHUTDOWN: return net_socket_shutdown(s, (int)a[1]);
     case NX_SYS_GETSOCKNAME: case NX_SYS_GETPEERNAME: {
         nx_net_addr_t addr;
@@ -261,6 +378,24 @@ int64_t socket_syscall(uint64_t number, const uintptr_t a[6])
         error = net_socket_name(s, number == NX_SYS_GETPEERNAME, &addr, &port);
         return error ? error : address_publish(vm, a[1], a[2], addr, port);
     }
-    default: return -NX_ENOSYS;   /* sendto, recvfrom and the options: task 426 */
+    case NX_SYS_SENDTO: case NX_SYS_RECVFROM: {
+        bool write = number == NX_SYS_SENDTO;
+        struct transfer t = { .s = s, .vm = vm, .buffer = a[1], .length = a[2], .to = addressed ? &address : NULL,
+                              .from = write ? 0 : a[4], .from_length = write ? 0 : a[5] };
+        return transfer(&t, open_flags, a[3], write);
+    }
+    case NX_SYS_SETSOCKOPT: {
+        union { int32_t integer; struct nx_timeval time; } value;
+        if (copyin(vm, a[3], &value, option_size((int32_t)a[1], (int32_t)a[2], true))) return -NX_EFAULT;
+        return net_socket_set_option(s, (int32_t)a[1], (int32_t)a[2], &value);
+    }
+    case NX_SYS_GETSOCKOPT: {
+        union { int32_t integer; struct nx_timeval time; } value = {0};
+        nx_socklen_t size = (nx_socklen_t)option_size((int32_t)a[1], (int32_t)a[2], false);
+        if ((error = net_socket_get_option(s, (int32_t)a[1], (int32_t)a[2], &value))) return error;
+        if (copyout(vm, a[3], &value, size) || copyout(vm, a[4], &size, sizeof(size))) return -NX_EFAULT;
+        return 0;
+    }
+    default: return -NX_EINVAL;
     }
 }

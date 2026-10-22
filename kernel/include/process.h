@@ -23,6 +23,9 @@ void proc_run(void); /* Bootstrap scheduler: returns when only zombies remain. *
 void proc_yield(void);
 void proc_sleep(void *channel, unsigned priority);
 int proc_sleep_interruptible(void *channel, unsigned priority);
+/* Interruptible sleep with an absolute tick deadline (0: none): -EINTR on a
+ * signal, 1 once the deadline has passed, else 0 after a wakeup. */
+int proc_sleep_until(void *channel, unsigned priority, uint64_t deadline);
 int64_t proc_brk(uintptr_t address);
 int proc_lock(uintptr_t flag); /* V7 superuser user-lock toggle; memory stays resident. */
 unsigned proc_wakeup(void *channel);

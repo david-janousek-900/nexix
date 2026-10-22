@@ -211,11 +211,12 @@ int files_socket_install(struct user *u, void *socket)
     u->u_ofile[fd] = f; u->u_pofile[fd] = 0;
     return fd;
 }
-void *files_socket(struct user *u, int64_t fd, int *error)
+void *files_socket(struct user *u, int64_t fd, int *error, uint32_t *open_flags)
 {
     if (fd < 0 || fd >= V7_NOFILE || !u->u_ofile[fd]) { *error = -NX_EBADF; return NULL; }
     if (!(u->u_ofile[fd]->f_flag & FILE_SOCKET)) { *error = -NX_ENOTSOCK; return NULL; }
     *error = 0;
+    *open_flags = u->u_ofile[fd]->f_open_flags;
     return u->u_ofile[fd]->f_private;
 }
 static struct fs_node cwd(struct user *u) { return u->u_cdir ? inode_node(u->u_cdir) : (struct fs_node){0,V7_ROOTINO}; }
@@ -529,7 +530,7 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
         return mpx_io(f,address,count,write);
     }
     if (f->f_flag & V7_FPIPE) return pipe_io(f, address, count, write);
-    if (f->f_flag & FILE_SOCKET) return socket_file_io(f->f_private, address, count, write);
+    if (f->f_flag & FILE_SOCKET) return socket_file_io(f->f_private, f->f_open_flags, address, count, write);
     if(f->f_flag & FILE_TAPE){
         if(count>(uint64_t)(INT64_MAX-f->f_offset))return -NX_EINVAL;
         if(count)device_stamp(f,write);
@@ -801,9 +802,12 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
             if (args[2] & ~NX_FD_CLOEXEC) return -NX_EINVAL;
             u->u_pofile[fd] = args[2] ? V7_EXCLOSE : 0; return 0;
         case NX_F_GETFL: return f->f_open_flags;
-        case NX_F_SETFL:
-            if (args[2] & ~(NX_O_ACCMODE | NX_O_APPEND)) return -NX_EINVAL;
-            f->f_open_flags = (f->f_open_flags & NX_O_ACCMODE) | (args[2] & NX_O_APPEND); return 0;
+        case NX_F_SETFL: {
+            /* O_NONBLOCK is honoured by sockets only, so only they accept it. */
+            uint64_t settable = NX_O_APPEND | ((f->f_flag & FILE_SOCKET) ? NX_O_NONBLOCK : 0);
+            if (args[2] & ~(NX_O_ACCMODE | settable)) return -NX_EINVAL;
+            f->f_open_flags = (f->f_open_flags & NX_O_ACCMODE) | (args[2] & settable); return 0;
+        }
         default: return -NX_EINVAL;
         }
     }

@@ -10,6 +10,7 @@
 #define O_TRUNC NX_O_TRUNC
 #define O_EXCL NX_O_EXCL
 #define O_APPEND NX_O_APPEND
+#define O_NONBLOCK NX_O_NONBLOCK   /* sockets only */
 #define O_CLOEXEC NX_O_CLOEXEC
 #define F_GETFD NX_F_GETFD
 #define F_SETFD NX_F_SETFD

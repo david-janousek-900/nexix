@@ -329,6 +329,22 @@ int proc_sleep_interruptible(void *channel, unsigned priority)
     proc_irq_restore(flags);
     return error;
 }
+int proc_sleep_until(void *channel, unsigned priority, uint64_t deadline)
+{
+    uintptr_t flags = proc_irq_save();
+    int error = 0;
+    if (!deadline) error = proc_sleep_interruptible(channel, priority);
+    else if (timer_ticks() >= deadline) error = 1;
+    else {
+        current->p_deadline = deadline;
+        current->p_timed_sleep = true;
+        error = proc_sleep_interruptible(channel, priority);
+        current->p_timed_sleep = false;
+        if (!error && timer_ticks() >= deadline) error = 1;
+    }
+    proc_irq_restore(flags);
+    return error;
+}
 unsigned proc_wakeup(void *channel)
 {
     uintptr_t flags = proc_irq_save();

@@ -1,11 +1,12 @@
-/* Live socket descriptors on a normal boot (task 425), run as root through
- * the private guest harness. Loopback only: the first socket starts the stack
- * with lo0 at 127.0.0.1. */
+/* Live socket descriptors on a normal boot (tasks 425-426), run as root
+ * through the private guest harness. Loopback only: the first socket starts
+ * the stack with lo0 at 127.0.0.1. */
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <sys/ioctl.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -278,12 +279,9 @@ static void errors(void)
     /* Descriptor behaviour of a socket. */
     struct stat st;
     CHECK(fstat(u, &st) == 0 && S_ISSOCK(st.st_mode) && FAILS(lseek(u, 0, SEEK_SET), ESPIPE));
-    CHECK(FAILS(ioctl(u, 0x7408, NULL), ENOTTY) && FAILS(read(u, b, 1), EOPNOTSUPP));
-    /* Task 426's calls: arguments are checked, then unavailable. */
-    int one = 1;
-    CHECK(FAILS(send(t, b, 1, 0), ENOSYS) && FAILS(recv(u, b, 1, 0), ENOSYS));
-    CHECK(FAILS(setsockopt(t, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one)), ENOSYS));
-    CHECK(FAILS(send(t, b, 1, 1), EOPNOTSUPP));
+    CHECK(FAILS(ioctl(u, 0x7408, NULL), ENOTTY) && FAILS(recv(u, b, 1, MSG_DONTWAIT), EAGAIN));
+    CHECK(FAILS(send(t, b, 1, 0), ENOTCONN) && FAILS(send(t, b, 1, 1), EOPNOTSUPP));
+    CHECK(FAILS(write(u, b, 1), EDESTADDRREQ));
     /* Datagram connect and names; AF_UNSPEC disconnects. */
     CHECK(connect(u, (struct sockaddr *)&a, sizeof(a)) == 0);
     struct sockaddr_in name;
@@ -314,15 +312,208 @@ static void errors(void)
     CHECK(close(t) == 0 && close(u) == 0 && close(l) == 0);
 }
 
+
+/* Task 426: datagram and raw I/O. */
+static void datagrams(void)
+{
+    int a = socket(AF_INET, SOCK_DGRAM, 0), b = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    CHECK(a >= 0 && b >= 0);
+    struct sockaddr_in any = loopback(0), name, from;
+    CHECK(bind(b, (struct sockaddr *)&any, sizeof(any)) == 0);
+    socklen_t length = sizeof(name);
+    CHECK(getsockname(b, (struct sockaddr *)&name, &length) == 0);
+    /* sendto binds an ephemeral port; recvfrom reports it. */
+    unsigned char out[9216], in[9300];
+    for (size_t i = 0; i < sizeof(out); ++i) out[i] = pattern(i);
+    CHECK(sendto(a, out, 100, 0, (struct sockaddr *)&name, sizeof(name)) == 100);
+    length = sizeof(from);
+    CHECK(recvfrom(b, in, sizeof(in), 0, (struct sockaddr *)&from, &length) == 100 && !memcmp(in, out, 100));
+    CHECK(length == sizeof(from) && from.sin_addr.s_addr == htonl(INADDR_LOOPBACK) && ntohs(from.sin_port) >= 49152);
+    /* Datagram boundaries, peek, truncation, the 9216-byte limit and zero length. */
+    CHECK(sendto(a, out, 10, 0, (struct sockaddr *)&name, sizeof(name)) == 10);
+    CHECK(sendto(a, out, sizeof(out), 0, (struct sockaddr *)&name, sizeof(name)) == (ssize_t)sizeof(out));
+    CHECK(sendto(a, out, 0, 0, (struct sockaddr *)&name, sizeof(name)) == 0);
+    CHECK(FAILS(sendto(a, out, sizeof(out) + 1, 0, (struct sockaddr *)&name, sizeof(name)), EMSGSIZE));
+    CHECK(recv(b, in, sizeof(in), MSG_PEEK) == 10 && recv(b, in, 4, 0) == 4 && !memcmp(in, out, 4));   /* rest discarded */
+    CHECK(recv(b, in, sizeof(in), 0) == (ssize_t)sizeof(out) && !memcmp(in, out, sizeof(out)));
+    CHECK(recv(b, in, sizeof(in), 0) == 0 && FAILS(recv(b, in, 1, MSG_DONTWAIT), EAGAIN));
+    /* Connected: write/read work, other destinations are EISCONN, a closed
+     * peer port comes back as ECONNREFUSED. */
+    CHECK(connect(a, (struct sockaddr *)&name, sizeof(name)) == 0);
+    CHECK(write(a, "hi", 2) == 2 && read(b, in, sizeof(in)) == 2 && !memcmp(in, "hi", 2));
+    CHECK(FAILS(sendto(a, "x", 1, 0, (struct sockaddr *)&name, sizeof(name)), EISCONN));
+    CHECK(close(b) == 0);
+    CHECK(write(a, "lost", 4) == 4);
+    sleep(1);   /* the ICMP port unreachable crosses lo0 */
+    int error = 0;
+    length = sizeof(error);
+    CHECK(getsockopt(a, SOL_SOCKET, SO_ERROR, &error, &length) == 0 && error == ECONNREFUSED);
+    CHECK(getsockopt(a, SOL_SOCKET, SO_ERROR, &error, &length) == 0 && error == 0);   /* read clears it */
+    CHECK(write(a, "lost", 4) == 4);
+    sleep(1);
+    CHECK(FAILS(recv(a, in, 1, MSG_DONTWAIT), ECONNREFUSED));   /* or the next call reports it */
+    /* Shutdown: no more sending (EPIPE, without a signal here); reads end. */
+    CHECK(shutdown(a, SHUT_RDWR) == 0 && FAILS(send(a, "x", 1, MSG_NOSIGNAL), EPIPE) && recv(a, in, 1, 0) == 0);
+    CHECK(close(a) == 0);
+    /* Raw ICMP: an echo request to ourselves, answered by the kernel. */
+    int r = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+    CHECK(r >= 0);
+    unsigned char echo[16] = {8, 0, 0, 0, 0x12, 0x34, 0, 1, 'n', 'e', 'x', 'i', 'x', 0, 0, 0};
+    struct sockaddr_in self = loopback(0);
+    CHECK(FAILS(send(r, echo, sizeof(echo), 0), EDESTADDRREQ) && FAILS(sendto(r, echo, 7, 0, (struct sockaddr *)&self, sizeof(self)), EINVAL));
+    CHECK(sendto(r, echo, sizeof(echo), 0, (struct sockaddr *)&self, sizeof(self)) == sizeof(echo));
+    struct timeval wait = {2, 0};
+    CHECK(setsockopt(r, SOL_SOCKET, SO_RCVTIMEO, &wait, sizeof(wait)) == 0);
+    length = sizeof(from);
+    ssize_t n = recvfrom(r, in, sizeof(in), 0, (struct sockaddr *)&from, &length);
+    CHECK(n == 20 + (ssize_t)sizeof(echo) && in[20] == 0 && in[24] == 0x12 && in[27] == 1 && !memcmp(in + 28, "nexix", 5));
+    CHECK(from.sin_addr.s_addr == htonl(INADDR_LOOPBACK) && from.sin_port == 0);
+    CHECK(FAILS(recv(r, in, sizeof(in), 0), EAGAIN));   /* the 2 s timeout */
+    CHECK(close(r) == 0);
+}
+
+static void options(void)
+{
+    int t = socket(AF_INET, SOCK_STREAM, 0), u = socket(AF_INET, SOCK_DGRAM, 0);
+    int value;
+    socklen_t length = sizeof(value);
+    CHECK(getsockopt(t, SOL_SOCKET, SO_TYPE, &value, &length) == 0 && value == SOCK_STREAM && length == 4);
+    CHECK(getsockopt(u, SOL_SOCKET, SO_TYPE, &value, &length) == 0 && value == SOCK_DGRAM);
+    CHECK(getsockopt(t, SOL_SOCKET, SO_REUSEADDR, &value, &length) == 0 && value == 0);
+    int one = 1, size = 4096;
+    CHECK(setsockopt(t, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one)) == 0);
+    CHECK(getsockopt(t, SOL_SOCKET, SO_REUSEADDR, &value, &length) == 0 && value == 1);
+    CHECK(getsockopt(t, SOL_SOCKET, SO_SNDBUF, &value, &length) == 0 && value == 16384);
+    CHECK(setsockopt(t, SOL_SOCKET, SO_RCVBUF, &size, sizeof(size)) == 0);
+    CHECK(getsockopt(t, SOL_SOCKET, SO_RCVBUF, &value, &length) == 0 && value == 4096);
+    size = 1;
+    CHECK(setsockopt(u, SOL_SOCKET, SO_SNDBUF, &size, sizeof(size)) == 0);   /* raised to the minimum */
+    CHECK(getsockopt(u, SOL_SOCKET, SO_SNDBUF, &value, &length) == 0 && value == 512);
+    size = 262145;
+    CHECK(FAILS(setsockopt(t, SOL_SOCKET, SO_SNDBUF, &size, sizeof(size)), ENOBUFS));
+    CHECK(getsockopt(t, IPPROTO_TCP, TCP_NODELAY, &value, &length) == 0 && value == 0);
+    CHECK(setsockopt(t, IPPROTO_TCP, TCP_NODELAY, &one, sizeof(one)) == 0);
+    CHECK(getsockopt(t, IPPROTO_TCP, TCP_NODELAY, &value, &length) == 0 && value == 1);
+    CHECK(FAILS(setsockopt(u, IPPROTO_TCP, TCP_NODELAY, &one, sizeof(one)), ENOPROTOOPT));
+    struct timeval timeout = {1, 250000}, back;
+    socklen_t tl = sizeof(back);
+    CHECK(setsockopt(t, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) == 0);
+    CHECK(getsockopt(t, SOL_SOCKET, SO_SNDTIMEO, &back, &tl) == 0 && tl == sizeof(back) && back.tv_sec == 1 && back.tv_usec == 250000);
+    timeout.tv_sec = 0; timeout.tv_usec = 1;   /* rounds up to one tick, never to "none" */
+    CHECK(setsockopt(t, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) == 0);
+    CHECK(getsockopt(t, SOL_SOCKET, SO_RCVTIMEO, &back, &tl) == 0 && back.tv_sec == 0 && back.tv_usec == 10000);
+    /* SO_REUSEADDR lets two sockets that both ask share a port. */
+    int v = socket(AF_INET, SOCK_DGRAM, 0), w = socket(AF_INET, SOCK_DGRAM, 0);
+    struct sockaddr_in a = loopback(0), name;
+    CHECK(setsockopt(v, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one)) == 0 && bind(v, (struct sockaddr *)&a, sizeof(a)) == 0);
+    length = sizeof(name);
+    CHECK(getsockname(v, (struct sockaddr *)&name, &length) == 0);
+    CHECK(FAILS(bind(w, (struct sockaddr *)&name, sizeof(name)), EADDRINUSE));
+    CHECK(setsockopt(w, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one)) == 0 && bind(w, (struct sockaddr *)&name, sizeof(name)) == 0);
+    CHECK(close(t) == 0 && close(u) == 0 && close(v) == 0 && close(w) == 0);
+}
+
+static void flags_and_blocking(void)
+{
+    int c, s;
+    pair(&c, &s);
+    unsigned char b[64];
+    /* PEEK leaves data; WAITALL waits for all of it; DONTWAIT never waits. */
+    CHECK(FAILS(recv(s, b, sizeof(b), MSG_DONTWAIT), EAGAIN));
+    CHECK(send(c, "abcdef", 6, 0) == 6);
+    CHECK(recv(s, b, sizeof(b), MSG_PEEK) == 6 && recv(s, b, 3, 0) == 3 && !memcmp(b, "abc", 3));
+    CHECK(recv(s, b, sizeof(b), 0) == 3 && !memcmp(b, "def", 3));
+    pid_t child = fork();
+    CHECK(child >= 0);
+    if (!child) {   /* dribble 30 bytes in three writes */
+        for (int i = 0; i < 3; ++i) { sleep(1); if (write(c, "0123456789", 10) != 10) _exit(1); }
+        _exit(0);
+    }
+    CHECK(recv(s, b, 30, MSG_WAITALL) == 30 && !memcmp(b + 20, "0123456789", 10));
+    int status;
+    CHECK(wait(&status) == child && WIFEXITED(status) && !WEXITSTATUS(status));
+    /* O_NONBLOCK: reads, a full send buffer, accept and connect. */
+    CHECK(fcntl(s, F_SETFL, O_NONBLOCK) == 0 && (fcntl(s, F_GETFL) & O_NONBLOCK));
+    CHECK(FAILS(read(s, b, 1), EAGAIN));
+    unsigned char *bulk = malloc(65536);   /* heap: keeps earlier forks and execs small */
+    CHECK(bulk);
+    CHECK(fcntl(c, F_SETFL, O_NONBLOCK) == 0);
+    ssize_t total = 0, n;
+    while ((n = write(c, bulk, 65536)) > 0) total += n;
+    CHECK(n == -1 && errno == EAGAIN && total >= 16384);   /* our send buffer plus the peer's window */
+    CHECK(fcntl(c, F_SETFL, 0) == 0);
+    /* SO_SNDTIMEO: a blocked write gives up with a partial count or EAGAIN. */
+    struct timeval timeout = {1, 0};
+    CHECK(setsockopt(c, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) == 0);
+    CHECK(FAILS(write(c, bulk, 65536), EAGAIN));
+    CHECK(setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) == 0 && fcntl(s, F_SETFL, 0) == 0);
+    ssize_t drained = 0;
+    while ((n = read(s, bulk, 65536)) > 0) drained += n;
+    CHECK(n == -1 && errno == EAGAIN && drained == total);   /* receive timeout once empty */
+    CHECK(close(c) == 0 && close(s) == 0);
+    /* Pipes and other files do not take O_NONBLOCK. */
+    int p[2];
+    CHECK(pipe(p) == 0 && FAILS(fcntl(p[0], F_SETFL, O_NONBLOCK), EINVAL) && close(p[0]) == 0 && close(p[1]) == 0);
+
+    /* Non-blocking accept and connect: EAGAIN, EINPROGRESS, then SO_ERROR. */
+    unsigned port;
+    int l = listener(&port, 1);
+    CHECK(fcntl(l, F_SETFL, O_NONBLOCK) == 0 && FAILS(accept(l, NULL, NULL), EAGAIN));
+    struct sockaddr_in a = loopback(port);
+    c = socket(AF_INET, SOCK_STREAM, 0);
+    CHECK(fcntl(c, F_SETFL, O_NONBLOCK) == 0);
+    /* Over loopback the handshake may finish before connect returns. */
+    CHECK(connect(c, (struct sockaddr *)&a, sizeof(a)) == 0 || errno == EINPROGRESS);
+    CHECK(FAILS(connect(c, (struct sockaddr *)&a, sizeof(a)), EALREADY) || errno == EISCONN);
+    sleep(1);
+    int error = -1;
+    socklen_t length = sizeof(error);
+    CHECK(getsockopt(c, SOL_SOCKET, SO_ERROR, &error, &length) == 0 && error == 0);
+    CHECK(FAILS(connect(c, (struct sockaddr *)&a, sizeof(a)), EISCONN));
+    s = accept(l, NULL, NULL);
+    CHECK(s >= 0 && close(s) == 0 && close(c) == 0 && close(l) == 0);
+    /* A refused non-blocking connect reports through SO_ERROR. */
+    c = socket(AF_INET, SOCK_STREAM, 0);
+    struct sockaddr_in closed = loopback(1);
+    CHECK(fcntl(c, F_SETFL, O_NONBLOCK) == 0);
+    errno = 0;
+    CHECK(connect(c, (struct sockaddr *)&closed, sizeof(closed)) == -1);
+    int immediate = errno;
+    CHECK(immediate == EINPROGRESS || immediate == ECONNREFUSED);
+    sleep(1);
+    error = -1;
+    CHECK(getsockopt(c, SOL_SOCKET, SO_ERROR, &error, &length) == 0);
+    CHECK(error == (immediate == EINPROGRESS ? ECONNREFUSED : 0));   /* reported exactly once */
+    CHECK(close(c) == 0);
+    /* A blocking accept with SO_RCVTIMEO times out; alarm interrupts a send. */
+    l = listener(&port, 1);
+    CHECK(setsockopt(l, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) == 0 && FAILS(accept(l, NULL, NULL), EAGAIN));
+    CHECK(close(l) == 0);
+    pair(&c, &s);
+    alarms = 0;
+    CHECK(signal(SIGALRM, on_alarm) != SIG_ERR);
+    /* Fill both buffers without blocking, then a blocking send that the
+     * alarm interrupts before any byte moves. */
+    CHECK(send(c, bulk, 65536, MSG_DONTWAIT) > 0);
+    while (send(c, bulk, 65536, MSG_DONTWAIT) > 0) {}
+    CHECK(errno == EAGAIN);
+    alarm(1);
+    CHECK(FAILS(send(c, bulk, 65536, 0), EINTR) && alarms == 1);
+    CHECK(signal(SIGALRM, SIG_DFL) != SIG_ERR && close(c) == 0 && close(s) == 0);
+}
+
 int main(int argc, char **argv)
 {
     if (argc == 4 && !strcmp(argv[1], "exec")) return exec_child(atoi(argv[2]), atoi(argv[3]));
     limits();     /* first: closed connections linger in TIME_WAIT holding blocks */
+    exec_and_exit(argv[0]);   /* before the large transfers grow the heap */
     transfer();
     half_close_and_pipe();
-    exec_and_exit(argv[0]);
     errors();
     interrupts();
+    datagrams();
+    options();
+    flags_and_blocking();
     transfer();   /* everything still works after all of the above */
     puts("SOCKET_API_OK");
     return 0;

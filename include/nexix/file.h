@@ -4,6 +4,7 @@
 #define NX_O_WRONLY 1
 #define NX_O_RDWR 2
 #define NX_O_ACCMODE 3
+#define NX_O_NONBLOCK 0x4   /* BSD value; sockets only (task 426) */
 #define NX_O_CREAT 0x100
 #define NX_O_TRUNC 0x200
 #define NX_O_EXCL 0x400

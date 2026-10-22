@@ -80,7 +80,7 @@ There is no mkdir, rmdir, rename, symlink, mount syscall, chroot or supplementar
 group handling in this milestone.
 
 Fcntl supports F_GETFD/F_SETFD for FD_CLOEXEC and F_GETFL/F_SETFL for shared
-append flags. F_SETFL preserves the original access mode. Stat/fstat export a
+append flags, and for O_NONBLOCK on [sockets](sockets.md) only. F_SETFL preserves the original access mode. Stat/fstat export a
 48-byte native record: eight 16-bit fields (dev, ino, mode, nlink, uid, gid,
 rdev, reserved), followed by signed 64-bit size, atime, mtime and ctime.
 Timestamps are decoded from disk and maintained using the UTC system clock;

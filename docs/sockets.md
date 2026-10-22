@@ -7,7 +7,8 @@ with real sockets and implements connection setup and stream I/O; see
 [Descriptors](#descriptors-task-425). Task 426 completes
 `send`/`recv`/`sendto`/`recvfrom`, the options, datagram and raw I/O, flags,
 timeouts and non-blocking use of [UDP](networking-udp.md),
-[TCP](networking-tcp.md) and [raw ICMP](networking-icmp.md).
+[TCP](networking-tcp.md) and [raw ICMP](networking-icmp.md); see
+[Operations and options](#operations-and-options-task-426).
 
 ## Numbers
 
@@ -221,9 +222,81 @@ back what they allocated if a table filled while they slept.
   - after that, or after `SHUT_WR`, a write is **`EPIPE` and raises
     `SIGPIPE`**;
   - an unconnected stream is `ENOTCONN`.
-- **Datagram and raw** `read`/`write`, `send`, `recv`, `sendto`, `recvfrom`,
-  `setsockopt` and `getsockopt` validate their arguments and then return
-  `EOPNOTSUPP` (read/write) or `ENOSYS` until task 426.
+- **Everything else**, including datagram and raw I/O, is in task 426 below.
+
+## Operations and options (task 426)
+
+**Transfers.** `read`/`write` and `recv`/`send` are `recvfrom`/`sendto`
+without addresses. Flags and timeouts apply to all of them.
+
+- **Streams:**
+  - `send` behaves as `write` above. A `sendto` address is ignored, as POSIX
+    says for connection-mode sockets.
+  - `recvfrom` can report the peer address. Zero-length transfers return 0.
+- **Datagrams (UDP):**
+  - each `send` is one datagram of at most `SO_SNDBUF` bytes (default and
+    largest 9216; `EMSGSIZE`). A zero-length datagram is valid.
+  - Unconnected sockets need a destination (`EDESTADDRREQ`); connected ones
+    refuse another (`EISCONN`). Sending binds an ephemeral port.
+  - A receive returns one datagram with its source. A datagram longer than
+    the buffer is truncated, and the rest discarded, as in BSD.
+  - An ICMP error on a connected socket (for example a closed port,
+    `ECONNREFUSED`) is reported once by the next send or receive, or by
+    `SO_ERROR`.
+- **Raw ICMP:**
+  - `sendto` carries one ICMP message of 8 bytes to `SO_SNDBUF` (default 8192,
+    BSD `RIPSNDQ`). The kernel fills the checksum; shorter messages are
+    `EINVAL`.
+  - A receive returns the whole IP datagram, header included, with the source
+    address and port 0.
+- **How datagram data moves:** user data is copied into an mbuf chain on the
+  worker in 1 KiB steps and sent whole. A received datagram is taken from its
+  queue in one step and copied out by the caller, so processes sharing a
+  socket never split one.
+- **Shutdown:** after `SHUT_WR`, a send is `EPIPE` (with `SIGPIPE` unless
+  `MSG_NOSIGNAL`). After `SHUT_RD`, receives return 0 and queued data is
+  dropped.
+
+**Flags.**
+
+| Flag | Effect |
+|---|---|
+| `MSG_PEEK` | Copy without consuming: one look at a stream, or the next datagram |
+| `MSG_WAITALL` | Streams wait for the full count, unless end of stream, an error, a signal or a timeout comes first (partial counts are returned) |
+| `MSG_DONTWAIT` | This call never blocks (`EAGAIN`) |
+| `MSG_NOSIGNAL` | `EPIPE` without `SIGPIPE` |
+
+**Non-blocking descriptors.** `fcntl(F_SETFL, O_NONBLOCK)` (BSD value 4) is
+accepted on sockets only; other files keep `EINVAL`. It makes every call
+`EAGAIN` instead of waiting, or return the partial count. `accept` is then
+`EAGAIN`, and `connect` `EINPROGRESS`. A connect may also complete at once
+over loopback. A repeated connect is `EALREADY` while in progress, `EISCONN`
+once done, or the failure. The result can also be read from `SO_ERROR`.
+
+**Options** (`SOL_SOCKET` unless noted):
+
+| Option | Stream | Datagram | Raw |
+|---|---|---|---|
+| `SO_REUSEADDR` | share a port if every socket on it sets it (set before `bind`) | same | `ENOPROTOOPT` |
+| `SO_SNDBUF` | send buffer bytes | largest datagram | largest message |
+| `SO_RCVBUF` | receive buffer bytes (it bounds the advertised window) | receive queue bytes | receive queue bytes |
+| `SO_SNDTIMEO`, `SO_RCVTIMEO` | timeouts (see below) | same | same |
+| `SO_ERROR` | pending error, read and cleared | same | always 0 |
+| `SO_TYPE` | `SOCK_STREAM` | `SOCK_DGRAM` | `SOCK_RAW` |
+| `TCP_NODELAY` (at `IPPROTO_TCP`) | disable Nagle | `ENOPROTOOPT` | `ENOPROTOOPT` |
+
+Buffer sizes are raised to at least 512 bytes, refused above 262144
+(`ENOBUFS`), and limit mbuf accounting to four times the size. Reading an
+option returns the size in force.
+
+**Timeouts** are rounded up to whole 10 ms ticks, so a nonzero timeout never
+means "none". Reading one back returns the rounded value.
+
+- `SO_RCVTIMEO` bounds receives and `accept`.
+- `SO_SNDTIMEO` bounds sends and `connect`; an expired connect is
+  `EINPROGRESS` and keeps going.
+- Expiry is `EAGAIN`, or the partial count. Signals still give `EINTR` or the
+  partial count, and nothing restarts automatically.
 
 ## Validation
 
@@ -269,6 +342,23 @@ back what they allocated if a table filled while they slept.
     `lseek` and ioctl; the calls deferred to task 426; datagram
     connect/disconnect and truncated names.
   - **Interruption:** `EINTR` from `alarm` in `accept` and `read`.
+  - **Task 426:**
+    - UDP `sendto`/`recvfrom` with sources, datagram boundaries, peek,
+      truncation, the 9216-byte limit and zero-length datagrams;
+    - `EDESTADDRREQ`, `EISCONN`, and `ECONNREFUSED` through `SO_ERROR` then
+      the next receive;
+    - `SHUT_RDWR` with `MSG_NOSIGNAL`;
+    - a raw echo request to 127.0.0.1 answered by the kernel, read with its
+      IP header, then a 2 s `SO_RCVTIMEO` expiry;
+    - every option set and read back, buffer clamping and limits, tick
+      rounding, and port sharing with `SO_REUSEADDR`;
+    - `MSG_PEEK`, `MSG_WAITALL` across three delayed writes, and
+      `MSG_DONTWAIT`;
+    - `O_NONBLOCK` on read, on a send buffer filled to `EAGAIN`, on accept and
+      on connect (`EALREADY`/`EISCONN`, `SO_ERROR`, and a refused connect
+      reported exactly once);
+    - `SO_SNDTIMEO` and `SO_RCVTIMEO` expiry on writes, reads and `accept`;
+    - `EINTR` from a blocked send; pipes refusing `O_NONBLOCK`.
   - A final transfer still works after all of the above.
 
   The libc self-test keeps its boundary checks but never creates a socket,

@@ -138,6 +138,8 @@ _Static_assert(SO_REUSEADDR==4 && SO_SNDBUF==0x1001 && SO_RCVBUF==0x1002 && SO_S
                SO_RCVTIMEO==0x1006 && SO_ERROR==0x1007 && SO_TYPE==0x1008 && TCP_NODELAY==1, "socket option values");
 _Static_assert(MSG_PEEK==2 && MSG_WAITALL==0x40 && MSG_DONTWAIT==0x80 && SHUT_RD==0 && SHUT_WR==1 && SHUT_RDWR==2,
                "socket flag values");
+#include <fcntl.h>
+_Static_assert(O_NONBLOCK==4 && S_IFSOCK==0140000, "socket descriptor flag and file type");
 _Static_assert(INADDR_LOOPBACK==0x7f000001u && INADDR_ANY==0 && INADDR_NONE==0xffffffffu && INET_ADDRSTRLEN==16,
                "IPv4 address constants");
 SIZE(socklen_t,4); SIZE(sa_family_t,2); SIZE(in_port_t,2); SIZE(in_addr_t,4); SIZE(struct in_addr,4);

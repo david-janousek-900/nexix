@@ -18,6 +18,8 @@ struct nx_socket {
     bool shut_read, shut_write;
     union { struct nx_net_tcp *tcp; struct nx_net_udp *udp; struct nx_net_raw *raw; } pcb;
     volatile uint32_t events;   /* bumped, with a wakeup on this object, by protocol events */
+    uint64_t send_timeout, receive_timeout;   /* ticks, 0 = none (SO_SNDTIMEO/SO_RCVTIMEO) */
+    uint32_t send_size;         /* SO_SNDBUF of a datagram/raw socket, which has no send buffer */
 };
 _Static_assert(sizeof(struct nx_socket) <= 512, "socket object budget");
 
@@ -40,7 +42,21 @@ int net_socket_connected(struct nx_socket *);
  * the buffer is full or empty. A send that can never succeed returns
  * -NX_EPIPE; the caller raises SIGPIPE. */
 int64_t net_socket_send(struct nx_socket *, const void *, size_t);
-int64_t net_socket_receive(struct nx_socket *, void *, size_t);
+int64_t net_socket_receive(struct nx_socket *, void *, size_t, bool peek);
+/* Datagram/raw sockets (task 426). stage appends caller bytes to *chain
+ * (created on first use), discard frees one; send consumes the chain and
+ * sends it to addr:port when addressed, else to the connected peer.
+ * receive hands over the oldest datagram (a copy with peek): UDP payload,
+ * or the whole IP datagram for raw sockets; *chain is NULL after SHUT_RD.
+ * The caller may read the chain directly and must discard it. */
+int net_socket_stage(struct nx_net_mbuf **chain, const void *, size_t);
+void net_socket_discard(struct nx_net_mbuf *);
+int net_socket_send_datagram(struct nx_socket *, struct nx_net_mbuf *, bool addressed, nx_net_addr_t, nx_net_port_t);
+int net_socket_receive_datagram(struct nx_socket *, bool peek, struct nx_net_mbuf **, nx_net_addr_t *, nx_net_port_t *);
+/* Options (task 426): value is an int32 or, for the timeouts, an
+ * nx_timeval, already validated by the syscall layer. */
+int net_socket_set_option(struct nx_socket *, int level, int name, const void *value);
+int net_socket_get_option(struct nx_socket *, int level, int name, void *value);
 int net_socket_shutdown(struct nx_socket *, int how);
 int net_socket_name(struct nx_socket *, bool peer, nx_net_addr_t *, nx_net_port_t *);
 #endif
