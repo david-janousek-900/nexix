@@ -3,9 +3,12 @@
 The supplied V7 awk sources are in `user/awk`. Task 174 ports the front end:
 the yacc grammar, the lex scanner, parse-tree construction, the regular
 expression compiler, the symbol table, and the generated token and procedure
-tables. The interpreter and data model are task 175. I/O, functions and
-end-to-end acceptance are task 176, after which `/bin/awk` is installed.
-`build/v7-awk.elf` already links every supplied object.
+tables. Task 175 ports the interpreter and data model: values and their
+string/number conversion, records and fields, arrays, arithmetic, string
+functions, `split`, control flow, and `print` to standard output. Task 176
+covers `printf`/`sprintf` formatting, output redirection, files, pipes and
+regular-expression matching at run time, plus end-to-end acceptance. `/bin/awk`
+is installed after task 176; `build/v7-awk.elf` is built and tested privately.
 
 ## Generation
 
@@ -47,7 +50,63 @@ Program text is 7-bit, as in V7: lex's tables cover 128 characters, and the
 scanner echoes other bytes as its default action (see [lex](lex.md)). Tokens
 longer than lex's 200-byte `yytext` are split.
 
-## Acceptance
+## Interpreter and data model (task 175)
+
+Native adaptations:
+
+- Integral values within a native `long` convert to strings as `%ld`, which gives
+  the same digits as V7's `%.20g` without depending on libc's 20-digit `%g`.
+  Zero keeps `%g`, so `-0` stays `-0`. V7's 32-bit `long` sent larger integers
+  through `OFMT`; awk now does that only outside the 64-bit range. `int`, `%`
+  and `%=` truncate through `awkint`, which leaves huge, infinite and NaN values
+  unchanged instead of converting them out of range.
+- `OFMT` must be a single `e`, `f` or `g` conversion; any other format falls back
+  to `%.6g`. V7 passed any format to `sprintf` with a double argument.
+- String constants are named `"text` in the symbol table. V7 looked them up by
+  their text, so `"j"` was variable `j`'s cell, and `"1"` and `1` shared one cell.
+- A record ended by end of file is returned. V7 dropped a last line that had no
+  newline, and the last paragraph when `RS=""`.
+- Unset fields are empty strings, including for assignment and record rebuilding.
+  V7 dereferenced their null strings.
+- Records, `print` lines and rebuilt records are checked before each copy. V7
+  checked after overrunning. The limits are V7's: 512-byte records, 49 fields
+  and 29 range patterns.
+  `substr` and `split` results are allocated. V7 copied into 100 bytes, and
+  `split`'s subscript buffer held only four digits.
+- Temporaries are freed after their strings are used (`substr`, `index`, `~`).
+  `a = a` copies before freeing. `freesymtab` reads each cell's link before
+  freeing it.
+- `for (k in a)` copies the subscripts first, so the body may change or `split`
+  the array, and it returns a value. A loop variable that is an array is an error.
+- Negative field numbers, NF above 49 and more than 29 range patterns are errors.
+  `program`, `nullproc` and `instat` no longer return undefined values.
+- Syntax errors exit 2; V7 exited 0. `-f` without a file and the usage message
+  no longer dereference null pointers.
+
+V7 semantics are kept:
+- comparisons are numeric only when both values are numbers, and an uninitialized
+  variable is the string `""`;
+- `$0` is empty in `END`;
+- assigning a field beyond `NF` leaves `NF` unchanged;
+- awk reads input even when it has only `BEGIN`;
+- options must come before `-f`;
+- there is no `^` operator;
+- `-Ft` means a tab separator.
+
+`make test-awk-run` builds the whole awk with ASan/UBSan and runs 40 cases with
+exact output, error and status:
+- values, arithmetic, conversions and `OFMT`;
+- fields, `-F`, `RS` (including paragraph mode) and command-line assignments;
+- arrays, `split` and `for`-`in`, including changing the array in the loop;
+- string functions, temporaries and control flow;
+- V7 comparison and record semantics;
+- every limit and run-time error.
+
+19 cases where V7 and POSIX agree are also checked against mawk. 300 random
+programs over random records must not trigger a sanitizer report. The native awk
+runs the same fixtures in 16/128 MiB guests, as root and as an ordinary user.
+
+## Front-end acceptance
 
 `make test-awk-parse` checks that `tokenscript` reproduces the supplied
 `token.c`, and that `proctab.c` maps every token to its procedure and print name.

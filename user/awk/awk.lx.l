@@ -17,7 +17,7 @@ int	lineno	= 1;
 #define	CPUT(c)	{ if(clen>=CBUFLEN-1) {yyerror("string too long", cbuf); BEGIN A;} else cbuf[clen++]=(c); }
 #define	CADD	CPUT(yytext[0])
 #define	CBUFLEN	150
-char	cbuf[CBUFLEN];
+char	cbuf[CBUFLEN], ckey[CBUFLEN+1];
 int	clen, cflag;
 %}
 
@@ -130,7 +130,11 @@ WS	[ \t]
 <reg>\n		{ yyerror("newline in regular expression"); lineno++; BEGIN A; }
 <reg>.		{ yylval = yytext[0]; RETURN(CHAR); }
 
-<str>\"		{ BEGIN A; cbuf[clen]=0; yylval = setsymtab(cbuf, tostring(cbuf), 0.0, CON|STR, symtab); RETURN(STRING); }
+<str>\"		{ BEGIN A; cbuf[clen]=0;
+		/* Nexix: string constants are named "text, apart from variables
+		 * and numbers; V7 gave "x" the cell of variable x or number x. */
+		ckey[0] = '"'; strcpy(ckey+1, cbuf);
+		yylval = setsymtab(ckey, tostring(cbuf), 0.0, CON|STR, symtab); RETURN(STRING); }
 <str>\n		{ yyerror("newline in string"); lineno++; BEGIN A; }
 <str>"\\\""	CPUT('"');
 <str,chc>"\\"n	CPUT('\n');

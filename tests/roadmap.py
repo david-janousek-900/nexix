@@ -132,7 +132,7 @@ class Roadmap(unittest.TestCase):
         self.reject('cmd.awk: unfinished component cannot map only to completed tasks')
 
     def test_implemented_component_needs_completed_task(self):
-        self.coverage['components']['cmd.cat'] = [175]
+        self.coverage['components']['cmd.cat'] = [176]
         self.reject('cmd.cat: implemented component needs a completed roadmap task')
 
     def test_done_task_needs_commit_evidence(self):

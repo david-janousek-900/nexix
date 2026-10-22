@@ -37,3 +37,11 @@ test-awk-parse: test-awk-parse-unit multi-iso rootfs
 	$(PYTHON) tools/awk_parse_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-awk-parse
 test-unit: test-awk-parse-unit
+.PHONY: test-awk-run-unit test-awk-run
+test-awk-run-unit:
+	$(PYTHON) tests/awk_run.py
+test-awk-run: test-awk-run-unit build/v7-awk.elf multi-iso rootfs
+	$(PYTHON) tools/awk_run_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/awk_run_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-awk-run
+test-unit: test-awk-run-unit

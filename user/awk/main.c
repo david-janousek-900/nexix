@@ -1,4 +1,5 @@
 #include "stdio.h"
+#include <errno.h>
 #include "awk.def"
 #include "awk.h"
 
@@ -11,7 +12,7 @@ extern	errorflag;	/* non-zero if any syntax errors; set by yyerror */
 
 int filefd, iflag, symnum, ansfd;
 char *filelist;
-extern int maxsym, errno;
+extern int maxsym;
 main(argc, argv) int argc; char *argv[]; {
 	if (argc == 1)
 		error(FATAL, "Usage: awk [-f source | 'cmds'] [files]");
@@ -21,6 +22,8 @@ main(argc, argv) int argc; char *argv[]; {
 		argc--;
 		argv++;
 		if (argv[0][0] == '-' && argv[0][1] == 'f') {
+			if (argc < 2)	/* Nexix: V7 opened a null name */
+				error(FATAL, "no program file after -f");
 			yyin = fopen(argv[1], "r");
 			if (yyin == NULL)
 				error(FATAL, "can't open %s", argv[1]);
@@ -64,7 +67,7 @@ iloop:
 	yyparse();
 	dprintf("errorflag=%d\n", errorflag, NULL, NULL);
 	if (errorflag)
-		exit(0);
+		exit(errorflag);	/* Nexix: V7 exited 0 after syntax errors */
 	run();
 	if (iflag)
 		write(ansfd, &errorflag, sizeof(errorflag));
@@ -87,7 +90,7 @@ msgfiles()
 		exit(errno);
 	}
 	xfree(filelist);
-	q=filelist=malloc(n);
+	q=filelist=malloc(n+1);	/* Nexix: room for the last terminator */
 	for (p=buf; *p==' ' || *p=='\t' || *p=='\n'; p++); 
 	for (n=0; *p!=';'; )
 	{

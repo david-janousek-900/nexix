@@ -117,6 +117,8 @@ node *genjump(a) long a;
 }
 node *pa2stat(a,b,c) node *a, *b, *c;
 {	node *x;
+	if (paircnt >= PA2NUM)	/* Nexix: V7 overran pairstack */
+		error(FATAL, "too many range patterns");
 	x = node3(paircnt++, a, b, c);
 	x->ntype = NPA2;
 	return(x);

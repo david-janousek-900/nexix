@@ -8,7 +8,7 @@ FILE	*infile	= NULL;
 char	*file;
 #define	RECSIZE	512
 char	record[RECSIZE];
-char	fields[RECSIZE];
+char	fields[RECSIZE+2];	/* Nexix: a NUL per field plus the end mark */
 
 #define	MAXFLD	50
 int	donefld;	/* 1 = implies rec broken into fields */
@@ -58,22 +58,27 @@ getrec()
 		}
 		if ((sep = **RS) == 0)
 			sep = '\n';
+		/* Nexix: the length is checked before each store; V7 checked
+		 * after the record had overrun. */
 		for (rr = record; ; ) {
 			for (; (c=getc(infile)) != sep && c != EOF; *rr++ = c)
-				;
+				if (rr >= record+RECSIZE-1)
+					goto toolong;
 			if (**RS == sep || c == EOF)
 				break;
 			if ((c = getc(infile)) == '\n' || c == EOF)	/* 2 in a row */
 				break;
+			if (rr >= record+RECSIZE-3)
+				goto toolong;
 			*rr++ = '\n';
 			*rr++ = c;
 		}
-		if (rr > record+RECSIZE)
-			error(FATAL, "record `%.20s...' too long", record);
 		*rr = 0;
 		if (mustfld)
 			fldbld();
-		if (c != EOF)	/* normal record */
+		/* Nexix: a record ended by end of file is returned; V7 dropped
+		 * a last line without a newline and the last RS="" paragraph. */
+		if (c != EOF || rr > record)	/* normal record */
 			return(1);
 		/* EOF arrived on this file; set up next */
 		if (infile != stdin)
@@ -83,6 +88,10 @@ getrec()
 		svargv++;
 	}
 	return(0);	/* true end of file */
+toolong:
+	*rr = 0;
+	error(FATAL, "record `%.20s...' too long", record);
+	return(0);
 }
 
 setclvar(s)	/* set var=value from s */
@@ -166,13 +175,23 @@ recbld()
 
 	if (donefld == 0 || donerec == 1)
 		return;
+	/* Nexix: NF and the record length are checked before copying, and
+	 * unset fields are empty; V7 checked the length afterwards. */
+	if (*NF >= MAXFLD)
+		error(FATAL, "trying to access field %g", *NF);
 	r = record;
 	for (i = 1; i <= *NF; i++) {
 		p = getsval(&fldtab[i]);
+		if (p == NULL)
+			p = "";
+		if (r + strlen(p) >= record+RECSIZE)
+			error(FATAL, "built giant record `%.20s...'", record);
 		while (*r++ = *p++)
 			;
 		*(r-1) = **OFS;
 	}
+	if (r == record)
+		r++;
 	*(r-1) = '\0';
 	dprintf("in recbld FS=%o, recloc=%o\n", **FS, recloc, NULL);
 	recloc->tval = STR | FLD;
@@ -184,7 +203,7 @@ recbld()
 
 cell *fieldadr(n)
 {
-	if (n >= MAXFLD)
+	if (n < 0 || n >= MAXFLD)	/* Nexix: V7 accepted negative fields */
 		error(FATAL, "trying to access field %d", n);
 	return(&fldtab[n]);
 }
@@ -204,7 +223,7 @@ void error(int f, char *s, ...) {
 	vfprintf(stderr, s, ap);
 	va_end(ap);
 	fprintf(stderr, "\n");
-	if (*NR > 0)
+	if (NR != NULL && *NR > 0)	/* Nexix: NR is unset before syminit */
 		fprintf(stderr, " record number %g\n", *NR);
 	if (f)
 		exit(2);

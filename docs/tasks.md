@@ -19,8 +19,8 @@ The inventory accounts for **223 components, 2,144 distribution files and
 7 partial, 0 prototype and 134 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **411 tracking tasks: 218 done, 0 in progress
-and 193 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–174, 177–202, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **411 tracking tasks: 219 done, 0 in progress
+and 192 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–175, 177–202, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -318,7 +318,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 172 | Port libln and lex/smallex runtime targets | Done | Git history; [libln and smallex](lex.md#libln-and-smallex); `make test-lex test-inventory test-install-unit`; installed /lib/libln.a with REJECT/yyless/allprint/main/yywrap under ASan/UBSan, SMALL-limit generator; prebuilt and native `ld -lln` scanners at 16/128 MiB |
 | 173 | Complete lex/yacc native generator acceptance | Done | Git history; [native consumers](lex.md#native-consumers); `make test-lexyacc test-c-compiler test-as test-libc test-inventory test-install-unit`; installed cc compiles compressed/%T/libln scanners and a yacc+lex calculator at 16/128 MiB as root/user, uncompressed at 128 MiB; c1 LP64 address-constant initializers; leaner as records and in-place realloc; Ratfor execution moved to task 216 |
 | 174 | Port awk parser and generated helper tables | Done | Git history; [awk front end](awk.md); `make test-awk-parse test-lex test-lexyacc test-inventory test-install-unit`; native yacc/lex/tokenscript/proc generation, LP64 parser values and nodes, bounded strings, regex positions/states/bytes and lex tokens, single-owner follow sets; hand-checked trees/DFAs, diagnostics and 400 random programs under ASan/UBSan; guest regeneration with yacc/lex/ed/proc and native trees at 16/128 MiB as root/user |
-| 175 | Port awk interpreter and data model | To do | Fields, arrays, arithmetic, strings and native widths |
+| 175 | Port awk interpreter and data model | Done | Git history; [awk interpreter](awk.md#interpreter-and-data-model-task-175); `make test-awk-run test-awk-parse test-inventory test-install-unit`; native-width numbers/conversions, safe OFMT, separate string constants, EOF records, null fields, bounded records/print/substr/split, temporary and array lifetimes; 40 exact cases (19 against mawk) and 300 random programs under ASan/UBSan; native awk at 16/128 MiB as root/user |
 | 176 | Complete awk I/O/functions and end-to-end acceptance | To do | Pipes, files, regex and complete program fixtures |
 
 ### Native C/Fortran toolchains

@@ -1900,6 +1900,8 @@
           "evidence": [
             "reference/v7/usr/src/cmd/awk/makefile",
             "tools/awk.mk",
+            "tests/awk_run.py",
+            "tools/awk_run_smoke.py",
             "docs/awk.md"
           ]
         },
@@ -1970,18 +1972,22 @@
           "phase": "build",
           "certainty": "confirmed",
           "evidence": [
-            "reference/v7/usr/src/cmd/awk/makefile"
+            "reference/v7/usr/src/cmd/awk/makefile",
+            "user/awk/run.c",
+            "tests/awk_run.py"
           ],
-          "note": "Direct reference recipe/source dependency."
+          "note": "Native double arithmetic and libm exp, log and sqrt."
         },
         {
           "target": "floating-point",
           "phase": "runtime",
-          "certainty": "inferred",
+          "certainty": "confirmed",
           "evidence": [
-            "reference/v7/usr/src/cmd/awk/makefile"
+            "reference/v7/usr/src/cmd/awk/makefile",
+            "user/awk/run.c",
+            "tests/awk_run.py"
           ],
-          "note": "Build recipes/source purpose identify this dependency; inspect supplied source before porting."
+          "note": "awk values are doubles; SSE2 arithmetic and conversions."
         },
         {
           "target": "cmd.yacc",
@@ -2070,10 +2076,10 @@
         }
       ],
       "blockers": [
-        "The front end (task 174) is native; the interpreter and data model (task 175) and I/O, functions and end-to-end acceptance (task 176) remain before /bin/awk is installed."
+        "The front end (task 174) and interpreter (task 175) are native; printf/sprintf, redirection, files, pipes, run-time regular expressions and end-to-end acceptance (task 176) remain before /bin/awk is installed."
       ],
       "unresolved": [
-        "Port the interpreter, fields, arrays and native widths (task 175); I/O, functions and complete program acceptance (task 176)."
+        "Complete printf/sprintf formatting, output redirection, files, pipes, regular-expression matching and complete program acceptance (task 176)."
       ],
       "acceptance": [
         "Run arithmetic, field matching and associative-array fixtures; regenerate parser/scanner tables.",
@@ -2100,7 +2106,6 @@
         }
       ],
       "unresolved_tasks": [
-        175,
         176
       ],
       "native_sources": [

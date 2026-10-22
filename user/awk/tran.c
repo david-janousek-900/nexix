@@ -2,6 +2,7 @@
 #include "awk.def"
 #include "awk.h"
 
+static char *okfmt();
 cell *symtab[MAXSYM];	/* symbol table pointers */
 
 char	**FS;	/* initial field sep */
@@ -50,14 +51,15 @@ cell **makesymtab()
 freesymtab(ap)	/* free symbol table */
 cell *ap;
 {
-	cell *cp, **tp;
+	cell *cp, *np, **tp;
 	int i;
 
 	if (!(ap->tval & ARR))
 		return;
 	tp = (cell **) ap->sval;
 	for (i = 0; i < MAXSYM; i++) {
-		for (cp = tp[i]; cp != NULL; cp = cp->nextval) {
+		for (cp = tp[i]; cp != NULL; cp = np) {
+			np = cp->nextval;	/* Nexix: V7 read it after free */
 			xfree(cp->nval);
 			xfree(cp->sval);
 			free(cp);
@@ -138,6 +140,8 @@ char *setsval(vp, s)
 register cell *vp;
 char *s;
 {
+	char *t;
+
 	dprintf("setsval: %o %s\n", vp, s, NULL);
 	checkval(vp);
 	if (vp == recloc)
@@ -146,10 +150,12 @@ char *s;
 	vp->tval |= STR;
 	if ((vp->tval & FLD) && vp->nval == 0)
 		donerec = 0;
+	/* Nexix: s may be vp's own string (a = a), or an unset field's */
+	t = tostring(s != NULL ? s : "");
 	if (!(vp->tval&FLD))
 		xfree(vp->sval);
 	vp->tval &= ~FLD;
-	return(vp->sval = tostring(s));
+	return(vp->sval = t);
 }
 
 awkfloat getfval(vp)
@@ -166,7 +172,7 @@ register cell *vp;
 		/* have unlikely numeric variables, so that */
 		/* $1 == $2 comparisons sort of make sense when */
 		/* one or the other is numeric */
-		if (isnumber(vp->sval)) {
+		if (vp->sval != NULL && isnumber(vp->sval)) {
 			vp->fval = atof(vp->sval);
 			if (!(vp->tval & CON))	/* don't change type of a constant */
 				vp->tval |= NUM;
@@ -190,16 +196,49 @@ register cell *vp;
 	if ((vp->tval & STR) == 0) {
 		if (!(vp->tval&FLD))
 			xfree(vp->sval);
-		if ((long)vp->fval==vp->fval)
-			sprintf(s, "%.20g", vp->fval);
+		/* Nexix: integers within a native long print exactly, as %ld
+		 * (the digits of V7's %.20g); V7's 32-bit long sent larger
+		 * values through OFMT. */
+		if (vp->fval > -9.2e18 && vp->fval < 9.2e18 && (long)vp->fval==vp->fval)
+			if (vp->fval == 0)	/* keeps the sign of -0 */
+				snprintf(s, sizeof(s), "%g", vp->fval);
+			else
+				snprintf(s, sizeof(s), "%ld", (long)vp->fval);
 		else
-			sprintf(s, *OFMT, vp->fval);
+			snprintf(s, sizeof(s), okfmt(*OFMT), vp->fval);
 		vp->sval = tostring(s);
 		vp->tval &= ~FLD;
 		vp->tval |= STR;
 	}
 	dprintf("  %s\n", vp->sval, NULL, NULL);
-	return(vp->sval);
+	return(vp->sval ? vp->sval : "");	/* Nexix: unset fields are empty */
+}
+
+/* Nexix: OFMT must be one floating conversion, or %.6g is used; V7 passed
+ * any format to sprintf with a double argument. */
+static char *okfmt(f)
+char *f;
+{
+	char *p;
+	int n;
+
+	for (n = 0, p = f; p != NULL && *p; p++) {
+		if (*p != '%')
+			continue;
+		if (*++p == '%')
+			continue;
+		while (*p == '-' || *p == '+' || *p == ' ' || *p == '#' || *p == '0')
+			p++;
+		while (*p >= '0' && *p <= '9')
+			p++;
+		if (*p == '.')
+			for (p++; *p >= '0' && *p <= '9'; p++)
+				;
+		if (*p == '\0' || strchr("eEfgG", *p) == NULL)
+			return("%.6g");
+		n++;
+	}
+	return(n == 1 ? f : "%.6g");
 }
 
 checkval(vp)

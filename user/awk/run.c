@@ -13,7 +13,6 @@ struct
 FILE *popen();
 
 extern obj execute(), nodetoobj(), fieldel(), dopa2();
-#define PA2NUM	29
 int pairstack[PA2NUM], paircnt;
 node *winner = (node *)NULL;
 #define MAXTMP 20
@@ -21,6 +20,16 @@ cell tmps[MAXTMP];
 static cell nullval ={0,0,0.0,NUM,0};
 obj	true	={ OBOOL, BTRUE, 0 };
 obj	false	={ OBOOL, BFALSE, 0 };
+
+/* Nexix: truncation of a finite value that a long holds; others (huge,
+ * infinite or NaN) are already integral or have no integer part. */
+awkfloat awkint(f)
+awkfloat f;
+{
+	if (f > -9.2e18 && f < 9.2e18)
+		return((awkfloat)(long)f);
+	return(f);
+}
 
 run()
 {
@@ -43,7 +52,7 @@ obj execute(u) node *u;
 			proc=dopa2;
 		else {
 			if (notlegal(a->nobj))
-				error(FATAL, "illegal statement %o", a);
+				error(FATAL, "illegal statement %p", (void *)a);
 			proc = proctab[a->nobj-FIRSTTOKEN];
 		}
 		x = (*proc)(a->narg,a->nobj);
@@ -63,6 +72,7 @@ obj program(a, n) node **a;
 {
 	obj x;
 
+	x = true;	/* Nexix: V7 freed an unset value with no BEGIN or input */
 	if (a[0] != NULL) {
 		x = execute(a[0]);
 		if (isexit(x))
@@ -132,8 +142,8 @@ obj matchop(a,n) node **a;
 	x = execute(a[0]);
 	if (isstr(x)) s = x.optr->sval;
 	else	s = getsval(x.optr);
-	tempfree(x);
 	i = match(a[1], s);
+	tempfree(x);
 	if (n==MATCH && i==1 || n==NOTMATCH && i==0)
 		return(true);
 	else
@@ -246,14 +256,15 @@ obj indirect(a,n) node **a;
 
 obj substr(a, nnn) node **a;
 {
-	char *s, *p, temp[100];
-	obj x;
+	char *s, *p, *temp;
+	obj x, y;
 	int k, m, n;
 
-	x = execute(a[0]);
-	s = getsval(x.optr);
+	/* Nexix: temporaries are freed after their strings are used; V7
+	 * read freed strings here and in sindex and matchop. */
+	y = execute(a[0]);
+	s = getsval(y.optr);
 	k = strlen(s) + 1;
-	tempfree(x);
 	x = execute(a[1]);
 	m = getfval(x.optr);
 	if (m <= 0)
@@ -273,13 +284,18 @@ obj substr(a, nnn) node **a;
 	else if (n > k - m)
 		n = k - m;
 	dprintf("substr: m=%d, n=%d, s=%s\n", m, n, s);
-	p = temp;
+	/* Nexix: the result is allocated; V7 copied into 100 bytes. */
+	p = temp = (char *)malloc(n + 1);
+	if (temp == NULL)
+		error(FATAL, "out of space in substr");
 	s += m - 1;
 	while (n-- > 0)
 		*p++ = *s++;
 	*p = '\0';
+	tempfree(y);
 	x = gettemp();
-	setsval(x.optr, temp);
+	x.optr->sval = temp;
+	x.optr->tval = STR;
 	return(x);
 }
 
@@ -288,23 +304,26 @@ obj sindex(a, nnn) node **a;
 	obj x, y;
 	char *s1, *s2, *p1, *p2, *q;
 
+	awkfloat v;
+
 	x = execute(a[0]);
 	s1 = getsval(x.optr);
-	tempfree(x);
 	y = execute(a[1]);
 	s2 = getsval(y.optr);
-	tempfree(y);
 
-	x = gettemp();
+	v = 0.0;
 	for (p1 = s1; *p1 != '\0'; p1++) {
 		for (q=p1, p2=s2; *p2 != '\0' && *q == *p2; q++, p2++)
 			;
 		if (*p2 == '\0') {
-			setfval(x.optr, (awkfloat) (p1 - s1 + 1));	/* origin 1 */
-			return(x);
+			v = (awkfloat) (p1 - s1 + 1);	/* origin 1 */
+			break;
 		}
 	}
-	setfval(x.optr, 0.0);
+	tempfree(x);
+	tempfree(y);
+	x = gettemp();
+	setfval(x.optr, v);
 	return(x);
 }
 
@@ -428,7 +447,7 @@ obj arith(a,n) node **a;
 	case MOD:
 		if (j == 0)
 			error(FATAL, "division by zero");
-		setfval(z.optr, i-j*(long)(i/j));
+		setfval(z.optr, i-j*awkint(i/j));
 		break;
 	case UMINUS:
 		setfval(z.optr, -i);
@@ -491,7 +510,7 @@ obj assign(a,n) node **a;
 	case MODEQ:
 		if (yf == 0)
 			error(FATAL, "division by zero");
-		setfval(x.optr, xf - yf*(long)(xf/yf));
+		setfval(x.optr, xf - yf*awkint(xf/yf));
 		break;
 	default:
 		error(FATAL, "illegal assignment operator %d", n);
@@ -505,16 +524,18 @@ obj cat(a,q) node **a;
 {
 	obj x,y,z;
 	int n;
-	char *s;
+	char *s, *xs, *ys;
 
 	x = execute(a[0]);
 	y = execute(a[1]);
-	getsval(x.optr);
-	getsval(y.optr);
-	n = strlen(x.optr->sval) + strlen(y.optr->sval);
+	xs = getsval(x.optr);	/* Nexix: an unset field's string is "" */
+	ys = getsval(y.optr);
+	n = strlen(xs) + strlen(ys);
 	s = (char *)malloc(n+1);
-	strcpy(s, x.optr->sval);
-	strcat(s, y.optr->sval);
+	if (s == NULL)
+		error(FATAL, "out of space in cat");
+	strcpy(s, xs);
+	strcat(s, ys);
 	tempfree(y);
 	z = gettemp();
 	z.optr->sval = s;
@@ -578,13 +599,16 @@ obj split(a,nnn) node **a;
 	obj x;
 	cell *ap;
 	register char *s, *p;
-	char *t, temp[100], num[5];
+	char *t, *temp, *orig, num[24];	/* Nexix: V7 had 100 and 5 bytes */
 	register int sep;
 	int n;
 
 	x = execute(a[0]);
-	s = getsval(x.optr);
+	s = tostring(getsval(x.optr));	/* Nexix: kept until the split is done */
 	tempfree(x);
+	temp = (char *)malloc(strlen(s) + 1);
+	if (temp == NULL)
+		error(FATAL, "out of space in split");
 	if (a[2] == nullstat)
 		sep = **FS;
 	else {
@@ -593,6 +617,7 @@ obj split(a,nnn) node **a;
 		tempfree(x);
 	}
 	n = 0;
+	orig = s;
 	ap = (cell *) a[1];
 	freesymtab(ap);
 	dprintf("split: s=|%s|, a=%s, sep=|%c|\n", s, ap->nval, sep);
@@ -620,6 +645,8 @@ obj split(a,nnn) node **a;
 			break;
 		s = p + 1;
 	}
+	free(temp);
+	free(orig);
 	x = gettemp();
 	x.optr->tval = NUM;
 	x.optr->fval = n;
@@ -688,28 +715,49 @@ obj instat(a, n) node **a;
 {
 	cell *vp, *arrayp, *cp, **tp;
 	obj x;
-	int i;
+	int i, k, count;
+	char **keys;
 
 	vp = (cell *) a[0];
 	arrayp = (cell *) a[1];
 	if (!(arrayp->tval & ARR))
 		error(FATAL, "%s is not an array", arrayp->nval);
+	if (vp->tval & ARR)	/* Nexix: V7 freed the array's table */
+		error(FATAL, "illegal reference to array %s", vp->nval);
 	tp = (cell **) arrayp->sval;
-	for (i = 0; i < MAXSYM; i++) {	/* this routine knows too much */
-		for (cp = tp[i]; cp != NULL; cp = cp->nextval) {
-			xfree(vp->sval);
-			vp->sval = tostring(cp->nval);
-			vp->tval = STR;
-			x = execute(a[2]);
-			if (isbreak(x)) {
-				x = true;
-				return(x);
-			}
-			if (isnext(x) || isexit(x))
-				return(x);
-			tempfree(x);
+	/* Nexix: the subscripts are copied first, so the body may change or
+	 * split the array; V7 walked cells that the body could free. */
+	count = 0;
+	for (i = 0; i < MAXSYM; i++)	/* this routine knows too much */
+		for (cp = tp[i]; cp != NULL; cp = cp->nextval)
+			count++;
+	keys = (char **) malloc((count + 1) * sizeof(char *));
+	if (keys == NULL)
+		error(FATAL, "out of space in for");
+	k = 0;
+	for (i = 0; i < MAXSYM; i++)
+		for (cp = tp[i]; cp != NULL; cp = cp->nextval)
+			keys[k++] = tostring(cp->nval);
+	x = true;
+	for (k = 0; k < count; k++) {
+		xfree(vp->sval);
+		vp->sval = keys[k];
+		keys[k] = NULL;
+		vp->tval = STR;
+		x = execute(a[2]);
+		if (isbreak(x)) {
+			x = true;
+			break;
 		}
+		if (isnext(x) || isexit(x))
+			break;
+		tempfree(x);
+		x = true;
 	}
+	for (k = 0; k < count; k++)
+		xfree(keys[k]);
+	free(keys);
+	return(x);
 }
 
 obj jump(a,n) node **a;
@@ -750,7 +798,7 @@ obj fncn(a,n) node **a;
 	else if (t == FLOG)
 		u = log(getfval(x.optr));
 	else if (t == FINT)
-		u = (awkfloat) (long) getfval(x.optr);
+		u = awkint(getfval(x.optr));
 	else if (t == FEXP)
 		u = exp(getfval(x.optr));
 	else if (t == FSQRT)
@@ -767,20 +815,24 @@ obj print(a,n) node **a;
 {
 	register node *x;
 	obj y;
-	char s[RECSIZE];
+	char s[RECSIZE], *v, *sep;
+	int len, k;
 
+	/* Nexix: the length is checked before each copy; V7 checked after. */
 	s[0] = '\0';
+	len = 0;
 	for (x=a[0]; x!=NULL; x=x->nnext) {
 		y = execute(x);
-		strcat(s, getsval(y.optr));
+		v = getsval(y.optr);
+		sep = x->nnext==NULL ? *ORS : *OFS;
+		k = strlen(v) + strlen(sep);
+		if (len + k >= RECSIZE)
+			error(FATAL, "string %.20s ... too long to print", len ? s : v);
+		strcpy(s + len, v);
+		strcpy(s + len + strlen(v), sep);
+		len += k;
 		tempfree(y);
-		if (x->nnext==NULL)
-			strcat(s, *ORS);
-		else
-			strcat(s, *OFS);
 	}
-	if (strlen(s) >= RECSIZE)
-		error(FATAL, "string %.20s ... too long to print", s);
 	if (a[1]==nullstat) {
 		printf("%s", s);
 		return(true);
@@ -789,7 +841,7 @@ obj print(a,n) node **a;
 	return(false);
 }
 
-obj nullproc() {}
+obj nullproc() { return(true); }	/* Nexix: V7 returned nothing */
 
 obj nodetoobj(a) node *a;
 {
