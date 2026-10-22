@@ -58,5 +58,8 @@ int net_socket_receive_datagram(struct nx_socket *, bool peek, struct nx_net_mbu
 int net_socket_set_option(struct nx_socket *, int level, int name, const void *value);
 int net_socket_get_option(struct nx_socket *, int level, int name, void *value);
 int net_socket_shutdown(struct nx_socket *, int how);
+/* Interface/route configuration (task 427): one NX_SIOC* request on its
+ * record, run on the worker. */
+int net_socket_configure(unsigned long request, void *record);
 int net_socket_name(struct nx_socket *, bool peer, nx_net_addr_t *, nx_net_port_t *);
 #endif

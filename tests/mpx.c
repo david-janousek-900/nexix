@@ -21,6 +21,7 @@ int v7fs_release_inode(struct v7fs *fs,v7_ino_t ino){(void)fs;(void)ino;abort();
 void storage_close(struct storage_handle *h){(void)h;abort();}
 int tape_close(void *p){(void)p;abort();}
 void socket_file_close(void *p){(void)p;abort();}
+int64_t socket_ioctl(void *p,uint64_t r,uintptr_t a){(void)p;(void)r;(void)a;abort();}
 int64_t socket_file_io(void *p,uint32_t f,uintptr_t a,uint64_t n,bool w){(void)p;(void)f;(void)a;(void)n;(void)w;abort();}
 int output_close(void *p){(void)p;abort();}
 void modem_close(void *p){(void)p;abort();}

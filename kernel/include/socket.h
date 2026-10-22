@@ -9,4 +9,6 @@ int64_t socket_syscall(uint64_t number, const uintptr_t args[6]);
  * socket file, and its final close. */
 int64_t socket_file_io(void *socket, uint32_t open_flags, uintptr_t address, uint64_t count, bool write);
 void socket_file_close(void *socket);
+/* NX_SIOC* configuration requests on a socket descriptor (task 427). */
+int64_t socket_ioctl(void *socket, uint64_t request, uintptr_t argument);
 #endif

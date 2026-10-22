@@ -31,7 +31,7 @@ CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-stack-protector 
 OBJECTS = build/klog.o build/console.o build/packet.o build/packet_tty.o build/packet_image.o build/boot.o build/main.o build/interrupts.o build/interrupt_stubs.o build/boot_info.o build/memory.o build/paging.o build/paging_test.o build/segments.o build/user_entry.o build/user_blob.o build/user_test.o build/process.o build/context.o build/process_test.o build/process_blob.o build/uaccess.o build/syscall.o build/syscall_test.o build/syscall_blob.o build/elf.o build/exec.o build/exec_test.o build/exec_image.o build/libc_test.o build/libc_image.o build/block.o build/v7fs.o build/fs_test.o build/root_image.o build/files.o build/files_test.o build/files_image.o build/tty.o build/tty_test.o build/tty_image.o build/signals.o build/signals_test.o build/signals_image.o build/catalog.o build/v7_userland_test.o build/v7_test_image.o
 include build/native-config.mk
 OBJECTS += $(NATIVE_CONFIG_OBJECTS)
-OBJECTS += build/net_compat.o build/net_pool.o build/net_mbuf.o build/net_kernel.o build/net_sched.o build/net_worker.o build/net_worker_test.o build/pci.o build/pci_port.o build/net_e1000.o build/net_e1000_test.o build/net_if.o build/net_route.o build/net_arp.o build/net_ip.o build/net_icmp.o build/net_udp.o build/net_tcp.o build/net_socket.o build/net_stack.o build/net_stack_test.o
+OBJECTS += build/net_compat.o build/net_pool.o build/net_mbuf.o build/net_kernel.o build/net_sched.o build/net_worker.o build/net_worker_test.o build/pci.o build/pci_port.o build/net_e1000.o build/net_e1000_test.o build/net_if.o build/net_route.o build/net_arp.o build/net_ip.o build/net_icmp.o build/net_udp.o build/net_tcp.o build/net_socket.o build/net_config.o build/net_stack.o build/net_stack_test.o
 
 build/native-config.mk: config/kernel.json tools/mkconf.py
 	$(PYTHON) tools/mkconf.py config/kernel.json $@
@@ -668,6 +668,30 @@ test-net-udp: build/net_udp.o build/net-udp-test build/net-header-udp.o
 test-unit: test-net-udp
 test-net-udp-guest: test-pci-guest
 
+# Task 427: interface and route configuration behind socket ioctls.
+build/net_config.o: kernel/net/config.c $(NET_ROUTE_HEADERS) kernel/include/net/config.h include/nexix/socket.h | build/.dir
+	$(CC) $(CFLAGS) -nostdinc -isystem $(shell $(CC) -print-file-name=include) -c $< -o $@
+build/net-config-test: tests/net_config.c kernel/net/config.c kernel/net/route.c kernel/net/arp.c kernel/net/if.c kernel/net/pool.c kernel/net/mbuf.c $(NET_ROUTE_HEADERS) kernel/include/net/config.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -g -Wall -Wextra -Werror -fno-omit-frame-pointer -fno-pie -no-pie -fsanitize=address,undefined -fno-sanitize-recover=all -Ikernel/include -Iinclude tests/net_config.c kernel/net/config.c kernel/net/route.c kernel/net/arp.c kernel/net/if.c kernel/net/pool.c kernel/net/mbuf.c -o $@
+.PHONY: test-net-config
+test-net-config: build/net_config.o build/net-config-test build/net-header-config.o
+	./build/net-config-test
+test-unit: test-net-config
+build/v7-ifconfig.o: user/v7/cmd/ifconfig.c user/v7/netconfig.h | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/v7-route.o: user/v7/cmd/route.c user/v7/netconfig.h | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/netconfig-api.o: tests/netconfig-api.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/netconfig-api.elf: build/netconfig-api.o build/crt0.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/netconfig-api.o build/libc.a -o $@
+-include build/netconfig-api.d
+.PHONY: test-netconfig
+test-netconfig: test-net-config multi-iso rootfs build/netconfig-api.elf
+	$(PYTHON) tools/netconfig_smoke.py $(QEMU) build/nexix-multi.iso 16M e1000
+	$(PYTHON) tools/netconfig_smoke.py $(QEMU) build/nexix-multi.iso 128M e1000
+	$(PYTHON) tools/netconfig_smoke.py $(QEMU) build/nexix-multi.iso 16M none
+test: test-netconfig
 # Task 425: socket objects behind file descriptors.
 build/socket-api.o: tests/socket-api.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@

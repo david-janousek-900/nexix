@@ -25648,6 +25648,64 @@
       ]
     },
     {
+      "id": "cmd.netconfig",
+      "kind": "command",
+      "summary": "Native root-controlled interface and static route configuration (ifconfig, route)",
+      "sources": [],
+      "source_files": [],
+      "source_availability": "native",
+      "native_sources": [
+        "user/v7/cmd/ifconfig.c",
+        "user/v7/cmd/route.c",
+        "user/v7/netconfig.h",
+        "kernel/net/config.c",
+        "include/nexix/socket.h"
+      ],
+      "outputs": [
+        {
+          "name": "ifconfig",
+          "install": "/etc/ifconfig",
+          "role": "installed",
+          "status": "implemented",
+          "evidence": [
+            "user/v7/cmd/ifconfig.c",
+            "docs/netconfig.md",
+            "Makefile"
+          ]
+        },
+        {
+          "name": "route",
+          "install": "/etc/route",
+          "role": "installed",
+          "status": "implemented",
+          "evidence": [
+            "user/v7/cmd/route.c",
+            "docs/netconfig.md",
+            "Makefile"
+          ]
+        }
+      ],
+      "priority": 3,
+      "status": "implemented",
+      "dependencies": [
+        {
+          "target": "lib.libc",
+          "phase": "runtime",
+          "certainty": "confirmed",
+          "evidence": [
+            "libc/socket.c"
+          ],
+          "note": "Socket descriptors and ioctl wrappers carry the configuration requests."
+        }
+      ],
+      "blockers": [],
+      "unresolved": [],
+      "reference_includes": [],
+      "acceptance": [
+        "Test root-only changes, queries for every user, malformed addresses/masks/gateways, address/up rollback and connected/default route display at 16/128 MiB."
+      ]
+    },
+    {
       "id": "cmd.clear",
       "kind": "command",
       "summary": "Native terminal clearing through TERM and termcap",

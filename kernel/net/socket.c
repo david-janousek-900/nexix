@@ -1,6 +1,7 @@
 #include "net/socket.h"
 #include "net/kernel.h"
 #include "net/worker.h"
+#include "net/config.h"
 #include "process.h"
 #include <nexix/socket.h>
 #include <nexix/errno.h>
@@ -574,4 +575,22 @@ int net_socket_get_option(struct nx_socket *s, int level, int name, void *value)
 {
     struct request r = { .s = s, .level = level, .name = name, .out = value };
     return (int)call(get_option, &r);
+}
+
+static void configure(void *argument)
+{
+    struct request *r = argument;
+    switch (r->length) {   /* the request number travels in length */
+    case NX_SIOCGIFINFO: r->result = nx_net_config_ifinfo(r->out); return;
+    case NX_SIOCSIFCONFIG: r->result = nx_net_config_apply(r->out); return;
+    case NX_SIOCGROUTE: r->result = nx_net_config_get_route(r->out); return;
+    case NX_SIOCSROUTE: r->result = nx_net_config_set_route(r->out); return;
+    case NX_SIOCLOOKUP: r->result = nx_net_config_lookup(r->out); return;
+    default: r->result = -NX_ENOTTY;
+    }
+}
+int net_socket_configure(unsigned long request, void *record)
+{
+    struct request r = { .length = request, .out = record };
+    return (int)call(configure, &r);
 }

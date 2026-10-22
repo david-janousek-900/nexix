@@ -53,6 +53,49 @@ struct nx_sockaddr_in {
 struct nx_sockaddr_storage { nx_sa_family_t family; uint16_t pad; uint32_t data[31]; };
 /* SO_SNDTIMEO/SO_RCVTIMEO value; zero means no timeout. */
 struct nx_timeval { int64_t sec, usec; };
+/* Interface and route configuration ioctls on any socket descriptor (task
+ * 427). Queries are open to every user; changes need effective uid 0
+ * (EPERM). Addresses are in network byte order. */
+#define NX_IFNAMSIZ 8
+#define NX_IFF_UP 0x1
+#define NX_IFF_BROADCAST 0x2
+#define NX_IFF_LOOPBACK 0x8
+#define NX_IFF_RUNNING 0x40
+#define NX_SIOCGIFINFO 0x6901   /* struct nx_ifinfo: by name, or by index when name is empty */
+#define NX_SIOCSIFCONFIG 0x6902 /* struct nx_ifconfig, applied whole or not at all */
+#define NX_SIOCGROUTE 0x6903    /* struct nx_route: the default gateway */
+#define NX_SIOCSROUTE 0x6904    /* struct nx_route: set, or gateway 0 to clear */
+#define NX_SIOCLOOKUP 0x6905    /* struct nx_route_lookup: where a destination goes */
+struct nx_ifinfo {
+    uint32_t index;                  /* in: position, used when name[0] is 0 */
+    char name[NX_IFNAMSIZ];          /* in/out, NUL-padded */
+    uint32_t flags, mtu;
+    uint8_t lladdr[6], addressed, reserved;
+    uint32_t addr, mask, broadcast;  /* zero when not addressed */
+    uint64_t ipackets, ierrors, opackets, oerrors, ibytes, obytes, iqdrops;
+};
+#define NX_IFC_ADDRESS 0x1   /* set addr and mask */
+#define NX_IFC_CLEAR 0x2     /* remove the address */
+#define NX_IFC_UP 0x4
+#define NX_IFC_DOWN 0x8
+struct nx_ifconfig {
+    char name[NX_IFNAMSIZ];
+    uint32_t change;                 /* NX_IFC_* bits; ADDRESS/CLEAR and UP/DOWN exclusive */
+    uint32_t addr, mask, reserved;
+};
+#define NX_RT_DEFAULT 0x1
+struct nx_route { uint32_t gateway, flags; };   /* flags: NX_RT_DEFAULT when one is set */
+#define NX_RT_LOCAL 0x1
+#define NX_RT_BROADCAST 0x2
+#define NX_RT_GATEWAY 0x4
+struct nx_route_lookup {
+    uint32_t dst;                    /* in */
+    char ifname[NX_IFNAMSIZ];
+    uint32_t next_hop, source, flags;   /* NX_RT_LOCAL/BROADCAST/GATEWAY */
+};
+_Static_assert(sizeof(struct nx_ifinfo) == 96, "ifinfo ABI layout");
+_Static_assert(sizeof(struct nx_ifconfig) == 24, "ifconfig ABI layout");
+_Static_assert(sizeof(struct nx_route) == 8 && sizeof(struct nx_route_lookup) == 24, "route ABI layout");
 _Static_assert(sizeof(struct nx_sockaddr) == 16, "sockaddr ABI layout");
 _Static_assert(sizeof(struct nx_sockaddr_in) == 16, "sockaddr_in ABI layout");
 _Static_assert(sizeof(struct nx_sockaddr_storage) == NX_SOCKADDR_MAX, "sockaddr_storage ABI layout");

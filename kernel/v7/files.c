@@ -771,7 +771,7 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
             u->u_pofile[fd] = request == NX_FIOCLEX ? V7_EXCLOSE : 0;
             return 0;
         }
-        if(f->f_flag&FILE_SOCKET)return -NX_ENOTTY;   /* socket ioctls are task 427's */
+        if(f->f_flag&FILE_SOCKET)return socket_ioctl(f->f_private,request,argument);
         if(f->f_flag&FILE_TAPE){
             return tape_ioctl(f->f_private,&p->p_vm,request,argument,&f->f_offset);
         }

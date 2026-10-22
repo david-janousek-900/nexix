@@ -7962,6 +7962,32 @@
       "format": "elf"
     },
     {
+      "path": "/etc/ifconfig",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.netconfig",
+      "source": {
+        "root": "programs",
+        "path": "v7-ifconfig.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/etc/route",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.netconfig",
+      "source": {
+        "root": "programs",
+        "path": "v7-route.elf"
+      },
+      "format": "elf"
+    },
+    {
       "path": "/etc/update",
       "type": "file",
       "mode": "0755",

@@ -140,6 +140,12 @@ _Static_assert(MSG_PEEK==2 && MSG_WAITALL==0x40 && MSG_DONTWAIT==0x80 && SHUT_RD
                "socket flag values");
 #include <fcntl.h>
 _Static_assert(O_NONBLOCK==4 && S_IFSOCK==0140000, "socket descriptor flag and file type");
+_Static_assert(NX_SIOCGIFINFO==0x6901 && NX_SIOCLOOKUP==0x6905 && NX_IFNAMSIZ==8 && NX_IFF_RUNNING==0x40,
+               "configuration ioctl numbers");
+_Static_assert(offsetof(struct nx_ifinfo,flags)==12 && offsetof(struct nx_ifinfo,lladdr)==20 &&
+               offsetof(struct nx_ifinfo,addr)==28 && offsetof(struct nx_ifinfo,ipackets)==40 &&
+               offsetof(struct nx_ifconfig,change)==8 && offsetof(struct nx_route_lookup,ifname)==4 &&
+               offsetof(struct nx_route_lookup,next_hop)==12, "configuration record offsets");
 _Static_assert(INADDR_LOOPBACK==0x7f000001u && INADDR_ANY==0 && INADDR_NONE==0xffffffffu && INET_ADDRSTRLEN==16,
                "IPv4 address constants");
 SIZE(socklen_t,4); SIZE(sa_family_t,2); SIZE(in_port_t,2); SIZE(in_addr_t,4); SIZE(struct in_addr,4);

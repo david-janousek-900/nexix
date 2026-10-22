@@ -326,6 +326,29 @@ int64_t socket_file_io(void *object, uint32_t open_flags, uintptr_t address, uin
 }
 void socket_file_close(void *object) { net_socket_release(object); }
 
+/* Configuration ioctls (task 427): any socket descriptor; changes are root's. */
+int64_t socket_ioctl(void *object, uint64_t request, uintptr_t argument)
+{
+    (void)object;
+    struct proc *p = proc_current();
+    size_t size;
+    bool change = false;
+    switch (request) {
+    case NX_SIOCGIFINFO: size = sizeof(struct nx_ifinfo); break;
+    case NX_SIOCSIFCONFIG: size = sizeof(struct nx_ifconfig); change = true; break;
+    case NX_SIOCGROUTE: size = sizeof(struct nx_route); break;
+    case NX_SIOCSROUTE: size = sizeof(struct nx_route); change = true; break;
+    case NX_SIOCLOOKUP: size = sizeof(struct nx_route_lookup); break;
+    default: return -NX_ENOTTY;
+    }
+    union { struct nx_ifinfo info; struct nx_ifconfig config; struct nx_route route; struct nx_route_lookup lookup; } record;
+    if (!user_access_ok(&p->p_vm, argument, size, !change) || copyin(&p->p_vm, argument, &record, size)) return -NX_EFAULT;
+    if (change && !proc_superuser(p->p_user)) return -NX_EPERM;
+    int error = net_socket_configure(request, &record);
+    if (error || change) return error;
+    return copyout(&p->p_vm, argument, &record, size) ? -NX_EFAULT : 0;
+}
+
 int64_t socket_syscall(uint64_t number, const uintptr_t a[6])
 {
     struct proc *p = proc_current();

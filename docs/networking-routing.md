@@ -99,8 +99,9 @@ are unresolved, resolved, or negative.
 `net_start` initializes ARP with a millisecond clock from `timer_ticks()`,
 installs the change hook, registers the ARP ethertype and arms the periodic
 timer. Interfaces start unaddressed. `net_stop` cancels the timer, clears the
-default route, detaches interfaces, flushes ARP and unregisters it. Socket and
-tool configuration belongs to task 427; [IPv4 input/output](networking-ip.md)
+default route, detaches interfaces, flushes ARP and unregisters it. Root configures
+addresses and the default route with [`ifconfig` and `route`](netconfig.md)
+(task 427); [IPv4 input/output](networking-ip.md)
 (task 420) builds on `nx_net_route_send`.
 
 ## Validation

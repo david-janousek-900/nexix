@@ -1,7 +1,7 @@
 # Nexix 0.2.0 networking roadmap
 
 Agreed direction: directly adapt **4.4BSD-Lite2** networking to Nexix. This
-replaces the previous lwIP proposal. Tasks **412–426 are done**: the
+replaces the previous lwIP proposal. Tasks **412–427 are done**: the
 [source/dependency audit](bsd-networking-audit.md), private
 [compatibility foundation](networking-compat.md), bounded
 [packet/socket pools](networking-pools.md) and the serialized
@@ -13,8 +13,9 @@ replaces the previous lwIP proposal. Tasks **412–426 are done**: the
 [IPv4 input/output and fragments](networking-ip.md) and
 [ICMP and raw echo sockets](networking-icmp.md),
 [UDP](networking-udp.md) and [TCP](networking-tcp.md) are implemented and tested,
-and the [socket ABI, descriptors, operations and options](sockets.md) are in place.
-Tasks **427–431 remain To do**; networking is not operational yet.
+the [socket ABI, descriptors, operations and options](sockets.md) and
+[interface/route configuration tools](netconfig.md) are in place.
+Tasks **428–431 remain To do**; networking is not operational yet.
 Numbered implementation tasks **412–431** in
 [tasks.md](tasks.md#tcpip-implementation-020) track these milestones and count
 toward roadmap totals, separately from V7 inventory component ownership.

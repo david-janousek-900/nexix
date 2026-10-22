@@ -170,13 +170,15 @@ and write access and a native kind bit, so:
 - the protocol block is released on the **final** close, whether by `close`,
   `exec` or process exit;
 - `fstat` reports `S_IFSOCK` (0140000) with mode 0600; `lseek` is `ESPIPE`;
-  ioctls other than close-on-exec are `ENOTTY`;
+  ioctls other than close-on-exec and the [configuration requests](netconfig.md)
+  (task 427) are `ENOTTY`;
 - `nx_kinfo` reports file kind `NX_KINFO_FILE_SOCKET` (10).
 
 **The stack.** The first `socket` starts the network stack if nothing has. Its
 worker becomes a child of the bootstrap process, so no user process ever waits
 for it, and `lo0` gets 127.0.0.1/8. External interfaces stay unconfigured
-until tasks 427–429.
+until root configures them with [`ifconfig` and `route`](netconfig.md)
+(task 427) or the optional startup of task 429.
 
 **Waiting.** Every protocol operation runs on the network worker. A caller
 that must wait sleeps interruptibly on its socket. Protocol events (data,

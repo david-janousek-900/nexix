@@ -9,7 +9,7 @@ additional installed manual/monitoring commands and their native adaptations.
 
 The authoritative [manifest](v7-userland-manifest.json) accounts for all
 **2,144 distribution files**, grouped into **217 historical components**.
-Six native additions bring the manifest to **223 components** and **36 platform
+Seven native additions bring the manifest to **224 components** and **36 platform
 or supporting-input requirements**. The preserved userland source subset still
 contains 1,121 files and its original 174 component records. The full audit adds
 installed scripts, additional games, the root diagnostic source, kernel/boot
