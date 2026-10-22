@@ -984,6 +984,19 @@
       }
     },
     {
+      "path": "/lib/libln.a",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.lex",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "libln.a"
+      }
+    },
+    {
       "path": "/lib/libm.a",
       "type": "file",
       "mode": "0644",
@@ -7225,6 +7238,32 @@
       }
     },
     {
+      "path": "/usr/lib/lex/nrform",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.library-data",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/lib/lex/nrform"
+      }
+    },
+    {
+      "path": "/usr/lib/lex/ebcform",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.library-data",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/lib/lex/ebcform"
+      }
+    },
+    {
       "path": "/usr/lib/llib-lc",
       "type": "file",
       "mode": "0644",
@@ -8138,6 +8177,19 @@
       "source": {
         "root": "programs",
         "path": "v7-yacc.elf"
+      }
+    },
+    {
+      "path": "/bin/lex",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.lex",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-lex.elf"
       }
     },
     {

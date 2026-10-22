@@ -17,6 +17,9 @@ uint64_t timer_ticks(void);
  * line; detach masks it and waits for nothing (single CPU, IRQs disabled). */
 bool irq_attach(unsigned irq, void (*handler)(void *), void *argument);
 void irq_detach(unsigned irq);
+/* TSC deadline for polled waits; 0 before timer_init calibrates the TSC. */
+uint64_t timer_deadline(unsigned milliseconds);
+bool timer_expired(uint64_t deadline);
 void timer_poll(struct interrupt_frame *);
 void interrupt_dispatch(struct interrupt_frame *frame);
 _Noreturn void panic(const char *message);

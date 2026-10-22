@@ -1,5 +1,6 @@
-"""Verify unchanged formatter macros, lex skeleton and lint descriptions.
-Native yaccpar adaptations are exercised by tests/yacc.py."""
+"""Verify unchanged formatter macros and installed library data ownership.
+Native yaccpar, ncform and lint descriptions are adapted and exercised by
+tests/yacc.py, tests/lex.py and tests/lint.py."""
 from pathlib import Path
 import json
 root=Path(__file__).resolve().parents[1]
@@ -8,5 +9,5 @@ files=list((root/'reference/v7/usr/lib/tmac').iterdir())+[root/'reference/v7/usr
 for src in files:
  path='/'+str(src.relative_to(root/'reference/v7'));e=entries[path]
  assert e['mode']=='0644' and e['component']=='distribution.library-data'
- assert (root/'rootfs'/e['source']['path']).read_bytes()==src.read_bytes(),path
-print('PASS: formatter macros, lex skeleton and lint descriptions installed intact')
+ assert 'tmac' not in path or (root/'rootfs'/e['source']['path']).read_bytes()==src.read_bytes(),path
+print('PASS: formatter macros installed intact; lex skeleton and lint descriptions installed')
