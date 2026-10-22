@@ -3,6 +3,10 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
+uint64_t timer_deadline(unsigned milliseconds){(void)milliseconds;return 0;}
+bool timer_expired(uint64_t deadline){(void)deadline;return true;}
+void console_puts(const char *text){(void)text;}
+void console_hex(uint64_t value){(void)value;}
 static uint8_t regs[2][8],status[4],media[4][2][512];
 static unsigned word[4],sector[4],resets;
 static bool identify[4],absent[4],fail,mirror_slave,alias_identify;
@@ -49,13 +53,12 @@ int main(void)
     for(unsigned pass=0;pass<3;++pass)for(unsigned i=0;i<4;++i){
         memset(bytes,0x40+i,512);assert(!block_read(&d[i],1,1,out) && !memcmp(out,bytes,512));
     }
-    fail=true;assert(block_read(&d[3],1,1,out)==-NX_EIO && resets==1);
-    assert(!block_read(&d[3],1,1,out) && out[0]==0x43);
+    fail=true;assert(!block_read(&d[3],1,1,out) && resets==1 && out[0]==0x43); /* Transient error retried. */
     mirror_slave=true;assert(ide_init_unit(&missing,1)==-NX_ENODEV && !missing.blocks);
     mirror_slave=false;alias_identify=true;
     assert(ide_init_unit(&missing,1)==-NX_ENODEV && !missing.blocks);
     alias_identify=false;assert(!ide_init_unit(&missing,1));
     absent[2]=true;assert(ide_init_unit(&missing,2)==-NX_ENODEV && !missing.blocks);
     assert(ide_init_unit(&missing,4)==-NX_EINVAL);
-    puts("PASS: ATA primary/secondary master/slave selection, independent media, reset/error recovery and absent unit");
+    puts("PASS: ATA primary/secondary master/slave selection, independent media, reset/retry recovery and absent unit");
 }

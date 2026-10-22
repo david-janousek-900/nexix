@@ -6,7 +6,13 @@
 static uint8_t registers[8], status, disk[4][512];
 static uint16_t identify[256];
 static unsigned word, sector, commands, flushes, polls;
-static bool identifying, stuck, fail_flush, fail_read;
+static bool identifying, stuck, fail_flush, fail_read, clocked;
+static unsigned clock_checks, logged;
+/* Calibrated mode expires only after more polls than the uncalibrated cap. */
+uint64_t timer_deadline(unsigned milliseconds) { assert(milliseconds); clock_checks=0; return clocked; }
+bool timer_expired(uint64_t deadline) { assert(deadline); return ++clock_checks>3000000; }
+void console_puts(const char *text) { logged+=text[0]=='i'; }
+void console_hex(uint64_t value) { (void)value; }
 uint8_t inb(uint16_t port)
 {
     if (port==0x1f7 || port==0x3f6) { ++polls;return stuck ? 0x80 : status; }
@@ -48,7 +54,7 @@ static void reset(void)
 {
     memset(registers,0,sizeof(registers));memset(identify,0,sizeof(identify));
     status=0x40;word=commands=flushes=polls=0;
-    identifying=stuck=fail_flush=fail_read=false;
+    identifying=stuck=fail_flush=fail_read=clocked=false;logged=0;
     identify[49]=1<<9;identify[60]=4;identify[83]=0x5000;
 }
 int main(void)
@@ -56,6 +62,7 @@ int main(void)
     struct block_device device;
     reset();status=0;assert(ide_init(&device)==-NX_ENODEV && !device.blocks);
     reset();stuck=true;assert(ide_init(&device)==-NX_EIO && polls>=1000000 && polls<1000020);
+    reset();clocked=true;stuck=true;assert(ide_init(&device)==-NX_EIO && polls>3000000);
     reset();status=0x10;assert(ide_init(&device)==-NX_EIO && !commands); /* No DRDY: never IDENTIFY. */
     reset();identify[49]=0;assert(ide_init(&device)==-NX_EIO);
     reset();identify[106]=0x5000;identify[117]=2048;assert(ide_init(&device)==-NX_EIO);
@@ -69,9 +76,10 @@ int main(void)
     assert(!memcmp(input+1,output+1,1024));
     unsigned before=commands;
     assert(block_write(&device,3,2,input)==-NX_EIO && commands==before);
-    fail_read=true;assert(block_read(&device,0,1,output)==-NX_EIO);
+    before=commands;
+    fail_read=true;assert(block_read(&device,0,1,output)==-NX_EIO && commands-before==3 && logged==3);
     fail_read=false;assert(!block_read(&device,0,1,output));
     reset();assert(!ide_init(&device));fail_flush=true;
-    assert(block_write(&device,0,1,input)==-NX_EIO && flushes==1);
-    puts("PASS: IDE absent/timeout/not-ready/unsupported device, unaligned multi-sector I/O, bounds, read and flush errors");
+    assert(block_write(&device,0,1,input)==-NX_EIO && flushes==3);
+    puts("PASS: IDE absent/timeout/not-ready/unsupported device, unaligned multi-sector I/O, bounds, wall-clock timeout, read and flush errors with retries");
 }

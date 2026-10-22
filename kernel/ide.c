@@ -1,5 +1,7 @@
 #include "ide.h"
 #include "io.h"
+#include "console.h"
+#include "interrupts.h"
 #include <nexix/errno.h>
 struct ata {uint16_t io,control;unsigned slave;};
 static uint16_t master_serial[2][10];
@@ -9,14 +11,22 @@ static const struct ata ports[]={{0x1f0,0x3f6,0},{0x1f0,0x3f6,1},{0x170,0x376,0}
 #define DRDY 0x40
 #define DRQ 0x08
 #define FAULT 0x21
-#define POLLS 1000000U
+#define POLLS 1000000U /* Fallback bound before the TSC is calibrated. */
+/* Wall-clock bounds: an emulated disk can stall for a host fsync, and ATA
+ * allows FLUSH CACHE up to 30 s. Probing absent devices stays short. */
+#define IO_MS 30000U
+#define PROBE_MS 2000U
+#define ATTEMPTS 3
+static bool waiting(uint64_t deadline,unsigned *polls)
+{ return deadline ? !timer_expired(deadline) : (*polls)++<POLLS; }
 static void delay(const struct ata *a)
 {
     for (unsigned i=0;i<4;++i) (void)inb(a->control);
 }
-static int ready(const struct ata *a,bool data, bool check_errors)
+static int ready(const struct ata *a,bool data, bool check_errors,unsigned ms)
 {
-    for (unsigned i=0;i<POLLS;++i) {
+    uint64_t deadline=timer_deadline(ms);
+    for (unsigned polls=0;waiting(deadline,&polls);) {
         uint8_t status=inb(a->control);
         if (!status || status==0xff) return -NX_EIO;
         if (status&BUSY) continue;
@@ -26,9 +36,10 @@ static int ready(const struct ata *a,bool data, bool check_errors)
     return -NX_EIO;
 }
 /* ATA requires DRDY before non-diagnostic commands; a drive without it is unusable. */
-static int drive_ready(const struct ata *a)
+static int drive_ready(const struct ata *a,unsigned ms)
 {
-    for (unsigned i=0;i<POLLS;++i) {
+    uint64_t deadline=timer_deadline(ms);
+    for (unsigned polls=0;waiting(deadline,&polls);) {
         uint8_t status=inb(a->control);
         if (!status || status==0xff) return -NX_ENODEV;
         if (!(status&BUSY) && (status&DRDY)) return 0;
@@ -38,18 +49,17 @@ static int drive_ready(const struct ata *a)
 static int transfer(struct block_device *device,uint32_t sector,void *buffer,bool write)
 {
     const struct ata *a=device->context;
-    if(sector>=device->blocks || !buffer)return -NX_EIO;
     outb(a->io+6,0xe0 | (a->slave<<4) | ((sector>>24)&15));
     delay(a);
     /* A previous command error is cleared by issuing the next command. */
-    if (ready(a,false,false) || drive_ready(a)) return -NX_EIO;
+    if (ready(a,false,false,IO_MS) || drive_ready(a,IO_MS)) return -NX_EIO;
     outb(a->io+2,1);
     outb(a->io+3,sector);
     outb(a->io+4,sector>>8);
     outb(a->io+5,sector>>16);
     outb(a->io+7,write ? 0x30 : 0x20);
     delay(a);
-    if (ready(a,true,true)) return -NX_EIO;
+    if (ready(a,true,true,IO_MS)) return -NX_EIO;
     uint8_t *bytes=buffer;
     for (unsigned i=0;i<256;++i) {
         if (write) outw(a->io,(uint16_t)bytes[2*i] | ((uint16_t)bytes[2*i+1]<<8));
@@ -59,24 +69,37 @@ static int transfer(struct block_device *device,uint32_t sector,void *buffer,boo
         }
     }
     delay(a);
-    if (ready(a,false,true)) return -NX_EIO;
+    if (ready(a,false,true,IO_MS)) return -NX_EIO;
     if (write) {
         /* Flush the device cache before acknowledging each filesystem write. */
         outb(a->io+7,0xe7);
         delay(a);
-        if (ready(a,false,true)) return -NX_EIO;
+        if (ready(a,false,true,IO_MS)) return -NX_EIO;
     }
     return 0;
 }
+static void reset(const struct ata *a)
+{
+    outb(a->control,6);
+    for(unsigned i=0;i<16;++i)delay(a); /* Hold reset beyond the select delay. */
+    outb(a->control,2);delay(a);
+    (void)ready(a,false,false,IO_MS);
+}
+/* Transient stalls must not reach the filesystem, which treats a failed
+ * write as permanent. Sector reads and writes are idempotent to retry. */
 static int command(struct block_device *device,uint32_t sector,void *buffer,bool write)
 {
-    int error=transfer(device,sector,buffer,write);
-    if(error){
-        const struct ata *a=device->context;
-        outb(a->control,6);
-        for(unsigned i=0;i<16;++i)delay(a); /* Hold reset beyond the select delay. */
-        outb(a->control,2);delay(a);
-        (void)ready(a,false,false); /* Bounded channel reset before a retry. */
+    const struct ata *a=device->context;
+    if(sector>=device->blocks || !buffer)return -NX_EIO;
+    int error=0;
+    for(unsigned attempt=0;attempt<ATTEMPTS;++attempt){
+        error=transfer(device,sector,buffer,write);
+        if(!error)return 0;
+        console_puts(write?"ide: write error, sector ":"ide: read error, sector ");
+        console_hex(sector);
+        console_puts(" status ");console_hex(inb(a->control));
+        console_puts(attempt+1<ATTEMPTS?", retrying\r\n":", giving up\r\n");
+        reset(a);
     }
     return error;
 }
@@ -98,16 +121,16 @@ int ide_init_unit(struct block_device *device,unsigned index)
     if((inb(a->io+6)&0x10)!=(a->slave<<4))return -NX_ENODEV;
     uint8_t status=inb(a->io+7);
     if (!status || status==0xff) return -NX_ENODEV;
-    int error=drive_ready(a);if (error) return error;
+    int error=drive_ready(a,PROBE_MS);if (error) return error;
     outb(a->io+2,0);outb(a->io+3,0);outb(a->io+4,0);outb(a->io+5,0);
     outb(a->io+7,0xec);
     delay(a);
-    if (ready(a,true,true)) return -NX_EIO;
+    if (ready(a,true,true,PROBE_MS)) return -NX_EIO;
     if (inb(a->io+4) || inb(a->io+5)) return -NX_EIO;
     uint16_t words[256];
     for (unsigned i=0;i<256;++i) words[i]=inw(a->io);
     delay(a);
-    if (ready(a,false,true)) return -NX_EIO;
+    if (ready(a,false,true,PROBE_MS)) return -NX_EIO;
     uint32_t blocks=(uint32_t)words[60] | ((uint32_t)words[61]<<16);
     if (!(words[49]&(1U<<9)) || !blocks || blocks>(1U<<28) ||
         (words[83]&0xc000)!=0x4000 || !(words[83]&(1U<<12))) return -NX_EIO;

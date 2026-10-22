@@ -109,6 +109,12 @@ void timer_init(void)
     outb(0x21, inb(0x21) & ~1U);
 }
 uint64_t timer_ticks(void) { return ticks; }
+uint64_t timer_deadline(unsigned milliseconds)
+{
+    if(!tick_clock.period)return 0; /* Calibrated period is 10 ms. */
+    return cycles()+tick_clock.period*((milliseconds+9)/10);
+}
+bool timer_expired(uint64_t deadline) { return (int64_t)(cycles()-deadline)>=0; }
 /* All callers hold IRQ serialization; callbacks may schedule and resume.
  * Elapsed periods are shared, so a catch-up preempted by proc_timer cannot
  * absorb ticks another context adds while it is switched out. */
