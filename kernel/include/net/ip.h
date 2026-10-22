@@ -23,6 +23,9 @@
 typedef void (*nx_net_ip_input_fn)(struct nx_net_if *, struct nx_net_mbuf *, size_t header_length);
 enum nx_net_result nx_net_ip_register(uint8_t protocol, nx_net_ip_input_fn);
 void nx_net_ip_unregister(uint8_t protocol);
+/* Called with a datagram for an unregistered protocol instead of dropping it
+ * (ICMP protocol-unreachable, task 421); NULL restores dropping. */
+void nx_net_ip_set_unknown_hook(nx_net_ip_input_fn);
 
 struct nx_net_ip_stats {
     uint64_t received, delivered, too_short, bad_version, bad_header, bad_checksum, bad_length;

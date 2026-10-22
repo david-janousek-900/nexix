@@ -12,7 +12,9 @@ Up to 4 transport protocols register one input routine each by IP protocol
 number (duplicates are refused). The routine receives the whole validated,
 reassembled datagram with its header (including options) contiguous, and the
 header length. A datagram for an unregistered protocol is counted in
-`no_protocol` and dropped; sending ICMP protocol-unreachable belongs to task 421.
+`no_protocol` and passed to the hook set by `nx_net_ip_set_unknown_hook`, which
+[ICMP](networking-icmp.md) uses to send protocol unreachable (dropped when no
+hook is set).
 
 ## Input
 

@@ -3,6 +3,7 @@
 #include "net/arp.h"
 #include "net/route.h"
 #include "net/ip.h"
+#include "net/icmp.h"
 #include "net/e1000.h"
 #include "net/worker.h"
 #include "memory.h"
@@ -66,9 +67,12 @@ static void attach(void *argument)
     bool *ok = argument;
     nx_net_arp_init(&pool, clock_ms);
     nx_net_ip_init(&pool, clock_ms);
+    nx_net_icmp_init();
     nx_net_if_set_change_hook(changed);
     if (nx_net_proto_register(NX_NET_ETHERTYPE_ARP, nx_net_arp_input) != NX_NET_OK ||
-        nx_net_proto_register(NX_NET_ETHERTYPE_IP, nx_net_ip_input) != NX_NET_OK) { *ok = false; return; }
+        nx_net_proto_register(NX_NET_ETHERTYPE_IP, nx_net_ip_input) != NX_NET_OK ||
+        nx_net_ip_register(NX_NET_IPPROTO_ICMP, nx_net_icmp_input) != NX_NET_OK) { *ok = false; return; }
+    nx_net_ip_set_unknown_hook(nx_net_icmp_unknown);
     nx_net_timer_init(&arp_timer, arp_tick, NULL);
     net_timer_arm(&arp_timer, net_ticks_from_ms(NX_NET_ARP_TIMER_MS));
     nx_net_timer_init(&ip_timer, ip_tick, NULL);
@@ -90,6 +94,9 @@ static void detach(void *argument)
     while (nx_net_if_count()) nx_net_if_detach(nx_net_if_at(0));
     nx_net_arp_flush(NULL);
     nx_net_ip_flush();
+    nx_net_raw_flush();
+    nx_net_ip_set_unknown_hook(NULL);
+    nx_net_ip_unregister(NX_NET_IPPROTO_ICMP);
     nx_net_if_set_change_hook(NULL);
     nx_net_proto_unregister(NX_NET_ETHERTYPE_ARP);
     nx_net_proto_unregister(NX_NET_ETHERTYPE_IP);
