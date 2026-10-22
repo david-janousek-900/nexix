@@ -69,6 +69,8 @@ static bool local_address(nx_net_addr_t a, bool running)
     return false;
 }
 
+bool nx_net_inet_local(nx_net_addr_t a) { return local_address(a, false); }
+
 enum nx_net_result nx_net_route_set_default(nx_net_addr_t gateway)
 {
     if (!nx_net_inet_unicast(gateway) || local_address(gateway, false)) return NX_NET_INVALID;
@@ -125,9 +127,13 @@ enum nx_net_result nx_net_route_output(struct nx_net_mbuf *m, nx_net_addr_t dst)
         nx_net_mbuf_drop(m);
         return result;
     }
-    if (route.ifp->flags & NX_NET_IFF_LOOPBACK)
-        return nx_net_if_output(route.ifp, m, NULL, NX_NET_ETHERTYPE_IP);
-    if (route.broadcast)
-        return nx_net_if_output(route.ifp, m, nx_net_ether_broadcast, NX_NET_ETHERTYPE_IP);
-    return nx_net_arp_output(route.ifp, route.next_hop, m);
+    return nx_net_route_send(&route, m);
+}
+enum nx_net_result nx_net_route_send(const struct nx_net_route *route, struct nx_net_mbuf *m)
+{
+    if (route->ifp->flags & NX_NET_IFF_LOOPBACK)
+        return nx_net_if_output(route->ifp, m, NULL, NX_NET_ETHERTYPE_IP);
+    if (route->broadcast)
+        return nx_net_if_output(route->ifp, m, nx_net_ether_broadcast, NX_NET_ETHERTYPE_IP);
+    return nx_net_arp_output(route->ifp, route->next_hop, m);
 }

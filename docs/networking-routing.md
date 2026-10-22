@@ -100,7 +100,8 @@ are unresolved, resolved, or negative.
 installs the change hook, registers the ARP ethertype and arms the periodic
 timer. Interfaces start unaddressed. `net_stop` cancels the timer, clears the
 default route, detaches interfaces, flushes ARP and unregisters it. Socket and
-tool configuration belongs to task 427; IPv4 input/output to task 420.
+tool configuration belongs to task 427; [IPv4 input/output](networking-ip.md)
+(task 420) builds on `nx_net_route_send`.
 
 ## Validation
 

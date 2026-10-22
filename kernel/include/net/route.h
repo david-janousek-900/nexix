@@ -13,6 +13,8 @@
 bool nx_net_inet_mask_valid(nx_net_addr_t mask);
 /* Usable unicast host: not 0.0.0.0/8, multicast, reserved or broadcast. */
 bool nx_net_inet_unicast(nx_net_addr_t);
+/* True when addr is configured on any interface, running or not. */
+bool nx_net_inet_local(nx_net_addr_t addr);
 
 /* Configure an attached interface. Refuses (INVALID) a bad mask, a non-unicast
  * address, the network or broadcast address of a subnet wider than /31,
@@ -45,4 +47,6 @@ enum nx_net_result nx_net_route_lookup(nx_net_addr_t dst, struct nx_net_route *)
  * ARP to the next hop. Consumes the packet. NX_NET_OK includes packets held
  * awaiting ARP resolution. */
 enum nx_net_result nx_net_route_output(struct nx_net_mbuf *, nx_net_addr_t dst);
+/* The same, along a route already looked up. */
+enum nx_net_result nx_net_route_send(const struct nx_net_route *, struct nx_net_mbuf *);
 #endif

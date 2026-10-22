@@ -144,7 +144,8 @@ comparisons and checked size arithmetic. Bounded
 the QEMU e1000 through an uncached MMIO window, and its
 [DMA driver](networking-e1000.md) hands frames to the worker, where
 [interfaces](networking-interfaces.md) frame and demultiplex them and
-[static routes and ARP](networking-routing.md) choose next hops; hardware and stack integration remain
+[static routes and ARP](networking-routing.md) choose next hops for
+[IPv4 datagrams](networking-ip.md); hardware and stack integration remain
 planned work.
 
 Architecture references: [Intel system programming manuals](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html)
