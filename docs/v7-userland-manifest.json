@@ -2942,14 +2942,16 @@
           "name": "cc",
           "install": "/bin/cc",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/cc.c",
+            "tools/cc_smoke.py",
+            "docs/c-compiler.md"
           ]
         }
       ],
       "priority": 6,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -3030,15 +3032,10 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
-        "Compile, assemble, link and execute a small native C program inside Nexix.",
-        "Verify native build, reference options, exit status and malformed-input handling."
+        "make test-cc: installed cc compiles, optimizes, profiles (mon.out), preprocesses and links V7 C with -c/-S/-O/-P/-E/-p/-f/-o/-D/-I/-t/-B, assembly inputs and failure statuses at 16/128 MiB as root and ordinary user."
       ],
       "source_files": [
         "reference/v7/usr/src/cmd/cc.c"
@@ -3050,9 +3047,11 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        201
-      ]
+      "unresolved_tasks": [],
+      "native_sources": [
+        "user/v7/cmd/cc.c"
+      ],
+      "port_notes": "docs/c-compiler.md"
     },
     {
       "id": "cmd.checkeq",

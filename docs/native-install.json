@@ -8024,6 +8024,19 @@
       }
     },
     {
+      "path": "/bin/cc",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.cc",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-cc.elf"
+      }
+    },
+    {
       "path": "/bin/ar",
       "type": "file",
       "mode": "0755",

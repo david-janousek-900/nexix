@@ -6,7 +6,7 @@ Tasks 197 and 198 retarget the supplied Ritchie compiler passes in
 statically linked against native libc. The reference tree is unchanged.
 Task 199 completes floating-point values, structure values and the System V
 ABI with variadic definitions. Task 200 adds the c2 optimizer (`/lib/c2`), fc1
-(`/lib/fc1`) and the native cvopt command. The `cc` driver is task 201.
+(`/lib/fc1`) and the native cvopt command. Task 201 installs the `cc` driver.
 
 ## Pass interface
 
@@ -229,3 +229,23 @@ the table to the same bytes as the bootstrap build's host cvopt.
   and `cat`, and the results run with the expected output. The fixtures also
   run after `/lib/c2`, `/lib/fc1` output is compared with `/lib/c1`'s, and the
   native cvopt reproduces the generated table.
+
+## The cc driver (task 201)
+
+`/bin/cc` (`user/v7/cmd/cc.c`) is the supplied driver. It runs `/lib/cpp`,
+`/lib/c0`, `/lib/c1` (or `/lib/fc1` for `-f`), `/lib/c2` for `-O`, `/bin/as -u`
+and `/bin/ld -X` with `crt0.o`, `mcrt0.o` for `-p`, or `fcrt0.o`/`fmcrt0.o`
+for `-f`, linking `-lc`. Its options, temporaries in `/tmp/ctm*`, status
+handling, object cleanup, "Would overwrite" check and `-t`/`-B` alternate pass
+names are unchanged. Native adaptations:
+- there is no floating-point simulator, so `-f` adds no `-lfpsim`;
+- `-2` (V6 compatibility startup and library) is rejected;
+- `-P` builds its temporary names without dereferencing an uncreated name.
+
+`make TOOLCHAIN_PREFIX= test-cc` runs the installed driver in the guest at
+16/128 MiB, as root and as an ordinary user. It covers:
+- multi-file builds, `-c`, `-S -O`, `-o`, `-D`/`-I` and assembly input;
+- `-P`/`-E` preprocessing;
+- `-f`, and `-p` producing `mon.out`;
+- `-t0 -B` with a copied pass;
+- compile errors and the overwrite check.
