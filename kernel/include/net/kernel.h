@@ -23,10 +23,10 @@ void net_pool_selftest(void);
 /* Live stack (task 418). net_start runs in process context after proc_init:
  * it creates the packet pool, starts the worker (whose parent is the caller),
  * registers ARP and IPv4 with their 250 ms and 500 ms timers (tasks 419-420),
- * ICMP and UDP (tasks 421-422), and attaches lo0 (up, unaddressed) and, when
- * an e1000 exists, em0 (down). net_stop detaches every interface, flushes raw
- * and UDP socket queues, stops and reaps nothing (the parent reaps the worker)
- * and destroys the pool. */
+ * ICMP and UDP (tasks 421-422) and TCP with its 100 ms timer (task 423), and
+ * attaches lo0 (up, unaddressed) and, when an e1000 exists, em0 (down).
+ * net_stop detaches every interface, flushes raw, UDP and TCP sockets, stops
+ * and reaps nothing (the parent reaps the worker) and destroys the pool. */
 bool net_start(void);
 void net_stop(void);
 struct nx_net_mbuf_pool *net_pool(void);

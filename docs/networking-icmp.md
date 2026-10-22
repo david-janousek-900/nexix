@@ -37,7 +37,7 @@ It then handles the message by type:
   | parameter problem | `INVALID` |
 
   The notice goes to the transport that registered for the quoted protocol
-  (up to 4; [UDP](networking-udp.md) registers, TCP will in task 423). Anything else is
+  (up to 4; [UDP](networking-udp.md) and [TCP](networking-tcp.md) register). Anything else is
   `bad_errors` and dropped.
 - **Everything else** (echo replies, redirects, source quench, timestamp and
   mask messages, unknown types) is not acted on. Static routing ignores

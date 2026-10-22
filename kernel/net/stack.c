@@ -5,6 +5,7 @@
 #include "net/ip.h"
 #include "net/icmp.h"
 #include "net/udp.h"
+#include "net/tcp.h"
 #include "net/e1000.h"
 #include "net/worker.h"
 #include "memory.h"
@@ -15,7 +16,7 @@ static struct nx_net_budget budget;
 static struct nx_net_mbuf_pool pool;
 static struct nx_net_if lo0, em0;
 static struct nx_net_work lo_work;
-static struct nx_net_timer arp_timer, ip_timer;
+static struct nx_net_timer arp_timer, ip_timer, tcp_timer;
 static bool started;
 
 struct nx_net_mbuf_pool *net_pool(void) { return started ? &pool : NULL; }
@@ -40,6 +41,20 @@ static void ip_tick(void *argument)
     (void)argument;
     nx_net_ip_timer();
     net_timer_arm(&ip_timer, net_ticks_from_ms(NX_NET_IP_TIMER_MS));
+}
+static void tcp_tick(void *argument)
+{
+    (void)argument;
+    nx_net_tcp_timer();
+    net_timer_arm(&tcp_timer, net_ticks_from_ms(NX_NET_TCP_TIMER_MS));
+}
+/* Keys TCP initial sequence numbers: the cycle counter at start is not
+ * predictable from outside to the precision that matters. */
+static uint64_t sequence_secret(void)
+{
+    uint32_t lo, hi;
+    __asm__ volatile("rdtsc" : "=a"(lo), "=d"(hi));
+    return ((uint64_t)hi << 32 | lo) ^ timer_ticks() << 17;
 }
 static void changed(struct nx_net_if *ifp)
 {
@@ -70,17 +85,22 @@ static void attach(void *argument)
     nx_net_ip_init(&pool, clock_ms);
     nx_net_icmp_init();
     nx_net_udp_init();
+    nx_net_tcp_init(&pool, clock_ms, sequence_secret());
     nx_net_if_set_change_hook(changed);
     if (nx_net_proto_register(NX_NET_ETHERTYPE_ARP, nx_net_arp_input) != NX_NET_OK ||
         nx_net_proto_register(NX_NET_ETHERTYPE_IP, nx_net_ip_input) != NX_NET_OK ||
         nx_net_ip_register(NX_NET_IPPROTO_ICMP, nx_net_icmp_input) != NX_NET_OK ||
         nx_net_ip_register(NX_NET_IPPROTO_UDP, nx_net_udp_input) != NX_NET_OK ||
-        nx_net_icmp_register_notify(NX_NET_IPPROTO_UDP, nx_net_udp_notify) != NX_NET_OK) { *ok = false; return; }
+        nx_net_icmp_register_notify(NX_NET_IPPROTO_UDP, nx_net_udp_notify) != NX_NET_OK ||
+        nx_net_ip_register(NX_NET_IPPROTO_TCP, nx_net_tcp_input) != NX_NET_OK ||
+        nx_net_icmp_register_notify(NX_NET_IPPROTO_TCP, nx_net_tcp_notify) != NX_NET_OK) { *ok = false; return; }
     nx_net_ip_set_unknown_hook(nx_net_icmp_unknown);
     nx_net_timer_init(&arp_timer, arp_tick, NULL);
     net_timer_arm(&arp_timer, net_ticks_from_ms(NX_NET_ARP_TIMER_MS));
     nx_net_timer_init(&ip_timer, ip_tick, NULL);
     net_timer_arm(&ip_timer, net_ticks_from_ms(NX_NET_IP_TIMER_MS));
+    nx_net_timer_init(&tcp_timer, tcp_tick, NULL);
+    net_timer_arm(&tcp_timer, net_ticks_from_ms(NX_NET_TCP_TIMER_MS));
     nx_net_loop_init(&lo0, "lo0", lo_kick, NULL);
     *ok = nx_net_if_attach(&lo0) == NX_NET_OK && nx_net_if_up(&lo0) == NX_NET_OK;
     if (*ok && e1000_discover()) {
@@ -94,12 +114,16 @@ static void detach(void *argument)
     (void)argument;
     net_timer_cancel(&arp_timer);
     net_timer_cancel(&ip_timer);
+    net_timer_cancel(&tcp_timer);
     nx_net_route_clear_default();
     while (nx_net_if_count()) nx_net_if_detach(nx_net_if_at(0));
     nx_net_arp_flush(NULL);
     nx_net_ip_flush();
     nx_net_raw_flush();
     nx_net_udp_flush();
+    nx_net_tcp_flush();
+    nx_net_icmp_unregister_notify(NX_NET_IPPROTO_TCP);
+    nx_net_ip_unregister(NX_NET_IPPROTO_TCP);
     nx_net_icmp_unregister_notify(NX_NET_IPPROTO_UDP);
     nx_net_ip_unregister(NX_NET_IPPROTO_UDP);
     nx_net_ip_set_unknown_hook(NULL);

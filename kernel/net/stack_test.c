@@ -5,6 +5,7 @@
 #include "net/ip.h"
 #include "net/icmp.h"
 #include "net/udp.h"
+#include "net/tcp.h"
 #include "net/compat.h"
 #include "net/e1000.h"
 #include "net/worker.h"
@@ -315,6 +316,81 @@ static void loop_udp(void)
     REQUIRE(net_worker_call(udp_close_client, NULL));
     REQUIRE(net_pool()->stats.mbufs == 0 && net_pool()->stats.clusters == 0);
 }
+/* TCP over lo0: 64 KiB sent through a listener's accepted connection and
+ * echoed back, then closed from both sides. */
+#define TCP_BYTES 65536u
+static struct {
+    struct nx_net_tcp *listener, *client, *server;
+    size_t written, received, echoed, returned;
+    bool client_shut, server_shut, done;
+    uint8_t got[TCP_BYTES];
+} tcp;
+static uint8_t tcp_byte(size_t i) { return (uint8_t)(i * 13 + 1); }
+static void tcp_open(void *a)
+{
+    (void)a;
+    REQUIRE(nx_net_tcp_open(NULL, NULL, &tcp.listener) == NX_NET_OK);
+    REQUIRE(nx_net_tcp_bind(tcp.listener, IP(127, 0, 0, 1), 7, false) == NX_NET_DENIED);
+    REQUIRE(nx_net_tcp_bind(tcp.listener, IP(127, 0, 0, 1), 7, true) == NX_NET_OK && nx_net_tcp_listen(tcp.listener, 1) == NX_NET_OK);
+    REQUIRE(nx_net_tcp_open(NULL, NULL, &tcp.client) == NX_NET_OK && nx_net_tcp_connect(tcp.client, IP(127, 0, 0, 1), 7) == NX_NET_OK);
+}
+static void tcp_step(void *a)
+{
+    (void)a;
+    uint8_t chunk[512];
+    size_t n;
+    if (!tcp.server && nx_net_tcp_accept(tcp.listener, NULL, NULL, &tcp.server) == NX_NET_OK) {
+        nx_net_tcp_close(tcp.listener);
+        tcp.listener = NULL;
+    }
+    while (tcp.client->state == NX_NET_TCP_ESTABLISHED && tcp.written < TCP_BYTES) {
+        size_t part = TCP_BYTES - tcp.written < sizeof(chunk) ? TCP_BYTES - tcp.written : sizeof(chunk);
+        for (size_t i = 0; i < part; ++i) chunk[i] = tcp_byte(tcp.written + i);
+        if (nx_net_tcp_write(tcp.client, chunk, part, &n) != NX_NET_OK) break;
+        tcp.written += n;
+    }
+    if (tcp.written == TCP_BYTES && !tcp.client_shut) tcp.client_shut = nx_net_tcp_shutdown(tcp.client) == NX_NET_OK;
+    if (tcp.server) {
+        while (tcp.received < TCP_BYTES &&
+               nx_net_tcp_read(tcp.server, tcp.got + tcp.received, TCP_BYTES - tcp.received, &n) == NX_NET_OK && n)
+            tcp.received += n;
+        while (tcp.echoed < tcp.received &&
+               nx_net_tcp_write(tcp.server, tcp.got + tcp.echoed, tcp.received - tcp.echoed, &n) == NX_NET_OK && n)
+            tcp.echoed += n;
+        if (tcp.received == TCP_BYTES && tcp.echoed == TCP_BYTES && !tcp.server_shut &&
+            nx_net_tcp_read(tcp.server, chunk, 1, &n) == NX_NET_OK && !n)
+            tcp.server_shut = nx_net_tcp_shutdown(tcp.server) == NX_NET_OK;
+    }
+    while (nx_net_tcp_read(tcp.client, chunk, sizeof(chunk), &n) == NX_NET_OK && n) {
+        for (size_t i = 0; i < n; ++i) REQUIRE(chunk[i] == tcp_byte(tcp.returned + i));
+        tcp.returned += n;
+    }
+    tcp.done = tcp.returned == TCP_BYTES && tcp.server && tcp.server->state == NX_NET_TCP_CLOSED &&
+               tcp.client->state == NX_NET_TCP_TIME_WAIT;
+}
+static void tcp_close(void *a)
+{
+    (void)a;
+    REQUIRE(nx_net_tcp_take_error(tcp.client) == NX_NET_OK && nx_net_tcp_take_error(tcp.server) == NX_NET_OK);
+    nx_net_tcp_close(tcp.server);
+    nx_net_tcp_close(tcp.client);   /* stays in TIME_WAIT, holding no buffers */
+    REQUIRE(nx_net_tcp_used() == 1);
+}
+static void loop_tcp(void)
+{
+    tcp.listener = tcp.client = tcp.server = NULL;
+    tcp.written = tcp.received = tcp.echoed = tcp.returned = 0;
+    tcp.client_shut = tcp.server_shut = tcp.done = false;
+    REQUIRE(net_worker_call(tcp_open, NULL));
+    for (unsigned t = 0; t < 1000 && !tcp.done; ++t) {
+        REQUIRE(net_worker_call(tcp_step, NULL));
+        if (!tcp.done) proc_delay(1);
+    }
+    REQUIRE(tcp.done);
+    for (size_t i = 0; i < TCP_BYTES; ++i) REQUIRE(tcp.got[i] == tcp_byte(i));
+    REQUIRE(net_worker_call(tcp_close, NULL));
+    REQUIRE(net_pool()->stats.mbufs == 0 && net_pool()->stats.clusters == 0);
+}
 static bool resolved;
 static uint8_t resolved_mac[NX_NET_ETHER_ADDR];
 static struct nx_net_arp_stats arp;
@@ -386,6 +462,8 @@ static void tests(void *argument)
         if (!round) console_puts("NET ICMP OK\r\n");
         loop_udp();
         if (!round) console_puts("NET UDP OK\r\n");
+        loop_tcp();
+        if (!round) console_puts("NET TCP OK\r\n");
 
         if (em) {
             REQUIRE(net_worker_call(em_states, NULL));
