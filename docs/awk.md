@@ -6,9 +6,8 @@ expression compiler, the symbol table, and the generated token and procedure
 tables. Task 175 ports the interpreter and data model: values and their
 string/number conversion, records and fields, arrays, arithmetic, string
 functions, `split`, control flow, and `print` to standard output. Task 176
-covers `printf`/`sprintf` formatting, output redirection, files, pipes and
-regular-expression matching at run time, plus end-to-end acceptance. `/bin/awk`
-is installed after task 176; `build/v7-awk.elf` is built and tested privately.
+completes `printf`/`sprintf` formatting, output redirection, files, pipes and
+regular-expression matching, and installs `/bin/awk`.
 
 ## Generation
 
@@ -105,6 +104,50 @@ exact output, error and status:
 19 cases where V7 and POSIX agree are also checked against mawk. 300 random
 programs over random records must not trigger a sanitizer report. The native awk
 runs the same fixtures in 16/128 MiB guests, as root and as an ordinary user.
+
+## I/O, formatting and acceptance (task 176)
+
+Native adaptations:
+
+- `printf` and `sprintf` build their result in a buffer that grows, one per
+  call, because arguments may call `sprintf`. Each conversion is formatted with
+  its own argument type: `e`, `f` and `g` as double, `s` as string, and `d`, `o`
+  and `x` as `long`. Out-of-range values are clamped instead of converted.
+  `%%` becomes `%`, and `printf` writes the result rather than using it as a
+  format again. V7 wrote into 512- and 100-byte buffers without bounds, kept
+  `%%` for that second pass, and so also interpreted `%` in the converted data.
+- Only conversions C's printf defines are formatted (flags, width up to a
+  million, precision, `l`, letter). V7 did not know `c`, `u` or `*`; those and
+  malformed items are copied literally, once. V7 copied them, then repeated their
+  letter.
+- Output files are matched by name only in used slots (V7 compared null names).
+  Files are closed, and pipes waited for, before awk exits, after standard
+  output is flushed.
+- The grammar's statement error recovery yields an empty statement. V7 linked
+  the error token's value into the tree as a node.
+- `split` hands a replaced array's cells to `reapsymtab`, which frees them when
+  the next statement starts. An enclosing expression may still hold an element,
+  as in `a[$1] = split($0, a)`, and V7 awk has no functions, so nothing holds
+  one across statements. `substr`, `index` and `sprintf` copy the string they
+  keep while other arguments run.
+
+V7 semantics are kept: `sprintf` takes the rest of the print list, so it is not
+nested in another list without parentheses. There is no `?:`, a pattern must be
+a comparison, match or regular expression, and `]` right after `[^` ends the
+class (`[^\]a]` excludes `]`). Up to 10 output files may be open.
+
+`make test-awk-run` adds the following cases to those of task 175:
+- `printf` and `sprintf` conversions, flags, widths and errors;
+- `>`, `>>` and `|` output, checked through the files and pipes they create;
+- 42 regular expressions on 28 lines, agreeing with mawk;
+- complete programs: word counts, reports, statistics, numbering, field reversal
+  and a password-file filter.
+
+58 cases in all, 25 of them also checked against mawk. The random programs
+include random `printf` formats and `sprintf` calls. The installed `/bin/awk`
+runs every case in 16/128 MiB guests, as root and as an ordinary user, with
+command-line programs, shell pipelines and the manual page. Pipes use `cat`
+until `sort` is ported.
 
 ## Front-end acceptance
 

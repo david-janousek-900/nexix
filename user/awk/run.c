@@ -9,6 +9,7 @@ struct
 {
 	FILE *fp;
 	char *fname;
+	int pipe;	/* Nexix: closed with pclose by closefiles */
 } files[FILENUM];
 FILE *popen();
 
@@ -48,6 +49,8 @@ obj execute(u) node *u;
 	for (a = u; ; a = a->nnext) {
 		if (cantexec(a))
 			return(nodetoobj(a));
+		if (a->ntype != NEXPR)	/* Nexix: no element is held here */
+			reapsymtab();
 		if (a->ntype==NPA2)
 			proc=dopa2;
 		else {
@@ -256,14 +259,16 @@ obj indirect(a,n) node **a;
 
 obj substr(a, nnn) node **a;
 {
-	char *s, *p, *temp;
+	char *s, *p, *temp, *os;
 	obj x, y;
 	int k, m, n;
 
-	/* Nexix: temporaries are freed after their strings are used; V7
-	 * read freed strings here and in sindex and matchop. */
+	/* Nexix: strings are copied or kept until used; V7 read freed
+	 * temporaries here and in sindex and matchop. */
 	y = execute(a[0]);
-	s = getsval(y.optr);
+	s = tostring(getsval(y.optr));	/* the other arguments may free it */
+	tempfree(y);
+	os = s;
 	k = strlen(s) + 1;
 	x = execute(a[1]);
 	m = getfval(x.optr);
@@ -292,7 +297,7 @@ obj substr(a, nnn) node **a;
 	while (n-- > 0)
 		*p++ = *s++;
 	*p = '\0';
-	tempfree(y);
+	free(os);
 	x = gettemp();
 	x.optr->sval = temp;
 	x.optr->tval = STR;
@@ -307,7 +312,8 @@ obj sindex(a, nnn) node **a;
 	awkfloat v;
 
 	x = execute(a[0]);
-	s1 = getsval(x.optr);
+	s1 = tostring(getsval(x.optr));	/* a[1] may free it */
+	tempfree(x);
 	y = execute(a[1]);
 	s2 = getsval(y.optr);
 
@@ -320,52 +326,118 @@ obj sindex(a, nnn) node **a;
 			break;
 		}
 	}
-	tempfree(x);
+	free(s1);
 	tempfree(y);
 	x = gettemp();
 	setfval(x.optr, v);
 	return(x);
 }
 
+/* Nexix: the result grows as needed; each conversion is formatted with its
+ * own argument type, d, o and x as long; "%%" becomes "%". V7 wrote into
+ * fixed buffers, checked the item length after copying, and kept "%%" for
+ * a second printf pass that also interpreted % in the converted data.
+ * Conversions V7 did not know (c, u, *, ...) are copied literally, once. */
+struct fbuf {
+	char *b;
+	int size, len;
+};
+
+static fspace(f, n) struct fbuf *f;
+{
+	while (f->len + n + 1 > f->size) {
+		f->size *= 2;
+		if ((f->b = (char *)realloc(f->b, f->size)) == NULL)
+			error(FATAL, "out of space in format");
+	}
+}
+
+static fcheck(f, n, os) struct fbuf *f; char *os;
+{
+	if (n < 0)	/* wider than an int */
+		error(FATAL, "format item %.20s... too long", os);
+	fspace(f, n);
+}
+
+static fadd(f, t, n) struct fbuf *f; char *t;
+{
+	fspace(f, n);
+	memcpy(f->b + f->len, t, n);
+	f->len += n;
+	f->b[f->len] = '\0';
+}
+
+/* Nexix: a conversion C's printf defines: flags, width, precision, an
+ * optional l and the letter. Others (such as * or "%..x") are literal.
+ * Widths and precisions above a million are refused here, not by libc. */
+#define	MAXWIDTH	1000000L
+static validfmt(f, os) char *f, *os;
+{
+	long w;
+
+	for (f++; *f == '-' || *f == '+' || *f == ' ' || *f == '#' || *f == '0'; f++)
+		;
+	for (w = 0; *f >= '0' && *f <= '9'; f++)
+		if ((w = 10 * w + *f - '0') > MAXWIDTH)
+			error(FATAL, "format item %.20s... too long", os);
+	if (*f == '.')
+		for (w = 0, f++; *f >= '0' && *f <= '9'; f++)
+			if ((w = 10 * w + *f - '0') > MAXWIDTH)
+				error(FATAL, "format item %.20s... too long", os);
+	if (*f == 'l')
+		f++;
+	return(*f != '\0' && f[1] == '\0');
+}
+
 char *format(s,a) char *s; node *a;
 {
-	char *buf, *p, fmt[100], *t, *os;
+	char fmt[100], *t, *os, c;
 	obj x;
-	int flag = 0;
+	int flag, n;
 	awkfloat xf;
+	long lv;
+	struct fbuf f;	/* per call: arguments may call sprintf */
 
 	os = s;
-	p = buf = (char *)malloc(RECSIZE);
+	f.size = RECSIZE;
+	f.len = 0;
+	if ((f.b = (char *)malloc(f.size)) == NULL)
+		error(FATAL, "out of space in format");
+	f.b[0] = '\0';
 	while (*s) {
 		if (*s != '%') {
-			*p++ = *s++;
+			fadd(&f, s++, 1);
 			continue;
 		}
 		if (*(s+1) == '%') {
-			*p++ = '%';
-			*p++ = '%';
+			fadd(&f, "%", 1);
 			s += 2;
 			continue;
 		}
-		for (t=fmt; (*t++ = *s) != '\0'; s++)
-			if (*s >= 'a' && *s <= 'z' && *s != 'l')
+		for (t = fmt; ; ) {
+			if (t >= fmt + sizeof(fmt) - 3)
+				error(FATAL, "format item %.20s... too long", os);
+			c = *t++ = *s;
+			if (c == '\0')
 				break;
+			s++;
+			if (c >= 'a' && c <= 'z' && c != 'l')
+				break;
+		}
 		*t = '\0';
-		if (t > fmt + 100)
-			error(FATAL, "format item %.20s... too long", os);
-		switch (*s) {
+		if (!validfmt(fmt, os))
+			c = 0;
+		switch (c) {
 		case 'f': case 'e': case 'g':
 			flag = 1;
 			break;
-		case 'd':
+		case 'd': case 'o': case 'x':
 			flag = 2;
-			if(*(s-1) == 'l') break;
-			*(t-1) = 'l';
-			*t = 'd';
-			*++t = '\0';
-			break;
-		case 'o': case 'x':
-			flag = *(s-1)=='l' ? 2 : 3;
+			if (*(t-2) != 'l') {
+				*(t-1) = 'l';
+				*t++ = c;
+				*t = '\0';
+			}
 			break;
 		case 's':
 			flag = 4;
@@ -375,38 +447,56 @@ char *format(s,a) char *s; node *a;
 			break;
 		}
 		if (flag == 0) {
-			sprintf(p, "%s", fmt);
-			p += strlen(p);
+			fadd(&f, fmt, strlen(fmt));
 			continue;
 		}
 		if (a == NULL)
 			error(FATAL, "not enough arguments in printf(%s)", os);
 		x = execute(a);
 		a = a->nnext;
-		if (flag != 4)	/* watch out for converting to numbers! */
+		if (flag == 4) {
+			t = getsval(x.optr);
+			n = snprintf(NULL, 0, fmt, t);
+			fcheck(&f, n, os);
+			snprintf(f.b + f.len, n + 1, fmt, t);
+		} else {
 			xf = getfval(x.optr);
-		if (flag==1) sprintf(p, fmt, xf);
-		else if (flag==2) sprintf(p, fmt, (long)xf);
-		else if (flag==3) sprintf(p, fmt, (int)xf);
-		else if (flag==4) sprintf(p, fmt, x.optr->sval==NULL ? "" : getsval(x.optr));
+			if (flag == 1) {
+				n = snprintf(NULL, 0, fmt, xf);
+				fcheck(&f, n, os);
+				snprintf(f.b + f.len, n + 1, fmt, xf);
+			} else {
+				if (xf >= 9.2e18)
+					lv = 9223372036854775807L;
+				else if (xf <= -9.2e18)
+					lv = -9223372036854775807L - 1;
+				else if (xf != xf)
+					lv = 0;
+				else
+					lv = (long)xf;
+				n = snprintf(NULL, 0, fmt, lv);
+				fcheck(&f, n, os);
+				snprintf(f.b + f.len, n + 1, fmt, lv);
+			}
+		}
+		f.len += n;
 		tempfree(x);
-		p += strlen(p);
-		s++;
 	}
-	*p = '\0';
-	return(buf);
+	return(f.b);
 }
 
 obj asprintf(a,n) node **a;
 {
 	obj x;
 	node *y;
-	char *s;
+	char *s, *t;
 
 	y = a[0]->nnext;
 	x = execute(a[0]);
-	s = format(getsval(x.optr), y);
+	t = tostring(getsval(x.optr));	/* arguments may free the format */
 	tempfree(x);
+	s = format(t, y);
+	free(t);
 	x = gettemp();
 	x.optr->sval = s;
 	x.optr->tval = STR;
@@ -586,12 +676,13 @@ obj aprintf(a,n) node **a;
 
 	x = asprintf(a,n);
 	if (a[1]==NULL) {
-		printf(x.optr->sval);
+		fputs(x.optr->sval, stdout);	/* Nexix: not a format again */
 		tempfree(x);
 		return(true);
 	}
 	redirprint(x.optr->sval, (int)a[1], a[2]);
-	return(x);
+	tempfree(x);
+	return(true);
 }
 
 obj split(a,nnn) node **a;
@@ -859,10 +950,13 @@ redirprint(s, a, b) char *s; node *b;
 	register int i;
 	obj x;
 
+	char *name;
+
+	/* Nexix: unused slots have no name; V7 compared null names. */
 	x = execute(b);
-	getsval(x.optr);
+	name = getsval(x.optr);
 	for (i=0; i<FILENUM; i++)
-		if (strcmp(x.optr->sval, files[i].fname) == 0)
+		if (files[i].fname != NULL && strcmp(name, files[i].fname) == 0)
 			goto doit;
 	for (i=0; i<FILENUM; i++)
 		if (files[i].fp == 0)
@@ -870,15 +964,33 @@ redirprint(s, a, b) char *s; node *b;
 	if (i >= FILENUM)
 		error(FATAL, "too many output files %d", i);
 	if (a == '|')	/* a pipe! */
-		files[i].fp = popen(x.optr->sval, "w");
+		files[i].fp = popen(name, "w");
 	else if (a == APPEND)
-		files[i].fp = fopen(x.optr->sval, "a");
+		files[i].fp = fopen(name, "a");
 	else
-		files[i].fp = fopen(x.optr->sval, "w");
+		files[i].fp = fopen(name, "w");
 	if (files[i].fp == NULL)
-		error(FATAL, "can't open file %s", x.optr->sval);
-	files[i].fname = tostring(x.optr->sval);
+		error(FATAL, "can't open file %s", name);
+	files[i].fname = tostring(name);
+	files[i].pipe = a == '|';
 doit:
 	fprintf(files[i].fp, "%s", s);
 	tempfree(x);
+}
+
+/* Nexix: output files are flushed and pipes waited for before awk exits,
+ * so a pipe's output precedes the shell's next prompt. */
+closefiles()
+{
+	register int i;
+
+	fflush(stdout);
+	for (i=0; i<FILENUM; i++)
+		if (files[i].fp != NULL) {
+			if (files[i].pipe)
+				pclose(files[i].fp);
+			else
+				fclose(files[i].fp);
+			files[i].fp = NULL;
+		}
 }

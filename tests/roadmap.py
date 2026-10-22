@@ -128,11 +128,11 @@ class Roadmap(unittest.TestCase):
         self.reject('roadmap status summary drift')
 
     def test_unfinished_component_cannot_hide_behind_done_task(self):
-        self.coverage['components']['cmd.awk'] = [16]
-        self.reject('cmd.awk: unfinished component cannot map only to completed tasks')
+        self.coverage['components']['cmd.ratfor'] = [16]
+        self.reject('cmd.ratfor: unfinished component cannot map only to completed tasks')
 
     def test_implemented_component_needs_completed_task(self):
-        self.coverage['components']['cmd.cat'] = [176]
+        self.coverage['components']['cmd.cat'] = [203]
         self.reject('cmd.cat: implemented component needs a completed roadmap task')
 
     def test_done_task_needs_commit_evidence(self):

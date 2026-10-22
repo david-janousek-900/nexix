@@ -231,7 +231,7 @@ simple_stat:
 		{ PUTS("printf list"); $$ = stat3($1, $2, nullstat, nullstat); }
 	| expr	{ PUTS("expr"); $$ = exptostat($1); }
 	|		{ PUTS("null simple statement"); $$ = nullstat; }
-	| error		{ yyclearin; yyerror("illegal statement"); }
+	| error		{ yyclearin; yyerror("illegal statement"); $$ = nullstat; }	/* Nexix: V7 left the error token's value as a node */
 	;
 
 statement:

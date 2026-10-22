@@ -3,6 +3,7 @@
 #include "awk.h"
 
 static char *okfmt();
+static cell *zombies;	/* cells of replaced arrays, see freesymtab */
 cell *symtab[MAXSYM];	/* symbol table pointers */
 
 char	**FS;	/* initial field sep */
@@ -54,18 +55,33 @@ cell *ap;
 	cell *cp, *np, **tp;
 	int i;
 
+	/* Nexix: split replaces an array while an enclosing expression may
+	 * still hold one of its elements (a[$1] = split($0, a)), so the cells
+	 * wait on a list that reapsymtab frees when the next statement starts.
+	 * V7 freed them at once and read each link after freeing its cell. */
 	if (!(ap->tval & ARR))
 		return;
 	tp = (cell **) ap->sval;
 	for (i = 0; i < MAXSYM; i++) {
 		for (cp = tp[i]; cp != NULL; cp = np) {
-			np = cp->nextval;	/* Nexix: V7 read it after free */
-			xfree(cp->nval);
-			xfree(cp->sval);
-			free(cp);
+			np = cp->nextval;
+			cp->nextval = zombies;
+			zombies = cp;
 		}
 	}
 	xfree(tp);
+}
+
+reapsymtab()
+{
+	cell *cp;
+
+	while ((cp = zombies) != NULL) {
+		zombies = cp->nextval;
+		xfree(cp->nval);
+		xfree(cp->sval);
+		free(cp);
+	}
 }
 
 cell *setsymtab(n, s, f, t, tab)

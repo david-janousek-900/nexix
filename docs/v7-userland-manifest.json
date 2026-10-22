@@ -1896,11 +1896,16 @@
           "name": "awk",
           "install": "/bin/awk",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/awk/makefile",
+            "user/awk/run.c",
+            "user/awk/tran.c",
+            "user/awk/lib.c",
+            "user/awk/main.c",
             "tools/awk.mk",
+            "tests/awk.py",
             "tests/awk_run.py",
+            "tools/awk_parse_smoke.py",
             "tools/awk_run_smoke.py",
             "docs/awk.md"
           ]
@@ -1935,7 +1940,7 @@
         }
       ],
       "priority": 4,
-      "status": "partial",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -2075,12 +2080,8 @@
           ]
         }
       ],
-      "blockers": [
-        "The front end (task 174) and interpreter (task 175) are native; printf/sprintf, redirection, files, pipes, run-time regular expressions and end-to-end acceptance (task 176) remain before /bin/awk is installed."
-      ],
-      "unresolved": [
-        "Complete printf/sprintf formatting, output redirection, files, pipes, regular-expression matching and complete program acceptance (task 176)."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Run arithmetic, field matching and associative-array fixtures; regenerate parser/scanner tables.",
         "Verify each installed output and its documented behavior; test helpers through their consuming pipeline."
@@ -2105,9 +2106,7 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        176
-      ],
+      "unresolved_tasks": [],
       "native_sources": [
         "user/awk/awk.def",
         "user/awk/awk.g.y",

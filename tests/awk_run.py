@@ -11,6 +11,44 @@ shutil.rmtree(OUT,ignore_errors=True);OUT.mkdir(parents=True)
 ENV=dict(os.environ,ASAN_OPTIONS='detect_leaks=0:abort_on_error=1',UBSAN_OPTIONS='halt_on_error=1')
 CC_HOST=['cc','-std=c89','-funsigned-char','-fcommon','-w','-g','-fsanitize=address,undefined','-fno-sanitize-recover=undefined']
 PEOPLE='alice 10 x\nbob 20 y\ncarol 30 z\n\nalice 5 w\n'
+REGEX=['/a/', '/^a/', '/a$/', '/^$/', '/^a.c$/', '/a\\.c/', '/a*b/', '/a+b/', '/ab?c/', '/(ab|ba)/', '/^(a|b)+$/', '/[abc]/', '/[^a-z]/', '/[a-c]+$/', '/[0-9]/', '/x[0-9]+/', '/\\t/', '/\\//', '/\\\\/', '/[\\]]/', '/a-b/', '/[-a]/', '/\\$/', '/\\^/', '/\\(/', '/\\+/', '/\\?/', '/^[A-Z]+$/', '/.../', '/^...$/', '/a|b|c/', '/^start.*end$/', '/o w/', '/mid/', '/^mid$/', '/[a-c][a-c][a-c]/', '/zz*y/', '/a(b|c)*/', '/^a*$/', '/(a*)*b/', '/x*/', '/^.$/']
+REGEX_LINES=['','a','abc','aaa','ab','ba','x1','hello world','a.c','abc.','tab\there','^caret','dollar$','back\\slash','slash/x',']br','a-b','ABC','xyzzy','aXb','a+b','(paren)','q?','start mid end','mid','a b c','b','zy']
+REGEX_PROGRAM=''.join(' { if ($0 ~ %s) printf "1"; else printf "0" }'%p for p in REGEX)+' { print "" }'
+REGEX_INPUT='\n'.join(REGEX_LINES)+'\n'
+# Expected rows were checked against mawk; each row is one input line.
+# Arrays iterate in V7 hash order; these were checked as permutations.
+WORDFREQ='a 1\nthe 2\ncat 2\ndog 1\n'
+REPORT='name     amount\ntotal     65.00\ncarol     30.00\nbob       20.00\nalice     15.00\n'
+REGEX_OUTPUT=(
+    '000100000000000000000000000000000000001010\n'
+    '111000000011010000000100000000100000011011\n'
+    '110010111101010000000100000011100001010110\n'
+    '111000000011010000000100000011100001011010\n'
+    '110000110111010000000100000000100000010110\n'
+    '101000100111010000000100000000100000010110\n'
+    '000000000000101100000000000000000000000010\n'
+    '000000000000100000000000000010001000000010\n'
+    '110011000001110000000100000011100000010010\n'
+    '110000111101100000000100000010100001010110\n'
+    '100000110101100010000100000010100000010110\n'
+    '100000000001100000000101000010100000010010\n'
+    '100000000001100000000110000010100000010010\n'
+    '100000101101100000100100000010100001010110\n'
+    '100000000001100001000100000010100000010010\n'
+    '000000100001100000010000000011100000000110\n'
+    '110000100001110000001100000011100000010110\n'
+    '000000000000100000000000000111000000000010\n'
+    '000000000000000000000000000010000000100010\n'
+    '110000100001110000000100000011100000010110\n'
+    '110000100001110000000100010011100000010110\n'
+    '100000000001100000000100100010100000010010\n'
+    '000000000000100000000000001000000000000010\n'
+    '100000000001100000000100000010110100010010\n'
+    '000000000000000000000000000011000110000010\n'
+    '110000100001110000000100000010100000010110\n'
+    '000000100011010000000000000000100000000111\n'
+    '000000000000000000000000000000000000100010\n'
+)
 # name, program, input, extra arguments, stdout, stderr, status, mawk agrees
 CASES=[
  ('sums','{ s += $2; n[$1] += $2 } END { print s, NR; print n["alice"], n["bob"], n["carol"] }',PEOPLE,[],
@@ -65,6 +103,33 @@ CASES=[
  ('ranges',' '.join('NR==%d,NR==%d { }'%(i,i+1) for i in range(31)),'',[],'','awk: too many range patterns\n',2,False),
  ('syntax','{ print $1 ','',[],'','awk: syntax error near line 2\nawk: illegal statement near line 2\n',2,False),
  ('nofile','{ print }','',['/nonexistent'],'','awk: can\'t open /nonexistent\n',2,False),
+ # Task 176: printf/sprintf, redirection, files, pipes and regular expressions.
+ ('printf','BEGIN { printf "%d|%5d|%-5d|%05.1f|%e|%g|%s|%10s|%-3s|%x|%o|%%|%.2s\\n", 42.9, -3, 7, 3.14159, 12345.678, 0.0001, "str", "right", "l", 255, 8, "abcdef" }','',[],
+  '42|   -3|7    |003.1|1.234568e+04|0.0001|str|     right|l  |ff|10|%|ab\n','',0,True),
+ ('sprintf','BEGIN { s = sprintf("%d-%s%%", 5, "x"); print s, length(s); printf "%s\\n", "100%d"; printf "%5000d|\\n", 1 }','',[],
+  '5-x% 4\n100%d\n'+' '*4999+'1|\n','',0,True),
+ ('v7printf','BEGIN { printf "%c|%u|%*d|%d|%d\\n", 1e30, -1e30 }','',[],'%c|%u|%*d|9223372036854775807|-9223372036854775808\n','',0,False),
+ ('printfwide','BEGIN { printf "%3000000000d", 1 }','',[],'','awk: format item %3000000000d... too long\n',2,False),
+ ('printfargs','BEGIN { printf "%s %s\\n", "one" }','',[],'','awk: not enough arguments in printf(%s %s\n)\n',2,False),
+ ('redirect','{ print $1 > "names"; print $2 >> "nums"; printf "[%s]\\n", $3 > "names" }',PEOPLE,[],'','',0,False,
+  {'before':{'nums':'0\n'},'after':{'names':'alice\n[x]\nbob\n[y]\ncarol\n[z]\n\n[]\nalice\n[w]\n','nums':'0\n10\n20\n30\n\n5\n'}}),
+ ('pipe','{ print $1 | "cat" } END { print "end" }',PEOPLE,[],'end\nalice\nbob\ncarol\n\nalice\n','',0,False),
+ ('manyfiles','{ for (i = 0; i < 11; i++) print i > ("f" i) }','x\n',[],'','awk: too many output files 10\n record number 1\n',2,False),
+ ('openfail','{ print > "/nonexistent/x" }','x\n',[],'','awk: can\'t open file /nonexistent/x\n record number 1\n',2,False),
+ ('regex',REGEX_PROGRAM,REGEX_INPUT,[],REGEX_OUTPUT,'',0,True),
+ # V7: "]" right after "[^" ends the class; write [^\]a] for "not ] or a".
+ ('v7class','/[^\\]a]/ { n++ } /[^]a]/ { m++ } END { print n, m }','abc\n]]\naaa\nxa]\n',[],'2 1\n','',0,False),
+ ('recover','{ if ($0 ~ /a/) printf "1" } { if ($0 ~ /o) printf "1" } { print }','',[],'','awk: syntax error near line 1\nawk: illegal statement near line 1\nawk: newline in regular expression near line 1\n',2,False),
+ # Complete programs.
+ ('wordfreq','{ for (i = 1; i <= NF; i++) n[$i]++ } END { for (w in n) printf "%s %d\\n", w, n[w] | "cat" }','the cat the dog\na cat\n',[],WORDFREQ,'',0,False),
+ ('report','BEGIN { printf "%-8s %6s\\n", "name", "amount" } NF > 0 { t[$1] += $2; s += $2 } END { for (k in t) printf "%-8s %6.2f\\n", k, t[k] | "cat"; printf "%-8s %6.2f\\n", "total", s }',PEOPLE,[],
+  REPORT,'',0,False),
+ ('stats','NR == 1 { min = max = $1 } { s += $1; if ($1 < min) min = $1; if ($1 > max) max = $1 } END { printf "n=%d sum=%g mean=%.3f min=%g max=%g\\n", NR, s, s / NR, min, max }','5\n-2\n7.5\n10\n',[],
+  'n=4 sum=20.5 mean=5.125 min=-2 max=10\n','',0,True),
+ ('reverse','{ for (i = NF; i > 1; i--) printf "%s ", $i; print $1 }','a b c\n1 2\n',[],'c b a\n2 1\n','',0,True),
+ ('number','{ printf "%4d  %s\\n", NR, $0 }','first\nsecond\n',[],'   1  first\n   2  second\n','',0,True),
+ ('passwd','BEGIN { FS = ":" } $3 >= 100 { print $1, $6 > "users" } END { printf "%d accounts\\n", NR }','root:x:0:0::/:/bin/sh\nbob:x:100:10::/usr/bob:/bin/sh\nann:x:101:10::/usr/ann:\n',[],
+  '3 accounts\n','',0,False,{'after':{'users':'bob /usr/bob\nann /usr/ann\n'}}),
 ]
 subprocess.run(['make','build/gen-awk/y.tab.c','build/v7-awk.elf'],cwd=ROOT,check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 with tempfile.TemporaryDirectory(prefix='nx-awkrun-') as temp:
@@ -76,18 +141,27 @@ with tempfile.TemporaryDirectory(prefix='nx-awkrun-') as temp:
         assert b'Sanitizer' not in r.stderr and b'runtime error:' not in r.stderr,(cmd[:3],r.stderr[-2000:])
         return r
     names=[]
-    for name,program,data,args,stdout,stderr,status,posix in CASES:
+    for name,program,data,args,stdout,stderr,status,posix,*extra in CASES:
+        files=extra[0] if extra else {}
+        for f,text in files.get('before',{}).items():(d/f).write_text(text)
         (d/(name+'.awk')).write_text(program+'\n')
         # V7 stops reading options at -f: options first, then operands.
         opts=[a for a in args if a.startswith('-') and a!='-'];operands=[a for a in args if a not in opts]
         r=run([str(awk),*opts,'-f',name+'.awk',*operands],data)
         got=(r.stdout.decode('latin-1'),r.stderr.decode('latin-1'),r.returncode)
         assert got==(stdout,stderr,status),(name,got)
+        for f,text in files.get('after',{}).items():
+            assert (d/f).read_text()==text,(name,f,(d/f).read_text())
+            (d/f).unlink()
         if posix:
+            for f,text in files.get('before',{}).items():(d/f).write_text(text)
             m=subprocess.run(['mawk',*opts,'-f',name+'.awk',*operands],input=data.encode(),capture_output=True,cwd=d,timeout=20)
             assert m.stdout.decode()==stdout and m.returncode==0,(name,m)
         for suffix,text in (('.awk',program+'\n'),('.in',data),('.out',stdout),('.err',stderr),('.status',str(status)+'\n'),('.opts',' '.join(opts)+'\n'),('.operands',' '.join(operands)+'\n')):
             (OUT/(name+suffix)).write_bytes(text.encode('latin-1'))
+        for kind in ('before','after'):
+            for i,(f,text) in enumerate(sorted(files.get(kind,{}).items())):
+                (OUT/f'{name}.{kind[0]}{i}').write_text(text);(OUT/f'{name}.{kind[0]}{i}.name').write_text(f+'\n')
         names.append(name)
     (OUT/'cases').write_text('\n'.join(names)+'\n')
     # Usage errors exit 2 before the symbol table exists.
@@ -104,15 +178,19 @@ with tempfile.TemporaryDirectory(prefix='nx-awkrun-') as temp:
     for i in range(300):
         stmts=[]
         for _ in range(rng.randrange(1,6)):
-            kind=rng.randrange(5)
+            kind=rng.randrange(7)
             target=rng.choice(['x','y','a[$1]','$2','$1','NF','OFS','OFMT'])
             if kind==0:stmts.append(f'{target} = {expr()}')
             elif kind==1:stmts.append(f'{target} {rng.choice(["+=","-=","*="])} {expr()}')
             elif kind==2:stmts.append(f'print {expr()}, {expr()}')
             elif kind==3:stmts.append(f'if ({expr()} > {expr()}) print {expr()}')
-            else:stmts.append(f'for (k in a) print k, a[k]')
+            elif kind==4:stmts.append(f'for (k in a) print k, a[k]')
+            elif kind==5:
+                fmt=''.join(rng.choice(['%','%','d','s','g','f','e','x','o','c','u','l','*','-','0','5','.','3','99','a',' ','\\\\n']) for _ in range(rng.randrange(1,14)))
+                stmts.append(f'printf "{fmt}", {expr()}, {expr()}, {expr()}')
+            else:stmts.append(f'x = sprintf("%s|%d|%.3g", {expr()}, {expr()}, {expr()})'.replace('%s|',rng.choice(['%s|','%-9s|','%.2s|'])))
         program='{ '+'; '.join(stmts)+' } END { print x, y, NR }'
         lines=[' '.join(rng.choice(['a','bb','10','-3','2.5e1','','x,y','0']) for _ in range(rng.randrange(0,6))) for _ in range(rng.randrange(0,5))]
         r=run([str(awk),program],'\n'.join(lines)+'\n')
         assert r.returncode in (0,2),(program,r)
-print(f'PASS: awk interpreter ASan/UBSan: {len(CASES)} data-model/arithmetic/field/array/string/control cases ({sum(c[7] for c in CASES)} agreeing with mawk), V7 semantics, limits, errors and 300 random programs')
+print(f'PASS: awk ASan/UBSan: {len(CASES)} data-model, arithmetic, field, array, string, control, printf, redirection, pipe, regex and complete-program cases ({sum(c[7] for c in CASES)} agreeing with mawk), V7 semantics, limits, errors and 300 random programs, including printf formats')

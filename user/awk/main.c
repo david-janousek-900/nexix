@@ -69,6 +69,7 @@ iloop:
 	if (errorflag)
 		exit(errorflag);	/* Nexix: V7 exited 0 after syntax errors */
 	run();
+	closefiles();
 	if (iflag)
 		write(ansfd, &errorflag, sizeof(errorflag));
 	else exit(errorflag);
