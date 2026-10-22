@@ -1,6 +1,7 @@
 /* Native ELF/AMD64 equivalents of the supplied PCC code.c output hooks. */
 #include "backend.h"
 static int location=PROG,label_counter=10;
+int pcc_proflag,pcc_lflag;
 static unsigned frame_size;
 static uint32_t initial_word;
 static unsigned initial_bits;
@@ -44,6 +45,8 @@ int bfcode(int *args,int count) {
     frame_size=0;autooff=0;locctr(PROG);result_hidden=result_temp=0;result_class=PCC_CLASS_NONE;
     if(function->sclass==EXTDEF)printf(".globl %s\n",function->sname);
     printf(".type %s,@function\n%s:\n pushq %%rbp\n movq %%rsp,%%rbp\n subq $.F%d,%%rsp\n",function->sname,function->sname,ftnno);
+    /* -p: the native mcount preserves every register, so arguments survive */
+    if(pcc_proflag)puts(" call mcount");
     retlab=getlab();
     if(result==STRTY || result==UNIONTY) {
         result_class=pcc_classify(function->sizoff);result_end=getlab();
@@ -143,6 +146,7 @@ int fincode(long double value,int bits) {
 }
 int ecode(NODE *tree) {
     if(nerrors)return 0;
+    if(pcc_lflag)printf("# line %d, file %s\n",lineno,ftitle);
     unsigned capacity=pcc_ir_capacity(tree);
     struct mip_node *nodes=calloc(capacity,sizeof(*nodes));if(!nodes)cerror("no memory for target IR");
     struct mip_arena arena={nodes,0,capacity};uint32_t root=pcc_lower(tree,&arena);
@@ -157,20 +161,4 @@ int cinit(NODE *tree,int bits) {
     struct mip_arena arena={nodes,0,capacity};uint32_t root=pcc_lower(tree,&arena);
     if(pcc_output_tree(&arena,root,(unsigned)bits))cerror("initializer pass output failed");
     inoff+=bits;free(nodes);return 0;
-}
-int main(int argc,char **argv) {
-    unsigned emit=0,read=0;int source=1;
-    if(argc>1 && !strcmp(argv[1],"--emit-pass")) {emit=1;source++;}
-    else if(argc>1 && !strcmp(argv[1],"--read-pass")) {read=1;source++;}
-    if(argc>source && !strcmp(argv[source],"--native-source")) {pcc_native_source=1;source++;}
-    if(argc>source+1) {fprintf(stderr,"usage: pcc-backend [--emit-pass|--read-pass] [input]\n");return 2;}
-    if(argc>source && strcmp(argv[source],"-")) {if(!freopen(argv[source],"r",stdin))return 1;snprintf(ftitle,sizeof(ftitle),"%s",argv[source]);}
-    if(read) {
-        if(pcc_read_pass(stdin)) {fprintf(stderr,"pcc: invalid or failed compiler pass\n");return 1;}
-        return 0;
-    }
-    if(emit && pcc_output_begin())return 1;
-    puts(".text");int status=mainp1(1,argv);
-    if(!status && pcc_output_end())status=1;
-    return status;
 }

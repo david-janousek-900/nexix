@@ -1,0 +1,77 @@
+T=/tmp/$$ PATH=/bin:/usr/bin O= OTWO= S= N=yes OPT= ret=0 prof= SPLIT=
+L=/lib COPT=/lib/c2
+LC="$L/crt0.o" LIBS=" $L/libc.a" NAS=as LD=ld CCOMP=/usr/lib/ccom
+ECHO=echo
+trap "rm -f $T.*; exit 1" 1 2 3 15
+trap 'rm -f $T.*; exit $ret' 0
+for A
+do	case $A in
+	*.c)	B=`basename $A .c`
+		$ECHO "$B.c"
+		case $A in
+		/*)	P=$A ;;
+		*)	P=`pwd`/$A ;;
+		esac
+		echo "#include \"/usr/lib/pcc.h\"" >$T.c
+		echo "#include \"$P\"" >>$T.c
+		if /lib/cpp $O $T.c $T.i; then
+			if test -n "$SPLIT"; then
+				$CCOMP --emit-pass --native-source $prof <$T.i $OTWO >$T.p &&
+				$CCOMP --read-pass <$T.p >$T.x
+			else
+				$CCOMP --native-source $prof <$T.i $OTWO >$T.x
+			fi
+		else
+			false
+		fi
+		case "$?$S$OPT" in
+		0-S)	mv $T.x $B.s ;;
+		0-Syes)	if $COPT $T.x $B.s; then
+				: OK
+			else
+				ret=$?
+			fi ;;
+		0yes)	if $COPT $T.x $T.s &&
+			    $NAS - -o $B.o $T.s ; then
+				ll="$ll $B.o"
+			else
+				N=no ret=$?
+			fi ;;
+		0)	if $NAS - -o $B.o $T.x ; then
+				ll="$ll $B.o"
+			else
+				N=no ret=$?
+			fi ;;
+		*)	N=no ret=1 ;;
+		esac ;;
+
+	-S)	N=no S=-S OTWO=-l ;;
+
+	-X)	SPLIT=yes ;;
+
+	-O)	OPT=yes ;;
+
+	-[IDU]*)	O="$O $A" ;;
+
+	-c)	N=no ;;
+
+	-)	ECHO=: ;;
+
+	*.s)	B=`basename $A .s`
+		if echo "$B.s:" &&
+		$NAS - -o $B.o $A; then
+			ll="$ll $B.o"
+		else
+			N=no ret=$?
+		fi ;;
+
+	-p)	prof=-p  ;;
+
+	*)	ll="$ll $A"
+	esac
+done
+case $N in
+	no)	: ;;
+	*)	$LD $LC $ll $LIBS
+	ret=$?
+esac

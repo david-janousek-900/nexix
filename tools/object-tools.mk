@@ -42,7 +42,7 @@ test: test-lorder
 test-unit: test-lorder-unit
 
 # V7 cpp scanner with a native LP64, short-circuit expression evaluator.
-CPP_PORT_FLAGS = $(filter-out -std=c11 -Werror,$(USER_CFLAGS)) -std=gnu89 -funsigned-char -fcommon -Wno-comment -Wno-implicit-int -Wno-return-type
+CPP_PORT_FLAGS = $(filter-out -std=c11 -Werror,$(USER_CFLAGS)) -std=gnu89 -funsigned-char -fcommon -Wno-comment -Wno-implicit-int -Wno-return-type -DNX_SBRK_ARENA
 build/cpp-scanner.o: user/cpp/cpp.c | build/.dir
 	$(CC) $(CPP_PORT_FLAGS) -c $< -o $@
 build/cpp-expr.o: user/cpp/expr.c | build/.dir

@@ -2942,14 +2942,16 @@
           "name": "cc",
           "install": "/bin/cc",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/cc.c",
+            "tools/cc_smoke.py",
+            "docs/c-compiler.md"
           ]
         }
       ],
       "priority": 6,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -3030,15 +3032,10 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
-        "Compile, assemble, link and execute a small native C program inside Nexix.",
-        "Verify native build, reference options, exit status and malformed-input handling."
+        "make test-cc: installed cc compiles, optimizes, profiles (mon.out), preprocesses and links V7 C with -c/-S/-O/-P/-E/-p/-f/-o/-D/-I/-t/-B, assembly inputs and failure statuses at 16/128 MiB as root and ordinary user."
       ],
       "source_files": [
         "reference/v7/usr/src/cmd/cc.c"
@@ -3050,9 +3047,11 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        201
-      ]
+      "unresolved_tasks": [],
+      "native_sources": [
+        "user/v7/cmd/cc.c"
+      ],
+      "port_notes": "docs/c-compiler.md"
     },
     {
       "id": "cmd.checkeq",
@@ -9339,55 +9338,72 @@
           "name": "comp",
           "install": null,
           "role": "helper",
-          "status": "partial",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/mip/makefile",
-            "user/pcc/code.c",
-            "user/pcc/local2.c",
-            "user/pcc/output.c",
+            "user/pcc/ccom.c",
             "tools/pcc.mk",
-            "tools/pcc_integer_smoke.py"
+            "tests/pcc_driver.py",
+            "tools/pcc_driver_smoke.py",
+            "docs/pcc.md"
           ]
         },
         {
           "name": "fort",
           "install": null,
           "role": "optional",
-          "status": "prototype",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/mip/makefile"
+            "user/pcc/fort.c",
+            "tools/pcc.mk",
+            "tests/pcc_driver.py",
+            "tools/pcc_driver_smoke.py",
+            "docs/pcc.md"
           ]
         },
         {
           "name": "convert",
           "install": null,
           "role": "build_helper",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/mip/convert"
+            "user/pcc/output.c",
+            "docs/mip.md",
+            "tools/pcc.mk",
+            "tests/pcc_driver.py",
+            "tools/pcc_driver_smoke.py",
+            "docs/pcc.md"
           ]
         },
         {
           "name": "fconvert",
           "install": null,
           "role": "build_helper",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/mip/fconvert"
+            "user/pcc/fort.c",
+            "docs/pcc.md",
+            "tools/pcc.mk",
+            "tests/pcc_driver.py",
+            "tools/pcc_driver_smoke.py",
+            "docs/pcc.md"
           ]
         },
         {
           "name": "g",
           "install": null,
           "role": "build_helper",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/mip/g"
+            "user/mip/g",
+            "tools/pcc.mk",
+            "tests/pcc_driver.py",
+            "tools/pcc_driver_smoke.py",
+            "docs/pcc.md"
           ]
         }
       ],
       "priority": 6,
-      "status": "partial",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -9508,12 +9524,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Complete installed compiler/alternate-target integration under task 196."
-      ],
-      "unresolved": [
-        "Task 196: installed compiler/alternate-target/build-helper integration remains. Task 193 completes retained frontend native types, typed/K&R signatures, literal precision, builtin IR and the explicitly tested native-header source profile; task 195 completes aggregate classification/calls/results, x87 long double and variadic definitions."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "make test-mip test-mip-infra test-mip-pass tests shared native contracts, serialization, streaming failures and independent producer/analysis consumers under sanitizers and at 16/128 MiB.",
         "make test-pcc-front test-pcc-integer verifies real retained PCC source consumption, identical direct/split-pass assembly/diagnostics and native as/ld execution as root and ordinary user at 16/128 MiB.",
@@ -9543,9 +9555,7 @@
         "reference/v7/usr/src/cmd/mip/xdefs.c"
       ],
       "source_availability": "supplied",
-      "unresolved_tasks": [
-        196
-      ],
+      "unresolved_tasks": [],
       "native_sources": [
         "user/mip/manifest.h",
         "user/mip/mip.h",
@@ -9558,7 +9568,8 @@
         "user/mip/diagnostics.h",
         "user/mip/pass.h",
         "user/mip/reader.c",
-        "user/pcc/output.c"
+        "user/pcc/output.c",
+        "user/mip/g"
       ],
       "port_notes": "docs/mip.md",
       "scope_notes": [
@@ -10923,23 +10934,31 @@
           "name": "ccom",
           "install": "/usr/lib/ccom",
           "role": "helper",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/pcc/makefile"
+            "user/pcc/ccom.c",
+            "tools/pcc.mk",
+            "tests/pcc_driver.py",
+            "tools/pcc_driver_smoke.py",
+            "docs/pcc.md"
           ]
         },
         {
           "name": "fort",
           "install": null,
           "role": "optional",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/pcc/makefile"
+            "user/pcc/fort.c",
+            "tools/pcc.mk",
+            "tests/pcc_driver.py",
+            "tools/pcc_driver_smoke.py",
+            "docs/pcc.md"
           ]
         }
       ],
       "priority": 6,
-      "status": "partial",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -11019,12 +11038,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Complete installed compiler/alternate-target integration under task 196."
-      ],
-      "unresolved": [
-        "Task 196: installed compiler/alternate-target/build-helper integration remains. Task 193 completes retained frontend native types, typed/K&R signatures, literal precision, builtin IR and the explicitly tested native-header source profile; task 195 completes aggregate classification/calls/results, x87 long double and variadic definitions."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Compile native C fixtures through shared mip and target backend, then assemble/link/run.",
         "Verify each installed output and its documented behavior; test helpers through their consuming pipeline.",
@@ -11044,9 +11059,7 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        196
-      ],
+      "unresolved_tasks": [],
       "native_sources": [
         "user/pcc/backend.h",
         "user/pcc/cgram.y",
@@ -11070,7 +11083,9 @@
         "user/pcc/real.c",
         "user/pcc/abi.c",
         "user/pcc/native.h",
-        "user/pcc/output.c"
+        "user/pcc/output.c",
+        "user/pcc/ccom.c",
+        "user/pcc/fort.c"
       ],
       "port_notes": "docs/pcc.md",
       "scope_notes": [
@@ -25081,14 +25096,18 @@
           "name": "pcc",
           "install": "/bin/pcc",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/bin/pcc"
+            "rootfs/bin/pcc",
+            "tools/pcc.mk",
+            "tests/pcc_driver.py",
+            "tools/pcc_driver_smoke.py",
+            "docs/pcc.md"
           ]
         }
       ],
       "priority": 6,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "cmd.sh",
@@ -25146,17 +25165,17 @@
         }
       ],
       "reference_includes": [],
-      "blockers": [
-        "Not installed in Nexix; native integration and functional acceptance remain pending."
-      ],
-      "unresolved": [
-        "Audit native API/format compatibility and remaining transitive dependencies."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
-        "Run the original script with reference-compatible arguments; verify helper execution, output and failures."
+        "make test-pcc-driver: installed pcc compiles, links and runs multi-file programs with -c/-O/-X/-S/-p/-D/-I, assembly input and failures at 16/128 MiB as root and ordinary user."
       ],
-      "unresolved_tasks": [
-        196
+      "unresolved_tasks": [],
+      "ported_script": "rootfs/bin/pcc",
+      "port_notes": "docs/pcc.md",
+      "native_sources": [
+        "rootfs/bin/pcc",
+        "rootfs/usr/lib/pcc.h"
       ]
     },
     {

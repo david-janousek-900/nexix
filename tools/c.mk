@@ -44,3 +44,9 @@ test-c-compiler: test-c-compiler-unit build/v7-c0.elf build/v7-c1.elf build/v7-c
 	$(PYTHON) tools/c_compiler_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-c-compiler
 test-unit: test-c-compiler-unit
+
+.PHONY: test-cc
+test-cc: build/v7-cc.elf build/v7-c0.elf build/v7-c1.elf build/v7-c2.elf build/v7-fc1.elf multi-iso rootfs
+	$(PYTHON) tools/cc_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/cc_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-cc

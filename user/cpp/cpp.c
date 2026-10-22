@@ -111,8 +111,27 @@ char *ptrtab;
 char buffer[8+BUFSIZ+BUFSIZ+8];
 
 # define SBSIZE 1048576
+#ifdef NX_SBRK_ARENA
+/* Native: the macro arena grows with sbrk up to SBSIZE, so small runs
+ * fit the 16 MiB baseline (pages are allocated eagerly). */
+char	*sbf, *savch;
+static unsigned long sbsize;
+#else
 char	sbf[SBSIZE];
 char	*savch	= sbf;
+static unsigned long sbsize = SBSIZE;
+#endif
+static void sbneed(char *p, unsigned long n)
+{
+#ifdef NX_SBRK_ARENA
+	while (p >= sbf && (unsigned long)(p-sbf)+n+2*BUFSIZ > sbsize && sbsize < SBSIZE) {
+		if (sbrk(65536) != sbf+sbsize) break;
+		sbsize += 65536;
+	}
+#else
+	(void)p; (void)n;
+#endif
+}
 
 # define DROP 0xFE	/* special character not legal ASCII or EBCDIC */
 # define WARN DROP
@@ -538,7 +557,8 @@ unfill(p) register char *p; {
 	if (fretop>0) np=bufstack[--fretop];
 	else {
 		space(savch,BUFSIZ+1); np=savch; savch+=BUFSIZ;
-		if (savch>=sbf+SBSIZE) {pperror("no space"); exit(exfail);}
+		sbneed(savch,0);
+		if (savch>=sbf+sbsize) {pperror("no space"); exit(exfail);}
 		*savch++='\0';
 	}
 	instack[mactop]=np; op=pend-BUFSIZ; if (op<p) op=p;
@@ -584,7 +604,8 @@ doincl(p) register char *p; {
 	if (ifno+1 >=MAXINC) {
 		pperror("Unreasonable include nesting",0); return(p);
 	}
-	if((nfil=savch)>sbf+SBSIZE-BUFSIZ) {pperror("no space"); exit(exfail);}
+	sbneed(savch,BUFSIZ);
+	if((nfil=savch)>sbf+sbsize-BUFSIZ) {pperror("no space"); exit(exfail);}
 	filok=0;
 	for (dirp=dirs+inctype; *dirp; ++dirp) {
 		space(nfil,strlen(*dirp)+strlen(filname)+2);
@@ -637,7 +658,8 @@ dodef(p) char *p; {/* process '#define' */
 	char *formal[MAXFRM]; /* formal[n] is name of nth formal */
 	char formtxt[BUFSIZ]; /* space for formal names */
 
-	if (savch>sbf+SBSIZE-BUFSIZ) {pperror("too much defining"); return(p);}
+	sbneed(savch,BUFSIZ);
+	if (savch>sbf+sbsize-BUFSIZ) {pperror("too much defining"); return(p);}
 	oldsavch=savch; /* to reclaim space if redefinition */
 	++flslvl; /* prevent macro expansion during 'define' */
 	p=skipbl(p); pin=inp;
@@ -831,7 +853,8 @@ void ppwarn(const char *s, ...) {
     va_list ap; va_start(ap,s); diagnostic(s,ap); va_end(ap);
 }
 static void space(char *p, unsigned long n) {
-    if (p < sbf || p > sbf+SBSIZE || n > (unsigned long)(sbf+SBSIZE-p)) {
+    sbneed(p,n);
+    if (p < sbf || p > sbf+sbsize || n > (unsigned long)(sbf+sbsize-p)) {
         pperror("macro storage exhausted"); exit(1);
     }
 }
@@ -1006,6 +1029,12 @@ main(argc,argv)
 	register int i,c;
 	register char *p;
 	char *tf,**cp2;
+#ifdef NX_SBRK_ARENA
+	setbuf(stderr, NULL);
+	savch = sbf = sbrk(0);
+	if (sbf == (char *)-1) {pperror("no space"); exit(exfail);}
+	sbneed(savch, 0);
+#endif
 	fout=stdout; dirs[0]=dirnams[0]=".";
 
 # if gcos
@@ -1124,6 +1153,9 @@ main(argc,argv)
 		}
 
 	fins[ifno]=fin;
+#ifdef NX_SBRK_ARENA
+	{ static char obuf[BUFSIZ]; setbuf(fout, obuf); }
+#endif
 		/* after user -I files here are the standard include libraries */
 # if unix
 	dirs[nd++] = "/usr/include";

@@ -1,9 +1,9 @@
 # Native PCC compiler implementation
 
-Tasks 193–195 are **complete**. The retained frontend, the integer/pointer/control
+Tasks 193–196 are **complete**. The retained frontend, the integer/pointer/control
 backend (194) and the call, aggregate, floating-point and variadic backend (195)
-use native LP64 and the shared mip contracts.
-The installed compiler/alternate drivers remain task 196, and complete supported
+use native LP64 and the shared mip contracts. Task 196 installs the compiler as
+`/usr/lib/ccom` with the `/bin/pcc` driver and adds the `fort` second pass; and complete supported
 V7 source rebuild acceptance remains 207. The private executables are not yet
 installed compiler commands.
 
@@ -179,3 +179,42 @@ PCC, as and ld rebuild the same fixture in bounded units with exact assembly.
 Execution runs as root and as an ordinary user at 16/128 MiB. These checks do
 not cover the installed driver or full V7 rebuild work. Git history records the
 implementation and test evidence.
+
+## Installed driver and alternate targets (task 196)
+
+`/usr/lib/ccom` (`user/pcc/ccom.c`) keeps the supplied interface: it reads
+preprocessed C from standard input or a file and writes assembly to standard
+output or a file. `-p` calls the native `mcount` on function entry; `mcount`
+preserves every register, so arguments survive. `-l` writes
+`# line N, file F` before each expression, which pcc requests for `-S`. `-X`
+flags select the retained front-end traces. `--native-source`, `--emit-pass`
+and `--read-pass` are native options. The mip makefile's `comp` target is the
+same compiler.
+
+`/bin/pcc` (`rootfs/bin/pcc`) is the supplied script with native paths. Each
+source is preprocessed through a wrapper that includes the native profile
+`/usr/lib/pcc.h` (an installed copy of `user/pcc/native.h`, checked identical
+by the tests) before the absolute source path, so quoted includes still search
+the source directory. ccom always uses `--native-source`. `-O` runs `/lib/c2`.
+`-X` formerly named Steve Johnson's experimental compiler; natively it selects
+the split two-pass form of the same compiler. `-c`, `-S`, `-p`, `-D`/`-I`/`-U`,
+assembly inputs and linking with `/lib/crt0.o` and `/lib/libc.a` are as
+supplied. A failing pass leaves no `a.out`.
+
+`fort` (`user/pcc/fort.c`, the mip/pcc `fort` target) is the second pass for
+the Fortran front end's SCJ interface. Its native intermediate format uses
+64-bit words; the header comment in `fort.c` defines it. Frame and argument
+registers become frame-relative names. Expressions are compiled by the same
+backend, and `FRBRAC` emits the frame size. The supplied `convert` and
+`fconvert` notes, which describe source edits between the one-pass, two-pass
+and Fortran builds, are replaced by these explicit output contexts.
+`user/mip/g` is the developer search script with native file names.
+
+`make TOOLCHAIN_PREFIX= test-pcc-driver` covers:
+- the ccom options under sanitizers;
+- fort fed by an independent Python producer: functions, loops, calls,
+  doubles and frame-register addressing, linked with a GCC driver, plus
+  malformed streams;
+- in the guest at 16/128 MiB, as root and as an ordinary user: pcc multi-file
+  builds with `-c`, `-O`, `-X`, `-S`, `-p`, `-D`/`-I` and `.s` input, compile
+  errors, and fort output assembled, linked and run.

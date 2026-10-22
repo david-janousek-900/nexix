@@ -7985,6 +7985,58 @@
       }
     },
     {
+      "path": "/usr/lib/ccom",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.pcc",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-ccom.elf"
+      }
+    },
+    {
+      "path": "/usr/lib/pcc.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.pcc",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "usr/lib/pcc.h"
+      }
+    },
+    {
+      "path": "/bin/pcc",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "script.pcc",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "bin/pcc"
+      }
+    },
+    {
+      "path": "/bin/cc",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.cc",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-cc.elf"
+      }
+    },
+    {
       "path": "/bin/ar",
       "type": "file",
       "mode": "0755",
