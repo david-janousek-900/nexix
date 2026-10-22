@@ -122,7 +122,7 @@ driver promised by task 196.
 | `makefile`, `convert` | `tools/mip.mk` builds reusable native objects and private consumers. `user/pcc/output.c` selects direct or encoded consumption explicitly, replacing destructive one-pass conversion edits; full compiler build/install recipes remain 196. |
 | `fort.c`, `fallo.c`, `fmatch.c`, `freader.c`, `fcomm2.c`, `flocal2.c`, `forder.c`, `ftable.c`, `fconvert` | Shared encoded streams/resources replace binary native-long overlays and source-include duplication. The independent producer checks this parser-free interface. Actual Fortran front end, machine target and driver are still owned by 196 and 203–206; no Fortran compiler is claimed by the interface test. |
 | `g`, `INDEX` | Developer search/index aids, not shared runtime services; prototype/build-helper reconciliation remains 196. |
-| lint consumers | The separate analysis executable links only `common.c`, `trees.c`, `reader.c`, consumes actual PCC passes and walks their checked IR. Full lint analysis passes/driver remain 261–262. |
+| lint consumers | The separate analysis executable links only `common.c`, `trees.c`, `reader.c`, consumes actual PCC passes and walks their checked IR. The installed lint1/lint2 and driver are [tasks 261–262](lint.md). |
 
 ## Acceptance evidence
 

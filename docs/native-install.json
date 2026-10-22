@@ -8024,6 +8024,45 @@
       }
     },
     {
+      "path": "/usr/lib/lint1",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.lint",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-lint1.elf"
+      }
+    },
+    {
+      "path": "/usr/lib/lint2",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.lint",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-lint2.elf"
+      }
+    },
+    {
+      "path": "/bin/lint",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "script.lint",
+      "format": "data",
+      "source": {
+        "root": "config",
+        "path": "bin/lint"
+      }
+    },
+    {
       "path": "/bin/cc",
       "type": "file",
       "mode": "0755",

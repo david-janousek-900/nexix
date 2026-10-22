@@ -1,0 +1,28 @@
+L=/usr/lib/lint T=/tmp/lint.$$ PATH=/bin:/usr/bin O="-C -Dlint" X= P=unix
+LL=/usr/lib H='#include "/usr/lib/pcc.h"'
+trap "rm -f $T $T.i; exit" 1 2 15
+for A in $*
+do
+	case $A in
+	-*n*)	P= ;;
+	-*p*)	P=port ;;
+	esac
+	case $A in
+	-l*)	((echo "$H"; echo "#line 1 \"$LL/llib$A\""; cat $LL/llib$A) |
+		/lib/cpp $O >$T.i && ${L}1 -v$X-L$A <$T.i >>$T)2>&1 ;;
+	-[IDOU]*)	O="$O $A" ;;
+	-X)	LL=/usr/src/lint L=/usr/src/lint/lpass ;;
+	-*)	X="$X$A" ;;
+	*)	D=`expr $A : '\(.*\)/' \| .`
+		((echo "$H"; echo "#line 1 \"$A\""; cat $A) |
+		/lib/cpp $O -I$D >$T.i && ${L}1 $X-L$A <$T.i >>$T)2>&1
+	esac
+	done
+case $P in
+	unix)	((echo "$H"; echo "#line 1 \"$LL/llib-lc\""; cat $LL/llib-lc) |
+		/lib/cpp $O >$T.i && ${L}1 -v$X-L-lc <$T.i >>$T)2>&1 ;;
+	port)	((echo "$H"; echo "#line 1 \"$LL/llib-port\""; cat $LL/llib-port) |
+		/lib/cpp $O >$T.i && ${L}1 -v$X-L-lc <$T.i >>$T)2>&1 ;;
+	esac
+${L}2 $X <$T
+rm -f $T $T.i
