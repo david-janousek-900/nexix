@@ -133,10 +133,10 @@ if mode in full_boot_modes:
              "E1000 CLEANUP OK", "E1000 DMA OK")):
         sys.exit(f"FAIL: e1000 DMA/IRQ/teardown check failed; see {log}")
     if (any(f"{marker}\r\n".encode() not in output for marker in
-            ("NET LOOPBACK OK", "NET IP OK", "NET ICMP OK", "NET STACK OK")) or
+            ("NET LOOPBACK OK", "NET IP OK", "NET ICMP OK", "NET UDP OK", "NET STACK OK")) or
             (b"NET ETHERNET OK\r\n" if b"E1000 FOUND\r\n" in output else b"NET ETHERNET ABSENT\r\n") not in output or
             (b"E1000 FOUND\r\n" in output and b"NET ROUTE OK\r\n" not in output)):
-        sys.exit(f"FAIL: network interface/loopback/Ethernet/routing/ARP/IPv4/ICMP check failed; see {log}")
+        sys.exit(f"FAIL: network interface/loopback/Ethernet/routing/ARP/IPv4/ICMP/UDP check failed; see {log}")
     if b"NET POOLS OK\r\n" not in output:
         sys.exit(f"FAIL: network packet/socket pool check failed; see {log}")
     if any(f"{marker}\r\n".encode() not in output for marker in

@@ -4,6 +4,7 @@
 #include "net/route.h"
 #include "net/ip.h"
 #include "net/icmp.h"
+#include "net/udp.h"
 #include "net/compat.h"
 #include "net/e1000.h"
 #include "net/worker.h"
@@ -252,6 +253,68 @@ static void loop_icmp(void)
     REQUIRE(net_worker_call(raw_close, NULL));
     REQUIRE(net_pool()->stats.mbufs == 0 && net_pool()->stats.clusters == 0);
 }
+/* UDP over lo0: a 9216-byte datagram (fragmented and reassembled), a reply
+ * to the sender's ephemeral port, and port unreachable for a closed port. */
+static struct nx_net_udp *udp_server, *udp_client;
+static enum nx_net_result udp_result;
+static size_t udp_length;
+static nx_net_addr_t udp_from;
+static nx_net_port_t udp_port;
+static void udp_open(void *a)
+{
+    (void)a;
+    REQUIRE(nx_net_udp_open(NULL, NULL, &udp_server) == NX_NET_OK && nx_net_udp_open(NULL, NULL, &udp_client) == NX_NET_OK);
+    REQUIRE(nx_net_udp_bind(udp_server, IP(127, 0, 0, 1), 7, false) == NX_NET_DENIED);
+    REQUIRE(nx_net_udp_bind(udp_server, IP(127, 0, 0, 1), 7, true) == NX_NET_OK);
+    REQUIRE(nx_net_udp_connect(udp_client, IP(127, 0, 0, 1), 7) == NX_NET_OK &&
+            udp_client->local_port >= NX_NET_UDP_EPHEMERAL_FIRST);
+}
+static void udp_send(void *a)
+{
+    struct nx_net_udp *u = a == udp_server ? udp_server : udp_client;
+    udp_result = nx_net_udp_send(u, packet(u == udp_server ? 3 : NX_NET_UDP_SNDMAX, 5),
+                                 u == udp_server ? udp_from : 0, u == udp_server ? udp_port : 0);
+}
+static void udp_take(void *a)
+{
+    struct nx_net_mbuf *m = nx_net_udp_receive(a, &udp_from, &udp_port);
+    udp_length = SIZE_MAX;
+    if (!m) return;
+    udp_length = nx_net_mbuf_length(m);
+    check_pattern(m, 0, udp_length);
+    nx_net_mbuf_freem(m);
+}
+static void udp_close_server(void *a) { (void)a; nx_net_udp_close(udp_server); }
+static void udp_error(void *a) { (void)a; udp_result = nx_net_udp_take_error(udp_client); }
+static void udp_close_client(void *a) { (void)a; nx_net_udp_close(udp_client); }
+static void await_udp(struct nx_net_udp *u)
+{
+    for (unsigned t = 0; t < 100; ++t) {
+        REQUIRE(net_worker_call(udp_take, u));
+        if (udp_length != SIZE_MAX) return;
+        proc_delay(1);
+    }
+}
+static void loop_udp(void)
+{
+    REQUIRE(net_worker_call(udp_open, NULL));
+    REQUIRE(net_worker_call(udp_send, udp_client) && udp_result == NX_NET_OK);
+    await_udp(udp_server);
+    REQUIRE(udp_length == NX_NET_UDP_SNDMAX && udp_from == IP(127, 0, 0, 1) && udp_port == udp_client->local_port);
+    REQUIRE(net_worker_call(udp_send, udp_server) && udp_result == NX_NET_OK);
+    await_udp(udp_client);
+    REQUIRE(udp_length == 3 && udp_port == 7);
+    REQUIRE(net_worker_call(udp_close_server, NULL));
+    REQUIRE(net_worker_call(udp_send, udp_client) && udp_result == NX_NET_OK);
+    udp_result = NX_NET_OK;
+    for (unsigned t = 0; t < 100 && udp_result == NX_NET_OK; ++t) {
+        proc_delay(1);
+        REQUIRE(net_worker_call(udp_error, NULL));
+    }
+    REQUIRE(udp_result == NX_NET_REFUSED);
+    REQUIRE(net_worker_call(udp_close_client, NULL));
+    REQUIRE(net_pool()->stats.mbufs == 0 && net_pool()->stats.clusters == 0);
+}
 static bool resolved;
 static uint8_t resolved_mac[NX_NET_ETHER_ADDR];
 static struct nx_net_arp_stats arp;
@@ -321,6 +384,8 @@ static void tests(void *argument)
         if (!round) console_puts("NET IP OK\r\n");
         loop_icmp();
         if (!round) console_puts("NET ICMP OK\r\n");
+        loop_udp();
+        if (!round) console_puts("NET UDP OK\r\n");
 
         if (em) {
             REQUIRE(net_worker_call(em_states, NULL));
