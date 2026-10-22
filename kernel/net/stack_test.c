@@ -1,5 +1,7 @@
 #include "net/kernel.h"
 #include "net/if.h"
+#include "net/arp.h"
+#include "net/route.h"
 #include "net/e1000.h"
 #include "net/worker.h"
 #include "net/wire.h"
@@ -8,9 +10,8 @@
 #include "process.h"
 #define REQUIRE(c) do { if (!(c)) panic("network stack self-test: " #c); } while (0)
 
-/* Temporary protocol sinks: IPv4 counts loopback packets and checks their
- * bytes; ARP records replies from QEMU's user-mode gateway. */
-static volatile unsigned ip_packets, arp_replies;
+/* Temporary IPv4 sink: counts loopback packets and checks their bytes. */
+static volatile unsigned ip_packets;
 static struct nx_net_if *ip_ifp;
 static void ip_sink(struct nx_net_if *ifp, struct nx_net_mbuf *m)
 {
@@ -23,15 +24,6 @@ static void ip_sink(struct nx_net_if *ifp, struct nx_net_mbuf *m)
     ip_ifp = ifp;
     ++ip_packets;
 }
-static void arp_sink(struct nx_net_if *ifp, struct nx_net_mbuf *m)
-{
-    uint8_t arp[28];
-    if (nx_net_mbuf_length(m) >= 28 && nx_net_mbuf_copydata(m, 0, 28, arp) &&
-        nx_net_get16(arp + 6) == 2 && arp[14] == 10 && arp[17] == 2 &&
-        ifp->name[0] == 'e' && ifp->name[1] == 'm' && ifp->name[2] == '0') ++arp_replies;
-    nx_net_mbuf_freem(m);
-}
-
 static struct nx_net_mbuf *packet(size_t length, uint8_t seed)
 {
     uint8_t bytes[64];
@@ -47,13 +39,12 @@ static void register_sinks(void *a)
 {
     (void)a;
     REQUIRE(nx_net_proto_register(NX_NET_ETHERTYPE_IP, ip_sink) == NX_NET_OK);
-    REQUIRE(nx_net_proto_register(NX_NET_ETHERTYPE_ARP, arp_sink) == NX_NET_OK);
+    REQUIRE(nx_net_proto_register(NX_NET_ETHERTYPE_ARP, ip_sink) == NX_NET_EXISTS);   /* the stack's */
 }
 static void unregister_sinks(void *a)
 {
     (void)a;
     nx_net_proto_unregister(NX_NET_ETHERTYPE_IP);
-    nx_net_proto_unregister(NX_NET_ETHERTYPE_ARP);
 }
 /* Queue more than lo0 holds within one worker pass: nothing is delivered
  * until this call returns, and the overflow is dropped and counted. */
@@ -83,18 +74,68 @@ static void em_states(void *a)
     REQUIRE(nx_net_if_output(em, big, nx_net_ether_broadcast, NX_NET_ETHERTYPE_IP) == NX_NET_TOO_BIG);
     REQUIRE(em->stats.oerrors == 2);
 }
-static void arp_request(void *a)
+#define IP(a, b, c, d) ((nx_net_addr_t)(a) << 24 | (nx_net_addr_t)(b) << 16 | (nx_net_addr_t)(c) << 8 | (d))
+/* QEMU user networking: 10.0.2.0/24, gateway 10.0.2.2 (52:55:0a:00:02:02),
+ * which answers ARP only for its own service addresses. */
+static enum nx_net_result routed;
+static nx_net_addr_t route_target;
+static void configure(void *a)
 {
     (void)a;
-    struct nx_net_if *em = nx_net_if_find("em0");
-    uint8_t arp[28] = {0};
-    nx_net_put16(arp, 1); nx_net_put16(arp + 2, 0x0800); arp[4] = 6; arp[5] = 4; nx_net_put16(arp + 6, 1);
-    for (unsigned i = 0; i < 6; ++i) arp[8 + i] = em->lladdr[i];
-    arp[14] = 10; arp[15] = 0; arp[16] = 2; arp[17] = 15;
-    arp[24] = 10; arp[25] = 0; arp[26] = 2; arp[27] = 2;
-    struct nx_net_mbuf *m = nx_net_mbuf_get(net_pool(), true);
-    REQUIRE(m && nx_net_mbuf_append(m, arp, sizeof(arp)));
-    REQUIRE(nx_net_if_output(em, m, nx_net_ether_broadcast, NX_NET_ETHERTYPE_ARP) == NX_NET_OK);
+    struct nx_net_if *lo = nx_net_if_find("lo0"), *em = nx_net_if_find("em0");
+    REQUIRE(nx_net_route_set_default(IP(10, 0, 2, 2)) == NX_NET_UNREACHABLE);   /* nothing on-link yet */
+    REQUIRE(nx_net_inet_set(lo, IP(127, 0, 0, 1), IP(255, 0, 0, 0)) == NX_NET_OK);
+    REQUIRE(nx_net_inet_set(em, IP(10, 0, 2, 0), IP(255, 255, 255, 0)) == NX_NET_INVALID);
+    REQUIRE(nx_net_inet_set(em, IP(10, 0, 2, 15), IP(255, 255, 255, 0)) == NX_NET_OK);
+    REQUIRE(nx_net_route_set_default(IP(10, 0, 2, 2)) == NX_NET_OK);
+    struct nx_net_route r;
+    REQUIRE(nx_net_route_lookup(IP(192, 0, 2, 1), &r) == NX_NET_OK && r.ifp == em && r.gateway &&
+            r.next_hop == IP(10, 0, 2, 2));
+    REQUIRE(nx_net_route_lookup(IP(10, 0, 2, 15), &r) == NX_NET_OK && r.ifp == lo && r.local);
+}
+static void route_packet(void *a)
+{
+    routed = nx_net_route_output(packet(32, (uint8_t)(uintptr_t)a), route_target);
+}
+static bool resolved;
+static uint8_t resolved_mac[NX_NET_ETHER_ADDR];
+static struct nx_net_arp_stats arp;
+static void arp_probe(void *a)
+{
+    arp = nx_net_arp_stats();
+    resolved = nx_net_arp_lookup(nx_net_if_find("em0"), (nx_net_addr_t)(uintptr_t)a, resolved_mac);
+}
+static void routes(struct nx_net_if *lo, struct nx_net_if *em, bool slow)
+{
+    REQUIRE(net_worker_call(configure, NULL));
+    /* Our own em0 address is delivered through lo0. */
+    ip_packets = 0;
+    route_target = IP(10, 0, 2, 15);
+    REQUIRE(net_worker_call(route_packet, (void *)7) && routed == NX_NET_OK);
+    for (unsigned t = 0; t < 100 && !ip_packets; ++t) proc_delay(1);
+    REQUIRE(ip_packets == 1 && ip_ifp == lo);
+    /* An off-link destination resolves the gateway; the held packet follows. */
+    uint64_t sent = em->stats.opackets;
+    route_target = IP(192, 0, 2, 1);
+    REQUIRE(net_worker_call(route_packet, (void *)9) && routed == NX_NET_OK);
+    resolved = false;
+    for (unsigned t = 0; t < 600 && !resolved; ++t) {
+        proc_delay(1);
+        REQUIRE(net_worker_call(arp_probe, (void *)(uintptr_t)IP(10, 0, 2, 2)));
+    }
+    REQUIRE(resolved && resolved_mac[0] == 0x52 && resolved_mac[1] == 0x55 && resolved_mac[5] == 0x02);
+    REQUIRE(em->stats.opackets >= sent + 2 && arp.received >= 1 && arp.requests >= 1);
+    if (!slow) return;
+    /* An absent on-link peer is retried five times, then refused. */
+    route_target = IP(10, 0, 2, 77);
+    REQUIRE(net_worker_call(route_packet, (void *)11) && routed == NX_NET_OK);
+    uint64_t timeouts = arp.timeouts;
+    for (unsigned t = 0; t < 800 && arp.timeouts == timeouts; ++t) {
+        proc_delay(1);
+        REQUIRE(net_worker_call(arp_probe, (void *)(uintptr_t)IP(10, 0, 2, 77)));
+    }
+    REQUIRE(arp.timeouts == timeouts + 1 && arp.hold_drops >= 1 && !resolved);
+    REQUIRE(net_worker_call(route_packet, (void *)12) && routed == NX_NET_HOST_UNREACHABLE);
 }
 
 static void tests(void *argument)
@@ -120,14 +161,12 @@ static void tests(void *argument)
 
         if (em) {
             REQUIRE(net_worker_call(em_states, NULL));
-            arp_replies = 0;
-            /* QEMU holds receive for ~1 s after enabling it; retry. */
-            for (unsigned attempt = 0; attempt < 5 && !arp_replies; ++attempt) {
-                REQUIRE(net_worker_call(arp_request, NULL));
-                for (unsigned t = 0; t < 100 && !arp_replies; ++t) proc_delay(1);
-            }
-            REQUIRE(arp_replies && em->stats.ipackets >= 1 && em->stats.opackets >= 1);
+            /* QEMU holds receive for ~1 s after enabling it; ARP retries cover that. */
+            routes(lo, em, !round);
+            REQUIRE(em->stats.ipackets >= 1);
+            if (!round) console_puts("NET ROUTE OK\r\n");
             REQUIRE(net_worker_call(em_down, NULL) && !e1000_started() && !(em->flags & NX_NET_IFF_UP));
+            REQUIRE(net_worker_call(arp_probe, (void *)(uintptr_t)IP(10, 0, 2, 2)) && !resolved);   /* flushed */
             REQUIRE(net_worker_call(em_up, NULL) && em_ok && e1000_started());   /* restartable */
             if (!round) console_puts("NET ETHERNET OK\r\n");
         } else if (!round) {

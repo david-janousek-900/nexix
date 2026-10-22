@@ -21,8 +21,9 @@ struct nx_net_kernel_limits nx_net_kernel_limits(size_t total_pages);
 void net_pool_selftest(void);
 
 /* Live stack (task 418). net_start runs in process context after proc_init:
- * it creates the packet pool, starts the worker (whose parent is the caller)
- * and attaches lo0 (up) and, when an e1000 exists, em0 (down). net_stop
+ * it creates the packet pool, starts the worker (whose parent is the caller),
+ * registers ARP with its 250 ms timer (task 419) and attaches lo0 (up,
+ * unaddressed) and, when an e1000 exists, em0 (down). net_stop
  * detaches every interface, stops and reaps nothing (the parent reaps the
  * worker) and destroys the pool. */
 bool net_start(void);

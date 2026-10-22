@@ -26,7 +26,7 @@
 /* Outcomes for callers; task 424 maps them to the socket errno ABI. */
 enum nx_net_result {
     NX_NET_OK, NX_NET_DOWN, NX_NET_TOO_BIG, NX_NET_NO_BUFFERS, NX_NET_INVALID, NX_NET_EXISTS,
-    NX_NET_FULL, NX_NET_UNSUPPORTED
+    NX_NET_FULL, NX_NET_UNSUPPORTED, NX_NET_UNREACHABLE, NX_NET_HOST_UNREACHABLE
 };
 
 struct nx_net_if;
@@ -54,6 +54,9 @@ struct nx_net_if {
     void (*kick)(void *);
     void *kick_argument;
     bool attached;
+    /* One static IPv4 address and netmask, host order (task 419, net/route.h). */
+    bool inet_configured;
+    nx_net_addr_t inet_addr, inet_mask;
 };
 
 /* Upper-layer input for one ethertype, receiving the payload (link header
@@ -71,6 +74,11 @@ size_t nx_net_if_count(void);
 struct nx_net_if *nx_net_if_at(size_t index);
 enum nx_net_result nx_net_if_up(struct nx_net_if *);
 void nx_net_if_down(struct nx_net_if *);
+/* One hook, called after an interface goes down, is detached or changes its
+ * address, so cached state for it (ARP entries, held packets) is discarded.
+ * Detach also clears the address. */
+void nx_net_if_set_change_hook(void (*)(struct nx_net_if *));
+void nx_net_if_changed(struct nx_net_if *);
 
 /* Send an upper-layer packet of ethertype to next-hop link address dst
  * (ignored by loopback). Ethernet prepends its header; payloads above the MTU

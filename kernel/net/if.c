@@ -3,6 +3,7 @@
 
 static struct nx_net_if *interfaces[NX_NET_IF_MAX];
 static struct { uint16_t type; nx_net_proto_input input; } protocols[NX_NET_PROTOCOLS];
+static void (*change_hook)(struct nx_net_if *);
 const uint8_t nx_net_ether_broadcast[NX_NET_ETHER_ADDR] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
 static bool same_name(const char *a, const char *b)
@@ -74,7 +75,12 @@ void nx_net_if_detach(struct nx_net_if *ifp)
     for (unsigned i = 0; i < NX_NET_IF_MAX; ++i)
         if (interfaces[i] == ifp) interfaces[i] = NULL;
     ifp->attached = false;
+    ifp->inet_configured = false;
+    ifp->inet_addr = ifp->inet_mask = 0;
+    nx_net_if_changed(ifp);
 }
+void nx_net_if_set_change_hook(void (*hook)(struct nx_net_if *)) { change_hook = hook; }
+void nx_net_if_changed(struct nx_net_if *ifp) { if (change_hook) change_hook(ifp); }
 struct nx_net_if *nx_net_if_find(const char *name)
 {
     for (unsigned i = 0; i < NX_NET_IF_MAX; ++i)
@@ -119,6 +125,7 @@ void nx_net_if_down(struct nx_net_if *ifp)
     ifp->flags &= ~(NX_NET_IFF_UP | NX_NET_IFF_RUNNING);
     if (ifp->ops->down) ifp->ops->down(ifp);
     flush_queue(ifp);
+    nx_net_if_changed(ifp);
 }
 
 enum nx_net_result nx_net_if_output(struct nx_net_if *ifp, struct nx_net_mbuf *m,

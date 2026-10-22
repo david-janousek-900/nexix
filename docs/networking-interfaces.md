@@ -114,8 +114,8 @@ the stack twice at 16 MiB and 128 MiB.
 - **em0** (when present):
   - output is refused while it's down and when the payload is above the MTU;
   - up reads the MAC;
-  - an ARP request through Ethernet framing gets the gateway's reply,
-    demultiplexed to the ARP protocol on `em0`;
+  - [routing and ARP](networking-routing.md) resolve the gateway through
+    Ethernet framing (task 419 replaced the earlier hand-built ARP sink);
   - down and up work again.
 - **Shutdown.** Stopping leaves no interfaces, a stopped driver and every page
   returned.
