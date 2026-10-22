@@ -1,12 +1,15 @@
 # include <stdio.h>
-extern struct {int *yyaa, *yybb; int *yystops;} *yylstate [], **yylsp, **yyolsp;
-yyreject ()
-{
+/* Nexix: the state type matches the generated scanner's struct yysvf. */
+struct yysvf {struct yywork *yystoff; struct yysvf *yyother; int *yystops;};
+extern struct yysvf *yylstate [], **yylsp, **yyolsp;
+/* Nexix: V7 let these block-scope declarations reach yyracc; they are file scope. */
 extern FILE *yyout, *yyin;
 extern int yyprevious , *yyfnd;
 extern char yyextra[];
 extern char yytext[];
 extern int yyleng;
+yyreject ()
+{
 for( ; yylsp < yyolsp; yylsp++)
 	yytext[yyleng++] = yyinput();
 if (*yyfnd > 0)

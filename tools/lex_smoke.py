@@ -3,9 +3,9 @@ import sys
 from private_guest import private_guest
 from multiuser_acceptance import login
 qemu,iso,ram=sys.argv[1:4]
-names=['spec.l','lex.yy.c','lex-f.yy.c','input','expected','table.l','table.c','table-input','table-expected','ratfor.l','lex.yy.r']
+names=['libln.l','libln-input','libln-expected','spec.l','lex.yy.c','lex-f.yy.c','input','expected','table.l','table.c','table-input','table-expected','ratfor.l','lex.yy.r']
 artifacts={'/tmp/'+('expected.c' if n=='lex.yy.c' else 'expected.r' if n=='lex.yy.r' else n):'fixtures-lex/'+n for n in names}
-artifacts.update({'/tmp/scanner':'lex-scanner.elf','/tmp/table':'lex-table.elf'})
+artifacts.update({'/tmp/libln':'lex-libln.elf','/tmp/libln.o':'lex-libln.o','/tmp/libln.c':'fixtures-lex/libln.c','/tmp/scanner':'lex-scanner.elf','/tmp/table':'lex-table.elf'})
 with private_guest(qemu,iso,ram,'lex',artifacts,terminals=2,single_user=False) as guest:
     login(guest,'root','nexix')
     guest.command('cd /tmp')
@@ -26,6 +26,14 @@ with private_guest(qemu,iso,ram,'lex',artifacts,terminals=2,single_user=False) a
     guest.command('cmp output table-expected')
     guest.command('lex -r ratfor.l')
     guest.command('cmp lex.yy.r expected.r')
+    guest.command('/tmp/libln < libln-input > output; echo $?',stdout='0\n')
+    guest.command('cmp output libln-expected')
+    guest.command('lex libln.l')
+    guest.command('cmp lex.yy.c libln.c')
+    guest.command('ld -o lnscan /lib/crt0.o libln.o -lln -lc')
+    guest.command('./lnscan < libln-input > output')
+    guest.command('cmp output libln-expected')
+    guest.command('ar t /lib/libln.a',stdout='allprint.o\nmain.o\nreject.o\nyyless.o\nyywrap.o\n')
     guest.command('lex absent.l',stdout="0: (Error) Can't read input file absent.l\n",status=1)
     guest.command('lex -f spec.l',stdout='(Error) Too many transitions \nTry using %a num\n',status=1)
     guest.command('mkdir /tmp/bobgen')
@@ -35,4 +43,4 @@ with private_guest(qemu,iso,ram,'lex',artifacts,terminals=2,single_user=False) a
     guest.command('cp /tmp/spec.l spec.l',terminal=1)
     guest.command('lex spec.l',terminal=1)
     guest.command('cmp lex.yy.c /tmp/expected.c',terminal=1)
-print(f'PASS: {ram} native lex C/uncompressed/%T/Ratfor generation, exact outputs, scanner execution, errors and unprivileged generation')
+print(f'PASS: {ram} native lex, libln (prebuilt and native ld -lln), C/uncompressed/%T/Ratfor generation, exact outputs, scanner execution, errors and unprivileged generation')

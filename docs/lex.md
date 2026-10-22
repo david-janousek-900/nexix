@@ -47,6 +47,26 @@ in the compressed path. The supplied form fell through and consumed it.
 and `/usr/lib/lex/nrform`, used by `-r`, are the task 88 native/pinned inputs
 documented in [support inputs](support-inputs.md).
 
+## libln and smallex
+
+`/lib/libln.a` holds the supplied `allprint.o`, `main.o`, `reject.o`,
+`yyless.o` and `yywrap.o`: a `main` that calls `yylex` and exits 0, a `yywrap`
+returning 1, `yyreject` for `REJECT`, `yyless`, and `allprint`/`sprint`.
+Native adaptations:
+
+- `yyreject` declares the scanner state as the generated `struct yysvf`, and its
+  externals are at file scope. V7 let block-scope declarations in `yyreject`
+  reach `yyracc`.
+- `yyless` takes a count of characters to keep. V7 also accepted a pointer into
+  `yytext`, which an `int` cannot hold on LP64; a count outside `0..yyleng` leaves
+  the token unchanged.
+- `allprint` and `sprint` write to standard output when `yyout` is still unset,
+  because generated scanners bind their streams only when `yylex` first runs.
+
+`smallex` is the supplied `-DSMALL` build of the same generator (600 nodes,
+1500 positions, 300 states, 1500 transitions and 1500 output slots). It is built
+as `build/v7-smallex.elf` and tested, but not installed, as in V7.
+
 ## Acceptance
 
 `make test-lex` builds the production generator with ASan/UBSan. It generates,
@@ -56,11 +76,18 @@ and enlarged-table forms, and for `%T` tables with ordinary and extended-byte
 drivers. It also checks `-t`/`-v`/`-n`, standard input, several input files and
 Ratfor generation. Malformed specifications, every table limit, missing drivers,
 unwritable output and 400 random specifications must fail or warn without a
-sanitizer report. Disposable 16/128 MiB guests compare the installed generator's
+sanitizer report. A scanner linked with the libln sources checks `REJECT`
+chains, `yyless` pushback and out-of-range counts, `allprint`/`sprint` and the
+library `main`/`yywrap`; `smallex` must produce the same C for the main fixture,
+report its smaller limits and fail cleanly on a specification that only fits
+the default tables. Disposable 16/128 MiB guests compare the installed generator's
 C and Ratfor output byte-for-byte with the checked host output. They run native
 scanners built from that C, check diagnostics and exercise ordinary-user generation.
+They also run a scanner prebuilt with `libln.a`, list the installed archive, and
+link the same scanner object against `/lib/libln.a` with the native `ld -lln`.
 
-The `libln` runtime (`yyless`, `yyreject`, `main`, `yywrap`, `allprint`) and the
-`smallex` target are task 172. Task 173 completes combined lex/yacc consumer
-acceptance and executes Ratfor scanners with the native Fortran toolchain.
+Task 173 completes combined lex/yacc consumer acceptance, compiles generated
+scanners with the native `cc` and executes Ratfor scanners with the native
+Fortran toolchain. The installed `c0` still rejects the address-constant
+initializers in generated tables (`yycrank+N`, `yysvec+N`).
 Host GCC remains the bootstrap C compiler for the generated test scanners.

@@ -60,6 +60,22 @@ RATFOR=r'''%%
 [0-9]+		{ yylex = 1; return }
 [a-z]+		{ yylex = 2; return }
 '''
+# libln supplies main, yywrap, yyreject, yyless and allprint/sprint.
+LIBLN=r'''%{
+int s, h;
+%}
+%%
+she		{ s++; REJECT; }
+he		{ h++; REJECT; }
+abcd		{ yyless(2); printf("[ab]"); }
+cd		printf("[cd]");
+xyz		{ yyless(-1); yyless(9); printf("[%s]", yytext); }
+"#"		printf("s=%d h=%d", s, h);
+"@"		{ allprint('\t'); allprint(1); allprint(0300); sprint("x y"); }
+.|\n		ECHO;
+'''
+LIBLN_INPUT='she#\nabcd xyz@\nshe he#\n'
+LIBLN_EXPECTED='shes=1 h=1\n[ab][cd] [xyz]\\t\\1  \\300x\\\bby\nshe hes=2 h=3\n'
 CC_HOST=['cc','-std=gnu89','-funsigned-char','-fcommon','-w','-g','-fsanitize=address,undefined']
 with tempfile.TemporaryDirectory(prefix='nx-lex-') as temp:
     folder=Path(temp);binary=folder/'generator'
@@ -72,7 +88,7 @@ with tempfile.TemporaryDirectory(prefix='nx-lex-') as temp:
         if ok:assert r.returncode==0,r
         return r
     def scanner(source,name,text,expected):
-        subprocess.run([*CC_HOST,source,'-o',name],cwd=folder,check=True)
+        subprocess.run([*CC_HOST,*([source] if isinstance(source,str) else source),'-o',name],cwd=folder,check=True)
         r=subprocess.run([str(folder/name)],input=text if isinstance(text,bytes) else text.encode(),env=ENV,capture_output=True,timeout=10)
         assert r.returncode==0 and r.stdout.decode()==expected,(name,r)
     # Default C generation, report and every table/compression variant.
@@ -101,6 +117,24 @@ with tempfile.TemporaryDirectory(prefix='nx-lex-') as temp:
     (OUT/'table-input').write_bytes(TABLE_INPUT);(OUT/'table-expected').write_text(TABLE_EXPECTED)
     scanner('lex.yy.c','table',TABLE_INPUT,TABLE_EXPECTED)
     assert run(table_spec('300','200'),ok=False).returncode!=0
+    # libln runtime, linked as the library rather than the generated program.
+    run(LIBLN,filename='libln.l');(OUT/'libln.l').write_text(LIBLN);(OUT/'libln.c').write_bytes((folder/'lex.yy.c').read_bytes())
+    (OUT/'libln-input').write_text(LIBLN_INPUT);(OUT/'libln-expected').write_text(LIBLN_EXPECTED)
+    lib=[str(ROOT/'user/lex/lib'/(n+'.c')) for n in ('allprint','main','reject','yyless','yywrap')]
+    scanner(['lex.yy.c',*lib],'libln',LIBLN_INPUT,LIBLN_EXPECTED)
+    # smallex is the same generator with the SMALL table limits.
+    small=folder/'smallex'
+    subprocess.run([*CC_HOST,'-DSMALL','-O1','-I',str(ROOT/'user/lex'),str(ROOT/'build/gen-lex/parser.c'),
+        *[str(ROOT/'user/lex'/(n+'.c')) for n in ('lmain','sub1','sub2','header')],'-o',str(small)],check=True)
+    (folder/'spec.l').write_text(SPEC)
+    r=subprocess.run([str(small),'spec.l'],cwd=folder,env=ENV,capture_output=True,timeout=20)
+    assert r.returncode==0 and (folder/'lex.yy.c').read_bytes()==(OUT/'lex.yy.c').read_bytes(),r
+    r=subprocess.run([str(small),'-v','spec.l'],cwd=folder,env=ENV,capture_output=True,timeout=20)
+    assert b'/600 nodes(%e)' in r.stdout and b'/300 (%n)' in r.stdout,r
+    (folder/'big.l').write_text('%%\n'+'|'.join('w%d'%i for i in range(150))+'\tECHO;\n')
+    assert run(None,filename='big.l').returncode==0
+    r=subprocess.run([str(small),'big.l'],cwd=folder,env=ENV,capture_output=True,timeout=20)
+    assert r.returncode!=0 and b'AddressSanitizer' not in r.stderr and b'runtime error:' not in r.stderr,r
     # Ratfor generation uses nrform; Fortran execution is task 173.
     run(RATFOR,'-r',filename='ratfor.l');text=(folder/'lex.yy.r').read_text()
     assert 'integer function yylex' in text and 'blockdata' in text and 'function yylook' in text,text[:400]
@@ -129,5 +163,5 @@ with tempfile.TemporaryDirectory(prefix='nx-lex-') as temp:
         text=''.join(rng.choice('ab[]^-$.*+?|(){}<>"\\/%\n\t 01') for _ in range(rng.randrange(1,120)))
         run('%%\n'+text,ok=False)
         run(text,ok=False)
-subprocess.run(['make','build/lex-scanner.elf','build/lex-table.elf'],cwd=ROOT,check=True,stdout=subprocess.DEVNULL)
-print('PASS: lex production ASan/UBSan, C/uncompressed/%T scanner execution, Ratfor generation, options, malformed specifications and limits')
+subprocess.run(['make','build/lex-scanner.elf','build/lex-table.elf','build/lex-libln.elf','build/libln.a'],cwd=ROOT,check=True,stdout=subprocess.DEVNULL)
+print('PASS: lex production ASan/UBSan, libln REJECT/yyless/allprint, smallex limits, C/uncompressed/%T scanner execution, Ratfor generation, options, malformed specifications and limits')

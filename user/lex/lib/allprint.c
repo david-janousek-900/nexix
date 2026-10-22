@@ -1,25 +1,31 @@
+/* Nexix: libln printing helpers; an unset yyout means standard output, since
+ * generated scanners bind their streams only when yylex first runs. */
 # include <stdio.h>
+static FILE *yyprfile(){
+	extern FILE *yyout;
+	return(yyout ? yyout : stdout);
+	}
 allprint(c)
   char c; {
-	extern FILE *yyout;
+	FILE *f = yyprfile();
 	switch(c){
 		case '\n':
-			fprintf(yyout,"\\n");
+			fprintf(f,"\\n");
 			break;
 		case '\t':
-			fprintf(yyout,"\\t");
+			fprintf(f,"\\t");
 			break;
 		case '\b':
-			fprintf(yyout,"\\b");
+			fprintf(f,"\\b");
 			break;
 		case ' ':
-			fprintf(yyout,"\\\bb");
+			fprintf(f,"\\\bb");
 			break;
 		default:
 			if(!printable(c))
-				fprintf(yyout,"\\%-3o",c);
+				fprintf(f,"\\%-3o",c);
 			else 
-				putc(c,yyout);
+				putc(c,f);
 			break;
 		}
 	return;

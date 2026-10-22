@@ -10,6 +10,25 @@ build/lex-%.o: user/lex/%.c user/lex/ldefs.c user/lex/once.c | build/.dir
 build/v7-lex.elf: build/crt0.o $(LEX_NATIVE_OBJECTS) build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
 -include $(LEX_NATIVE_OBJECTS:.o=.d)
+# smallex: the same generator with the supplied SMALL table limits (not installed).
+LEX_SMALL_OBJECTS = $(patsubst build/lex-%.o,build/smallex-%.o,$(LEX_NATIVE_OBJECTS))
+build/smallex-parser.o: build/gen-lex/parser.c user/lex/ldefs.c | build/.dir
+	$(CC) $(V7_CFLAGS) -DSMALL -Iuser/lex -c $< -o $@
+build/smallex-%.o: user/lex/%.c user/lex/ldefs.c user/lex/once.c | build/.dir
+	$(CC) $(V7_CFLAGS) -DSMALL -c $< -o $@
+build/v7-smallex.elf: build/crt0.o $(LEX_SMALL_OBJECTS) build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+-include $(LEX_SMALL_OBJECTS:.o=.d)
+# libln: scanner main, yywrap, REJECT, yyless and allprint/sprint.
+LIBLN_OBJECTS = $(addprefix build/libln/,$(addsuffix .o,allprint main reject yyless yywrap))
+build/libln/%.o: user/lex/lib/%.c | build/.dir
+	mkdir -p build/libln
+	$(CC) $(V7_CFLAGS) -c $< -o $@
+build/libln.a: $(LIBLN_OBJECTS)
+	rm -f $@
+	cd build/libln && $(AR) rcs ../libln.a $(notdir $^)
+-include $(LIBLN_OBJECTS:.o=.d)
+userland: build/libln.a build/v7-smallex.elf
 .PHONY: test-lex-unit test-lex
 test-lex-unit: build/gen-lex/parser.c
 	$(PYTHON) tests/lex.py
@@ -24,7 +43,11 @@ build/lex-scanner.o: build/fixtures-lex/lex.yy.c | build/.dir
 	$(CC) $(V7_CFLAGS) -w -c $< -o $@
 build/lex-table.o: build/fixtures-lex/table.c | build/.dir
 	$(CC) $(V7_CFLAGS) -w -c $< -o $@
+build/lex-libln.o: build/fixtures-lex/libln.c | build/.dir
+	$(CC) $(V7_CFLAGS) -w -c $< -o $@
+build/lex-libln.elf: build/crt0.o build/lex-libln.o build/libln.a build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
 build/lex-scanner.elf build/lex-table.elf: build/lex-%.elf: build/crt0.o build/lex-%.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
 # These files are emitted by the sanitizer acceptance generator.
-build/fixtures-lex/lex.yy.c build/fixtures-lex/table.c: ;
+build/fixtures-lex/lex.yy.c build/fixtures-lex/table.c build/fixtures-lex/libln.c: ;

@@ -984,6 +984,19 @@
       }
     },
     {
+      "path": "/lib/libln.a",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.lex",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "libln.a"
+      }
+    },
+    {
       "path": "/lib/libm.a",
       "type": "file",
       "mode": "0644",

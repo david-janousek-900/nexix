@@ -7992,18 +7992,29 @@
           "name": "smallex",
           "install": null,
           "role": "optional",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/lex/makefile"
+            "user/lex/ldefs.c",
+            "tools/lex.mk",
+            "tests/lex.py",
+            "docs/lex.md"
           ]
         },
         {
           "name": "libln.a",
           "install": "/lib/libln.a",
           "role": "library",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/lex/makefile"
+            "user/lex/lib/allprint.c",
+            "user/lex/lib/main.c",
+            "user/lex/lib/reject.c",
+            "user/lex/lib/yyless.c",
+            "user/lex/lib/yywrap.c",
+            "tools/lex.mk",
+            "tests/lex.py",
+            "tools/lex_smoke.py",
+            "docs/lex.md"
           ]
         }
       ],
@@ -8092,10 +8103,10 @@
         }
       ],
       "blockers": [
-        "libln/smallex runtime targets remain task 172; combined native lex/yacc consumer acceptance remains task 173."
+        "Combined native lex/yacc consumer acceptance, including generated scanners compiled by the native cc, remains task 173."
       ],
       "unresolved": [
-        "Port libln and the smallex target (task 172); complete generated C/extended-table/Ratfor scanner acceptance with the native Fortran toolchain in task 173."
+        "Complete generated C/extended-table/Ratfor scanner acceptance with the native C and Fortran toolchains in task 173."
       ],
       "acceptance": [
         "Generate a scanner, compile it with libln and verify token/reject/pushback fixtures.",
@@ -8127,7 +8138,6 @@
         }
       ],
       "unresolved_tasks": [
-        172,
         173
       ],
       "native_sources": [
@@ -8140,7 +8150,12 @@
         "user/lex/sub2.c",
         "rootfs/usr/lib/lex/ncform",
         "rootfs/usr/lib/lex/nrform",
-        "rootfs/usr/lib/lex/ebcform"
+        "rootfs/usr/lib/lex/ebcform",
+        "user/lex/lib/allprint.c",
+        "user/lex/lib/main.c",
+        "user/lex/lib/reject.c",
+        "user/lex/lib/yyless.c",
+        "user/lex/lib/yywrap.c"
       ]
     },
     {
