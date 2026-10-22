@@ -139,13 +139,16 @@ void irq_detach(unsigned irq)
     irq_handlers[irq].argument = NULL;
     proc_irq_restore(flags);
 }
-/* All callers hold IRQ serialization; callbacks may schedule and resume. */
+/* All callers hold IRQ serialization; callbacks may schedule and resume.
+ * Elapsed periods are shared, so a catch-up preempted by proc_timer cannot
+ * absorb ticks another context adds while it is switched out. */
+static uint64_t pending_ticks;
 static void timer_advance_to(struct interrupt_frame *frame,uint64_t now)
 {
     if(!tick_clock.period)return;
-    uint64_t target=ticks+tick_clock_advance(&tick_clock,now);
-    while(ticks<target){
-        ++ticks;
+    pending_ticks+=tick_clock_advance(&tick_clock,now);
+    while(pending_ticks){
+        --pending_ticks;++ticks;
         struct proc *owner=proc_current();
         if(!owner)++cpu_idle;
         else if((frame->cs&3)!=3)++cpu_system;

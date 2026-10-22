@@ -235,6 +235,7 @@ int	blklev;
 int	mossym;
 int	protolev;
 int	protorec;
+int	protodef;
 int	variadic;
 int	csymflag;
 int	vasave, vagp, vafp, vaover;

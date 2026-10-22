@@ -157,7 +157,10 @@ static void start(struct tty *t)
     t->pumping=false;proc_wakeup(&t->output_channel);
 }
 void tty_timer(uint64_t now)
-{(void)now;for(unsigned i=0;i<TTY_LINES;++i){struct tty *t=&terminals[i];if(!t->driver)continue;start(t);input_flow(t);proc_wakeup(&t->output_channel);if(t->mpx_owner && !t->stopped)mpx_tty_resume(t);}}
+{(void)now;for(unsigned i=0;i<TTY_LINES;++i){struct tty *t=&terminals[i];if(!t->driver)continue;start(t);input_flow(t);proc_wakeup(&t->output_channel);
+    /* Output-only mpx channels have no mpx_owner; resume bridged writers once
+     * tty_mpx_write would accept bytes again. */
+    if(!t->stopped && (packet_active(t) || OUTPUT_CAPACITY-t->out_count>=16))mpx_tty_resume(t);}}
 static int drain(struct tty *t)
 {
     while(t->out_count || t->delay_until || !t->driver->idle(t->driver->context)){if(!t->carrier)return -NX_EIO;start(t);if(!t->out_count && !t->delay_until && t->driver->idle(t->driver->context))break;

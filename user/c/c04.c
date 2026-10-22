@@ -143,6 +143,18 @@ treeout(struct tnode *atp, int isstruct)
 		treeout(tp->tr1, 1);
 		treeout(tp->tr2, 0);
 		outcode("BN", CALL, tp->type);
+		if (tp->value && tp->rstrp) {
+			/* the result lives in a frame temporary */
+			autolen = (autolen - tp->rstrp->ssize) & ~15;
+			if (autolen < maxauto)
+				maxauto = autolen;
+			outcode("BNNN", CP_STRCALL, tp->rstrp->ssize, strclass(tp->rstrp), autolen);
+		}
+		break;
+
+	case CP_SINGLE:
+		treeout(tp->tr1, 0);
+		outcode("BN", CP_SINGLE, FLOAT);
 		break;
 
 	case ITOC:
@@ -174,8 +186,12 @@ treeout(struct tnode *atp, int isstruct)
 		outcode("BN", tp->op, tp->type);
 		break;
 	}
-	if (nextisstruct && isstruct==0)
-		outcode("BNN", STRASG, STRUCT, tp->strp->ssize);
+	if (nextisstruct && isstruct==0) {
+		if (tp->strp==NULL)
+			error("Undefined structure");
+		else
+			outcode("BNNN", STRASG, STRUCT, tp->strp->ssize, strclass(tp->strp));
+	}
 }
 
 /*
@@ -193,6 +209,10 @@ branch(int lab)
 void
 label(int l)
 {
+	if (l >= 1000000) {
+		error("Too many labels");
+		exit(1);
+	}
 	outcode("BN", LABEL, l);
 }
 
@@ -280,8 +300,10 @@ length(struct tnode *acs)
 		break;
 
 	case STRUCT:
-		if ((elsz = strp->ssize) == 0)
+		if (strp==NULL || (elsz = strp->ssize) == 0) {
 			error("Undefined structure");
+			return(0);
+		}
 		break;
 	default:
 		error("Compiler error (length)");
@@ -474,9 +496,171 @@ doret(void)
 			cp[-1]->value = funcblk.type;
 		}
 		build(RFORCE);
+		cp[-1]->type = funcblk.type;
+		cp[-1]->strp = funcblk.strp;
 		rcexpr(*--cp);
 	}
 	branch(retlab);
+}
+
+/*
+ * Prototypes are kept for direct calls: count|variadic<<16, then types.
+ */
+int *
+saveproto(int *types, int count)
+{
+	static int pool[32768];
+	static int used;
+	int n, *p;
+
+	n = count & 0xffff;
+	if (n + 1 > 32768 - used) {
+		error("Too many prototypes");
+		exit(1);
+	}
+	p = pool + used;
+	p[0] = count;
+	memcpy(p+1, types, n*sizeof(int));
+	used += n + 1;
+	return(p);
+}
+
+/*
+ * Convert the arguments of a direct call to its prototype's
+ * arithmetic parameter types.  A float parameter receives a float.
+ */
+struct tnode *
+protocall(struct hshtab *fn, struct tnode *args)
+{
+	struct tnode **where[256], **q, *a;
+	int n, i, np, t, at;
+	int *pr;
+
+	if ((pr = fn->hproto) == NULL || args == NULL)
+		return(args);
+	np = pr[0] & 0xffff;
+	/* collect argument positions; the list is built last to first */
+	n = 0;
+	q = &args;
+	while ((*q)->op==COMMA && n < 255) {
+		where[n++] = &(*q)->tr2;
+		q = &(*q)->tr1;
+	}
+	where[n++] = q;
+	for (i = 0; i < n; i++) {
+		struct tnode **w = where[n-1-i];
+
+		if (i >= np) {
+			if (!(pr[0]>>16)) {
+				/* V7 sources predate the native prototypes */
+				error("Warning: too many arguments for %s", fn->name);
+				nerror--;
+			}
+			break;
+		}
+		t = pr[1+i];
+		a = *w;
+		at = a->type;
+		if (isfloattype(t)) {
+			if (isinttype(at))
+				a = block(ITOF, DOUBLE, NULL, NULL, a, NULL);
+			else if (islongtype(at))
+				a = block(LTOF, DOUBLE, NULL, NULL, a, NULL);
+			if (t==FLOAT)
+				a = block(CP_SINGLE, FLOAT, NULL, NULL, a, NULL);
+		} else if (isinttype(t) || islongtype(t)) {
+			if (isfloattype(at))
+				a = block(islongtype(t) ? FTOL : FTOI, islongtype(t) ? t : INT, NULL, NULL, a, NULL);
+			else if (islongtype(at) && isinttype(t))
+				a = block(LTOI, t, NULL, NULL, a, NULL);
+		}
+		*w = a;
+	}
+	if (n < np && np) {
+		error("Warning: too few arguments for %s", fn->name);
+		nerror--;
+	}
+	return(args);
+}
+
+/*
+ * The System V eightbyte classes of a structure, from member layout.
+ */
+static void
+place(int classes[2], int byte, int class)
+{
+	int *c;
+
+	if (byte >= 16) {
+		classes[0] = classes[1] = CP_CMEM;
+		return;
+	}
+	c = &classes[byte/8];
+	if (*c==CP_CNONE || *c==class)
+		*c = class;
+	else if (*c==CP_CMEM || class==CP_CMEM)
+		*c = CP_CMEM;
+	else
+		*c = CP_CINT;
+}
+
+static void
+classify(int t, int *subsp, struct str *strp, int byte, int classes[2], int depth)
+{
+	struct hshtab **mp, *m;
+	int n, i, step;
+
+	if (depth > 64)
+		return;
+	if ((t&XTYPE)==ARRAY) {
+		n = subsp ? subsp[0] : 0;
+		{
+			struct tnode e;
+
+			memset(&e, 0, sizeof(e));
+			e.type = decref(t);
+			e.subsp = subsp ? subsp+1 : NULL;
+			e.strp = strp;
+			step = length(&e);
+		}
+		for (i = 0; i < n && byte + i*step < 16; i++)
+			classify(decref(t), subsp+1, strp, byte + i*step, classes, depth+1);
+		if (n && byte + n*step > 16)
+			place(classes, 16, CP_CMEM);
+		return;
+	}
+	if (t==STRUCT) {
+		if (strp==NULL || strp->memlist==NULL)
+			return;
+		for (mp = strp->memlist; (m = *mp); mp++) {
+			if (m==&structhole)
+				continue;
+			if (m->hflag&FFIELD)
+				place(classes, m->hoffset, CP_CINT);
+			else
+				classify(m->htype, m->hsubsp, m->hstrp, byte + m->hoffset, classes, depth+1);
+		}
+		return;
+	}
+	place(classes, byte, isfloattype(t) ? CP_CSSE : CP_CINT);
+}
+
+int
+strclass(struct str *strp)
+{
+	int classes[2];
+
+	if (strp==NULL || strp->ssize > 16)
+		return(CP_CMEM | CP_CMEM<<4);
+	classes[0] = classes[1] = CP_CNONE;
+	classify(STRUCT, NULL, strp, 0, classes, 0);
+	if (classes[0]==CP_CMEM || classes[1]==CP_CMEM)
+		return(CP_CMEM | CP_CMEM<<4);
+	if (classes[0]==CP_CNONE)
+		classes[0] = CP_CINT;
+	if (strp->ssize > 8 && classes[1]==CP_CNONE)
+		classes[1] = CP_CINT;
+	return(classes[0] | (strp->ssize > 8 ? classes[1]<<4 : 0));
 }
 
 /*
@@ -541,6 +725,8 @@ builtin(int kind)
 		if (kind==VAARG)
 			ty = xprtype();
 		else {
+			/* tree() restarts at funcbase; keep the first operand */
+			funcbase = curbase;
 			initflg++;
 			bp = tree();
 			initflg--;

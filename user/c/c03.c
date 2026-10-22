@@ -649,6 +649,7 @@ pushdecl(struct hshtab *asp)
 	sp->hflag &= (FKEYW|FMOS);
 	sp->htype = 0;
 	sp->hoffset = 0;
+	sp->hproto = NULL;
 	sp->hblklev = blklev;
 	sp->hpdown = nsp;
 }
@@ -671,6 +672,7 @@ cpysymb(struct hshtab *s1, struct hshtab *s2)
 	rs1->hstrp = rs2->hstrp;
 	rs1->hblklev = rs2->hblklev;
 	rs1->hpdown = rs2->hpdown;
+	rs1->hproto = rs2->hproto;
 }
 
 /*
@@ -683,9 +685,9 @@ int
 protolist(struct hshtab *ds)
 {
 	register int o;
-	int savecsym, saverec, first;
+	int savecsym, saverec, first, nproto, isvar, t;
 	struct hshtab typer, dummy;
-	int sc;
+	int sc, ptypes[256];
 
 	savecsym = csymflag;
 	saverec = protorec;
@@ -694,11 +696,13 @@ protolist(struct hshtab *ds)
 	if (protorec)
 		blklev++;
 	first = 1;
+	nproto = isvar = 0;
 	for (;;) {
 		o = symbol();
 		if (o==RPARN)
 			break;
 		if (o==ELLIPS) {
+			isvar = 1;
 			if (protorec)
 				variadic = 1;
 			if ((o=symbol())!=RPARN)
@@ -719,9 +723,18 @@ protolist(struct hshtab *ds)
 		memset(&dummy, 0, sizeof(dummy));
 		dummy.name = nullname;
 		dummy.hblklev = blklev;
+		defsym = NULL;
 		decl1(ARG1, &typer, 0, &dummy);
 		if (sc==AREG && protorec && parame && parame->hclass==ARG)
 			parame->hclass = AREG;
+		/* parameter types as adjusted for the call */
+		t = defsym ? defsym->htype : INT;
+		if ((t&XTYPE)==ARRAY)
+			t = (t & ~XTYPE) | PTR;
+		else if ((t&XTYPE)==FUNC)
+			t = incref(t);
+		if (nproto < 254)
+			ptypes[nproto++] = t;
 		if ((o=symbol())==RPARN)
 			break;
 		if (o!=COMMA) {
@@ -735,6 +748,10 @@ protolist(struct hshtab *ds)
 	protorec = saverec;
 	csymflag = savecsym;
 	defsym = ds;
+	if (ds)
+		ds->hproto = saveproto(ptypes, nproto | isvar<<16);
+	if (saverec==0 && protolev==0 && blklev==0)
+		protodef = 1;
 	return(0);
 }
 

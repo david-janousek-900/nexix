@@ -2421,32 +2421,47 @@
           "name": "c2",
           "install": "/lib/c2",
           "role": "helper",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/c/makefile"
+            "reference/v7/usr/src/cmd/c/makefile",
+            "user/c/c20.c",
+            "user/c/c21.c",
+            "tests/c_compiler.py",
+            "tools/c_compiler_smoke.py",
+            "docs/c-compiler.md"
           ]
         },
         {
           "name": "fc1",
           "install": "/lib/fc1",
           "role": "optional",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/c/makefile"
+            "reference/v7/usr/src/cmd/c/makefile",
+            "user/c/c10.c",
+            "tools/c.mk",
+            "tests/c_compiler.py",
+            "tools/c_compiler_smoke.py",
+            "docs/c-compiler.md"
           ]
         },
         {
           "name": "cvopt",
           "install": null,
           "role": "helper",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/c/makefile"
+            "reference/v7/usr/src/cmd/c/makefile",
+            "user/c/cvopt.c",
+            "user/c/table.s",
+            "tests/c_compiler.py",
+            "tools/c_compiler_smoke.py",
+            "docs/c-compiler.md"
           ]
         }
       ],
       "priority": 6,
-      "status": "partial",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -2526,16 +2541,12 @@
           ]
         }
       ],
-      "blockers": [
-        "Complete floating/aggregate generation (task 199) and the c2 optimizer, cvopt and fc1 targets (task 200)."
-      ],
-      "unresolved": [
-        "Tasks 199/200: structure arguments/results, complete floating-point and variadic coverage, the AMD64 c2 optimizer, native cvopt and fc1 remain. Tasks 197/198 complete the native c0 front end (LP64 widths, 64-bit pass format, native header profile) and the table-driven c1 integer/pointer/control/call backend."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Run all retained native C passes on integer/pointer/control-flow fixtures and execute the result.",
         "Verify each installed output and its documented behavior; test helpers through their consuming pipeline.",
-        "make test-c-compiler runs c0/c1 under ASan/UBSan against a GCC execution oracle through GNU and native as, the V7 dialect fixture, every installed libc header, 90 supplied command sources and malformed-input mutations, then compiles and executes the fixture and supplied V7 commands with native cpp/c0/c1/as/ld at 16/128 MiB as root and ordinary user."
+        "make test-c-compiler runs c0/c1/c2/cvopt under ASan/UBSan against GCC integer and floating execution oracles and a GCC-linked structure/floating/variadic ABI fixture through GNU and native as, with optimized and unoptimized code compared; the V7 dialect fixture, every installed libc header, 90 supplied command sources and source/assembly mutations; then native cpp/c0/c1/c2/as/ld build and execute the fixtures and supplied V7 commands, fc1 matches c1 and native cvopt reproduces the table, at 16/128 MiB as root and ordinary user."
       ],
       "source_files": [
         "reference/v7/usr/src/cmd/c/c0.h",
@@ -2571,10 +2582,7 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        199,
-        200
-      ],
+      "unresolved_tasks": [],
       "native_sources": [
         "user/c/cpass.h",
         "user/c/c0.h",
@@ -2590,11 +2598,14 @@
         "user/c/c12.c",
         "user/c/c13.c",
         "user/c/table.s",
-        "user/c/cvopt.c"
+        "user/c/cvopt.c",
+        "user/c/c2.h",
+        "user/c/c20.c",
+        "user/c/c21.c"
       ],
       "port_notes": "docs/c-compiler.md",
       "scope_notes": [
-        "Tasks 197/198: native c0 and table-driven c1 are installed as /lib/c0 and /lib/c1; the supplied cvopt converts the native AMD64 table at build time. Structure values, the full floating ABI, c2 and fc1 remain tasks 199/200."
+        "Tasks 197-200: c0, c1, c2 and fc1 are installed in /lib; the supplied cvopt converts the native AMD64 table at build time and runs natively. Floating values, structure arguments/results and variadic definitions follow the System V ABI. fc1 is the native pass with the floating-point startup, because Nexix requires hardware SSE2."
       ]
     },
     {

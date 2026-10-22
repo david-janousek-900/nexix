@@ -45,6 +45,7 @@ extdef(void)
 		paraml = 0;
 		parame = 0;
 		variadic = 0;
+		protodef = 0;
 		if (sclass==TYPEDEF) {
 			decl1(TYPEDEF, &typer, 0, NULL);
 			clearparams();
@@ -297,6 +298,10 @@ strinit(struct hshtab *np, int sclass)
 	register int o, brace;
 	int offset;
 
+	if (np->hstrp==NULL) {
+		error("Undefined structure initialization");
+		return;
+	}
 	if ((mlp = np->hstrp->memlist)==NULL) {
 		mlp = &zerloc;
 		error("Undefined structure initialization");
@@ -716,15 +721,34 @@ funchead(void)
 {
 	register int pl;
 	register struct hshtab *cs, *next;
-	struct tnode *bstack[2];
 	struct hshtab *list;
 	int ngp, nsse, sse;
 
 	pl = STARG;
 	ngp = nsse = 0;
 	list = paraml;
+	if (funcblk.type==STRUCT && funcblk.strp) {
+		/*
+		 * System V structure results: a MEMORY-class result is
+		 * written through the hidden pointer passed in rdi; others
+		 * are staged in a frame temporary and loaded into registers.
+		 */
+		int sc = strclass(funcblk.strp), hidden = 0, temp;
+
+		autolen = (autolen - 16) & ~15;
+		temp = autolen;
+		if (CP_CLASS(sc, 0)==CP_CMEM) {
+			autolen = (autolen - 8) & ~7;
+			hidden = autolen;
+			outcode("BNNNN", CP_PARAM, CP_PGP, ngp++, hidden, PTR+STRUCT);
+		}
+		if (autolen < maxauto)
+			maxauto = autolen;
+		outcode("BNNNN", CP_SFUNC, funcblk.strp->ssize, sc, hidden, temp);
+	}
 	for (cs = paraml; cs; cs = cs->hnext) {
-		if (cs->htype==FLOAT)
+		/* K&R parameters arrive promoted; prototype floats do not */
+		if (cs->htype==FLOAT && !protodef)
 			cs->htype = DOUBLE;
 		if ((cs->htype&XTYPE) == ARRAY) {
 			cs->htype -= (ARRAY-PTR);	/* set ptr */
@@ -737,9 +761,33 @@ funchead(void)
 			cs->hclass = ARG;
 			cs->htype = INT;
 		}
-		if (cs->htype==STRUCT) {
-			error("Structure parameter: %s", cs->name);
+		if (cs->htype==STRUCT && cs->hstrp==NULL) {
+			error("Undefined structure: %s", cs->name);
 			cs->htype = INT;
+		}
+		if (cs->htype==STRUCT) {
+			int sc = strclass(cs->hstrp), j, need[3];
+
+			need[CP_CINT] = need[CP_CSSE] = 0;
+			for (j = 0; j < 2; j++)
+				if (CP_CLASS(sc, j)==CP_CINT || CP_CLASS(sc, j)==CP_CSSE)
+					need[CP_CLASS(sc, j)]++;
+			if (CP_CLASS(sc, 0)!=CP_CMEM && ngp+need[CP_CINT] <= 6 && nsse+need[CP_CSSE] <= 8) {
+				autolen = (autolen - 16) & ~15;
+				if (autolen < maxauto)
+					maxauto = autolen;
+				cs->hoffset = autolen;
+				for (j = 0; j < 2 && CP_CLASS(sc, j); j++) {
+					if (CP_CLASS(sc, j)==CP_CSSE)
+						outcode("BNNNN", CP_PARAM, CP_PSSE, nsse++, autolen+8*j, DOUBLE);
+					else
+						outcode("BNNNN", CP_PARAM, CP_PGP, ngp++, autolen+8*j, LONG);
+				}
+			} else {
+				cs->hoffset = pl;
+				pl += (cs->hstrp->ssize + 7) & ~7;
+			}
+			continue;
 		}
 		sse = isfloattype(cs->htype);
 		if (sse ? nsse<8 : ngp<6) {
@@ -767,13 +815,13 @@ funchead(void)
 		next = cs->hnext;
 		cs->hnext = NULL;
 		if (cs->hclass==AREG && (hreg.hoffset=goodreg(cs))>=0) {
-			bstack[0] = &areg;
-			bstack[1] = nblock(cs);
-			cp = &bstack[2];
+			cp = cmstack;
+			*cp++ = &areg;
+			*cp++ = nblock(cs);
 			areg.type = cs->htype;
 			cs->hclass = AUTO;
 			build(ASSIGN);
-			rcexpr(bstack[0]);
+			rcexpr(*--cp);
 			cs->hoffset = hreg.hoffset;
 			cs->hclass = REG;
 		} else

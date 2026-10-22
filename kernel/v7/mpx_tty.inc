@@ -110,17 +110,22 @@ static int mx_ioctl_control(struct mx_channel *c,const struct nx_mx_ioctl *contr
     if(t){
         unsigned generation=c->generation;
         /* Reserve room for a GET reply before touching terminal state. */
-        if(get)while(c->event_count==NX_MX_EVENTS){
+        if(get)while(c->event_count+c->event_reserved>=NX_MX_EVENTS){
             if(proc_sleep_interruptible(c,40))return -NX_EINTR;
             if(c->closing || generation!=c->generation)return -NX_ENXIO;
             if(t!=c->output_tty && t!=c->input_tty)return -NX_ENXIO;
         }
+        /* Hold the reply slot while tty_control may sleep. */
         struct file *pin=mx_tty_pin(c,t);
-        int error=tty_control(t,control->command,&data);if(pin)(void)file_put(pin);if(error)return error;
+        if(get)++c->event_reserved;
+        int error=tty_control(t,control->command,&data);if(pin)(void)file_put(pin);
+        if(get)--c->event_reserved;
+        if(error)return error;
+        if(get && c->closing)return -NX_ENXIO;
         if(get){
             struct nx_mx_ioctl response={.code=NX_M_IOCTL,.command=control->command};
             for(unsigned i=0;i<sizeof(response.data);++i)response.data[i]=((uint8_t *)&data)[i];
-            (void)mx_event_payload(c,&response,sizeof(response));
+            if(!mx_event_payload(c,&response,sizeof(response)))panic("mpx ioctl reply reservation");
         }
         return 0;
     }
