@@ -1,0 +1,4 @@
+# Native adaptation of mip/g: find a name in the portable compiler sources.
+cd `dirname $0`/..
+grep -n "$1" pcc/macdefs pcc/code.c pcc/local.c pcc/local2.c pcc/abi.c pcc/ccom.c pcc/fort.c
+grep -n "$1" mip/manifest.h pcc/mfile1 pcc/cgram.y pcc/common.c pcc/scan.c pcc/xdefs.c pcc/pftn.c pcc/trees.c mip/mip.h mip/reader.c mip/allo.c mip/match.c mip/common.c pcc/optim.c

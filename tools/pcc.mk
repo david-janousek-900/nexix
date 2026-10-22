@@ -20,9 +20,15 @@ test-pcc-front: test-pcc-front-unit build/pcc-front-test.elf multi-iso rootfs
 test-unit: test-pcc-front-unit
 test: test-pcc-front
 
-build/pcc-backend-test.elf: build/crt0.o $(PCC_FRONT_OBJECTS) build/pcc-cgram.o build/pcc-code.o build/pcc-local2.o build/pcc-output.o $(MIP_SHARED) build/libc.a user/user.ld
+PCC_PASS2 = build/pcc-code.o build/pcc-local2.o build/pcc-output.o
+build/pcc-backend-test.elf: build/crt0.o $(PCC_FRONT_OBJECTS) build/pcc-cgram.o $(PCC_PASS2) build/pcc-ccom.o $(MIP_SHARED) build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
--include build/pcc-code.d build/pcc-local2.d build/pcc-output.d
+# The installed compiler pass and the Fortran second pass (task 196).
+build/v7-ccom.elf: build/crt0.o $(PCC_FRONT_OBJECTS) build/pcc-cgram.o $(PCC_PASS2) build/pcc-ccom.o $(MIP_SHARED) build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+build/pcc-fort.elf: build/crt0.o $(PCC_FRONT_OBJECTS) build/pcc-cgram.o $(PCC_PASS2) build/pcc-fort.o $(MIP_SHARED) build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+-include build/pcc-code.d build/pcc-local2.d build/pcc-output.d build/pcc-ccom.d build/pcc-fort.d
 
 .PHONY: test-pcc-integer-unit test-pcc-integer
 test-pcc-integer-unit: build/gen-pcc/cgram.c
@@ -41,3 +47,12 @@ test-pcc-abi: test-pcc-abi-unit build/pcc-backend-test.elf multi-iso rootfs
 	$(PYTHON) tools/pcc_abi_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test-unit: test-pcc-abi-unit
 test: test-pcc-abi
+
+.PHONY: test-pcc-driver-unit test-pcc-driver
+test-pcc-driver-unit: build/gen-pcc/cgram.c
+	$(PYTHON) tests/pcc_driver.py
+test-pcc-driver: test-pcc-driver-unit build/v7-ccom.elf build/pcc-fort.elf build/v7-c2.elf multi-iso rootfs
+	$(PYTHON) tools/pcc_driver_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/pcc_driver_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test-unit: test-pcc-driver-unit
+test: test-pcc-driver

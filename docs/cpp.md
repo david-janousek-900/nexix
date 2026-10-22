@@ -28,7 +28,7 @@ start with `#` in column one. ANSI stringizing/token-pasting, variadic macros an
 `#elif` are outside the supplied interface. `-R` explicitly enables recursive
 macro expansion as in V7; the normal mode reports runaway recursion.
 
-Storage is bounded: 1 MiB macro arena, 4096 symbol slots, ten include levels,
+Storage is bounded: a macro arena that grows with sbrk to 1 MiB (installed builds use static stdio buffers to keep it contiguous), 4096 symbol slots, ten include levels,
 31 macro parameters, fourteen pushback buffers, twenty each `-D`/`-U` options and
 eight `-I` directories. Individual scanner tokens/argument lists retain the
 native `BUFSIZ` bound. Limits and malformed input report failure rather than

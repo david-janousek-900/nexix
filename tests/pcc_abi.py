@@ -37,7 +37,7 @@ with tempfile.TemporaryDirectory(prefix='nx-pcc-abi-') as tmp:
     for name in ('common','trees','match','allo','reader'):
         obj=d/('mip-'+name+'.o');mip.append(str(obj))
         subprocess.run([f.replace('-std=gnu89','-std=c11') for f in flags]+['-c','user/mip/'+name+'.c','-o',str(obj)],cwd=ROOT,check=True)
-    files=['scan','pftn','trees','optim','xdefs','common','local','numbers','ir','declarations','real','abi','code','local2','output']
+    files=['scan','pftn','trees','optim','xdefs','common','local','numbers','ir','declarations','real','abi','code','local2','output','ccom']
     subprocess.run(flags+[f'user/pcc/{n}.c' for n in files]+['build/gen-pcc/cgram.c',*mip,'-o',str(binary)],cwd=ROOT,check=True)
     def compile(name):
         text=preprocess((OUT/(name+'.c')).read_text());(d/(name+'.i')).write_bytes(text)
