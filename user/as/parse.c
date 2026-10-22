@@ -269,6 +269,7 @@ again:
     if(strlen(name)>=32){error(c,"mnemonic too long");return;}
     struct as_record *r=record(c,AS_INSTRUCTION);if(!r)return;strcpy(r->mnemonic,name);blank(c);
     if(!*c->s||*c->s=='#'||*c->s==';')return;
+    r->operands=calloc(3,sizeof(*r->operands));if(!r->operands){error(c,"out of memory");return;}
     do {if(r->count>=3){error(c,"too many operands");return;}operand(c,r->operands+r->count++);blank(c);if(*c->s!=',')break;c->s++;}while(!c->p->errors);
 }
 static int parse_file(struct parser *c,const char *path) {
@@ -305,7 +306,7 @@ int as_parse_files(size_t count,const char *const *paths,struct as_program *p) {
 }
 int as_parse(const char *path,struct as_program *p) {return as_parse_files(1,&path,p);}
 void as_free(struct as_program *p) {
-    for(size_t i=0;i<p->count;i++)free(p->records[i].bytes);
+    for(size_t i=0;i<p->count;i++){free(p->records[i].bytes);free(p->records[i].operands);}
     for(size_t i=0;i<p->symbol_count;i++)free(p->symbols[i].name);
     for(size_t i=0;i<p->section_count;i++)free(p->sections[i].name);
     free(p->records);free(p->symbols);free(p->sections);memset(p,0,sizeof(*p));

@@ -10,7 +10,7 @@ Recovered originals and licenses are separately hash-pinned under
 | Input | Disposition | Active input | Remaining consumer acceptance |
 | --- | --- | --- | --- |
 | bc lib.b | Historical V6 source carried in the V7 source-history snapshot; six math functions, unmodified | `user/v7/bc/lib.b` | Task 209: native bc/dc compilation, -l installation and numerical fixtures |
-| lex nrform | Later illumos source, separately CDDL-licensed; adapted to V7 generated COMMON layout | `user/v7/lex/nrform` | Tasks 171–173/216 and native Fortran: generate/translate/compile/run Ratfor scanners and library helpers |
+| lex nrform | Later illumos source, separately CDDL-licensed; adapted to V7 generated COMMON layout | `user/v7/lex/nrform` | Tasks 171–173 (generation, C scanners) and 216 with native Fortran: generate/translate/compile/run Ratfor scanners and library helpers |
 | lex ebcform | Exact original file remains unrecovered; explicit native equivalent derived from supplied V7 ncform | `user/v7/lex/ebcform` | Tasks 171–173: generated extended-table scanners, compressed transitions and end-to-end acceptance |
 
 The recovered bc file defines e, s, c, l, a and j and sets scale 20. Its origin

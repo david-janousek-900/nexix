@@ -51,3 +51,13 @@ build/lex-scanner.elf build/lex-table.elf: build/lex-%.elf: build/crt0.o build/l
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
 # These files are emitted by the sanitizer acceptance generator.
 build/fixtures-lex/lex.yy.c build/fixtures-lex/table.c build/fixtures-lex/libln.c: ;
+
+# Task 173: generated scanners and a lex/yacc consumer compiled by the native cc.
+.PHONY: test-lexyacc-unit test-lexyacc
+test-lexyacc-unit: test-lex-unit build/host-v7-yacc
+	$(PYTHON) tests/lexyacc.py
+test-lexyacc: test-lexyacc-unit multi-iso rootfs
+	$(PYTHON) tools/lexyacc_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/lexyacc_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-lexyacc
+test-unit: test-lexyacc-unit

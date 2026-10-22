@@ -86,8 +86,26 @@ scanners built from that C, check diagnostics and exercise ordinary-user generat
 They also run a scanner prebuilt with `libln.a`, list the installed archive, and
 link the same scanner object against `/lib/libln.a` with the native `ld -lln`.
 
-Task 173 completes combined lex/yacc consumer acceptance, compiles generated
-scanners with the native `cc` and executes Ratfor scanners with the native
-Fortran toolchain. The installed `c0` still rejects the address-constant
-initializers in generated tables (`yycrank+N`, `yysvec+N`).
-Host GCC remains the bootstrap C compiler for the generated test scanners.
+Host GCC remains the bootstrap C compiler for the sanitizer scanners.
+
+## Native consumers
+
+Task 173 compiles generated programs with the installed `cc`. `make test-lexyacc`
+first builds a calculator (`tests/lexyacc`) from a yacc grammar using `yacc -d`
+token definitions and a lex scanner, links it with libln's `yywrap` under
+ASan/UBSan and compares its output, including error recovery, with the checked
+result. In 16/128 MiB guests, as root and as an ordinary user, the installed
+lex, yacc, cc and libln then build and run the compressed, `%T` extended-byte
+and libln scanners and the calculator, comparing each output.
+The uncompressed `-f` scanner is compiled and run at 128 MiB. At 16 MiB its
+13,000 lines of assembly exceed the process heap, and `as` must fail with its
+out-of-memory diagnostic and leave no program.
+
+This required c0/c1 to accept the generated tables' address-constant
+initializers ([C compiler](c-compiler.md)) and smaller assembler records and
+in-place `realloc` growth ([assembler](assembler.md), [libc](libc.md)).
+
+Ratfor scanners are generated and compared here. Translating, compiling and
+running them moved to task 216 (ratfor), which needs the native Fortran
+toolchain (tasks 203–206).
+
