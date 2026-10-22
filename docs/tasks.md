@@ -19,8 +19,8 @@ The inventory accounts for **223 components, 2,144 distribution files and
 7 partial, 0 prototype and 134 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **411 tracking tasks: 214 done, 0 in progress
-and 197 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–170, 177–202, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **411 tracking tasks: 215 done, 0 in progress
+and 196 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–171, 177–202, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -314,7 +314,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 168 | Port make | Done | Git history; [native make contract](make.md); retained V7 dependency engine, bounded native grammar parser and ar/ELF adapters; timestamps, suffix/wildcard rules, macros, signals, permissions and failure flags; ASan/UBSan and 16/128 MiB guests |
 | 169 | Port yacc grammar processing and tables | Done | Git history; [native LALR generator](yacc.md); make test-yacc test-inventory test-install-unit; production sanitizer, typed/precedence parser execution, 80-terminal lookaheads and exact native C/header/report output at 16/128 MiB |
 | 170 | Complete yacc skeleton and native parser generation | Done | Git history; [native skeleton](yacc.md); make test-yacc test-inventory test-install-unit; generated pointer semantics, empty rules, error recovery and overflow under ASan/UBSan, exact native generation and parser execution at 16/128 MiB |
-| 171 | Port lex scanner generation | To do | C scanner skeleton and lexical fixtures |
+| 171 | Port lex scanner generation | Done | Git history; [native lex](lex.md); `make test-lex test-inventory test-install-unit`; production generator under ASan/UBSan, native ncform driver, C/uncompressed/%T scanner execution, Ratfor generation, checked limits and malformed specifications; exact guest output at 16/128 MiB as root/user |
 | 172 | Port libln and lex/smallex runtime targets | To do | Generated scanner execution and support libraries |
 | 173 | Complete lex/yacc native generator acceptance | To do | C/extended-table/Ratfor generated scanner acceptance; Ratfor execution requires native Fortran toolchain |
 | 174 | Port awk parser and generated helper tables | To do | Uses working lex/yacc; include proc/tokenscript |

@@ -1,3 +1,6 @@
+/* Nexix native C scanner driver adapted from the supplied V7 ncform:
+ * native-width pointer comparisons and uncompressed miss handling. */
+#include <stdint.h>
 int yylineno =1;
 # define YYU(x) x
 # define NLSTATE yyprevious=YYNEWLINE
@@ -52,7 +55,7 @@ yylook(){
 				}
 # endif
 			yyr = yyt;
-			if ( (int)yyt > (int)yycrank){
+			if ( (uintptr_t)yyt > (uintptr_t)yycrank){
 				yyt = yyr + yych;
 				if (yyt <= yytop && yyt->verify+yysvec == yystate){
 					if(yyt->advance+yysvec == YYLERR)	/* error transitions */
@@ -62,7 +65,7 @@ yylook(){
 					}
 				}
 # ifdef YYOPTIM
-			else if((int)yyt < (int)yycrank) {		/* r < yycrank */
+			else if((uintptr_t)yyt < (uintptr_t)yycrank) {		/* r < yycrank */
 				yyt = yyr = yycrank+(yycrank-yyt);
 # ifdef LEXDEBUG
 				if(debug)fprintf(yyout,"compressed state\n");
@@ -96,8 +99,7 @@ yylook(){
 				goto tryagain;
 				}
 # endif
-			else
-				{unput(*--yylastch);break;}
+			{unput(*--yylastch);break;}
 		contin:
 # ifdef LEXDEBUG
 			if(debug){
