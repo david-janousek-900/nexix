@@ -10,8 +10,13 @@ void callout_tick(uint64_t now){assert(now==ticks);++callbacks;}
 void tty_timer(uint64_t now){assert(now==ticks);}
 void modem_timer(uint64_t now){assert(now==ticks);}
 void packet_timer(uint64_t now){assert(now==ticks);}
+static uint64_t preempt_at;
 void proc_timer(struct interrupt_frame *frame)
-{if(frame->cs&3)++user.u_utime;else ++user.u_stime;}
+{
+    if(frame->cs&3)++user.u_utime;else ++user.u_stime;
+    /* Simulate a yield where another context's IRQ replays its own periods. */
+    if(preempt_at){uint64_t at=preempt_at;preempt_at=0;timer_advance_to(frame,at);}
+}
 int main(void)
 {
     struct interrupt_frame frame={.cs=3};
@@ -28,5 +33,9 @@ int main(void)
     assert(user.u_utime==8 && cpu_user==8);
     assert(user.u_stime==11 && cpu_system==11);
     assert(frame.cs==3 && frame.vector==0x80 && frame.rip==0x100000);
+    /* A preempted 5-period catch-up plus 1 period replayed meanwhile is 6. */
+    uint64_t before=ticks;
+    preempt_at=3500;timer_advance_to(&frame,3400);
+    assert(ticks==before+6 && !preempt_at);
     puts("PASS: delayed IRQ replays all elapsed periods, timers and CPU charges");
 }

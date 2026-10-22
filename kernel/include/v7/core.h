@@ -47,7 +47,7 @@ struct proc {
     uint64_t p_deadline, p_preemptions;
     unsigned p_slice;
     bool p_timed_sleep, p_interruptible;
-    bool p_trace_exit;
+    bool p_trace_exit, p_trace_kill;
     uintptr_t p_brk_base, p_brk;
 };
 struct direct { v7_ino_t d_ino; char d_name[V7_DIRSIZ]; };

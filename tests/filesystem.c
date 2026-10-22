@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "v7/fs.h"
 #include <nexix/errno.h>
 static int64_t now = 1709210096;
@@ -198,7 +199,19 @@ int main(int argc, char **argv)
     assert(v7fs_read(&fs, 5, INT64_MAX, buf, SIZE_MAX, &done) == 0 && done == 0);
     reset();
     assert(v7fs_mount(&fs, &ram.device, false) == 0);
-    /* Reclaim complete single/double/triple trees, including sparse branches. */
+    /* A far sparse write skips unallocated subtrees instead of scanning every
+     * gap block; the hole still reads back as zeros. */
+    assert(v7fs_truncate(&fs, 5) == 0);
+    int64_t far = (int64_t)(10 + V7_NINDIR + V7_NINDIR * V7_NINDIR) * V7_BSIZE + 7;
+    assert(v7fs_write(&fs, 5, far, "t", 1, &done) == 0 && done == 1);
+    clock_t began = clock();
+    assert(v7fs_write(&fs, 5, (int64_t)1 << 30, "g", 1, &done) == 0 && done == 1);
+    assert((double)(clock() - began) / CLOCKS_PER_SEC < 0.02);
+    assert(v7fs_read(&fs, 5, far + 1, buf, 512, &done) == 0 && done == 512);
+    for (unsigned i = 0; i < 512; ++i) assert(buf[i] == 0);
+    assert(v7fs_read(&fs, 5, ((int64_t)1 << 30) - 1, buf, 2, &done) == 0 && done == 2 && !buf[0] && buf[1] == 'g');
+    reset();
+    assert(v7fs_mount(&fs, &ram.device, false) == 0);
     uint32_t available = v7_disk_u32(fs.super.tfree);
     assert(v7fs_truncate(&fs, 6) == 0);
     assert(v7_disk_u32(fs.super.tfree) == available + 154);
