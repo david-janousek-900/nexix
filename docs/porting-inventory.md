@@ -228,7 +228,7 @@ their sources alone does not provide a working native equivalent.
 | `spool-locks` | missing | Historical spool and UUCP configuration fixtures are supplied; native services, ownership and locking remain pending. |
 | `yacc-skeleton` | supplied | Native yaccpar adapts the supplied V7 skeleton with bounded stacks, safe empty reductions and tested error recovery (task 170); combined lex/yacc consumer acceptance remains task 173. |
 | `lex-skeletons` | supplied | Supplied ncform plus separately pinned/adapted illumos nrform and tested native extended-byte ebcform equivalent. Exact historical ebcform text remains unrecovered; no mode is waived. Full generator/Ratfor/Fortran acceptance stays in consumer tasks. |
-| `lint-descriptions` | supplied | Original llib-lc, llib-lm and llib-port are installed unchanged by task 281; native lint consumers remain tasks 261/262. |
+| `lint-descriptions` | supplied | Supplied llib-lc, llib-lm and llib-port are installed in native form by task 262: their definitions are rewritten as prototypes that agree with the native libc headers (lint1 rejects any mismatch), and llib-lm omits erf/erfc, which no native library provides. |
 | `word-dictionary` | supplied | Original inputs are supplied in the full archive. Native integration, generated formats and functional acceptance remain pending. |
 | `spell-lists` | supplied | American/British/local word additions and stop list are supplied in the reference spell directory. |
 | `spell-hashes` | generated | Generate hlist/hlista/hlistb/hstop from dictionaries using spellin. Historical installed forms are also supplied; regenerate architecture-dependent formats for native consumers. |

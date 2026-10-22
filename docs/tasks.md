@@ -19,8 +19,8 @@ The inventory accounts for **223 components, 2,144 distribution files and
 7 partial, 0 prototype and 134 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **411 tracking tasks: 212 done, 0 in progress
-and 199 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–170, 177–202, 219, 223, 226, 237, 240, 251, 253, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **411 tracking tasks: 214 done, 0 in progress
+and 197 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–170, 177–202, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -433,8 +433,8 @@ are accounted for. Final native rebuild acceptance is task 207.
 | 258 | Port adb ELF/core/symbol reading | To do | Native executable/core interpretation |
 | 259 | Port adb x86_64 instruction/register handling | To do | Disassembly and expression/address fixtures |
 | 260 | Complete adb live debugging | To do | ptrace, stepping, breakpoints and memory changes |
-| 261 | Port lint analysis passes | To do | lint1/lint2 and shared mip native types |
-| 262 | Complete lint driver and description libraries | To do | Native header declarations and warning fixtures |
+| 261 | Port lint analysis passes | Done | Git history; [lint1 over the PCC front end, lint2](lint.md); `make test-lint test-inventory test-install-unit`; pass-1 records/warnings, cross-file inconsistencies, VARARGS/ARGSUSED/LINTLIBRARY/NOTREACHED, -h/-p/-v/-x/-u/-a/-b, lint2 self-sorting and malformed input under ASan/UBSan |
+| 262 | Complete lint driver and description libraries | Done | Git history; [installed lint](lint.md); `make test-lint test-inventory test-install-unit`; adapted /bin/lint over /usr/lib/pcc.h, native llib-lc/llib-port/llib-lm agreeing with the native headers; exact reports, -n/-p/-l/-D/-I, subdirectories, failures at 16/128 MiB as root/user |
 
 ### Documents, manuals and learning
 

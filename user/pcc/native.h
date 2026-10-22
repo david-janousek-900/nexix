@@ -14,7 +14,12 @@
 #define __restrict
 #define __restrict__
 #define __builtin_offsetof(type,member) ((unsigned long)&((type *)0)->member)
+#ifdef lint
+/* lint checks no layouts; its -h would flag every assertion's constant test */
+#define _Static_assert(condition,message) extern char __nx_pcc_assert[1]
+#else
 #define _Static_assert(condition,message) extern char __nx_pcc_assert[(condition)?1:-1]
+#endif
 typedef struct __nx_pcc_va_state {
     unsigned gp_offset,fp_offset;
     void *overflow_arg_area,*reg_save_area;

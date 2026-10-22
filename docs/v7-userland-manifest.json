@@ -332,15 +332,20 @@
       "id": "lint-descriptions",
       "category": "data",
       "status": "supplied",
-      "description": "Original llib-lc, llib-lm and llib-port are installed unchanged by task 281; native lint consumers remain tasks 261/262.",
+      "description": "Supplied llib-lc, llib-lm and llib-port are installed in native form by task 262: their definitions are rewritten as prototypes that agree with the native libc headers (lint1 rejects any mismatch), and llib-lm omits erf/erfc, which no native library provides.",
       "evidence": [
         "reference/v7/usr/lib/llib-lc",
         "reference/v7/usr/lib/llib-lm",
-        "reference/v7/usr/lib/llib-port"
+        "reference/v7/usr/lib/llib-port",
+        "rootfs/usr/lib/llib-lc",
+        "rootfs/usr/lib/llib-lm",
+        "rootfs/usr/lib/llib-port",
+        "docs/lint.md"
       ],
       "locations": [
         "/usr/lib/llib-lc",
-        "/usr/lib/llib-port"
+        "/usr/lib/llib-port",
+        "/usr/lib/llib-lm"
       ],
       "archive_supply": "supplied",
       "related_components": [
@@ -426,7 +431,7 @@
       "id": "formatter-tables",
       "category": "data",
       "status": "generated",
-      "description": "Native terminal/font tables are regenerated and tested with nroff/troff by tasks 265\u2013267; historical binary table layouts are not installed as native objects.",
+      "description": "Native terminal/font tables are regenerated and tested with nroff/troff by tasks 265–267; historical binary table layouts are not installed as native objects.",
       "evidence": [
         "reference/v7/usr/src/cmd/troff/font/makefile",
         "reference/v7/usr/src/cmd/troff/term/makefile"
@@ -538,7 +543,7 @@
       "id": "v7-source-archives",
       "category": "format",
       "status": "supplied",
-      "description": "All twelve historical source/lesson archives are extracted and round-trip tested by task 87; plotting/learn consumers retain tasks 283\u2013285/289\u2013293.",
+      "description": "All twelve historical source/lesson archives are extracted and round-trip tested by task 87; plotting/learn consumers retain tasks 283–285/289–293.",
       "evidence": [
         "reference/v7/usr/src/libplot/makefile"
       ],
@@ -1614,7 +1619,7 @@
         "user/v7/cmd/as.c"
       ],
       "scope_notes": [
-        "Tasks 181\u2013184 replace PDP-11 assembly with native C parsing, x86_64 encoding, ELF64 objects and installed as/as2 pipeline."
+        "Tasks 181–184 replace PDP-11 assembly with native C parsing, x86_64 encoding, ELF64 objects and installed as/as2 pipeline."
       ]
     },
     {
@@ -8120,34 +8125,46 @@
       "outputs": [
         {
           "name": "lint",
-          "install": "/usr/bin/lint",
-          "role": "installed",
-          "status": "not_ported",
+          "install": null,
+          "role": "build_helper",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/lint/makefile"
+            "rootfs/bin/lint",
+            "tools/lint_smoke.py",
+            "docs/lint.md"
           ]
         },
         {
           "name": "lint1",
           "install": "/usr/lib/lint1",
           "role": "helper",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/lint/makefile"
+            "user/lint/lint.c",
+            "user/lint/lpass2.c",
+            "tools/lint.mk",
+            "tests/lint.py",
+            "tools/lint_smoke.py",
+            "docs/lint.md"
           ]
         },
         {
           "name": "lint2",
           "install": "/usr/lib/lint2",
           "role": "helper",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/lint/makefile"
+            "user/lint/lint.c",
+            "user/lint/lpass2.c",
+            "tools/lint.mk",
+            "tests/lint.py",
+            "tools/lint_smoke.py",
+            "docs/lint.md"
           ]
         }
       ],
       "priority": 10,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -8243,15 +8260,11 @@
           ]
         }
       ],
-      "blockers": [
-        "Supplied shell driver, description files and shared compiler passes need native integration."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
-        "Process correct and deliberately inconsistent C translation units through both passes.",
-        "Verify each installed output and its documented behavior; test helpers through their consuming pipeline."
+        "make test-lint-unit: lint1 over the retained PCC front end and lint2 under ASan/UBSan: pass-1 records and warnings, cross-file inconsistencies, VARARGS/ARGSUSED/LINTLIBRARY/NOTREACHED, -h/-p/-v/-x/-u/-a/-b/-c/-n, library descriptions and malformed pass-2 input.",
+        "make test-lint: installed /bin/lint, /usr/lib/lint1 and /usr/lib/lint2 with the native description libraries at 16/128 MiB as root and ordinary user."
       ],
       "source_files": [
         "reference/v7/usr/src/cmd/lint/lint.c",
@@ -8268,10 +8281,14 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        261,
-        262
-      ]
+      "unresolved_tasks": [],
+      "native_sources": [
+        "user/lint/lint.c",
+        "user/lint/lpass2.c",
+        "user/lint/lmanifest",
+        "rootfs/bin/lint"
+      ],
+      "port_notes": "docs/lint.md"
     },
     {
       "id": "cmd.ln",
@@ -20681,7 +20698,7 @@
     {
       "id": "distribution.manuals",
       "kind": "documentation",
-      "summary": "Manual sections 0\u20138",
+      "summary": "Manual sections 0–8",
       "sources": [
         "reference/v7/usr/man/man0/intro",
         "reference/v7/usr/man/man0/permindex",
@@ -24687,14 +24704,16 @@
           "name": "lint",
           "install": "/bin/lint",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/bin/lint"
+            "rootfs/bin/lint",
+            "tools/lint_smoke.py",
+            "docs/lint.md"
           ]
         }
       ],
       "priority": 10,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "cmd.sh",
@@ -24725,18 +24744,17 @@
         }
       ],
       "reference_includes": [],
-      "blockers": [
-        "Not installed in Nexix; native integration and functional acceptance remain pending."
-      ],
-      "unresolved": [
-        "Audit native API/format compatibility and remaining transitive dependencies."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
-        "Run the original script with reference-compatible arguments; verify helper execution, output and failures."
+        "make test-lint: the adapted supplied script runs lint1 per file and description library, then lint2, with -l/-n/-p/-h/-x/-u/-D/-I options at 16/128 MiB as root and ordinary user."
       ],
-      "unresolved_tasks": [
-        262
-      ]
+      "unresolved_tasks": [],
+      "native_sources": [
+        "rootfs/bin/lint"
+      ],
+      "port_notes": "docs/lint.md",
+      "ported_script": "rootfs/bin/lint"
     },
     {
       "id": "script.lookbib",

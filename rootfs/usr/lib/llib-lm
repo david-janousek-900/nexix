@@ -1,31 +1,31 @@
 /*LINTLIBRARY*/
+/* Nexix: prototype definitions agree with <math.h>; erf and erfc,
+   which neither V7 nor native libm provides, are omitted. */
 #include <math.h>
-double acos(x)double x;{return x;}
-double asin(x)double x;{return x;}
-double atan(x)double x;{return x;}
-double atan2(x,y)double x,y;{return x;}
-double ceil(x)double x;{return x;}
-double cos(x)double x;{return x;}
-double cosh(x)double x;{return x;}
-double erf(x)double x;{return x;}
-double erfc(x)double x;{return x;}
-double exp(x)double x;{return x;}
-double fabs(x)double x;{return x;}
-double floor(x)double x;{return x;}
-double fmod(x,y)double x,y;{return x;}
-double gamma(x)double x;{return x;}
-double hypot(x,y)double x,y;{return x;}
-double j0(x)double x;{return x;}
-double j1(x)double x;{return x;}
-double jn(n,x)int n;double x;{return x;}
-double log(x)double x;{return x;}
-double log10(x)double x;{return x;}
-double pow(x,y)double x,y;{return x;}
-double sin(x)double x;{return x;}
-double sinh(x)double x;{return x;}
-double sqrt(x)double x;{return x;}
-double tan(x)double x;{return x;}
-double tanh(x)double x;{return x;}
-double y0(x)double x;{return x;}
-double y1(x)double x;{return x;}
-double yn(n,x)int n;double x;{return x;}
+double acos(double x){return x;}
+double asin(double x){return x;}
+double atan(double x){return x;}
+double atan2(double x, double y){return x;}
+double ceil(double x){return x;}
+double cos(double x){return x;}
+double cosh(double x){return x;}
+double exp(double x){return x;}
+double fabs(double x){return x;}
+double floor(double x){return x;}
+double fmod(double x, double y){return x;}
+double gamma(double x){return x;}
+double hypot(double x, double y){return x;}
+double j0(double x){return x;}
+double j1(double x){return x;}
+double jn(int n, double x){return x;}
+double log(double x){return x;}
+double log10(double x){return x;}
+double pow(double x, double y){return x;}
+double sin(double x){return x;}
+double sinh(double x){return x;}
+double sqrt(double x){return x;}
+double tan(double x){return x;}
+double tanh(double x){return x;}
+double y0(double x){return x;}
+double y1(double x){return x;}
+double yn(int n, double x){return x;}

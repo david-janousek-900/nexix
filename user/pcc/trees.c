@@ -511,6 +511,10 @@ chkpun(p) register NODE *p; {
 			werror( "illegal combination of pointer and integer");
 			}
 		}
+	else if( ISPTR(t1) && ISPTR(t2) && ( (DECREF(t1)==VOID && !ISFTN(DECREF(t2))) ||
+		(DECREF(t2)==VOID && !ISFTN(DECREF(t1))) ) ){
+		return;  /* void * combines with any object pointer (native C89) */
+		}
 	else {
 		d1 = p->left->cdim;
 		d2 = p->right->cdim;
