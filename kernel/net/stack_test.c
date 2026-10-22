@@ -3,6 +3,8 @@
 #include "net/arp.h"
 #include "net/route.h"
 #include "net/ip.h"
+#include "net/icmp.h"
+#include "net/compat.h"
 #include "net/e1000.h"
 #include "net/worker.h"
 #include "net/wire.h"
@@ -161,6 +163,95 @@ static void loop_ip(struct nx_net_if *lo)
             ip.reassembled == 1 && ip.cant_fragment == 1 && nx_net_ip_reassembling() == 0);
     REQUIRE(net_pool()->stats.mbufs == 0 && net_pool()->stats.clusters == 0);
 }
+/* A raw ICMP socket: echo requests answered by our own stack or QEMU's
+ * gateway, and protocol unreachable for an unregistered protocol. */
+#define PING_ID 0x4e58u
+static struct nx_net_raw *raw;
+static enum nx_net_result raw_result;
+static uint8_t received[128];
+static size_t received_length;
+static void raw_open(void *a)
+{
+    (void)a;
+    struct nx_net_raw *denied = NULL;
+    REQUIRE(nx_net_raw_open(false, NULL, NULL, &denied) == NX_NET_DENIED && !denied);
+    REQUIRE(nx_net_raw_open(true, NULL, NULL, &raw) == NX_NET_OK && nx_net_raw_open_count() == 1);
+}
+static void raw_close(void *a) { (void)a; nx_net_raw_close(raw); }
+static void ping(void *a)
+{
+    uint8_t message[8 + 32] = { NX_NET_ICMP_ECHO };
+    nx_net_put16(message + 4, PING_ID);
+    nx_net_put16(message + 6, (uint16_t)(uintptr_t)a);
+    for (unsigned i = 8; i < sizeof(message); ++i) message[i] = (uint8_t)i;
+    struct nx_net_mbuf *m = nx_net_mbuf_get(net_pool(), true);
+    REQUIRE(m && nx_net_mbuf_append(m, message, sizeof(message)));
+    raw_result = nx_net_raw_send(raw, m, route_target);
+}
+static void raw_take(void *a)
+{
+    (void)a;
+    struct nx_net_mbuf *m = nx_net_raw_receive(raw);
+    received_length = 0;
+    if (!m) return;
+    size_t length = nx_net_mbuf_length(m);
+    received_length = length < sizeof(received) ? length : sizeof(received);
+    REQUIRE(nx_net_mbuf_copydata(m, 0, received_length, received));
+    nx_net_mbuf_freem(m);
+}
+static uint16_t checksum(const uint8_t *bytes, size_t length)
+{
+    struct nx_net_checksum sum;
+    nx_net_checksum_init(&sum);
+    nx_net_checksum_update(&sum, bytes, length);
+    return nx_net_checksum_finish(&sum);
+}
+/* Wait up to ticks for a datagram of type from source; checksums must hold. */
+static bool await_icmp(uint8_t type, nx_net_addr_t source, unsigned ticks)
+{
+    for (unsigned t = 0; t < ticks; ++t) {
+        REQUIRE(net_worker_call(raw_take, NULL));
+        if (!received_length) { proc_delay(1); continue; }
+        size_t hlen = (size_t)(received[0] & 0xf) * 4;
+        REQUIRE(received_length >= hlen + 8 && received_length < sizeof(received));
+        REQUIRE(!checksum(received, hlen) && !checksum(received + hlen, received_length - hlen));
+        if (received[hlen] == type && nx_net_get32(received + 12) == source) return true;
+    }
+    return false;
+}
+static bool echoed(uint16_t sequence, nx_net_addr_t source, unsigned ticks)
+{
+    route_target = source;
+    REQUIRE(net_worker_call(ping, (void *)(uintptr_t)sequence) && raw_result == NX_NET_OK);
+    while (await_icmp(NX_NET_ICMP_ECHOREPLY, source, ticks))
+        if (nx_net_get16(received + 24) == PING_ID && nx_net_get16(received + 26) == sequence &&
+            received_length == 20 + 40 && received[28] == 8 && received[59] == 39) return true;
+    return false;
+}
+static void unknown_packet(void *a)
+{
+    (void)a;
+    struct nx_net_ip_send send = { .dst = IP(127, 0, 0, 1), .protocol = 254 };
+    routed = nx_net_ip_output(packet(16, 1), &send);
+}
+static struct nx_net_icmp_stats icmp;
+static void icmp_probe(void *a) { (void)a; icmp = nx_net_icmp_stats(); }
+static void loop_icmp(void)
+{
+    REQUIRE(net_worker_call(raw_open, NULL));
+    REQUIRE(echoed(1, IP(127, 0, 0, 1), 100));
+    /* Protocol 254 has no handler: an unreachable error quotes the datagram. */
+    route_target = IP(127, 0, 0, 1);
+    REQUIRE(net_worker_call(ip_probe, NULL));
+    uint64_t unknown = ip.no_protocol;
+    REQUIRE(net_worker_call(unknown_packet, NULL) && routed == NX_NET_OK);
+    REQUIRE(await_icmp(NX_NET_ICMP_UNREACH, IP(127, 0, 0, 1), 100));
+    REQUIRE(received[21] == NX_NET_ICMP_UNREACH_PROTOCOL && received[28 + 9] == 254 && received_length == 20 + 8 + 20 + 8);
+    REQUIRE(net_worker_call(ip_probe, NULL) && ip.no_protocol == unknown + 1);
+    REQUIRE(net_worker_call(icmp_probe, NULL) && icmp.echoes >= 1 && icmp.replies_sent >= 1 && icmp.errors_sent >= 1);
+    REQUIRE(net_worker_call(raw_close, NULL));
+    REQUIRE(net_pool()->stats.mbufs == 0 && net_pool()->stats.clusters == 0);
+}
 static bool resolved;
 static uint8_t resolved_mac[NX_NET_ETHER_ADDR];
 static struct nx_net_arp_stats arp;
@@ -189,6 +280,10 @@ static void routes(struct nx_net_if *lo, struct nx_net_if *em, bool slow)
     }
     REQUIRE(resolved && resolved_mac[0] == 0x52 && resolved_mac[1] == 0x55 && resolved_mac[5] == 0x02);
     REQUIRE(em->stats.opackets >= sent + 2 && arp.received >= 1 && arp.requests >= 1);
+    /* QEMU's gateway answers echo requests over em0. */
+    REQUIRE(net_worker_call(raw_open, NULL));
+    REQUIRE(echoed(2, IP(10, 0, 2, 2), 200));
+    REQUIRE(net_worker_call(raw_close, NULL));
     if (!slow) return;
     /* An absent on-link peer is retried five times, then refused. */
     route_target = IP(10, 0, 2, 77);
@@ -224,6 +319,8 @@ static void tests(void *argument)
         if (!round) console_puts("NET LOOPBACK OK\r\n");
         loop_ip(lo);
         if (!round) console_puts("NET IP OK\r\n");
+        loop_icmp();
+        if (!round) console_puts("NET ICMP OK\r\n");
 
         if (em) {
             REQUIRE(net_worker_call(em_states, NULL));

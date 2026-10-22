@@ -9,6 +9,7 @@
 #define IP_OFFMASK 0x1fffu
 
 static struct { uint8_t protocol; nx_net_ip_input_fn input; } protocols[NX_NET_IP_PROTOCOLS];
+static nx_net_ip_input_fn unknown;
 static struct nx_net_mbuf_pool *pool;
 static uint64_t (*now_ms)(void);
 static struct nx_net_ip_stats stats;
@@ -45,6 +46,7 @@ void nx_net_ip_unregister(uint8_t protocol)
     for (unsigned i = 0; i < NX_NET_IP_PROTOCOLS; ++i)
         if (protocols[i].input && protocols[i].protocol == protocol) protocols[i].input = NULL;
 }
+void nx_net_ip_set_unknown_hook(nx_net_ip_input_fn hook) { unknown = hook; }
 
 /* Drop a partial datagram and everything it holds. */
 static void release(struct reassembly *q)
@@ -243,7 +245,9 @@ void nx_net_ip_input(struct nx_net_if *ifp, struct nx_net_mbuf *m)
             protocols[i].input(ifp, m, hlen);
             return;
         }
-    fail(m, &stats.no_protocol);   /* ICMP protocol-unreachable is task 421's */
+    ++stats.no_protocol;
+    if (unknown) unknown(ifp, m, hlen);
+    else nx_net_mbuf_drop(m);
 }
 
 static bool add_header(struct nx_net_mbuf **m, const struct nx_net_ip_send *p, nx_net_addr_t src,
