@@ -826,9 +826,10 @@ getree(void)
 		t = geti();
 		i = geti();
 		n = geti();
-		geti();
+		if (t!=CP_PSSE)
+			geti();
 		if (t==CP_PSSE)
-			printf("\tmovsd\t%%xmm%d,%d(%%rbp)\n", i, n);
+			printf("\t%s\t%%xmm%d,%d(%%rbp)\n", (int)geti()==FLOAT ? "movss" : "movsd", i, n);
 		else
 			printf("\tmovq\t%s,%d(%%rbp)\n", gpreg[i], n);
 		break;
@@ -943,6 +944,7 @@ getree(void)
 		sap->op = STRASG;
 		sap->type = geti();
 		sap->mask = geti();
+		sap->strclass = geti();
 		sap->tr1 = *--sp;
 		sap->tr2 = NULL;
 		*sp++ = sap;
@@ -992,7 +994,21 @@ getree(void)
 
 	case CP_VAARG:
 	case CP_VAEND:
+	case CP_SINGLE:
 		sp[-1] = tnode(op, geti(), sp[-1], NULL);
+		break;
+
+	case CP_STRCALL:
+		sp[-1]->mask = geti();
+		sp[-1]->strclass = geti();
+		sp[-1]->nloc = geti();
+		break;
+
+	case CP_SFUNC:
+		sfsize = geti();
+		sfclass = geti();
+		sfhidden = geti();
+		sftemp = geti();
 		break;
 
 	case CP_VACOPY:
@@ -1077,6 +1093,32 @@ strasg(struct tnode *atp)
 
 	nbytes = atp->mask;
 	tp = atp->tr1;
+	if (tp->op==RFORCE) {
+		/* function result: System V registers or the hidden pointer */
+		struct tnode *e = strfunc(tp->tr1);
+		int j, ngp, nsse;
+		static char *ret[] = { "%rax", "%rdx" };
+
+		r = rcexpr(optim(tnode(AMPER, STRUCT+PTR, e, NULL)), regtab, 0);
+		printf("\tmovq\t%s,%%rsi\n", regname[0][r]);
+		if (CP_CLASS(sfclass, 0)==CP_CMEM)
+			printf("\tmovq\t%d(%%rbp),%%rdi\n", sfhidden);
+		else
+			printf("\tleaq\t%d(%%rbp),%%rdi\n", sftemp);
+		printf("\tmovq\t$%ld,%%rcx\n\tcld\n\trep movsb\n", (long)nbytes);
+		if (CP_CLASS(sfclass, 0)==CP_CMEM) {
+			printf("\tmovq\t%d(%%rbp),%%rax\n", sfhidden);
+			return;
+		}
+		ngp = nsse = 0;
+		for (j = 0; j < 2; j++) {
+			if (CP_CLASS(sfclass, j)==CP_CINT)
+				printf("\tmovq\t%d(%%rbp),%s\n", sftemp+8*j, ret[ngp++]);
+			else if (CP_CLASS(sfclass, j)==CP_CSSE)
+				printf("\tmovsd\t%d(%%rbp),%%xmm%d\n", sftemp+8*j, nsse++);
+		}
+		return;
+	}
 	if (tp->op != ASSIGN) {
 		if (tp->op==CALL) {
 			rcexpr(tp, efftab, 0);

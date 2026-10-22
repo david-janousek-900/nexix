@@ -338,3 +338,4 @@ char	*curbase;
 char	*coremax;
 long	totspace;
 char	filename[1024];
+int	sfsize, sfclass, sfhidden, sftemp;

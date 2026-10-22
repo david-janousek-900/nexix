@@ -17,7 +17,7 @@ int	peeksym	= -1;
 int	line	= 1;
 struct	tnode	funcblk = { NAME, 0, NULL, NULL, NULL, NULL, 0, NULL };
 int	contype;		/* type of the last integer constant */
-static struct tnode *cmstack[CMSIZ];
+struct tnode *cmstack[CMSIZ];
 static int treedepth;
 
 struct kwtab {
@@ -195,6 +195,7 @@ lookup(void)
 	rp->hstrp = NULL;
 	rp->hpdown = NULL;
 	rp->hnext = NULL;
+	rp->hproto = NULL;
 	rp->hblklev = blklev;
 	rp->hflag |= mossym;
 	rp->name = savename(symbuf);
@@ -842,10 +843,12 @@ advanc:
 		 || cval==VAEND || cval==VACOPY) {
 			if (andflg)
 				goto syntax;
-			if ((*cp++ = builtin(cval)) == NULL) {
+			/* builtin() parses nested expressions on this stack */
+			if ((lcp = builtin(cval)) == NULL) {
 				treedepth--;
 				return(0);
 			}
+			*cp++ = lcp;
 			goto tand;
 		}
 	atype:

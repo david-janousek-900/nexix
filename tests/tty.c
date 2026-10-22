@@ -26,7 +26,8 @@ int copyin(const struct address_space *space, uintptr_t source, void *dest, size
 int copyout(const struct address_space *space, uintptr_t dest, const void *source, size_t size)
 { (void)space; if (dest < 4096) return -NX_EFAULT; memcpy((void *)dest, source, size); return 0; }
 void mpx_tty_notify(void *owner,unsigned signal){(void)owner;(void)signal;}
-void mpx_tty_resume(struct tty *t){(void)t;}
+static unsigned resumes;
+void mpx_tty_resume(struct tty *t){(void)t;++resumes;}
 static void feed(const void *bytes, size_t n)
 { const uint8_t *b = bytes; for (size_t i = 0; i < n; ++i) tty_receive(b[i]); }
 static void expect(struct tty *t, const void *bytes, size_t n)
@@ -199,6 +200,8 @@ int main(void)
     feed("fresh\n", 6); expect(t, "fresh\n", 6);
     tty_close(t);
     assert(wakeups > 0);
+    /* Output-only mpx bridges have no input owner but must still resume. */
+    resumes=0;tty_timer(0);assert(resumes>0);
     puts("PASS: TTY line editing, records/EOF, queue bounds/reuse, raw/cbreak, echo/output and ioctl validation");
     return 0;
 }

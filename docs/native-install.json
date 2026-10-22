@@ -7959,6 +7959,32 @@
       }
     },
     {
+      "path": "/lib/c2",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.c",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-c2.elf"
+      }
+    },
+    {
+      "path": "/lib/fc1",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.c",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-fc1.elf"
+      }
+    },
+    {
       "path": "/bin/ar",
       "type": "file",
       "mode": "0755",
