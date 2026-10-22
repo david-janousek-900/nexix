@@ -52,7 +52,10 @@ int mpxcall(int command,const struct mx_args *arguments);
 int mpx(const char *name,int mode);
 int chan(int group);
 int join(int fd,int group);
-int connect(int fd,int channel,int side);
+/* V7's connect is mpx_connect in the library, so the BSD socket connect of
+ * <sys/socket.h> can coexist; this macro keeps V7 sources unchanged. */
+int mpx_connect(int fd,int channel,int side);
+#define connect(fd,channel,side) mpx_connect(fd,channel,side)
 /* Native completion of the reference's unimplemented inverse. */
 int disconnect(int fd,int channel,int side);
 int attach(int index,int group);

@@ -233,7 +233,7 @@ test-exec: check build/test-selftest.iso
 
 # Native userland: compiler freestanding headers plus Nexix headers only.
 USER_CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-builtin -fno-stack-protector -fno-pie -m64 -mno-red-zone -mno-avx -fno-asynchronous-unwind-tables -nostdinc -isystem $(shell $(CC) -print-file-name=include) -Ilibc/include -Iinclude -MMD -MP
-LIBC_OBJECTS = build/libc_packet.o build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o build/libc_float.o build/libc_convert.o build/libc_scan.o build/libc_ctype.o build/libc_numbers.o build/libc_bytes.o build/libc_gcvt.o build/libc_abort.o build/libc_mktemp.o build/libc_errors.o build/libc_perror.o build/libc_passwd.o build/libc_group.o build/libc_crypt.o build/libc_terminal.o build/libc_getpass.o build/libc_system.o build/libc_popen.o build/libc_ptrace.o build/libc_profil.o build/libc_monitor.o build/libc_mcount.o build/libc_nlist.o build/libc_kinfo.o build/libc_uname.o build/libc_lock.o build/libc_phys.o build/libc_mpx.o
+LIBC_OBJECTS = build/libc_packet.o build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o build/libc_float.o build/libc_convert.o build/libc_scan.o build/libc_ctype.o build/libc_numbers.o build/libc_bytes.o build/libc_gcvt.o build/libc_abort.o build/libc_mktemp.o build/libc_errors.o build/libc_perror.o build/libc_passwd.o build/libc_group.o build/libc_crypt.o build/libc_terminal.o build/libc_getpass.o build/libc_system.o build/libc_popen.o build/libc_ptrace.o build/libc_profil.o build/libc_monitor.o build/libc_mcount.o build/libc_nlist.o build/libc_kinfo.o build/libc_uname.o build/libc_lock.o build/libc_phys.o build/libc_mpx.o build/libc_socket.o build/libc_inet.o
 -include $(LIBC_OBJECTS:.o=.d) build/libc_program.d
 build/crt0.o: libc/arch/x86_64/crt0.S | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
@@ -247,8 +247,8 @@ build/libc_program.o: user/libc-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
 build/libc_abi.o: user/libc-test-abi.S include/nexix/syscall.h | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -Iinclude -c $< -o $@
-build/libc-test.elf: build/crt0.o build/libc_program.o build/libc_scan_program.o build/libc_helpers_program.o build/crypt_program.o build/libc_abi.o build/fpu_program.o build/libc.a build/libm.a user/user.ld
-	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/libc_program.o build/libc_scan_program.o build/libc_helpers_program.o build/crypt_program.o build/libc_abi.o build/fpu_program.o build/libc.a build/libm.a build/libc.a -o $@
+build/libc-test.elf: build/crt0.o build/libc_program.o build/libc_scan_program.o build/libc_helpers_program.o build/crypt_program.o build/libc_abi.o build/fpu_program.o build/socket_program.o build/libc.a build/libm.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/libc_program.o build/libc_scan_program.o build/libc_helpers_program.o build/crypt_program.o build/libc_abi.o build/fpu_program.o build/socket_program.o build/libc.a build/libm.a build/libc.a -o $@
 build/libc_image.o: build/libc-test.elf tools/embed_test_elf.py
 	$(PYTHON) tools/embed_test_elf.py $< $@ --ld $(LD) --objcopy $(OBJCOPY)
 build/libc_test.o: kernel/libc_test.c | build/.dir
@@ -753,7 +753,7 @@ test-kernel-coverage:
 test-inventory: test-kernel-coverage
 
 # Task 39: compile public headers independently of host libc and check ABI records.
-build/header-abi-test: tests/header_abi.c $(wildcard libc/include/*.h libc/include/sys/*.h include/nexix/*.h) kernel/include/v7/types.h | build/.dir
+build/header-abi-test: tests/header_abi.c $(wildcard libc/include/*.h libc/include/sys/*.h libc/include/netinet/*.h libc/include/arpa/*.h include/nexix/*.h) kernel/include/v7/types.h | build/.dir
 	$(HOST_CC) -std=c11 -Wall -Wextra -Werror -ffreestanding -nostdinc -isystem $(shell $(HOST_CC) -print-file-name=include) -Ilibc/include -Iinclude -Ikernel/include $< -o $@
 .PHONY: test-header-abi
 test-header-abi: build/header-abi-test
@@ -761,6 +761,11 @@ test-header-abi: build/header-abi-test
 	$(PYTHON) tests/header_coverage.py --cc $(CC)
 test-inventory: test-header-abi
 
+# Task 424: ring-3 socket ABI boundary checks, run inside the libc test.
+build/socket_program.o: user/socket-test.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+-include build/socket_program.d
+test-socket-abi: test-header-abi test-inet-unit test-libc
 # Task 40: native byte/conversion, abort/assert and execle contracts.
 build/libc_helpers_program.o: user/libc-helpers-test.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
@@ -2120,6 +2125,21 @@ test-uname: test-uname-unit multi-iso rootfs build/uname-api.elf
 	python3 tools/uname_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-uname
 
+# Task 424: socket syscall boundary validation.
+INET_RENAMES = -Dhtonl=nx_test_htonl -Dhtons=nx_test_htons -Dntohl=nx_test_ntohl -Dntohs=nx_test_ntohs -Dinet_addr=nx_test_inet_addr -Dinet_aton=nx_test_inet_aton -Dinet_ntoa=nx_test_inet_ntoa -Dinet_pton=nx_test_inet_pton -Dinet_ntop=nx_test_inet_ntop -Derrno=nx_test_errno
+build/inet-unit.o: libc/inet.c libc/include/arpa/inet.h libc/include/netinet/in.h libc/include/sys/socket.h include/nexix/socket.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-builtin -nostdinc -isystem $(shell $(HOST_CC) -print-file-name=include) -Ilibc/include -Iinclude $(INET_RENAMES) -fsanitize=address,undefined -c $< -o $@
+build/inet-unit-test: tests/inet-unit.c build/inet-unit.o
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -fsanitize=address,undefined -fno-sanitize-recover=all $^ -o $@
+.PHONY: test-inet-unit test-socket-abi
+test-inet-unit: build/inet-unit-test
+	./build/inet-unit-test
+test-unit: test-inet-unit
+build/socket.o: kernel/v7/socket.c | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+OBJECTS += build/socket.o
+build/nexix.elf: build/socket.o
+-include build/socket.d
 build/utsname.o: kernel/v7/utsname.c | build/.dir
 	$(CC) $(CFLAGS) -c $< -o $@
 OBJECTS += build/utsname.o

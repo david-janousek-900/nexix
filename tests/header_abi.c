@@ -121,3 +121,29 @@ _Static_assert(sizeof(struct nx_tape_operation)==8 && offsetof(struct nx_tape_st
 _Static_assert(NX_TC_DEV(7)==0x1607 && NX_TC_BYTES==295936,"DECtape native ABI");
 
 _Static_assert(NX_HP_INTERLEAVED_MINOR(2,1)==0111,"HP interleaved minor ABI");
+
+/* Task 424: socket ABI values (4.4BSD numbering) and fixed-width records. */
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <arpa/inet.h>
+#include <errno.h>
+#include <nexix/socket.h>
+_Static_assert(NX_SYS_SOCKET==77 && NX_SYS_SENDTO==83 && NX_SYS_GETSOCKOPT==88 && NX_SYS_LAST==88, "socket syscall numbers");
+_Static_assert(ENOSYS==35 && ENOTSOCK==36 && EAFNOSUPPORT==43 && ECONNRESET==49 && ECONNREFUSED==54 &&
+               EINPROGRESS==57 && EWOULDBLOCK==EAGAIN, "networking errno numbers");
+_Static_assert(AF_INET==2 && SOCK_STREAM==1 && SOCK_DGRAM==2 && SOCK_RAW==3 && IPPROTO_TCP==6 &&
+               IPPROTO_UDP==17 && IPPROTO_ICMP==1 && SOL_SOCKET==0xffff, "socket family/type/protocol values");
+_Static_assert(SO_REUSEADDR==4 && SO_SNDBUF==0x1001 && SO_RCVBUF==0x1002 && SO_SNDTIMEO==0x1005 &&
+               SO_RCVTIMEO==0x1006 && SO_ERROR==0x1007 && SO_TYPE==0x1008 && TCP_NODELAY==1, "socket option values");
+_Static_assert(MSG_PEEK==2 && MSG_WAITALL==0x40 && MSG_DONTWAIT==0x80 && SHUT_RD==0 && SHUT_WR==1 && SHUT_RDWR==2,
+               "socket flag values");
+_Static_assert(INADDR_LOOPBACK==0x7f000001u && INADDR_ANY==0 && INADDR_NONE==0xffffffffu && INET_ADDRSTRLEN==16,
+               "IPv4 address constants");
+SIZE(socklen_t,4); SIZE(sa_family_t,2); SIZE(in_port_t,2); SIZE(in_addr_t,4); SIZE(struct in_addr,4);
+SIZE(struct sockaddr,16); SIZE(struct sockaddr_in,16); SIZE(struct sockaddr_storage,128); SIZE(struct timeval,16);
+_Static_assert(offsetof(struct sockaddr_in,sin_family)==0 && offsetof(struct sockaddr_in,sin_port)==2 &&
+               offsetof(struct sockaddr_in,sin_addr)==4 && offsetof(struct sockaddr_in,sin_zero)==8, "sockaddr_in offsets");
+_Static_assert(offsetof(struct sockaddr,sa_data)==2 && offsetof(struct timeval,tv_usec)==8 &&
+               offsetof(struct nx_timeval,usec)==8, "sockaddr/timeval offsets");
+_Static_assert(_Alignof(struct sockaddr_storage)>=_Alignof(struct sockaddr_in), "storage holds any address");

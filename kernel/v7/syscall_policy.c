@@ -11,6 +11,6 @@ int64_t syscall_fallback(uint64_t number)
     default:
         /* Recognized slots without a dispatcher implementation are explicitly
          * unavailable. Completely unknown numbers retain V7's nosys error. */
-        return number<=NX_SYS_TIMEDPAUSE?-NX_ENOSYS:-NX_EINVAL;
+        return number<=NX_SYS_LAST?-NX_ENOSYS:-NX_EINVAL;
     }
 }

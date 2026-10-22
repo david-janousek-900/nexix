@@ -61,6 +61,12 @@ The native [`uname`](uname.md) extension exports `uname(struct utsname *)` in
 `gethostname` and root-only `sethostname` are declared in `<unistd.h>`;
 see [hostname configuration and prompt behavior](hostname.md).
 
+The [socket ABI](sockets.md) (task 424) installs `<sys/socket.h>`,
+`<netinet/in.h>`, `<netinet/tcp.h>`, `<arpa/inet.h>`, `<sys/time.h>` and the
+shared `<nexix/socket.h>`, with wrappers for the 14 BSD socket calls and
+numeric IPv4 conversions. The calls validate their arguments now; sockets
+become usable with tasks 425–426.
+
 Task 177 freezes the [native toolchain ABI](toolchain-abi.md) and installs
 `ident.h` with the native target identity. Future compiler ports must pass
 `make test-toolchain-abi`; bootstrap success alone does not complete those ports.

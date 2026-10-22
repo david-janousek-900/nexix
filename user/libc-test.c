@@ -17,6 +17,7 @@ extern int libc_alignment_test(void);
 extern int fpu_process_test(void);
 extern int libc_scan_test(void);
 extern int libc_helpers_test(void);
+extern int socket_test(void);
 extern int crypt_test(void);
 static int exit_order;
 static int zeroed[1024];
@@ -180,6 +181,8 @@ int main(int argc, char **argv, char **envp)
     int scan_error=libc_scan_test();if(scan_error)_exit(scan_error);errno=EFAULT;
     int helper_error = libc_helpers_test();
     if (helper_error) _exit(helper_error);
+    int socket_error = socket_test();
+    if (socket_error) _exit(socket_error);
     errno = EFAULT;
     CHECK(wait(NULL) == -1 && errno == ECHILD);
     CHECK(execve("/missing", argv, environ) == -1 && errno == ENOENT);

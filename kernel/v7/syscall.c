@@ -16,6 +16,7 @@
 #include "tty.h"
 #include "segments.h"
 #include "uaccess.h"
+#include "socket.h"
 #include <nexix/syscall.h>
 #include <nexix/errno.h>
 
@@ -33,6 +34,10 @@ static int64_t invoke(uint64_t number, struct interrupt_frame *frame)
     case NX_SYS_STTY: case NX_SYS_GTTY: case NX_SYS_IOCTL:
     case NX_SYS_CHMOD: case NX_SYS_CHOWN: case NX_SYS_ACCESS: case NX_SYS_SYNC: case NX_SYS_UTIME:
         return files_syscall(number, u->u_arg);
+    case NX_SYS_SOCKET: case NX_SYS_BIND: case NX_SYS_LISTEN: case NX_SYS_ACCEPT: case NX_SYS_CONNECT:
+    case NX_SYS_SHUTDOWN: case NX_SYS_SENDTO: case NX_SYS_RECVFROM: case NX_SYS_GETSOCKNAME:
+    case NX_SYS_GETPEERNAME: case NX_SYS_SETSOCKOPT: case NX_SYS_GETSOCKOPT:
+        return socket_syscall(number, u->u_arg);
     case NX_SYS_UNAME:return uname_request(u->u_arg[0]);
     case NX_SYS_SETHOSTNAME:return hostname_request(u->u_arg[0],u->u_arg[1]);
     case NX_SYS_KLOG:return klog_request(u->u_arg[0],u->u_arg[1]);

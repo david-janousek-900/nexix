@@ -70,6 +70,20 @@
 #define NX_SYS_SETHOSTNAME 75
 /* Atomic deadline/optional signal-flag check followed by interruptible sleep. */
 #define NX_SYS_TIMEDPAUSE 76
+/* BSD sockets (task 424); send/recv are libc wrappers over sendto/recvfrom. */
+#define NX_SYS_SOCKET 77
+#define NX_SYS_BIND 78
+#define NX_SYS_LISTEN 79
+#define NX_SYS_ACCEPT 80
+#define NX_SYS_CONNECT 81
+#define NX_SYS_SHUTDOWN 82
+#define NX_SYS_SENDTO 83
+#define NX_SYS_RECVFROM 84
+#define NX_SYS_GETSOCKNAME 85
+#define NX_SYS_GETPEERNAME 86
+#define NX_SYS_SETSOCKOPT 87
+#define NX_SYS_GETSOCKOPT 88
+#define NX_SYS_LAST NX_SYS_GETSOCKOPT
 #define NX_CLK_TCK 100
 #ifndef __ASSEMBLER__
 #include <stdint.h>

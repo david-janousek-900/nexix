@@ -20,7 +20,7 @@ int mpx(const char *name,int mode)
 }
 int chan(int group){return call(CHAN,0,group,0);}
 int join(int fd,int group){return call(JOIN,fd,group,0);}
-int connect(int fd,int channel,int side){return call(CONNECT,fd,channel,side);}
+int mpx_connect(int fd,int channel,int side){return call(CONNECT,fd,channel,side);}
 int disconnect(int fd,int channel,int side){return call(DISCON,fd,channel,side);}
 int attach(int index,int group){return call(ATTACH,index,group,0);}
 int detach(int index,int group){return call(DETACH,index,group,0);}

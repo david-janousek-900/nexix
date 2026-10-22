@@ -7,7 +7,7 @@
 #define CHECK(c) do { if(!(c))return __LINE__; } while(0)
 int perror_test(void)
 {
-    CHECK(sys_nerr==36&&!strcmp(sys_errlist[EPERM],"Not owner")&&!strcmp(sys_errlist[ERANGE],"Result too large"));
+    CHECK(sys_nerr==58&&!strcmp(sys_errlist[ECONNREFUSED],"Connection refused")&&!strcmp(sys_errlist[EPERM],"Not owner")&&!strcmp(sys_errlist[ERANGE],"Result too large"));
     const char *expected[]={
         "open: No such file or directory\nUnknown error\nUnknown error\nsyscall: Function not implemented\n",
         "Not owner\npending",

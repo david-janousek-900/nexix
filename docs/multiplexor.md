@@ -163,7 +163,10 @@ x86_64 adaptations. Task 67 supplies the TTY bridges and libc interface describe
 `libc/mpx.c` ports `usr/src/libc/gen/mpx.c` and replaces PDP-11 `mpxcall.s`.
 `<sys/mx.h>` declares mpxcall, mpx, chan, join, connect, disconnect, attach,
 detach, extract, debug, npgrp and ckill. Each call uses its own argument record;
-there is no shared static vector. Errors return -1 and set errno. `mpx("", mode)`
+there is no shared static vector. Errors return -1 and set errno. Since task
+424 the library function behind `connect` is `mpx_connect`; `<sys/mx.h>` maps
+the three-argument V7 `connect(fd, channel, side)` to it with a macro, so the
+BSD socket `connect` can share the library. A source file cannot use both. `mpx("", mode)`
 creates an anonymous group; a null name returns EFAULT. `mpxcall(MPXN, NULL)`
 supplies an empty native argument record. Other null argument records fail.
 The actual two-argument mpxcall source interface is used; the snapshot's

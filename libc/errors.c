@@ -37,6 +37,29 @@ char *sys_errlist[] = {
 	"Argument too large",
 	"Result too large",
     "Function not implemented", /* Nexix ENOSYS=35 extension. */
+    /* 4.4BSD messages for the networking extensions 36-57. */
+    "Socket operation on non-socket",
+    "Destination address required",
+    "Message too long",
+    "Protocol wrong type for socket",
+    "Protocol not available",
+    "Protocol not supported",
+    "Operation not supported",
+    "Address family not supported by protocol family",
+    "Address already in use",
+    "Can't assign requested address",
+    "Network is down",
+    "Network is unreachable",
+    "Software caused connection abort",
+    "Connection reset by peer",
+    "No buffer space available",
+    "Socket is already connected",
+    "Socket is not connected",
+    "Operation timed out",
+    "Connection refused",
+    "No route to host",
+    "Operation already in progress",
+    "Operation now in progress",
 };
 int sys_nerr = sizeof(sys_errlist)/sizeof(sys_errlist[0]);
-_Static_assert(sizeof(sys_errlist)/sizeof(sys_errlist[0]) == ENOSYS+1, "error table numbering");
+_Static_assert(sizeof(sys_errlist)/sizeof(sys_errlist[0]) == EINPROGRESS+1, "error table numbering");

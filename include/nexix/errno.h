@@ -1,6 +1,7 @@
 #ifndef NEXIX_ABI_ERRNO_H
 #define NEXIX_ABI_ERRNO_H
-/* V7 errors retain their numbers; ENOSYS is a native extension. */
+/* V7 errors retain their numbers; ENOSYS and the networking errors (36-57,
+ * task 424) are native extensions appended without renumbering. */
 #define NX_EPERM 1
 #define NX_ENOENT 2
 #define NX_ESRCH 3
@@ -36,4 +37,26 @@
 #define NX_EDOM 33
 #define NX_ERANGE 34
 #define NX_ENOSYS 35
+#define NX_ENOTSOCK 36
+#define NX_EDESTADDRREQ 37
+#define NX_EMSGSIZE 38
+#define NX_EPROTOTYPE 39
+#define NX_ENOPROTOOPT 40
+#define NX_EPROTONOSUPPORT 41
+#define NX_EOPNOTSUPP 42
+#define NX_EAFNOSUPPORT 43
+#define NX_EADDRINUSE 44
+#define NX_EADDRNOTAVAIL 45
+#define NX_ENETDOWN 46
+#define NX_ENETUNREACH 47
+#define NX_ECONNABORTED 48
+#define NX_ECONNRESET 49
+#define NX_ENOBUFS 50
+#define NX_EISCONN 51
+#define NX_ENOTCONN 52
+#define NX_ETIMEDOUT 53
+#define NX_ECONNREFUSED 54
+#define NX_EHOSTUNREACH 55
+#define NX_EALREADY 56
+#define NX_EINPROGRESS 57
 #endif

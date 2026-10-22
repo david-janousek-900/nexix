@@ -22,12 +22,12 @@ ssize_t write(int fd,const void *bytes,size_t count)
 static void reset(void){used=0;captured[0]=0;fail=zero=interrupt_once=0;}
 int main(void)
 {
-    CHECK(sys_nerr==36);
+    CHECK(sys_nerr==58);
     reset();interrupt_once=1;errno=ENOENT;perror("open");
     CHECK(!strcmp(captured,"open: No such file or directory\n")&&errno==ENOENT);
     reset();errno=0;perror("");CHECK(!strcmp(captured,"Error 0\n")&&errno==0);
     reset();errno=ENOSYS;perror(NULL);CHECK(!strcmp(captured,"Function not implemented\n")&&errno==ENOSYS);
-    int unknown[]={-1,36,INT32_MAX};
+    int unknown[]={-1,58,INT32_MAX};
     for(unsigned i=0;i<sizeof(unknown)/sizeof(*unknown);++i){
         reset();errno=unknown[i];perror("bad");
         CHECK(!strcmp(captured,"bad: Unknown error\n")&&errno==unknown[i]);

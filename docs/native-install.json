@@ -2307,6 +2307,87 @@
       "format": "data"
     },
     {
+      "path": "/usr/include/sys/socket.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/sys/socket.h"
+      }
+    },
+    {
+      "path": "/usr/include/sys/time.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/sys/time.h"
+      }
+    },
+    {
+      "path": "/usr/include/netinet",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc"
+    },
+    {
+      "path": "/usr/include/netinet/in.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/netinet/in.h"
+      }
+    },
+    {
+      "path": "/usr/include/netinet/tcp.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/netinet/tcp.h"
+      }
+    },
+    {
+      "path": "/usr/include/arpa",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc"
+    },
+    {
+      "path": "/usr/include/arpa/inet.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/arpa/inet.h"
+      }
+    },
+    {
       "path": "/usr/include/nexix/utsname.h",
       "type": "file",
       "mode": "0644",
@@ -2383,6 +2464,19 @@
         "path": "dev-include/nexix/timeb.h"
       },
       "format": "data"
+    },
+    {
+      "path": "/usr/include/nexix/socket.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "format": "data",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/nexix/socket.h"
+      }
     },
     {
       "path": "/bin/clear",

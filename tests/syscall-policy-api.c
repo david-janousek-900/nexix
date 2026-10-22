@@ -15,7 +15,7 @@ int main(void)
     CHECK(signal(SIGSYS,handler)!=SIG_ERR);
     errno=EDOM;
     CHECK(call(0)==0 && call(38)==0 && errno==EDOM);
-    uint64_t invalid[]={40,45,49,50,55,57,58,62,63,NX_SYS_TIMEDPAUSE+1,UINT64_MAX,UINT64_C(0x100000002),UINT64_C(0x100000026)};
+    uint64_t invalid[]={40,45,49,50,55,57,58,62,63,NX_SYS_LAST+1,UINT64_MAX,UINT64_C(0x100000002),UINT64_C(0x100000026)};
     for(unsigned i=0;i<sizeof invalid/sizeof *invalid;i++)CHECK(call(invalid[i])==-EINVAL && errno==EDOM);
     CHECK(nx_syscall6(NX_SYS_UNAME,0,0,0,0,0,0)==-EFAULT);
     CHECK(getpid()==pid && getpgrp()==group && kill(pid,0)==0 && !signals);
