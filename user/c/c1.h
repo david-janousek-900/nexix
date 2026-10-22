@@ -79,6 +79,7 @@ extern char	*coremax;
 extern struct tnode czero, cone;
 extern long	totspace;
 extern char	filename[1024];
+extern int	sfsize, sfclass, sfhidden, sftemp;
 
 /*
 	operators
@@ -330,6 +331,7 @@ int	notcompat(struct tnode *, int, int);
 void	prins(int, int, struct instab *, struct tnode *);
 int	collcon(struct tnode *);
 int	isfloat(struct tnode *);
+int	isfvalue(struct tnode *);
 int	oddreg(struct tnode *, int);
 int	arlength(int);
 void	pswitch(struct swtab *, struct swtab *, int);

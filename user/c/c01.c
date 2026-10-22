@@ -34,6 +34,13 @@ build(int op)
 	dope = opdope[op];
 	t2 = 0;
 	p2 = NULL;
+	/* a malformed expression must not pop below the operand stack */
+	if (cp - cmstack < ((dope&BINARY) ? 2 : 1)) {
+		error("Expression syntax");
+		cp = cmstack;
+		*cp++ = cblock(0);
+		return;
+	}
 	if ((dope&BINARY)!=0) {
 		/* an empty call argument list is a null operand */
 		if ((p2 = *--cp) != NULL) {
@@ -110,7 +117,14 @@ build(int op)
 	case CALL:
 		if ((t1&XTYPE) != FUNC)
 			error("Call of non-function");
-		*cp++ = block(CALL,decref(t1),p1->subsp,p1->strp,p1,p2);
+		if (p1->op==NAME)
+			p2 = protocall((struct hshtab *)p1->tr1, p2);
+		p3 = block(CALL,decref(t1),p1->subsp,p1->strp,p1,p2);
+		if (p3->type==STRUCT) {
+			p3->value = 1;	/* structure result */
+			p3->rstrp = p3->strp;
+		}
+		*cp++ = p3;
 		return;
 
 	case STAR:
@@ -456,6 +470,7 @@ block(int op, int t, int *subs, struct str *str, struct tnode *p1, struct tnode 
 		p->tr2 = NULL;
 	p->value = 0;
 	p->cstr = NULL;
+	p->rstrp = NULL;
 	return(p);
 }
 
