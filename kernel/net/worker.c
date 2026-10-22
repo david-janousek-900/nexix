@@ -86,6 +86,12 @@ bool net_worker_start(void)
     proc_irq_restore(flags);
     return ok;
 }
+void net_worker_detach(void)
+{
+    uintptr_t flags = proc_irq_save();
+    if (net_worker_running()) worker->p_ppid = 0;
+    proc_irq_restore(flags);
+}
 void net_worker_stop(void)
 {
     uintptr_t flags = proc_irq_save();

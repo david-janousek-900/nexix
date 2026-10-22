@@ -96,7 +96,7 @@ struct inode {
     } i_un;
 };
 struct file {
-    uint8_t f_flag;
+    uint16_t f_flag;   /* V7 bits plus native discriminators (files.c) */
     uint32_t f_count;
     struct inode *f_inode;
     v7_off_t f_offset; /* shared by dup/fork */

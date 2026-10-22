@@ -21,9 +21,11 @@ struct stat {
 #define S_IFMPC 0030000
 #define S_IFMPB 0070000
 #define S_IFIFO 0010000
+#define S_IFSOCK 0140000   /* BSD value; fstat of a socket (task 425) */
 #define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
 #define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 #define S_ISFIFO(m) (((m) & S_IFMT) == S_IFIFO)
+#define S_ISSOCK(m) (((m) & S_IFMT) == S_IFSOCK)
 #define S_ISCHR(m) (((m) & S_IFMT) == S_IFCHR)
 #define S_ISBLK(m) (((m) & S_IFMT) == S_IFBLK)
 /* mpx mode constants are source contracts; implementation is tasks 65–67. */

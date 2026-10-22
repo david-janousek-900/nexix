@@ -15,6 +15,9 @@
  * and reaps it after net_worker_stop. False if already running or no slot.
  */
 bool net_worker_start(void);
+/* Make the worker a child of the bootstrap process instead of the caller, so
+ * no user process waits for it (a stack started on demand, task 425). */
+void net_worker_detach(void);
 /* Process context. Runs queued work, cancels armed timers, waits for exit. */
 void net_worker_stop(void);
 bool net_worker_running(void);

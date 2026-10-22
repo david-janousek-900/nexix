@@ -1,16 +1,30 @@
-/* Socket syscall boundary (task 424): decode and validate every argument of
- * the native socket ABI before any descriptor is consulted, so malformed
- * calls fail the same way once sockets exist. Descriptors cannot yet refer
- * to sockets (task 425), so valid calls end in EBADF/ENOTSOCK, and a valid
- * socket() request in ENOSYS. */
+/* Socket syscall boundary. Task 424 decodes and validates every argument
+ * before any descriptor is consulted, so malformed calls fail the same way
+ * whatever the descriptor. Task 425 backs descriptors with socket objects:
+ * creation, connection setup and stream read/write, blocking interruptibly.
+ * sendto/recvfrom and the option calls, and datagram/raw I/O, are task 426's. */
 #include "socket.h"
 #include "process.h"
 #include "accounting.h"
 #include "uaccess.h"
+#include "files.h"
+#include "signals.h"
 #include "v7/core.h"
+#include "net/socket.h"
 #include <nexix/socket.h>
+#include <nexix/signal.h>
 #include <nexix/syscall.h>
 #include <nexix/errno.h>
+#define SOCKET_PRIORITY 30
+#define CHUNK 1024
+
+/* Sleep until a protocol event newer than seen, or a signal (EINTR). The
+ * worker cannot run between the caller's check and this sleep. */
+static int wait_event(struct nx_socket *s, uint32_t seen)
+{
+    if (s->events != seen) return 0;
+    return proc_sleep_interruptible(s, SOCKET_PRIORITY) ? -NX_EINTR : 0;
+}
 
 static int64_t socket_create(struct user *u, int64_t domain, int64_t type, int64_t protocol)
 {
@@ -24,14 +38,13 @@ static int64_t socket_create(struct user *u, int64_t domain, int64_t type, int64
         break;
     default: return -NX_EPROTOTYPE;
     }
-    return -NX_ENOSYS;   /* socket descriptors arrive with task 425 */
-}
-
-/* The descriptor check every call ends in: no descriptor is a socket yet. */
-static int64_t descriptor(const struct user *u, int64_t fd)
-{
-    if (fd < 0 || fd >= V7_NOFILE || !u->u_ofile[fd]) return -NX_EBADF;
-    return -NX_ENOTSOCK;
+    int error = files_socket_reserve(u);
+    if (error < 0) return error;
+    struct nx_socket *s;
+    if ((error = net_socket_create((int)type, type == NX_SOCK_RAW, &s))) return error;
+    int fd = files_socket_install(u, s);   /* tables may have filled while we slept */
+    if (fd < 0) net_socket_release(s);
+    return fd;
 }
 
 /* An input address: length within [16, 128], readable, AF_INET (or, where
@@ -112,6 +125,95 @@ static int64_t option_out(const struct address_space *vm, int64_t level, int64_t
     return 0;
 }
 
+static void to_record(struct nx_sockaddr_in *out, nx_net_addr_t addr, nx_net_port_t port)
+{
+    *out = (struct nx_sockaddr_in){ .family = NX_AF_INET, .port = __builtin_bswap16(port),
+                                    .addr = __builtin_bswap32(addr) };
+}
+/* Publish an address through a prevalidated value-result pair: at most the
+ * stated length is written, and the length becomes the full record size. */
+static int64_t address_publish(const struct address_space *vm, uintptr_t address, uintptr_t length_pointer,
+                               nx_net_addr_t addr, nx_net_port_t port)
+{
+    if (!address) return 0;
+    struct nx_sockaddr_in record;
+    to_record(&record, addr, port);
+    nx_socklen_t length;
+    if (copyin(vm, length_pointer, &length, sizeof(length))) return -NX_EFAULT;
+    size_t used = length < sizeof(record) ? length : sizeof(record);
+    nx_socklen_t full = sizeof(record);
+    if (copyout(vm, address, &record, used) || copyout(vm, length_pointer, &full, sizeof(full))) return -NX_EFAULT;
+    return 0;
+}
+
+static int64_t do_accept(struct user *u, const struct address_space *vm, struct nx_socket *s, uintptr_t address,
+                         uintptr_t length_pointer)
+{
+    for (;;) {
+        int error = files_socket_reserve(u);
+        if (error < 0) return error;
+        uint32_t seen = s->events;
+        struct nx_socket *child;
+        nx_net_addr_t addr;
+        nx_net_port_t port;
+        error = net_socket_accept(s, &child, &addr, &port);
+        if (error == -NX_EAGAIN) {
+            if ((error = wait_event(s, seen))) return error;
+            continue;
+        }
+        if (error) return error;
+        int fd = files_socket_install(u, child);
+        if (fd < 0) { net_socket_release(child); return fd; }
+        error = (int)address_publish(vm, address, length_pointer, addr, port);
+        return error ? error : fd;   /* a fault after the accept still leaves the descriptor */
+    }
+}
+static int64_t do_connect(struct nx_socket *s, const struct nx_sockaddr_in *a)
+{
+    nx_net_addr_t addr = a->family == NX_AF_UNSPEC ? 0 : __builtin_bswap32(a->addr);
+    int error = net_socket_connect(s, addr, a->family == NX_AF_UNSPEC ? 0 : __builtin_bswap16(a->port));
+    if (error) return error;
+    for (;;) {
+        uint32_t seen = s->events;
+        error = net_socket_connected(s);
+        if (error != -NX_EAGAIN) return error;
+        if ((error = wait_event(s, seen))) return error;   /* the attempt continues; retry is EALREADY */
+    }
+}
+
+int64_t socket_file_io(void *object, uintptr_t address, uint64_t count, bool write)
+{
+    struct nx_socket *s = object;
+    const struct address_space *vm = &proc_current()->p_vm;
+    if (s->type != NX_SOCK_STREAM) return -NX_EOPNOTSUPP;   /* datagram/raw I/O is task 426's */
+    uint8_t buffer[CHUNK];
+    size_t done = 0;
+    while (done < count) {
+        size_t part = count - done < CHUNK ? count - done : CHUNK;
+        if (write && copyin(vm, address + done, buffer, part)) return done ? (int64_t)done : -NX_EFAULT;
+        uint32_t seen = s->events;
+        int64_t n = write ? net_socket_send(s, buffer, part) : net_socket_receive(s, buffer, part);
+        if (n == -NX_EAGAIN) {
+            if (!write && done) return done;   /* a read returns what has arrived */
+            int error = wait_event(s, seen);
+            if (error) return done ? (int64_t)done : error;
+            continue;
+        }
+        if (n < 0) {
+            if (n == -NX_EPIPE) signal_post(proc_current(), NX_SIGPIPE);
+            return done ? (int64_t)done : n;
+        }
+        if (!write) {
+            if (!n) return done;   /* end of stream */
+            if (copyout(vm, address + done, buffer, (size_t)n)) return done ? (int64_t)done : -NX_EFAULT;
+        }
+        done += (size_t)n;
+        if (!write && (size_t)n < part) return done;
+    }
+    return done;
+}
+void socket_file_close(void *object) { net_socket_release(object); }
+
 int64_t socket_syscall(uint64_t number, const uintptr_t a[6])
 {
     struct proc *p = proc_current();
@@ -139,5 +241,26 @@ int64_t socket_syscall(uint64_t number, const uintptr_t a[6])
     case NX_SYS_GETSOCKOPT: error = option_out(vm, (int32_t)a[1], (int32_t)a[2], a[3], a[4]); break;
     default: return -NX_EINVAL;
     }
-    return error ? error : descriptor(u, fd);
+    if (error) return error;
+    int lookup;
+    struct nx_socket *s = files_socket(u, fd, &lookup);
+    if (!s) return lookup;
+    switch (number) {
+    case NX_SYS_BIND: {
+        nx_net_port_t port = __builtin_bswap16(address.port);
+        bool privileged = port && port < 1024 && s->type != NX_SOCK_RAW && proc_superuser(u);
+        return net_socket_bind(s, __builtin_bswap32(address.addr), port, privileged);
+    }
+    case NX_SYS_LISTEN: return net_socket_listen(s, (int32_t)a[1]);
+    case NX_SYS_ACCEPT: return do_accept(u, vm, s, a[1], a[2]);
+    case NX_SYS_CONNECT: return do_connect(s, &address);
+    case NX_SYS_SHUTDOWN: return net_socket_shutdown(s, (int)a[1]);
+    case NX_SYS_GETSOCKNAME: case NX_SYS_GETPEERNAME: {
+        nx_net_addr_t addr;
+        nx_net_port_t port;
+        error = net_socket_name(s, number == NX_SYS_GETPEERNAME, &addr, &port);
+        return error ? error : address_publish(vm, a[1], a[2], addr, port);
+    }
+    default: return -NX_ENOSYS;   /* sendto, recvfrom and the options: task 426 */
+    }
 }

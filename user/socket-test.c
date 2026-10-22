@@ -1,6 +1,8 @@
 /* Ring-3 checks of the socket ABI boundary (task 424): every argument error
- * is reported before descriptors are consulted, invalid pointers are EFAULT,
- * and no descriptor is a socket yet (task 425). Runs as a non-root user. */
+ * is reported before descriptors are consulted and invalid pointers are
+ * EFAULT. Runs as a non-root user inside the boot self-test, so it never
+ * creates a socket (that would start the stack before its own self-test);
+ * live sockets are tested on a normal boot by tests/socket-api.c. */
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
@@ -18,15 +20,15 @@ int socket_test(void)
 {
     void *unmapped = (void *)(uintptr_t)0x700000000000ull, *kernel = (void *)(uintptr_t)0x100000;
     void *noncanonical = (void *)(uintptr_t)0x800000000000ull;
-    /* socket(): family, type, protocol and privilege, then unavailable. */
+    /* socket(): family, type, protocol and privilege. */
     CHECK(FAILS(socket(AF_UNSPEC, SOCK_STREAM, 0), EAFNOSUPPORT) && FAILS(socket(10, SOCK_STREAM, 0), EAFNOSUPPORT));
     CHECK(FAILS(socket(AF_INET, 0, 0), EPROTOTYPE) && FAILS(socket(AF_INET, 5, 0), EPROTOTYPE));
     CHECK(FAILS(socket(AF_INET, SOCK_STREAM, IPPROTO_UDP), EPROTONOSUPPORT));
     CHECK(FAILS(socket(AF_INET, SOCK_DGRAM, IPPROTO_TCP), EPROTONOSUPPORT));
     CHECK(FAILS(socket(AF_INET, SOCK_RAW, 0), EPROTONOSUPPORT) && FAILS(socket(AF_INET, SOCK_RAW, IPPROTO_ICMP), EACCES));
-    CHECK(FAILS(socket(AF_INET, SOCK_STREAM, 0), ENOSYS) && FAILS(socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP), ENOSYS));
     /* High bits of the 64-bit argument slots are ignored for int arguments. */
-    CHECK(nx_syscall6(NX_SYS_SOCKET, 0x100000002L, 0x700000001L, 0x500000000L, -1, -1, -1) == -ENOSYS);
+    CHECK(nx_syscall6(NX_SYS_SOCKET, 0x100000002L, 0x700000000L, 0x500000000L, -1, -1, -1) == -EPROTOTYPE);
+    CHECK(nx_syscall6(NX_SYS_SOCKET, 0x10000000aL, 0x700000001L, 0, -1, -1, -1) == -EAFNOSUPPORT);
 
     struct sockaddr_in in = { AF_INET, htons(7), { htonl(INADDR_LOOPBACK) }, {0} };
     const struct sockaddr *a = (const struct sockaddr *)&in;

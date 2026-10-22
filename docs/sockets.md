@@ -2,11 +2,12 @@
 
 Task 424 defines the user-facing socket interface. It assigns the numbers,
 fixes the record layouts and supplies the libc headers and wrappers, and it
-validates every argument at the kernel boundary. Socket descriptors themselves
-arrive with task 425, and the blocking operations and options that drive
-[UDP](networking-udp.md), [TCP](networking-tcp.md) and
-[raw ICMP](networking-icmp.md) arrive with task 426. Until then, any call whose
-arguments are valid ends with `ENOTSOCK`/`EBADF` (or `ENOSYS` for `socket`).
+validates every argument at the kernel boundary. Task 425 backs descriptors
+with real sockets and implements connection setup and stream I/O; see
+[Descriptors](#descriptors-task-425). Task 426 completes
+`send`/`recv`/`sendto`/`recvfrom`, the options, datagram and raw I/O, flags,
+timeouts and non-blocking use of [UDP](networking-udp.md),
+[TCP](networking-tcp.md) and [raw ICMP](networking-icmp.md).
 
 ## Numbers
 
@@ -111,14 +112,14 @@ avoided because the retained PCC front end cannot parse it.
 
 Every argument is checked, and every input copied in, **before the descriptor
 is looked up**. A malformed call therefore fails the same way whatever the
-descriptor is. Outputs are preflighted for writability; nothing is written
-while descriptors cannot be sockets.
+descriptor is. Outputs are preflighted for writability before the operation
+runs.
 
 - **socket:** a domain other than `AF_INET` is `EAFNOSUPPORT`; an unknown type
   is `EPROTOTYPE`. A protocol other than 0 or the type's own (TCP for stream,
   UDP for datagram) is `EPROTONOSUPPORT`; raw sockets require `IPPROTO_ICMP`.
   A raw socket from a caller whose effective uid is not 0 is `EACCES`, as in
-  BSD `rip_usrreq`. A valid request is `ENOSYS` until task 425.
+  BSD `rip_usrreq`. A valid request returns a new descriptor.
 - **Input addresses** (bind, connect, sendto):
   - the length must be 16..128 (`EINVAL`);
   - the whole length must be readable (`EFAULT`);
@@ -156,6 +157,74 @@ unmapped and noncanonical addresses, and read-only data for outputs. They are
 rejected by the existing [user-copy helpers](syscall-abi.md#safe-user-access)
 without CPU faults.
 
+## Descriptors (task 425)
+
+**Objects.** A socket descriptor is an ordinary open file whose private
+object (`kernel/net/socket.c`) wraps one TCP, UDP or raw ICMP control block.
+Objects come from the 16-page socket budget (112 objects). The file has read
+and write access and a native kind bit, so:
+
+- `fork` and `dup` share it, and close-on-exec (`FD_CLOEXEC`, `FIOCLEX`)
+  applies;
+- the protocol block is released on the **final** close, whether by `close`,
+  `exec` or process exit;
+- `fstat` reports `S_IFSOCK` (0140000) with mode 0600; `lseek` is `ESPIPE`;
+  ioctls other than close-on-exec are `ENOTTY`;
+- `nx_kinfo` reports file kind `NX_KINFO_FILE_SOCKET` (10).
+
+**The stack.** The first `socket` starts the network stack if nothing has. Its
+worker becomes a child of the bootstrap process, so no user process ever waits
+for it, and `lo0` gets 127.0.0.1/8. External interfaces stay unconfigured
+until tasks 427–429.
+
+**Waiting.** Every protocol operation runs on the network worker. A caller
+that must wait sleeps interruptibly on its socket. Protocol events (data,
+space, connection changes, errors) bump an event counter and wake it, and the
+caller rechecks the counter before sleeping, so no wakeup is lost. A signal
+returns `EINTR`, or the bytes already moved.
+
+**Limits.**
+
+| Limit | Error |
+|---|---|
+| 20 descriptors per process | `EMFILE` |
+| 175 open files system-wide | `ENFILE` |
+| 32 TCP, 32 UDP or 8 raw control blocks, or 112 socket objects | `ENOBUFS` |
+
+`socket` and `accept` check the descriptor tables before allocating, and give
+back what they allocated if a table filled while they slept.
+
+**Calls implemented:**
+
+- **bind:** a privileged reserved port (below 1024) needs effective uid 0
+  (`EACCES`). An address that is not ours is `EADDRNOTAVAIL`, a busy port
+  `EADDRINUSE`, a second bind `EINVAL`.
+- **listen:** stream sockets only (`EOPNOTSUPP`). The backlog is clamped to
+  1–8, and listening again changes it. A connected socket is `EINVAL`.
+- **accept:** blocks until a connection is queued. It returns a new descriptor
+  and publishes the peer address (truncated to the given length; the full
+  length, 16, is reported). A non-listening socket is `EINVAL`.
+- **connect** on a stream blocks until the handshake ends:
+  - `ECONNREFUSED`, `ETIMEDOUT`, `ENETUNREACH` or `EHOSTUNREACH` on failure;
+  - `EINTR` leaves the attempt running, and a repeated connect is then
+    `EALREADY`, and `EISCONN` once connected;
+  - on a datagram or raw socket it sets the peer, and `AF_UNSPEC` disconnects.
+- **shutdown:** `SHUT_WR` sends FIN after buffered data. `SHUT_RD` discards
+  what is buffered and what arrives. An unconnected stream is `ENOTCONN`.
+- **getsockname / getpeername:** an unconnected peer is `ENOTCONN`.
+- **read / write on a stream:**
+  - a write blocks until everything is buffered; partial counts are returned
+    if interrupted;
+  - a read returns what has arrived, blocking only for the first byte, and 0
+    at end of stream (FIN, `SHUT_RD`, or after a reset has been reported);
+  - a pending reset is `ECONNRESET` once;
+  - after that, or after `SHUT_WR`, a write is **`EPIPE` and raises
+    `SIGPIPE`**;
+  - an unconnected stream is `ENOTCONN`.
+- **Datagram and raw** `read`/`write`, `send`, `recv`, `sendto`, `recvfrom`,
+  `setsockopt` and `getsockopt` validate their arguments and then return
+  `EOPNOTSUPP` (read/write) or `ENOSYS` until task 426.
+
 ## Validation
 
 - **`make test-header-abi`** checks every syscall and errno number, every
@@ -182,3 +251,25 @@ without CPU faults.
   - number 89 staying `EINVAL`.
 - **`make test-perror-unit`** and **`make test-syscall-policy-unit`** cover the
   58-entry error table and the moved end of the assigned range.
+- **`make test-socket-api`** (task 425) boots normally at 16 and 128 MiB and
+  runs `tests/socket-api.c` as root over loopback:
+  - **Exhaustion:** `EMFILE`, and `ENOBUFS` at exactly 32 TCP blocks held by
+    three processes, over three rounds with equal totals, so exits return
+    every block.
+  - **Transfer:** a 200000-byte transfer from a forked child sharing the
+    descriptor, ending in EOF when its final close sends FIN.
+  - **Descriptors:** a `dup` survives closing the original; close-on-exec
+    closes the socket across `exec` while another survives as `S_ISSOCK`;
+    process exit closes sockets so the peer reads EOF.
+  - **End of stream and pipes:** half-close in both directions; `EPIPE` with
+    a caught `SIGPIPE`, and a default `SIGPIPE` killing a child; a close with
+    unread data giving `ECONNRESET` once, then `EPIPE`.
+  - **Errors:** refused connects, `EISCONN`, address and port errors, root
+    reserved ports and raw sockets, and their `EACCES` for uid 42; `fstat`,
+    `lseek` and ioctl; the calls deferred to task 426; datagram
+    connect/disconnect and truncated names.
+  - **Interruption:** `EINTR` from `alarm` in `accept` and `read`.
+  - A final transfer still works after all of the above.
+
+  The libc self-test keeps its boundary checks but never creates a socket,
+  because the boot self-test starts and stops the stack itself.

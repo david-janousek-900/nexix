@@ -29,6 +29,11 @@ int files_reset_volumes(void); /* Quiescent kernel teardown. */
 int files_mountpoint_put(struct inode *); /* Preflight then non-I/O pin release. */
 int files_inode_put(struct inode *);
 int64_t files_syscall(uint64_t number, const uintptr_t args[6]);
+/* Socket descriptors (task 425). reserve reports EMFILE/ENFILE without
+ * allocating; install takes ownership of the socket on success only. */
+int files_socket_reserve(struct user *);
+int files_socket_install(struct user *, void *socket);
+void *files_socket(struct user *, int64_t fd, int *error);   /* EBADF, ENOTSOCK */
 void files_selftest(void);
 bool files_test_gate(struct interrupt_frame *frame);
 #endif

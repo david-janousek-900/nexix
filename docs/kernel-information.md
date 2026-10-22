@@ -114,6 +114,8 @@ RAM and IDE shells at both RAM sizes. The V7 command ports and raw memory device
 remain their separate roadmap tasks.
 
 Multiplexor descriptors (task 65) use file kind `NX_KINFO_FILE_MPX` (5).
+Socket descriptors (task 425) use `NX_KINFO_FILE_SOCKET` (10); their native
+discriminator bit is not reported in the V7 flags.
 Their flags retain V7 FMPX/FMPY side bits; a group has both bits set. File
 reference counts include group joins and shared extractions. Live group inode
 records expose IFMPC even though backing storage retains IFCHR; after group

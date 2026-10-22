@@ -120,7 +120,7 @@ four-byte status, even though its pointer occupies an eight-byte argument slot.
 | 70 | sigreturn | Readable nx_signal_context pointer | Restores interrupted frame |
 | 71 | getpgrp | None | Current process group |
 | 72 | nx_kinfo | Version, kind, output buffer, capacity | Required/written bytes; public process/load records, other kinds effective-root only; [snapshot contract](kernel-information.md) |
-| 77–88 | socket, bind, listen, accept, connect, shutdown, sendto, recvfrom, getsockname, getpeername, setsockopt, getsockopt | See the [socket ABI](sockets.md) | Arguments fully validated; descriptors are not yet sockets (tasks 425–426) |
+| 77–88 | socket, bind, listen, accept, connect, shutdown, sendto, recvfrom, getsockname, getpeername, setsockopt, getsockopt | See the [socket ABI](sockets.md) | Descriptors and stream connections (task 425); sendto/recvfrom/options in task 426 |
 
 Calls 64–72 are native extensions beyond V7's 64-entry table. The separate
 identity calls and wait status pointer replace V7's secondary-register returns.
@@ -255,9 +255,8 @@ behavior intentionally supersedes V7's not-yet-implemented nullsys placeholder.
 Slots 64–88 are native extensions, not aliases of reserved original slots.
 The fallback for an assigned-but-unavailable implementation is ENOSYS, distinct
 from invalid/reserved numbers. All currently assigned calls have dispatcher
-implementations; the socket calls (77–88) validate their arguments and, until
-task 425 adds socket descriptors, end in EBADF/ENOTSOCK or, for a valid
-`socket`, ENOSYS. The private int 0x81 test transport retains ENOSYS for inactive
+implementations; sendto, recvfrom and the option calls validate their
+arguments and return ENOSYS until task 426. The private int 0x81 test transport retains ENOSYS for inactive
 hooks and remains outside the public syscall ABI.
 
 `make test-syscall-policy-unit` verifies disposition classification;

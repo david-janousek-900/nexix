@@ -26,9 +26,13 @@ void net_pool_selftest(void);
  * ICMP and UDP (tasks 421-422) and TCP with its 100 ms timer (task 423), and
  * attaches lo0 (up, unaddressed) and, when an e1000 exists, em0 (down).
  * net_stop detaches every interface, flushes raw, UDP and TCP sockets, stops
- * and reaps nothing (the parent reaps the worker) and destroys the pool. */
+ * and reaps nothing (the parent reaps the worker) and destroys the pools; it
+ * must not be called while socket objects exist. */
 bool net_start(void);
 void net_stop(void);
 struct nx_net_mbuf_pool *net_pool(void);
+/* Socket objects (task 425), NX_NET_SOCKET_OBJECT_SIZE bytes each from their
+ * own 16-page budget; worker context only. */
+struct nx_net_slab *net_socket_slab(void);
 void net_stack_selftest(void);
 #endif

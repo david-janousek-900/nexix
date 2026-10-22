@@ -13,12 +13,14 @@
 #include "modem.h"
 #include "namespace.h"
 #include "accounting.h"
+#include "socket.h"
 #include <nexix/syscall.h>
 #include <nexix/errno.h>
 #include <nexix/mpx.h>
 #define NPIPE 32
 #define FILE_STORAGE 0100 /* Native private-device discriminator. */
 #define FILE_TAPE 0200
+#define FILE_SOCKET 0400 /* f_private is a struct nx_socket (task 425) */
 struct pipe_buffer { bool active; unsigned readers, writers, head, size; uint8_t bytes[NX_PIPE_BUF]; };
 static struct pipe_buffer pipes[NPIPE];
 static bool modem_file(const struct file *f)
@@ -146,6 +148,7 @@ static int file_put(struct file *f)
     unsigned slot=(unsigned)(f-table);closing[slot]=true;
     int error = 0;
     if(f->f_flag&V7_FMP) mpx_close(f);
+    else if (f->f_flag & FILE_SOCKET) socket_file_close(f->f_private);
     else if (f->f_private && !(f->f_flag & V7_FPIPE)) {
         if(f->f_flag & FILE_STORAGE) storage_close(f->f_private);
         else if(f->f_flag & FILE_TAPE) error=tape_close(f->f_private);
@@ -189,6 +192,32 @@ void files_exec(struct user *u)
 }
 static int fd_slot(struct user *u, unsigned start)
 { for (unsigned i = start; i < V7_NOFILE; ++i) if (!u->u_ofile[i]) return i; return -NX_EMFILE; }
+int files_socket_reserve(struct user *u)
+{
+    int fd = fd_slot(u, 0);
+    if (fd < 0) return fd;
+    for (unsigned i = 0; i < V7_NFILE; ++i) if (!table[i].f_count && !closing[i]) return fd;
+    return -NX_ENFILE;
+}
+int files_socket_install(struct user *u, void *socket)
+{
+    int fd = fd_slot(u, 0);
+    if (fd < 0) return fd;
+    struct file *f = file_alloc();
+    if (!f) return -NX_ENFILE;
+    f->f_flag = V7_FREAD | V7_FWRITE | FILE_SOCKET;
+    f->f_private = socket;
+    f->f_open_flags = NX_O_RDWR;
+    u->u_ofile[fd] = f; u->u_pofile[fd] = 0;
+    return fd;
+}
+void *files_socket(struct user *u, int64_t fd, int *error)
+{
+    if (fd < 0 || fd >= V7_NOFILE || !u->u_ofile[fd]) { *error = -NX_EBADF; return NULL; }
+    if (!(u->u_ofile[fd]->f_flag & FILE_SOCKET)) { *error = -NX_ENOTSOCK; return NULL; }
+    *error = 0;
+    return u->u_ofile[fd]->f_private;
+}
 static struct fs_node cwd(struct user *u) { return u->u_cdir ? inode_node(u->u_cdir) : (struct fs_node){0,V7_ROOTINO}; }
 static struct fs_node rootdir(struct user *u) { return u->u_rdir ? inode_node(u->u_rdir) : (struct fs_node){0,V7_ROOTINO}; }
 static int path_copy(uintptr_t address, char path[256])
@@ -500,6 +529,7 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
         return mpx_io(f,address,count,write);
     }
     if (f->f_flag & V7_FPIPE) return pipe_io(f, address, count, write);
+    if (f->f_flag & FILE_SOCKET) return socket_file_io(f->f_private, address, count, write);
     if(f->f_flag & FILE_TAPE){
         if(count>(uint64_t)(INT64_MAX-f->f_offset))return -NX_EINVAL;
         if(count)device_stamp(f,write);
@@ -567,7 +597,7 @@ static int64_t io(struct user *u, uint64_t fd, uintptr_t address, uint64_t count
 }
 static int64_t seek(struct file *f, int64_t offset, uint64_t whence)
 {
-    if ((f->f_flag & V7_FPIPE) || (f->f_private && !(f->f_flag & FILE_STORAGE) && !((f->f_flag&FILE_TAPE)&&tape_seekable(f->f_private)))) return -NX_ESPIPE;
+    if ((f->f_flag & (V7_FPIPE | FILE_SOCKET)) || (f->f_private && !(f->f_flag & FILE_STORAGE) && !((f->f_flag&FILE_TAPE)&&tape_seekable(f->f_private)))) return -NX_ESPIPE;
     int64_t base = 0;
     if (whence == NX_SEEK_CUR) base = f->f_offset;
     else if (whence == NX_SEEK_END) {
@@ -740,6 +770,7 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
             u->u_pofile[fd] = request == NX_FIOCLEX ? V7_EXCLOSE : 0;
             return 0;
         }
+        if(f->f_flag&FILE_SOCKET)return -NX_ENOTTY;   /* socket ioctls are task 427's */
         if(f->f_flag&FILE_TAPE){
             return tape_ioctl(f->f_private,&p->p_vm,request,argument,&f->f_offset);
         }
@@ -779,6 +810,7 @@ int64_t files_syscall(uint64_t number, const uintptr_t args[6])
     if (number == NX_SYS_FSTAT) {
         struct nx_stat st = {0}; int error = 0;
         if (f->f_flag & V7_FPIPE) { st.mode = 0010000 | 0600; st.size = ((struct pipe_buffer *)f->f_private)->size; st.nlink = 1; }
+        else if (f->f_flag & FILE_SOCKET) { st.mode = 0140000 | 0600; st.nlink = 1; }   /* BSD S_IFSOCK */
         else error = stat_inode(inode_node(f->f_inode), &st);
         return error ? error : copyout(&p->p_vm, args[1], &st, sizeof(st));
     }
@@ -796,10 +828,11 @@ bool files_info(unsigned i,struct nx_kinfo_file *r)
     if(i>=V7_NFILE || !table[i].f_count)return false;
     const struct file *f=&table[i];
     zero(r,sizeof(*r));r->slot=i+1;r->refs=f->f_count;
-    r->flags=f->f_flag & ~(FILE_STORAGE|FILE_TAPE);r->open_flags=f->f_open_flags;
+    r->flags=f->f_flag & ~(FILE_STORAGE|FILE_TAPE|FILE_SOCKET);r->open_flags=f->f_open_flags;
     r->offset=f->f_offset;r->inode_id=files_info_inode_id(f->f_inode);
     if(r->inode_id){r->dev=f->f_inode->i_dev;r->ino=f->f_inode->i_number;}
     r->kind=(f->f_flag&V7_FPIPE)?NX_KINFO_FILE_PIPE:
+        (f->f_flag&FILE_SOCKET)?NX_KINFO_FILE_SOCKET:
         (f->f_flag&FILE_STORAGE)?NX_KINFO_FILE_STORAGE:
         (f->f_flag&FILE_TAPE)?NX_KINFO_FILE_TAPE:
         (f->f_flag&V7_FMP)?NX_KINFO_FILE_MPX:

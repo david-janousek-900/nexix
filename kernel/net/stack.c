@@ -12,14 +12,16 @@
 #include "interrupts.h"
 #include <nexix/syscall.h>
 
-static struct nx_net_budget budget;
+static struct nx_net_budget budget, socket_budget;
 static struct nx_net_mbuf_pool pool;
+static struct nx_net_slab sockets;
 static struct nx_net_if lo0, em0;
 static struct nx_net_work lo_work;
 static struct nx_net_timer arp_timer, ip_timer, tcp_timer;
 static bool started;
 
 struct nx_net_mbuf_pool *net_pool(void) { return started ? &pool : NULL; }
+struct nx_net_slab *net_socket_slab(void) { return started ? &sockets : NULL; }
 
 /* Loopback delivery always runs as later worker work, never inside output. */
 static void lo_service(void *argument)
@@ -140,7 +142,13 @@ bool net_start(void)
     struct nx_net_kernel_limits limits = nx_net_kernel_limits(page_total_count());
     nx_net_budget_init(&budget, limits.packet_pages);
     if (!nx_net_mbuf_pool_init(&pool, &nx_net_kernel_pages, &budget, limits.mbuf)) return false;
-    if (!net_worker_start()) { nx_net_mbuf_pool_destroy(&pool); return false; }
+    nx_net_budget_init(&socket_budget, NX_NET_SOCKET_PAGES);
+    if (!nx_net_slab_init(&sockets, &nx_net_kernel_pages, &socket_budget, NX_NET_SOCKET_OBJECT_SIZE,
+                          limits.socket_objects)) {
+        nx_net_mbuf_pool_destroy(&pool);
+        return false;
+    }
+    if (!net_worker_start()) { nx_net_slab_destroy(&sockets); nx_net_mbuf_pool_destroy(&pool); return false; }
     nx_net_work_init(&lo_work, lo_service, NULL);
     bool ok = false;
     started = true;
@@ -153,5 +161,6 @@ void net_stop(void)
     net_worker_call(detach, NULL);
     net_worker_stop();
     if (!nx_net_mbuf_pool_destroy(&pool)) panic("network pool still in use at stop");
+    if (!nx_net_slab_destroy(&sockets)) panic("socket objects still in use at stop");
     started = false;
 }

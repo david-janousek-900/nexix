@@ -64,8 +64,8 @@ see [hostname configuration and prompt behavior](hostname.md).
 The [socket ABI](sockets.md) (task 424) installs `<sys/socket.h>`,
 `<netinet/in.h>`, `<netinet/tcp.h>`, `<arpa/inet.h>`, `<sys/time.h>` and the
 shared `<nexix/socket.h>`, with wrappers for the 14 BSD socket calls and
-numeric IPv4 conversions. The calls validate their arguments now; sockets
-become usable with tasks 425–426.
+numeric IPv4 conversions. Stream sockets work over loopback since task 425;
+task 426 completes datagram/raw I/O, sendto/recvfrom and the options.
 
 Task 177 freezes the [native toolchain ABI](toolchain-abi.md) and installs
 `ident.h` with the native target identity. Future compiler ports must pass

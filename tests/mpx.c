@@ -20,6 +20,8 @@ int v7fs_inode_get(struct v7fs *fs,v7_ino_t ino,struct v7fs_inode *ip)
 int v7fs_release_inode(struct v7fs *fs,v7_ino_t ino){(void)fs;(void)ino;abort();}
 void storage_close(struct storage_handle *h){(void)h;abort();}
 int tape_close(void *p){(void)p;abort();}
+void socket_file_close(void *p){(void)p;abort();}
+int64_t socket_file_io(void *p,uintptr_t a,uint64_t n,bool w){(void)p;(void)a;(void)n;(void)w;abort();}
 int output_close(void *p){(void)p;abort();}
 void modem_close(void *p){(void)p;abort();}
 bool output_matches(v7_dev_t dev){return dev>=NX_CAT_DEV && dev<=NX_VS_DEV;}

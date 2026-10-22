@@ -1,5 +1,8 @@
 # File descriptors, file operations and pipes (task 13)
 
+Socket descriptors (task 425) share this table, its fork/dup sharing and
+close-on-exec; see the [socket ABI](sockets.md#descriptors-task-425).
+
 Nexix 0.1.0 now has native file syscalls, libc wrappers and process ownership
 for files, directory references and pipes. The implementation adapts V7's
 fio.c, sys2.c, sys3.c and pipe.c behavior to the native syscall and VM interfaces.

@@ -48,7 +48,7 @@ static struct file *mx_tty_file(struct user *u,int fd)
 {
     if(fd<0 || fd>=V7_NOFILE)return NULL;
     struct file *f=u->u_ofile[fd];
-    return f && f->f_private && !(f->f_flag&(V7_FMP|V7_FPIPE|FILE_STORAGE|FILE_TAPE)) &&
+    return f && f->f_private && !(f->f_flag&(V7_FMP|V7_FPIPE|FILE_STORAGE|FILE_TAPE|FILE_SOCKET)) &&
         tty_handle_valid(f->f_private)?f:NULL;
 }
 static int mx_join_tty(struct user *u,struct mx_group *g,int fd)
