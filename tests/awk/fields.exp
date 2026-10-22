@@ -1,0 +1,19 @@
+(PROGRAM
+  (ASSIGN var:FS con:":")
+  (ASSIGN var:OFS con:"-")
+  (range0
+    (=EQ var:NR con:1)
+    (=MATCH fld:$record dfa{000000000000})
+    (POSTINCR var:n))
+  (PASTAT
+    (=AND
+      (=GT fld:$3 con:10)
+      (=NOTMATCH fld:$1 dfa{000000000000}))
+    (ADDEQ var:total fld:$3)
+    (PRINT
+      fld:$1
+      fld:$3 -))
+  (PRINTF
+    con:"%d %g\n"
+    var:n
+    var:total -))

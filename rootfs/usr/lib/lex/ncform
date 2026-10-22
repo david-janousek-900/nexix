@@ -1,5 +1,6 @@
 /* Nexix native C scanner driver adapted from the supplied V7 ncform:
- * native-width pointer comparisons and uncompressed miss handling. */
+ * native-width pointer comparisons, uncompressed miss handling, bytes
+ * beyond the character table and tokens longer than yytext. */
 #include <stdint.h>
 int yylineno =1;
 # define YYU(x) x
@@ -45,6 +46,7 @@ yylook(){
 				if(yyz == 0)break;
 				if(yyz->yystoff == yycrank)break;
 				}
+			if(yylastch >= yytext+YYLMAX-1)break;	/* token fills yytext */
 			*yylastch++ = yych = input();
 		tryagain:
 # ifdef LEXDEBUG
@@ -77,9 +79,10 @@ yylook(){
 					*lsp++ = yystate = yyt->advance+yysvec;
 					goto contin;
 					}
-				yyt = yyr + YYU(yymatch[yych]);
+				/* bytes beyond the character table have no fallback */
+				yyt = yych < sizeof(yymatch) ? yyr + YYU(yymatch[yych]) : yytop + 1;
 # ifdef LEXDEBUG
-				if(debug){
+				if(debug && yyt <= yytop){
 					fprintf(yyout,"try fall back character ");
 					allprint(YYU(yymatch[yych]));
 					putchar('\n');

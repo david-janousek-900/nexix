@@ -90,12 +90,16 @@ with tempfile.TemporaryDirectory(prefix='nx-lex-') as temp:
     def scanner(source,name,text,expected):
         subprocess.run([*CC_HOST,*([source] if isinstance(source,str) else source),'-o',name],cwd=folder,check=True)
         r=subprocess.run([str(folder/name)],input=text if isinstance(text,bytes) else text.encode(),env=ENV,capture_output=True,timeout=10)
-        assert r.returncode==0 and r.stdout.decode()==expected,(name,r)
+        assert r.returncode==0 and r.stdout.decode('latin-1')==expected,(name,r)
     # Default C generation, report and every table/compression variant.
     assert run(SPEC).stdout==b''
     (OUT/'spec.l').write_text(SPEC);(OUT/'lex.yy.c').write_bytes((folder/'lex.yy.c').read_bytes())
     (OUT/'input').write_text(INPUT);(OUT/'expected').write_text(EXPECTED)
     scanner('lex.yy.c','scanner',INPUT,EXPECTED)
+    # A word longer than yytext splits at its capacity; bytes beyond the 7-bit
+    # tables take the default action (ncform guards both).
+    scanner('lex.yy.c','long',b'a'*300+b' \xe9\n',
+            'a'*300+' \xe9\nwords=2 numbers=0 calls=0 lines=2\n')
     run(SPEC,'-n');assert run(SPEC,'-n').stdout==b''
     (OUT/'lex-n.yy.c').write_bytes((folder/'lex.yy.c').read_bytes())
     assert (folder/'lex.yy.c').read_bytes()==(OUT/'lex.yy.c').read_bytes()

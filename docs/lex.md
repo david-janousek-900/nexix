@@ -43,6 +43,11 @@ invalid `%` requests remain warnings, as in V7.
 `yycrank` use `uintptr_t` rather than truncating to `int`, and an unmatched
 character in an uncompressed (`-f`) state is pushed back and ends the token, as
 in the compressed path. The supplied form fell through and consumed it.
+A byte beyond the character table (128 entries without `%T`) has no fallback
+character and takes the default action. The supplied form indexed past `yymatch`.
+A token ends when it fills `yytext` (`YYLMAX`), and the rest of the input is
+scanned as the next token. The supplied form wrote past `yytext` and
+`yylstate`. `ebcform` has the same bound (task 174).
 `/usr/lib/lex/ebcform`, selected when a `%T` table declares more than 128 codes,
 and `/usr/lib/lex/nrform`, used by `-r`, are the task 88 native/pinned inputs
 documented in [support inputs](support-inputs.md).
