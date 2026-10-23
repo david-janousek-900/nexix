@@ -8483,6 +8483,292 @@
         "root": "programs",
         "path": "v7-ld.elf"
       }
+    },
+    {
+      "path": "/bin/rev",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.rev",
+      "source": {
+        "root": "programs",
+        "path": "v7-rev.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/tee",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.tee",
+      "source": {
+        "root": "programs",
+        "path": "v7-tee.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/split",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.split",
+      "source": {
+        "root": "programs",
+        "path": "v7-split.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/sp",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.sp",
+      "source": {
+        "root": "programs",
+        "path": "v7-sp.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/comm",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.comm",
+      "source": {
+        "root": "programs",
+        "path": "v7-comm.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/uniq",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.uniq",
+      "source": {
+        "root": "programs",
+        "path": "v7-uniq.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/tr",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.tr",
+      "source": {
+        "root": "programs",
+        "path": "v7-tr.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/tsort",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.tsort",
+      "source": {
+        "root": "programs",
+        "path": "v7-tsort.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/look",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.look",
+      "source": {
+        "root": "programs",
+        "path": "v7-look.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/join",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.join",
+      "source": {
+        "root": "programs",
+        "path": "v7-join.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/col",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.col",
+      "source": {
+        "root": "programs",
+        "path": "v7-col.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/tabs",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.tabs",
+      "source": {
+        "root": "programs",
+        "path": "v7-tabs.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/egrep",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.egrep",
+      "source": {
+        "root": "programs",
+        "path": "v7-egrep.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/fgrep",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.fgrep",
+      "source": {
+        "root": "programs",
+        "path": "v7-fgrep.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/pr",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.pr",
+      "source": {
+        "root": "programs",
+        "path": "v7-pr.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/sed",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.sed",
+      "source": {
+        "root": "programs",
+        "path": "v7-sed.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/sort",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.sort",
+      "source": {
+        "root": "programs",
+        "path": "v7-sort.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/find",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.find",
+      "source": {
+        "root": "programs",
+        "path": "v7-find.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/diff",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.diff",
+      "source": {
+        "root": "programs",
+        "path": "v7-diff.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/usr/lib/diffh",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.diffh",
+      "source": {
+        "root": "programs",
+        "path": "v7-diffh.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/usr/lib/diff3",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.diff3",
+      "source": {
+        "root": "programs",
+        "path": "v7-diff3.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/diff3",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "script.diff3",
+      "source": {
+        "root": "config",
+        "path": "bin/diff3"
+      },
+      "format": "data"
     }
   ]
 }

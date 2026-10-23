@@ -1,0 +1,236 @@
+/*	topological sort
+ *	input is sequence of pairs of items (blank-free strings)
+ *	nonidentical pair is a directed edge in graph
+ *	identical pair merely indicates presence of node
+ *	output is ordered list of items consistent with
+ *	the partial ordering specified by the graph
+*/
+#include "stdio.h"
+#include <stdlib.h>
+#include <ctype.h>
+
+/*	the nodelist always has an empty element at the end to
+ *	make it easy to grow in natural order
+*/
+
+struct nodelist {
+	struct nodelist *nextnode;
+	struct predlist *inedges;
+	char *name;
+	enum {DEAD, LIVE, ONCE, TWICE} live;
+} firstnode = {NULL, NULL, NULL, DEAD};
+
+/*	a predecessor list tells all the immediate
+ *	predecessors of a given node
+*/
+struct predlist {
+	struct predlist *nextpred;
+	struct nodelist *pred;
+};
+
+struct nodelist *node();
+struct nodelist *findloop();
+struct nodelist *mark();
+char *empty = "";
+
+/*	the first for loop reads in the graph,
+ *	the second prints out the ordering
+*/
+main(argc,argv)
+char **argv;
+{
+	register struct predlist *t;
+	FILE *input = stdin;
+	register struct nodelist *i, *j;
+	int x;
+	/* Names grow on demand; V7 scanned them into 50-byte arrays. */
+	static char *precedes, *follows;
+	static size_t psize, fsize;
+	if(argc>1) {
+		input = fopen(argv[1],"r");
+		if(input==NULL)
+			error("cannot open ", argv[1]);
+	}
+	for(;;) {
+		x = word(input, &precedes, &psize);
+		if(x)
+			x += word(input, &follows, &fsize);
+		if(x==0)
+			break;
+		if(x!=2)
+			error("odd data",empty);
+		i = node(precedes);
+		j = node(follows);
+		if(i==j||present(i,j)) 
+			continue;
+		t = (struct predlist *)malloc(sizeof(struct predlist));
+		if(t==NULL)
+			error("too many items",empty);
+		t->nextpred = j->inedges;
+		t->pred = i;
+		j->inedges = t;
+	}
+	for(;;) {
+		x = 0;	/*anything LIVE on this sweep?*/
+		for(i= &firstnode; i->nextnode!=NULL; i=i->nextnode) {
+			if(i->live==LIVE) {
+				x = 1;
+				if(!anypred(i))
+					break;
+			}
+		}
+		if(x==0)
+			break;
+		if(i->nextnode==NULL)
+			i = findloop();
+		printf("%s\n",i->name);
+		i->live = DEAD;
+	}
+	if(fflush(stdout)==EOF || ferror(stdout))
+		error("write error",empty);
+	exit(0);
+}
+
+/*	read one blank-delimited word; 0 at end of input
+*/
+word(input, buf, size)
+FILE *input;
+char **buf;
+size_t *size;
+{
+	register c;
+	size_t n = 0;
+	while((c = getc(input)) != EOF && isspace(c))
+		;
+	if(c == EOF) {
+		if(ferror(input))
+			error("read error",empty);
+		return(0);
+	}
+	do {
+		if(n+1 >= *size) {
+			char *grown = realloc(*buf, *size ? *size*2 : 64);
+			if(grown==NULL)
+				error("too many items",empty);
+			*buf = grown;
+			*size = *size ? *size*2 : 64;
+		}
+		(*buf)[n++] = c;
+	} while((c = getc(input)) != EOF && !isspace(c));
+	(*buf)[n] = 0;
+	return(1);
+}
+
+/*	is i present on j's predecessor list?
+*/
+present(i,j)
+struct nodelist *i, *j;
+{
+	register struct predlist *t;
+	for(t=j->inedges; t!=NULL; t=t->nextpred)
+		if(t->pred==i)
+			return(1);
+	return(0);
+}
+
+/*	is there any live predecessor for i?
+*/
+anypred(i)
+struct nodelist *i;
+{
+	register struct predlist *t;
+	for(t=i->inedges; t!=NULL; t=t->nextpred)
+		if(t->pred->live==LIVE)
+			return(1);
+	return(0);
+}
+
+/*	turn a string into a node pointer
+*/
+struct nodelist *
+node(s)
+register char *s;
+{
+	register struct nodelist *i;
+	register char *t;
+	for(i= &firstnode; i->nextnode!=NULL; i=i->nextnode)
+		if(cmp(s,i->name))
+			return(i);
+	for(t=s; *t; t++) ;
+	t = malloc((unsigned)(t+1-s));
+	i->nextnode = (struct nodelist *)malloc(sizeof(struct nodelist));
+	if(i->nextnode==NULL||t==NULL)
+		error("too many items",empty);
+	i->name = t;
+	i->live = LIVE;
+	i->nextnode->nextnode = NULL;
+	i->nextnode->inedges = NULL;
+	i->nextnode->live = DEAD;
+	while(*t++ = *s++);
+	return(i);
+}
+
+cmp(s,t)
+register char *s, *t;
+{
+	while(*s==*t) {
+		if(*s==0)
+			return(1);
+		s++;
+		t++;
+	}
+	return(0);
+}
+
+error(s,t)
+char *s, *t;
+{
+	note(s,t);
+	exit(1);
+}
+
+note(s,t)
+char *s,*t;
+{
+	fprintf(stderr,"tsort: %s%s\n",s,t);
+}
+
+/*	given that there is a cycle, find some
+ *	node in it
+*/
+struct nodelist *
+findloop()
+{
+	register struct nodelist *i, *j;
+	register struct predlist *p;
+	for(i= &firstnode; i->nextnode!=NULL; i=i->nextnode)
+		if(i->live==LIVE)
+			break;
+	note("cycle in reverse order",empty);
+	while(i->live==LIVE) {
+		i->live = ONCE;
+		for(p=i->inedges; ; p=p->nextpred) {
+			if(p==NULL)
+				error("error 1",empty);
+			i = p->pred;
+			if(i->live!=DEAD)
+				break;
+		}
+	}
+	while(i->live==ONCE) {
+		i->live = TWICE;
+		note(i->name,empty);
+		for(p=i->inedges; ; p=p->nextpred) {
+			if(p==NULL)
+				error("error 2",empty);
+			i = p->pred;
+			if(i->live!=DEAD)
+				break;
+		}
+	}
+	for(j= &firstnode; j->nextnode!=NULL; j=j->nextnode)
+		if(j->live!=DEAD)
+			j->live = LIVE;
+	return(i);
+}
+

@@ -10,17 +10,17 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 80 native ELF programs are
+to multi-user V7 login with persistent IDE storage. 101 native ELF programs are
 installed; the complete list and destinations are in [the installation manifest](native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
 The inventory accounts for **225 components, 2,144 distribution files and
-36 supporting/platform requirements**. Its component statuses are 94 implemented,
-4 partial, 0 prototype and 127 not ported; importing reference inputs does not
+36 supporting/platform requirements**. Its component statuses are 116 implemented,
+4 partial, 0 prototype and 105 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **435 tracking tasks: 244 done, 0 in progress
-and 191 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–202, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–435** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **435 tracking tasks: 265 done, 0 in progress
+and 170 to do**. Tasks **1–108, 119–165, 168–202, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–435** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -278,31 +278,31 @@ coverage and installation remain subject to later acceptance tasks.
 | Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 139 | Port cmp | Done | Git history; [native command contract](text-commands.md); retained binary comparison and V7 output, checked skip counts and native read errors; ASan/UBSan plus binary/pipe/status acceptance at 16/128 MiB |
-| 140 | Port col | To do | Source-defined behavior, byte fixtures and error cases |
-| 141 | Port comm | To do | Source-defined behavior, byte fixtures and error cases |
-| 142 | Port diffh | To do | Source-defined behavior, byte fixtures and error cases |
-| 143 | Port diff | To do | Source-defined behavior, byte fixtures and error cases |
-| 144 | Port diff3 | To do | Private helper plus installed script |
+| 140 | Port col | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); retained page buffer, line motions and overstrikes with growing 1 MiB-bounded lines; 1,600 reference-algorithm comparisons, ASan/UBSan and 16/128 MiB guests |
+| 141 | Port comm | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); writable column prefixes, unbounded/unterminated lines, flags/stdin/errors; ASan/UBSan and 16/128 MiB guests |
+| 142 | Port diffh | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); retained resynchronizing comparison with growing lines, rotated buffers and diff-compatible statuses; 300 reference comparisons, ASan/UBSan and 16/128 MiB guests via diff -h |
+| 143 | Port diff | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); retained Stone LCS and normal/-e/-f/-b output without use-after-free reallocation, defined shellsort, distinct EOF and unterminated-line handling; 1,600 reference comparisons, ASan/UBSan and 16/128 MiB guests |
+| 144 | Port diff3 | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); original script plus /usr/lib/diff3 helper with growing tables and lines, fixed duplicate() and sentinel; 1,200 reference comparisons, ASan/UBSan and 16/128 MiB guests |
 | 145 | Port ed | Done | Git history; [editor contract](text-commands.md#ed-task-145); retained command/BRE/rotor logic with LP64 line-table fixes, bounded input and exclusive temp creation; ASan/UBSan, edit/save/reopen, growth, encrypted-file oracle, SIGINT/SIGHUP, shell escapes and permissions at 16/128 MiB |
 | 146 | Port grep | Done | Git history; [native command contract](text-commands.md); retained V7 flags and BRE bytecode, bounded compiler/matcher, LP64 counts; ASan/UBSan and installed files/pipes/status acceptance at 16/128 MiB |
-| 147 | Port egrep | To do | Source-defined behavior, byte fixtures and error cases |
-| 148 | Port fgrep | To do | Source-defined behavior, byte fixtures and error cases |
-| 149 | Port find | To do | Traversal, predicates and command execution |
-| 150 | Port join | To do | Source-defined behavior, byte fixtures and error cases |
-| 151 | Port look | To do | Source-defined behavior, byte fixtures and error cases |
+| 147 | Port egrep | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); retained grammar through native V7 yacc, 256-byte rows, bounded states/positions, separate -f stream and unbounded lines; 1,200 reference comparisons, ASan/UBSan and 16/128 MiB guests |
+| 148 | Port fgrep | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); retained keyword automaton, 20000-state lists, NUL-safe transitions, unbounded lines and V7 block numbers; 2,100 reference comparisons, ASan/UBSan and 16/128 MiB guests |
+| 149 | Port find | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); retained V7 traversal and expressions with typed operand nodes, bounded paths/nodes/-exec arguments, root and trailing-slash starts, V7 cpio output; host V7-directory shim, ASan/UBSan and 16/128 MiB guests |
+| 150 | Port join | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); retained merge/rewind, growing lines and fields, empty missing fields, checked -j/-o/-e; ASan/UBSan and 16/128 MiB guests |
+| 151 | Port look | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); binary-search boundaries, -d/-f/-t and unbounded entries; dictionary installation remains task 280; ASan/UBSan and 16/128 MiB guests |
 | 152 | Port od | Done | Git history; [native command contract](text-commands.md); retained V7 formats and offsets with explicit 16-bit little-endian words, bounded native arithmetic and partial-row handling; independent byte oracle, ASan/UBSan and 16/128 MiB guests |
-| 153 | Port pr | To do | Source-defined behavior, byte fixtures and error cases |
-| 154 | Port rev | To do | Source-defined behavior, byte fixtures and error cases |
-| 155 | Port sed | To do | Source-defined behavior, byte fixtures and error cases |
-| 156 | Port sort | To do | Temporary runs, merging and record ordering |
-| 157 | Port sp | To do | Source-defined behavior, byte fixtures and error cases |
-| 158 | Port split | To do | Source-defined behavior, byte fixtures and error cases |
-| 159 | Port tabs | To do | Source-defined behavior, byte fixtures and error cases |
+| 153 | Port pr | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); retained pagination, columns, merge and terminal-mode handling; single close, checked columns, 64 KiB column pages with overrun detection; 1,650 reference comparisons, ASan/UBSan and 16/128 MiB guests |
+| 154 | Port rev | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); unbounded and unterminated lines, files/pipes and errors; ASan/UBSan and 16/128 MiB guests |
+| 155 | Port sed | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); retained two-file editor with explicit command union, 8192-byte bounded buffers, 8-bit classes/y/replacements, terminated parsing and empty-match progress; 1,200 reference comparisons, ASan/UBSan and 16/128 MiB guests |
+| 156 | Port sort | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); retained keys, -c/-m/-u/-o and temporary runs with a 512 KiB native workspace, carried oversize lines, growing merge lines, exclusive temporaries and -u merge fix; 6 MB multi-level merges, 300 reference comparisons, ASan/UBSan and 16/128 MiB guests |
+| 157 | Port sp | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); tab packing, widths and unbounded lines; ASan/UBSan and 16/128 MiB guests |
+| 158 | Port split | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); checked counts, 676-piece and name limits, byte reconstruction; ASan/UBSan and 16/128 MiB guests |
+| 159 | Port tabs | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); exact sequences for every terminal type, native gtty/stty delays and no-terminal detection; ASan/UBSan and 16/128 MiB guests |
 | 160 | Port tail | Done | Git history; [native command contract](text-commands.md); retained V7 line/byte/block/reverse paths, safe native argument and I/O handling; ASan/UBSan ring-boundary fixtures and files/pipes at 16/128 MiB |
-| 161 | Port tee | To do | Source-defined behavior, byte fixtures and error cases |
-| 162 | Port tr | To do | Source-defined behavior, byte fixtures and error cases |
-| 163 | Port tsort | To do | Source-defined behavior, byte fixtures and error cases |
-| 164 | Port uniq | To do | Source-defined behavior, byte fixtures and error cases |
+| 161 | Port tee | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); unlimited outputs, append, interrupt handling and open/write failures; ASan/UBSan and 16/128 MiB guests |
+| 162 | Port tr | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); ranges, octal, -c/-d/-s, NUL deletion, all byte values and literal-safe parsing; ASan/UBSan and 16/128 MiB guests |
+| 163 | Port tsort | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); ordering, cycle reports matching V7, odd data and unbounded names; ASan/UBSan and 16/128 MiB guests |
+| 164 | Port uniq | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); -u/-d/-c, field/character skips, growing lines and output files; ASan/UBSan and 16/128 MiB guests |
 | 165 | Port wc | Done | Git history; [native command contract](text-commands.md); retained V7 word classification, option order and totals; native read/open/write errors, ASan/UBSan and 16/128 MiB installed command acceptance |
 
 ### Build generators and awk

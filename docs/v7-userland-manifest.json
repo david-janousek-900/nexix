@@ -3687,14 +3687,16 @@
           "name": "col",
           "install": "/bin/col",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/col.c",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -3728,12 +3730,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Process reverse-line-feed/backspace fixtures into expected terminal text.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -3748,8 +3746,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        140
+      "native_sources": [
+        "user/v7/cmd/col.c"
       ]
     },
     {
@@ -3765,14 +3763,16 @@
           "name": "comm",
           "install": "/bin/comm",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/comm.c",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -3806,12 +3806,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Compare two sorted fixtures and verify common and distinct line columns.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -3826,8 +3822,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        141
+      "native_sources": [
+        "user/v7/cmd/comm.c"
       ]
     },
     {
@@ -4951,14 +4947,16 @@
           "name": "diff",
           "install": "/bin/diff",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/diff.c",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -5025,12 +5023,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Compare equal/changed files and exercise the diffh helper path.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -5045,8 +5039,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        143
+      "native_sources": [
+        "user/v7/cmd/diff.c"
       ]
     },
     {
@@ -5062,14 +5056,16 @@
           "name": "diff3",
           "install": "/usr/lib/diff3",
           "role": "helper",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/diff3.c",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -5103,12 +5099,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Produce expected three-way change/conflict output for small fixtures.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -5123,8 +5115,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        144
+      "native_sources": [
+        "user/v7/cmd/diff3.c"
       ]
     },
     {
@@ -5140,14 +5132,16 @@
           "name": "diffh",
           "install": "/usr/lib/diffh",
           "role": "helper",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/diffh.c",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -5199,12 +5193,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Compare small equal/changed fixtures and verify helper exit status.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -5219,8 +5209,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        142
+      "native_sources": [
+        "user/v7/cmd/diffh.c"
       ]
     },
     {
@@ -5871,14 +5861,16 @@
           "name": "egrep",
           "install": "/bin/egrep",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/egrep.y",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -5921,12 +5913,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Exercise alternation and grouped extended expressions with matching/nonmatching fixtures.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -5941,8 +5929,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        147
+      "native_sources": [
+        "user/v7/cmd/egrep.y"
       ]
     },
     {
@@ -6627,14 +6615,16 @@
           "name": "fgrep",
           "install": "/bin/fgrep",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/fgrep.c",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -6668,12 +6658,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Verify literal matching, multiple patterns and binary-safe input handling policy.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -6688,8 +6674,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        148
+      "native_sources": [
+        "user/v7/cmd/fgrep.c"
       ]
     },
     {
@@ -6804,14 +6790,17 @@
           "name": "find",
           "install": "/bin/find",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/find.c",
+            "tests/v7-host/dirshim.c",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -6863,12 +6852,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Traverse a fixture tree, test predicates and execute a helper with expected paths.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -6883,8 +6868,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        149
+      "native_sources": [
+        "user/v7/cmd/find.c"
       ]
     },
     {
@@ -7505,14 +7490,16 @@
           "name": "join",
           "install": "/bin/join",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/join.c",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -7546,12 +7533,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Join two sorted fixtures, including repeated and unmatched keys.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -7566,8 +7549,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        150
+      "native_sources": [
+        "user/v7/cmd/join.c"
       ]
     },
     {
@@ -8623,14 +8606,16 @@
           "name": "look",
           "install": "/bin/look",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/look.c",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -8677,12 +8662,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Find matching prefixes in a supplied sorted dictionary fixture.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -8697,8 +8678,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        151
+      "native_sources": [
+        "user/v7/cmd/look.c"
       ]
     },
     {
@@ -11390,14 +11371,16 @@
           "name": "pr",
           "install": "/bin/pr",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/pr.c",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -11449,12 +11432,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Paginate known text with expected headers and columns.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -11469,8 +11448,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        153
+      "native_sources": [
+        "user/v7/cmd/pr.c"
       ]
     },
     {
@@ -13210,14 +13189,16 @@
           "name": "rev",
           "install": "/bin/rev",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/rev.c",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -13251,12 +13232,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Reverse fixture lines, including empty lines and unterminated final input.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -13271,8 +13248,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        154
+      "native_sources": [
+        "user/v7/cmd/rev.c"
       ]
     },
     {
@@ -13680,14 +13657,18 @@
           "name": "sed",
           "install": "/bin/sed",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/sed/makefile"
+            "user/v7/cmd/sed/sed.h",
+            "user/v7/cmd/sed/sed0.c",
+            "user/v7/cmd/sed/sed1.c",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -13727,12 +13708,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Complete native ABI/API and data-asset audit before porting."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Test addresses, substitutions, branching and hold-space behavior on text fixtures.",
         "Verify each installed output and its documented behavior; test helpers through their consuming pipeline."
@@ -13749,8 +13726,10 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        155
+      "native_sources": [
+        "user/v7/cmd/sed/sed.h",
+        "user/v7/cmd/sed/sed0.c",
+        "user/v7/cmd/sed/sed1.c"
       ]
     },
     {
@@ -14246,14 +14225,16 @@
           "name": "sort",
           "install": "/bin/sort",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/sort.c",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -14311,12 +14292,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Sort fixture records with keys, duplicates and inputs exceeding its in-memory workspace.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -14331,8 +14308,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        156
+      "native_sources": [
+        "user/v7/cmd/sort.c"
       ]
     },
     {
@@ -14348,14 +14325,16 @@
           "name": "sp",
           "install": "/bin/sp",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/sp.c",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -14389,12 +14368,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Pack short lines horizontally into expected printable output.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -14409,8 +14384,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        157
+      "native_sources": [
+        "user/v7/cmd/sp.c"
       ]
     },
     {
@@ -14659,14 +14634,16 @@
           "name": "split",
           "install": "/bin/split",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/split.c",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -14700,12 +14677,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Split fixture input into expected chunks/names and reproduce original bytes by concatenation.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -14720,8 +14693,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        158
+      "native_sources": [
+        "user/v7/cmd/split.c"
       ]
     },
     {
@@ -15895,14 +15868,16 @@
           "name": "tabs",
           "install": "/bin/tabs",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/tabs.c",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -15942,12 +15917,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Generate expected terminal tab-setting control sequences.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -15962,8 +15933,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        159
+      "native_sources": [
+        "user/v7/cmd/tabs.c"
       ]
     },
     {
@@ -16438,14 +16409,16 @@
           "name": "tee",
           "install": "/bin/tee",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/tee.c",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -16497,12 +16470,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Copy stdin to stdout and files; verify append and write-error behavior.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -16517,8 +16486,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        161
+      "native_sources": [
+        "user/v7/cmd/tee.c"
       ]
     },
     {
@@ -17048,14 +17017,16 @@
           "name": "tr",
           "install": "/bin/tr",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/tr.c",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -17089,12 +17060,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Translate/delete/squeeze known character sets and preserve unspecified bytes.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -17109,8 +17076,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        162
+      "native_sources": [
+        "user/v7/cmd/tr.c"
       ]
     },
     {
@@ -18135,14 +18102,16 @@
           "name": "tsort",
           "install": "/bin/tsort",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/tsort.c",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -18176,12 +18145,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Order an acyclic graph and report a cyclic fixture.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -18196,8 +18161,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        163
+      "native_sources": [
+        "user/v7/cmd/tsort.c"
       ]
     },
     {
@@ -18362,14 +18327,16 @@
           "name": "uniq",
           "install": "/bin/uniq",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/uniq.c",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -18409,12 +18376,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Process adjacent duplicates and verify count/unique/repeated selection.",
         "Verify native build, reference options, exit status and malformed-input handling."
@@ -18429,8 +18392,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        164
+      "native_sources": [
+        "user/v7/cmd/uniq.c"
       ]
     },
     {
@@ -24661,14 +24624,16 @@
           "name": "diff3",
           "install": "/bin/diff3",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/bin/diff3"
+            "rootfs/bin/diff3",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "cmd.sh",
@@ -24717,17 +24682,10 @@
         }
       ],
       "reference_includes": [],
-      "blockers": [
-        "Not installed in Nexix; native integration and functional acceptance remain pending."
-      ],
-      "unresolved": [
-        "Audit native API/format compatibility and remaining transitive dependencies."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Run the original script with reference-compatible arguments; verify helper execution, output and failures."
-      ],
-      "unresolved_tasks": [
-        144
       ]
     },
     {
