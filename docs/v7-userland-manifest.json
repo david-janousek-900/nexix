@@ -13664,14 +13664,18 @@
           "name": "sed",
           "install": "/bin/sed",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/sed/makefile"
+            "user/v7/cmd/sed/sed.h",
+            "user/v7/cmd/sed/sed0.c",
+            "user/v7/cmd/sed/sed1.c",
+            "docs/text-commands.md",
+            "Makefile"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -13711,12 +13715,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Complete native ABI/API and data-asset audit before porting."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Test addresses, substitutions, branching and hold-space behavior on text fixtures.",
         "Verify each installed output and its documented behavior; test helpers through their consuming pipeline."
@@ -13733,8 +13733,10 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        155
+      "native_sources": [
+        "user/v7/cmd/sed/sed.h",
+        "user/v7/cmd/sed/sed0.c",
+        "user/v7/cmd/sed/sed1.c"
       ]
     },
     {

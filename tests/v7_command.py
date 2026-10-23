@@ -14,6 +14,7 @@ class Command:
                         '-fsanitize=address,undefined','-g',*flags,*map(str,sources),'-o',str(self.binary)],check=True)
         self.env = dict(os.environ,ASAN_OPTIONS='detect_leaks=0',UBSAN_OPTIONS='halt_on_error=1')
     def run(self, args, data=b'', cwd=None):
+        if isinstance(data,str): data = data.encode()
         result = subprocess.run([str(self.binary),*(a if isinstance(a,bytes) else str(a) for a in args)],input=data,capture_output=True,env=self.env,timeout=20,cwd=cwd or self.dir)
         assert b'Sanitizer' not in result.stderr and b'runtime error' not in result.stderr,result.stderr.decode(errors='replace')
         return result

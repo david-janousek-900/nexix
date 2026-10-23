@@ -10,17 +10,17 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 95 native ELF programs are
+to multi-user V7 login with persistent IDE storage. 96 native ELF programs are
 installed; the complete list and destinations are in [the installation manifest](native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
 The inventory accounts for **223 components, 2,144 distribution files and
-36 supporting/platform requirements**. Its component statuses are 97 implemented,
-7 partial, 0 prototype and 119 not ported; importing reference inputs does not
+36 supporting/platform requirements**. Its component statuses are 98 implemented,
+7 partial, 0 prototype and 118 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **411 tracking tasks: 235 done, 0 in progress
-and 176 to do**. Tasks **1–108, 119–141, 145–148, 150–154, 157–165, 168–202, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **411 tracking tasks: 236 done, 0 in progress
+and 175 to do**. Tasks **1–108, 119–141, 145–148, 150–155, 157–165, 168–202, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -293,7 +293,7 @@ coverage and installation remain subject to later acceptance tasks.
 | 152 | Port od | Done | Git history; [native command contract](text-commands.md); retained V7 formats and offsets with explicit 16-bit little-endian words, bounded native arithmetic and partial-row handling; independent byte oracle, ASan/UBSan and 16/128 MiB guests |
 | 153 | Port pr | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); retained pagination, columns, merge and terminal-mode handling; single close, checked columns, 64 KiB column pages with overrun detection; 1,650 reference comparisons, ASan/UBSan and 16/128 MiB guests |
 | 154 | Port rev | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); unbounded and unterminated lines, files/pipes and errors; ASan/UBSan and 16/128 MiB guests |
-| 155 | Port sed | To do | Source-defined behavior, byte fixtures and error cases |
+| 155 | Port sed | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); retained two-file editor with explicit command union, 8192-byte bounded buffers, 8-bit classes/y/replacements, terminated parsing and empty-match progress; 1,200 reference comparisons, ASan/UBSan and 16/128 MiB guests |
 | 156 | Port sort | To do | Temporary runs, merging and record ordering |
 | 157 | Port sp | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); tab packing, widths and unbounded lines; ASan/UBSan and 16/128 MiB guests |
 | 158 | Port split | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); checked counts, 676-piece and name limits, byte reconstruction; ASan/UBSan and 16/128 MiB guests |

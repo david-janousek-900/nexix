@@ -8438,6 +8438,19 @@
         "path": "v7-pr.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/sed",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.sed",
+      "source": {
+        "root": "programs",
+        "path": "v7-sed.elf"
+      },
+      "format": "elf"
     }
   ]
 }

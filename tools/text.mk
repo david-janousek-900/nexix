@@ -8,6 +8,14 @@ build/gen-egrep/y.tab.c: user/v7/cmd/egrep.y build/host-nx-yacc rootfs/usr/lib/y
 	cd build/gen-egrep && NX_YACCPAR=$(CURDIR)/rootfs/usr/lib/yaccpar $(CURDIR)/build/host-nx-yacc egrep.y >/dev/null
 build/v7-egrep.o: build/gen-egrep/y.tab.c user/v7/compat.h | build/.dir
 	$(CC) $(V7_CFLAGS) -include user/v7/compat.h -c $< -o $@
+
+# sed keeps the supplied two-file layout.
+V7_SED_OBJECTS = build/v7-sed-sed0.o build/v7-sed-sed1.o
+-include $(V7_SED_OBJECTS:.o=.d)
+build/v7-sed-%.o: user/v7/cmd/sed/%.c user/v7/cmd/sed/sed.h user/v7/compat.h | build/.dir
+	$(CC) $(V7_CFLAGS) -include user/v7/compat.h -c $< -o $@
+build/v7-sed.elf: build/crt0.o $(V7_SED_OBJECTS) build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o $(V7_SED_OBJECTS) build/libc.a -o $@
 .PHONY: test-col-unit test-col
 test-col-unit:
 	$(PYTHON) tests/col.py
@@ -128,3 +136,11 @@ test-pr: test-pr-unit multi-iso rootfs
 	$(PYTHON) tools/pr_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/pr_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-pr
+.PHONY: test-sed-unit test-sed
+test-sed-unit:
+	$(PYTHON) tests/sed.py
+test-unit: test-sed-unit
+test-sed: test-sed-unit multi-iso rootfs
+	$(PYTHON) tools/sed_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/sed_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-sed

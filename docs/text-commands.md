@@ -263,6 +263,43 @@ source.
 dropped an unterminated final line; lines are now unbounded and the final
 line is reversed and terminated. Unopenable files return 1.
 
+### sed (task 155)
+
+`/bin/sed [-n] [-g] [-e script] [-f file] [file ...]` is the supplied two-file
+V7 stream editor (`user/v7/cmd/sed/`). It retains line, `$` and regular
+expression addresses, ranges and `!`, grouping with `{}`, every V7 command
+(`a b c d D g G h H i l n N p P q r s t w x y =` and labels), `s` flags `g`,
+`p`, `P` and `w file`, `#n` script headers and `-g` (global substitution by
+default). Expressions use V7's ed-style syntax with `\(\)` groups, `\1`–`\9`,
+`\n` and one-character closures. Errors exit 2 with the V7 messages.
+
+Native adaptations:
+
+- The command table overlaid two untagged member structures (a PDP-11
+  compiler behavior); the shared field is now an explicit union.
+- Lines, hold space and script lines hold 8192 bytes (V7: 4000). Input lines
+  are truncated there as in V7; over-long script lines are rejected
+  (`Command line too long`). `G`, `H`, `N` and substitution results stop at
+  the limit instead of writing past it; substitution reports
+  `Output line too long.` once per command.
+- Character classes, `y` tables and replacement text cover all 256 byte
+  values. V7 masked class and `y` bytes to seven bits and marked escaped
+  replacement characters with the high bit, which corrupted 8-bit text.
+- Unterminated `s`, `y` and class expressions are errors instead of reads past
+  the script line; V7's continuation check for `-e` scripts tested the
+  character `'0'` instead of a terminator.
+- A `*` after `\(` is literal (V7 compiled an invalid closure), an empty
+  back-reference closure no longer loops, and in `s///g` an empty match where
+  the previous match ended advances one byte instead of substituting forever.
+  Global substitution, as in V7, does not match at the end of the line.
+- Nesting deeper than 20 braces, more than 99 pending `a`/`r` texts per line
+  and `-f` without a file are diagnosed instead of overrunning tables.
+- A final line without a newline is processed (and printed with one); V7
+  dropped it. An unopenable input or an output error makes the status 2.
+
+The host fixture compares 1,200 random scripts and inputs with the V7 sources
+built for the host, avoiding the paths above where V7 overruns or loops.
+
 ### sp (task 157)
 
 `/bin/sp [width]` packs short lines onto tab stops (default width 80),
