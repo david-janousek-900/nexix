@@ -38,7 +38,7 @@ class Roadmap(unittest.TestCase):
         self.reject('roadmap extensions mapping must be an object')
 
     def test_invalid_extension_references(self):
-        for value in [[], [True], [432], '412']:
+        for value in [[], [True], [9999], '412']:
             with self.subTest(value=value):
                 self.coverage['extensions'] = {'tcp-ip-0.2.0': value}
                 self.reject('extension tasks must be a nonempty list of known task IDs')

@@ -19,8 +19,8 @@ The inventory accounts for **225 components, 2,144 distribution files and
 4 partial, 0 prototype and 127 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **431 tracking tasks: 240 done, 0 in progress
-and 191 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–202, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–431** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **434 tracking tasks: 240 done, 0 in progress
+and 194 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–202, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–431** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -762,3 +762,16 @@ remain deferred. Each task requires focused tests, affected regressions and a co
 | 429 | Integrate optional network startup and QEMU profile | Done | init runs an optional /etc/netstart with sh after /etc/rc (works on upgraded disks that keep their rc); without it only lo0 is configured; installed /etc/netstart.qemu sample; make NIC=user or none and HOSTFWD="proto:host:guest ..." on every run target with validation; [startup and profile](netstart.md), `make test-qemu-profile`, upgrade preservation in `make test-upgrade-unit` and `make test-netstart` (cold boots with and without netstart, no NIC, host forwarding both ways at 16/128 MiB); Git history |
 | 430 | Complete networking host robustness tests | Done | Whole-stack ASan/UBSan test (ARP, IPv4 fragments, ICMP, UDP, TCP, raw) with 40000 deterministic mutations of valid frames per seed and checksums often repaired, an intact TCP transfer through a pool far too small, fragment floods within reassembly bounds, timer-only return to baseline after three hours of expiry, and teardown with traffic in flight; 32 seeds per run (2000 swept clean); `make test-net-host` runs every network sanitizer test; [robustness contract](networking-robustness.md) and `make test-net-robust`; Git history |
 | 431 | Complete TCP/IP guest acceptance and documentation | Done | `make test-tcpip-acceptance`: disposable 16/128 MiB guests configured by /etc/netstart cover loopback, static IPv4, ARP (gateway and absent neighbour), ping, UDP and outbound TCP (with a binary round trip) against host echo services on 127.0.0.1 only, refusal and inbound TCP through a host forward both ways; `make test-tcpip` adds every network suite (sanitizer, socket descriptors with signals/fork/dup/cleanup, configuration, tools, startup, no-NIC boots) and the libc/syscall/process/file/signal/console/inventory regressions; [networking guide](networking.md) with setup, ABI, limits, installed files and evidence; Git history |
+
+### System directory layout (0.2.0)
+
+V7 kept system binaries in `/etc`; 4.4BSD moved them to `/sbin`, `/usr/sbin`
+and `/usr/libexec`, leaving `/etc` for configuration and rc scripts. Nexix
+adopts that rule, including BSD's `/usr/bin` for `wall`. No compatibility
+links stay in `/etc`.
+
+| Task | Description | Status | Evidence / notes / acceptance |
+|---:|---|---|---|
+| 432 | Relocate system binaries to BSD directories | To do | After 429: move init, dmesg, mknod, ifconfig and route to /sbin, accton and update to /usr/sbin, getty to /usr/libexec and wall to a new /usr/bin with no links left in /etc; the kernel starts /sbin/init (warning fallback to /etc/init only for disks not yet upgraded), init starts /usr/libexec/getty, every PATH gains /usr/bin and root's also /sbin and /usr/sbin; update the bootstrap image, netstart sample, tools, tests and docs; boot, login, console, networking and command regressions at 16/128 MiB |
+| 433 | Retire relocated paths during disk upgrades | To do | After 432: the installation manifest lists retired paths; upgrades remove those regular files, keep anything else at those paths, report each removal and warn when preserved configuration (such as /etc/netstart or profiles) still names a retired path; upgrade an image with the old layout and verify removal, preservation, warnings and a clean boot |
+| 434 | Verify and document the BSD directory layout | To do | After 432–433: fresh and upgraded images keep only configuration and rc scripts in /etc, checked from the manifest and on disk; a hierarchy guide for /bin, /sbin, /usr/bin, /usr/sbin, /usr/libexec, /usr/lib and /etc; full networking and affected regression suites |
