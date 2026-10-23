@@ -27,9 +27,9 @@ static void show(const struct nx_ifinfo *r)
         if (r->broadcast) printf(" broadcast %s", netconfig_text(r->broadcast, b));
         putchar('\n');
     }
-    printf("\tpackets in %llu out %llu, errors in %llu out %llu, drops %llu\n",
-           (unsigned long long)r->ipackets, (unsigned long long)r->opackets, (unsigned long long)r->ierrors,
-           (unsigned long long)r->oerrors, (unsigned long long)r->iqdrops);
+    printf("\tpackets in %lu out %lu, errors in %lu out %lu, drops %lu\n",
+           (unsigned long)r->ipackets, (unsigned long)r->opackets, (unsigned long)r->ierrors,
+           (unsigned long)r->oerrors, (unsigned long)r->iqdrops);
 }
 /* BSD's classful default when no mask is given. */
 static uint32_t classful(uint32_t address)

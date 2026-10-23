@@ -12,6 +12,10 @@ with private_guest(qemu, iso, ram, 'netconfig-' + nic, {'/tmp/netconfig': 'netco
     # The first socket starts the stack: lo0 is up at 127.0.0.1/8.
     c('/etc/ifconfig lo0 | grep flags', stdout='lo0: flags=49<UP,LOOPBACK,RUNNING> mtu 16384\n')
     c('/etc/ifconfig lo0 | grep inet', stdout='\tinet 127.0.0.1 netmask 255.0.0.0\n')
+    # Every line is complete: the counters line ends in a newline before the prompt.
+    c('/etc/ifconfig lo0 | grep -c "^	*packets in [0-9]* out [0-9]*, errors in 0 out 0, drops 0$"', stdout='1\n')
+    c('/etc/ifconfig | grep -c flags', stdout='2\n' if nic == 'e1000' else '1\n')
+    c('/etc/ifconfig | grep -c "^	*packets in"', stdout='2\n' if nic == 'e1000' else '1\n')
     c('/etc/route', stdout='Destination     Gateway         Netmask         Interface\n'
                            '127.0.0.0       link            255.0.0.0       lo0\n')
     c('/etc/route get 127.1.2.3', stdout='127.1.2.3 dev lo0 src 127.0.0.1\n')
@@ -65,6 +69,5 @@ with private_guest(qemu, iso, ram, 'netconfig-' + nic, {'/tmp/netconfig': 'netco
                                '127.0.0.0       link            255.0.0.0       lo0\n')
     else:
         c('/etc/ifconfig em0 up', stdout='ifconfig: em0: No such device or address\n', status=1)
-        c('/etc/ifconfig | grep -c flags', stdout='1\n')
         c('/tmp/netconfig none', stdout='NETCONFIG_API_OK\n')
 print(f'PASS: {ram} {nic} interface/route configuration guest acceptance')

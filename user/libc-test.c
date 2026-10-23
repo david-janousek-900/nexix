@@ -94,6 +94,9 @@ static void numbers(void)
     CHECK(snprintf(output, sizeof(output), "%.1e %.2f", 0x1p-1074, 1e300) > 300);
     CHECK(!strncmp(output, "4.9e-324 ", 9) && output[127] == 0);
     CHECK(snprintf(output, 5, "%.2f", 12.5) == 5 && !strcmp(output, "12.5"));
+    CHECK(snprintf(output, sizeof(output), "%llu %lld %llx|%lu", 18446744073709551615ull, -9223372036854775807ll - 1,
+                   0x123456789abcdefull, 7ul) > 0 &&
+          !strcmp(output, "18446744073709551615 -9223372036854775808 123456789abcdef|7"));
     CHECK(snprintf(output, sizeof(output), "%f %g", INFINITY, NAN) == 7 && !strcmp(output, "inf nan"));
     jmp_buf environment;
     unsigned short control;

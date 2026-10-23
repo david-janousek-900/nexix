@@ -295,7 +295,8 @@ static int format(struct sink *s,const char *fmt,va_list ap)
         while(*fmt>='0'&&*fmt<='9'){if(width<4096)width=width*10+*fmt-'0';++fmt;}
         if(*fmt=='.'){precision=0;++fmt;if(*fmt=='*'){precision=va_arg(arguments,int);++fmt;if(precision<0)precision=-1;}
             else while(*fmt>='0'&&*fmt<='9'){if(precision<4096)precision=precision*10+*fmt-'0';++fmt;}}
-        if(*fmt=='l'){wide=1;++fmt;}
+        /* ll is C99 long long, the same 64 bits as long on this LP64 ABI. */
+        if(*fmt=='l'){wide=1;++fmt;if(*fmt=='l')++fmt;}
         char kind=*fmt;if(!kind)break;++fmt;
         if(kind=='r'){
             struct nx_printf_remote *remote=va_arg(arguments,struct nx_printf_remote *);

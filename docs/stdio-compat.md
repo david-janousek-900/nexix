@@ -7,6 +7,11 @@ adapters for every supplied non-libc C/header consumer of private stdio.
 The original reference distribution and component implementation statuses remain
 unchanged; completing these adapters does not finish cpp/refer/quiz.
 
+The printf family accepts the `l` length modifier and, since task 427's
+follow-up, C99's `ll`, which is the same 64 bits as `long` on this LP64 ABI.
+Any other unsupported conversion fails the call with EINVAL and stops output
+at that point.
+
 ## Remote formatting
 
 The `remote` entry in `reference/v7/usr/src/libc/stdio/doprnt.s` reads an argument
