@@ -159,7 +159,7 @@ Both modes attach an e1000 on QEMU user networking (`NIC=none` removes it), and
 `HOSTFWD="tcp:8080:7000"` forwards host ports to the guest. Copy
 `/etc/netstart.qemu` to `/etc/netstart` to configure the network at boot; see
 [network startup](docs/netstart.md), [ifconfig/route](docs/netconfig.md) and
-[ping/nc](docs/nettools.md).
+[ping/nc](docs/nettools.md); the [networking guide](docs/networking.md) covers it all.
 
 After logging in, try:
 
