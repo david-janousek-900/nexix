@@ -120,3 +120,11 @@ test-fgrep: test-fgrep-unit multi-iso rootfs
 	$(PYTHON) tools/fgrep_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/fgrep_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-fgrep
+.PHONY: test-pr-unit test-pr
+test-pr-unit:
+	$(PYTHON) tests/pr.py
+test-unit: test-pr-unit
+test-pr: test-pr-unit multi-iso rootfs
+	$(PYTHON) tools/pr_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/pr_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-pr

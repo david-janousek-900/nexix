@@ -8425,6 +8425,19 @@
         "path": "v7-fgrep.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/pr",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.pr",
+      "source": {
+        "root": "programs",
+        "path": "v7-pr.elf"
+      },
+      "format": "elf"
     }
   ]
 }

@@ -238,6 +238,25 @@ That dictionary is installed by task 280, so acceptance uses explicit
 dictionaries. Entries and keys are unbounded. Matches or no matches return 0;
 an unopenable dictionary or read/write error returns 2.
 
+### pr (task 153)
+
+`/bin/pr [-n] [+page] [-h header] [-wN] [-lN] [-t] [-s[c]] [-m] [file ...]`
+retains V7 pagination: a five-line header with the file's modification time
+and page number, 66-line pages (`-l`), 72-column width (`-w`), `-n` columns
+filled down the page, `-m` side-by-side merging of up to nine files, `-t` to
+omit headers and trailers, and `-s` column separators. While writing to a
+terminal it denies messages by setting the terminal mode to 0600 and restores
+it at exit or interrupt. As in V7, an unopenable file is reported only when
+standard output is not a terminal.
+
+Native adaptations: V7 closed each input twice (a native double free), divided
+by zero for `-0` or when every `-m` file failed, and formatted headers into a
+150-byte buffer. Multi-column pages buffer up to 64 KiB of text (V7: 6720
+bytes) and report `pr: page too large for columns` instead of silently
+overwriting unprinted text. Unopenable files, read and write errors return 1.
+The host fixture compares 1,650 random inputs and option sets with the V7
+source.
+
 ### rev (task 154)
 
 `/bin/rev [file ...]` reverses each line. V7 broke lines at 256 bytes and
