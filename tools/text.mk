@@ -144,3 +144,11 @@ test-sed: test-sed-unit multi-iso rootfs
 	$(PYTHON) tools/sed_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/sed_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-sed
+.PHONY: test-sort-unit test-sort
+test-sort-unit:
+	$(PYTHON) tests/sort.py
+test-unit: test-sort-unit
+test-sort: test-sort-unit multi-iso rootfs
+	$(PYTHON) tools/sort_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/sort_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-sort

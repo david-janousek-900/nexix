@@ -300,6 +300,42 @@ Native adaptations:
 The host fixture compares 1,200 random scripts and inputs with the V7 sources
 built for the host, avoiding the paths above where V7 overruns or loops.
 
+### sort (task 156)
+
+`/bin/sort [-cmu] [-o out] [-T dir] [-bdfinrt<c>] [+pos [-pos]] ... [file ...]`
+retains V7 key fields (`+m.n -m.n` with per-key `bdfinr`), numeric, folded,
+dictionary and printable-only comparisons, `-t` separators, `-u`, `-c` checks
+(`sort: disorder:` / `sort: nonunique:`), `-m` merging and `-o` output that may
+name an input. Input larger than the in-memory workspace is sorted into runs in
+temporary files under `/usr/tmp` or `/tmp` (or `-T dir`) and merged seven at a
+time; the temporaries are removed at exit, interrupt, hangup, termination or
+broken pipe.
+
+Native adaptations:
+
+- The workspace is a 512 KiB allocation rather than `brk` probing for 32 KiB,
+  and its split between line pointers and text accounts for 8-byte pointers
+  (V7's arithmetic assumed 2-byte pointers).
+- V7 copied lines past the end of the workspace when a line did not fit. A
+  line that does not fit now ends the current run and continues the next one;
+  a single line larger than the workspace is `sort: line too long`.
+- Merge lines grow instead of being cut at 512 bytes with their last byte
+  overwritten, and an unterminated final line is kept in both phases.
+- Collation tables are indexed as signed characters as on the PDP-11, but
+  bytes compare unsigned, so bytes above 127 sort after ASCII.
+- Temporary files are created exclusively with three-letter suffixes
+  (17,576 per run) instead of truncating a predictable name; `-T` paths are
+  unbounded.
+- `-u` merging remembers the last line written. V7 compared with stale
+  workspace (or an element before its merge table) and could drop a value
+  duplicated across runs. Key positions are clamped below 1,000,000, the key
+  structure is copied as a structure, and `-m` with fewer than seven inputs
+  no longer reads before the argument list.
+- Output write errors return 1.
+
+The host fixture sorts 6 MB inputs through multi-level merges, 200 KB lines and
+compares 300 key/flag cases with the V7 source.
+
 ### sp (task 157)
 
 `/bin/sp [width]` packs short lines onto tab stops (default width 80),

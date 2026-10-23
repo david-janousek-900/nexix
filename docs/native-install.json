@@ -8451,6 +8451,19 @@
         "path": "v7-sed.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/sort",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.sort",
+      "source": {
+        "root": "programs",
+        "path": "v7-sort.elf"
+      },
+      "format": "elf"
     }
   ]
 }
