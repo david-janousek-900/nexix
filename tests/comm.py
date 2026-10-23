@@ -1,0 +1,20 @@
+"""comm: column selection, stdin, long and unterminated lines, errors."""
+from v7_command import Command
+c=Command('comm')
+a=c.file('a','apple\nbanana\ncherry\nfig\n');b=c.file('b','banana\ncherry\ndate\n')
+c.check([a,b],'apple\n\t\tbanana\n\t\tcherry\n\tdate\nfig\n')
+c.check(['-12',a,b],'banana\ncherry\n')
+c.check(['-3',a,b],'apple\n\tdate\nfig\n')
+c.check(['-13',a,b],'date\n')
+c.check(['-21',a,b],'banana\ncherry\n')
+c.check(['-123',a,b],'')
+c.check(['-',b],'apple\n\t\tbanana\n\t\tcherry\n\tdate\nfig\n',data=a.read_bytes())
+long='k'*5000
+c.check([c.file('l1',f'{long}\nz'),c.file('l2',f'{long}\n')],f'\t\t{long}\nz\n')
+c.check([c.file('e',''),b],'\tbanana\n\tcherry\n\tdate\n')
+c.check([c.file('e',''),c.file('e2','')],'')
+c.check([c.file('hi','\xe9\n'),c.file('lo','a\n')],'\ta\n\xe9\n'.encode('latin-1').decode('latin-1'))
+c.check(['-4',a,b],'',1,stderr='comm: illegal flag\n')
+c.check([a],'',1,stderr='comm: arg count\n')
+c.check([a,c.dir/'missing'],'',1,stderr=f"comm: cannot open {c.dir/'missing'}\n")
+print('PASS: comm ASan/UBSan columns, flags, stdin, 5000-byte/unterminated lines and errors')

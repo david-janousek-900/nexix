@@ -149,6 +149,117 @@ returns 0; unknown options and open/read/write errors return 1. Missing files
 are reported while remaining files are processed. `make test-wc` verifies
 these rules, field order and totals with sanitizers and 16/128 MiB guest boots.
 
+## Retained text utilities (tasks 140–164)
+
+These commands are the supplied V7 sources with native adaptations only where
+the original relied on PDP-11 sizes, writable string literals, implicit `int`
+pointers or fixed buffers. Each has an ASan/UBSan host fixture
+(`make test-<name>-unit`) and installed-command acceptance at 16 and 128 MiB
+(`make test-<name>`). Common adaptations:
+
+- Fixed line, field and name buffers grow on demand instead of truncating,
+  splitting or overrunning. A final line without a newline is processed as a
+  line except where noted.
+- Read errors, open failures and output write/flush failures produce a nonzero
+  status; V7 often returned an undefined main result.
+- Numeric options are range-checked; values that would loop forever or index
+  outside tables are usage errors.
+
+### col (task 140)
+
+`/bin/col [-bfx]` retains V7's 256-line page buffer, reverse and half line
+feeds (`ESC 7/8/9`, VT), SO/SI shift handling, backspace overstrikes and
+tab compression; `-b` drops overstrikes, `-f` keeps half-line motions and
+`-x` emits spaces. The 800-byte line becomes a growing buffer bounded at
+1 MiB per line (`col: line too long`, status 2). The stdio buffer is static,
+so the final flush no longer uses a dead stack frame. Bad options return 2.
+The host fixture also compares 1,600 random motion/overstrike inputs with the
+unmodified V7 algorithm.
+
+### comm (task 141)
+
+`/bin/comm [-123] file1 file2` prints the three V7 columns with `-` meaning
+stdin. The column prefixes are writable arrays rather than modified string
+literals. Lines are unbounded instead of split at 255 bytes, and bytes compare
+unsigned. Missing files, `comm: illegal flag` and `comm: arg count` return 1.
+
+### join (task 150)
+
+`/bin/join [-an] [-e s] [-jn m] [-o list] [-tc] file1 file2` keeps V7's merge
+and rewind algorithm (`file2` must be seekable; `file1` may be `-`). Lines and
+field tables grow beyond BUFSIZ and 20 fields. A missing join or output field
+is empty instead of a stale pointer, and an unterminated final line is no
+longer read past its end. `-j` and `-o` field numbers must be positive and
+missing `-e/-j/-o` arguments are usage errors (status 1). The variadic V7
+error routine takes real pointers.
+
+### look (task 151)
+
+`/bin/look [-df] [-tc] string [file]` binary-searches a sorted file with V7
+canonicalization; without a file it folds/dictionary-orders `/usr/dict/words`.
+That dictionary is installed by task 280, so acceptance uses explicit
+dictionaries. Entries and keys are unbounded. Matches or no matches return 0;
+an unopenable dictionary or read/write error returns 2.
+
+### rev (task 154)
+
+`/bin/rev [file ...]` reverses each line. V7 broke lines at 256 bytes and
+dropped an unterminated final line; lines are now unbounded and the final
+line is reversed and terminated. Unopenable files return 1.
+
+### sp (task 157)
+
+`/bin/sp [width]` packs short lines onto tab stops (default width 80),
+retaining V7's handling of empty lines. Input lines are unbounded instead of
+overrunning 256 bytes. Widths are clamped to 1–10000.
+
+### split (task 158)
+
+`/bin/split [-n] [file [name]]` writes `n`-line pieces (default 1000) named
+`xaa`, `xab`, ... or `nameaa`, .... A zero, malformed or out-of-range count is
+a usage error instead of an infinite loop. The two-letter suffix limits output
+to 676 files (`split: too many output files`), names beyond 97 bytes are
+rejected and output close errors return 1.
+
+### tabs (task 159)
+
+`/bin/tabs [-n] [type]` emits the V7 tab-setting sequences for DASI 300/300s/
+450, TermiNet 300, model 37 and HP terminals, and adjusts delay flags through
+the native `gtty`/`stty` interface for 450 and TermiNet. Without a type it
+inspects standard input's speed and mapping as V7 did; when stdin is not a
+terminal it now does nothing instead of reading uninitialized modes.
+
+### tee (task 161)
+
+`/bin/tee [-a] [-i] file ...` copies stdin to stdout and every file (V7 was
+limited to 19), appending with `-a` and ignoring SIGINT with `-i` or `-`.
+V7's terminal/pipe chunking is retained. Unopenable files are reported and
+skipped; a failed output stops receiving data while the rest continue. Any
+open, read or write failure returns 1.
+
+### tr (task 162)
+
+`/bin/tr [-cds] [string1 [string2]]` retains V7 ranges, three-digit octal
+escapes, complement, delete and squeeze semantics, and V7's deletion of NUL
+input bytes. V7 wrote a terminator into a string literal (a native crash) and
+looped forever on a trailing `-`, which is now literal. All other byte values
+are translated through the full 256-entry table.
+
+### tsort (task 163)
+
+`/bin/tsort [file]` orders pairs as V7 did, reporting cycles to stderr as
+`tsort: cycle in reverse order` followed by the members, then continuing.
+Item names are unbounded instead of 50-byte `%s` scans; the lookup routine no
+longer shadows libc `index`, and internal errors pass a valid second argument.
+Odd data and unopenable files return 1.
+
+### uniq (task 164)
+
+`/bin/uniq [-udc [+n] [-n]] [input [output]]` retains V7 field (`-n`) and
+character (`+n`) skips and the `%4d` count column. Lines grow past the
+historical 1000-byte buffers (which overflowed), the final unterminated line
+is kept and skip counts above 1,000,000 are rejected.
+
 ## ls output
 
 Plain `ls` prints sorted names separated by spaces, ending each directory or
