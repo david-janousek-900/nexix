@@ -2453,6 +2453,19 @@
       "format": "data"
     },
     {
+      "path": "/etc/netstart.qemu",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config",
+      "source": {
+        "root": "config",
+        "path": "etc/netstart.qemu"
+      },
+      "format": "data"
+    },
+    {
       "path": "/etc/profile",
       "type": "file",
       "mode": "0644",

@@ -155,6 +155,11 @@ and panic messages, startup scripts and login. The inactive console stays silent
 `make run-vga` explicitly selects VGA; `make CONSOLE=serial run` is equivalent
 to `make run-serial`, which builds and boots `build/nexix-serial.iso` for COM1. Both modes use the same persistent disk.
 An optional multi-terminal profile is described in the [console guide](docs/vga-console.md).
+Both modes attach an e1000 on QEMU user networking (`NIC=none` removes it), and
+`HOSTFWD="tcp:8080:7000"` forwards host ports to the guest. Copy
+`/etc/netstart.qemu` to `/etc/netstart` to configure the network at boot; see
+[network startup](docs/netstart.md), [ifconfig/route](docs/netconfig.md) and
+[ping/nc](docs/nettools.md).
 
 After logging in, try:
 

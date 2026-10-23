@@ -74,8 +74,8 @@ Details:
 - **`route get`** marks `local` (delivered through `lo0`) and `broadcast`
   destinations.
 
-Configuration is not persistent. Task 429 adds the optional `/etc/netstart`
-that applies it at boot. Test connectivity with [`ping` and `nc`](nettools.md).
+Configuration is not persistent by itself: put the commands in the optional
+[`/etc/netstart`](netstart.md) to apply them at boot. Test connectivity with [`ping` and `nc`](nettools.md).
 
 ## Socket ioctls
 

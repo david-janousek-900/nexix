@@ -25,6 +25,7 @@ char	shell[]	= "/bin/sh";
 char	getty[]	 = "/etc/getty";
 char	minus[]	= "-";
 char	runc[]	= "/etc/rc";
+char	netrc[]	= "/etc/netstart";
 char	ifile[]	= "/etc/ttys";
 char	utmp[]	= "/etc/utmp";
 char	wtmpf[]	= "/usr/adm/wtmp";
@@ -70,6 +71,7 @@ main()
 			single();
 		initial_boot = 0;
 		runcom();
+		netstart();
 		merge();
 		multiple();
 	}
@@ -131,6 +133,28 @@ runcom()
 		dup(0);
 		dup(0);
 		execl(shell, shell, runc, (char *)0);
+		exit(0);
+	}
+	while(wait((int *)0) != pid)
+		;
+}
+
+/* Optional network startup (task 429): after /etc/rc, if /etc/netstart
+ * exists it is run with sh, output on the console. Without it no interface
+ * beyond loopback is configured. init runs it rather than rc, so upgraded
+ * disks keep their own rc and still get the hook. */
+netstart()
+{
+	register pid;
+
+	if (access(netrc, 4) < 0)
+		return;
+	pid = fork();
+	if(pid == 0) {
+		open("/dev/null", 0);
+		open(ctty, 1);
+		dup(1);
+		execl(shell, shell, netrc, (char *)0);
 		exit(0);
 	}
 	while(wait((int *)0) != pid)

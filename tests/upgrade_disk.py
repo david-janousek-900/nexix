@@ -24,13 +24,14 @@ class Upgrade(unittest.TestCase):
         image.inode(10,REG|0o640,sparse=(10+128+128*128,b'SPARSE'),nlink=3,uid=100,gid=100)
         image.inode(12,CHR|0o620,device=256,nlink=2,uid=100,gid=100)
         image.inode(13,BLK|0o600,device=4096)
+        image.inode(14,REG|0o755,b'/etc/ifconfig em0 10.0.2.15/24 up\n')   # an administrator's /etc/netstart
         image.directory(6,5,[('keep',10),('alias',10),('toolcopy',7),('rawname',10)],mode=0o700,uid=100,gid=100)
         offset=1024+(6-1)*64+12
         block=(image.bytes[offset]<<16)|image.bytes[offset+1]|(image.bytes[offset+2]<<8)
         image.bytes[block*512+5*16+2:block*512+6*16]=b'\xffname'.ljust(14,b'\0')
         image.directory(5,2,[('alice',6)])
         image.directory(3,2,[('tool',7)])
-        image.directory(4,2,[('passwd',8)])
+        image.directory(4,2,[('passwd',8),('netstart',14)])
         image.directory(11,2,[('console',12),('ttyS0',12),('disk',13)])
         image.directory(2,2,[('bin',3),('etc',4),('home',5),('dev',11),('.profile',9)])
         for ino in image.allocated_inodes-{1}:
@@ -69,7 +70,7 @@ class Upgrade(unittest.TestCase):
         self.assertTrue(self.run_upgrade()['applied'])
         self.assertEqual(self.backup.read_bytes(),self.original)
         before=Volume(self.original);after=Volume(self.disk.read_bytes())
-        for name in ['/etc/passwd','/.profile','/home/alice/keep','/home/alice/alias','/home/alice/toolcopy','/home/alice/\udcffname','/dev/console','/dev/disk']:
+        for name in ['/etc/passwd','/etc/netstart','/.profile','/home/alice/keep','/home/alice/alias','/home/alice/toolcopy','/home/alice/\udcffname','/dev/console','/dev/disk']:
             a,b=before.paths[name],after.paths[name]
             self.assertEqual((a.ino,a.mode,a.uid,a.gid,a.device,a.times),(b.ino,b.mode,b.uid,b.gid,b.device,b.times),name)
             if a.kind==REG:self.assertEqual(before.hash(a),after.hash(b),name)

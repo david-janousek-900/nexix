@@ -8,6 +8,20 @@ OBJCOPY = $(TOOLCHAIN_PREFIX)objcopy
 PYTHON ?= python3
 QEMU ?= qemu-system-x86_64
 CONSOLE ?= vga
+# QEMU network profile (task 429). NIC=user attaches an e1000 on QEMU user
+# networking (guest 10.0.2.15, gateway 10.0.2.2); NIC=none attaches no card.
+# HOSTFWD lists proto:hostport:guestport forwards, e.g. "tcp:8080:7000 udp:5300:53".
+NIC ?= user
+HOSTFWD ?=
+comma := ,
+empty :=
+space := $(empty) $(empty)
+hostfwd_fields = $(subst :, ,$(1))
+hostfwd_one = $(if $(and $(filter 3,$(words $(call hostfwd_fields,$(1)))),$(filter tcp udp,$(word 1,$(call hostfwd_fields,$(1))))),$(comma)hostfwd=$(word 1,$(call hostfwd_fields,$(1)))::$(word 2,$(call hostfwd_fields,$(1)))-:$(word 3,$(call hostfwd_fields,$(1))),$(error HOSTFWD entry '$(1)' must be tcp|udp:hostport:guestport))
+QEMU_NIC_ARGS = $(if $(filter none,$(NIC)),$(if $(HOSTFWD),$(error HOSTFWD needs NIC=user),-nic none),$(if $(filter user,$(NIC)),-nic user$(comma)model=e1000$(subst $(space),,$(foreach f,$(HOSTFWD),$(call hostfwd_one,$(f)))),$(error NIC must be user or none)))
+.PHONY: print-qemu-nic
+print-qemu-nic:
+	@echo '$(QEMU_NIC_ARGS)'
 DEBUG ?= 0
 DEBUG_DIR ?= build/debug
 ifeq ($(DEBUG),1)
@@ -138,7 +152,7 @@ multi-iso: check build/nexix-multi.iso
 build: iso disk
 run-serial: build serial-iso
 	$(PYTHON) tools/serial_terminal.py --prepare build/ttyS1
-	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -rtc base=utc -boot d -drive "file=$(DISK_IMAGE),format=raw,if=ide,index=0" -cdrom build/nexix-serial.iso -display none -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -serial pipe:build/ttyS1 -mon chardev=console,mode=readline -no-reboot $(QEMU_DEBUG_ARGS)
+	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -rtc base=utc -boot d -drive "file=$(DISK_IMAGE),format=raw,if=ide,index=0" -cdrom build/nexix-serial.iso -display none -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -serial pipe:build/ttyS1 -mon chardev=console,mode=readline -no-reboot $(QEMU_NIC_ARGS) $(QEMU_DEBUG_ARGS)
 
 .PHONY: terminal
 terminal:
@@ -693,6 +707,17 @@ test-netconfig: test-net-config multi-iso rootfs build/netconfig-api.elf
 	$(PYTHON) tools/netconfig_smoke.py $(QEMU) build/nexix-multi.iso 128M e1000
 	$(PYTHON) tools/netconfig_smoke.py $(QEMU) build/nexix-multi.iso 16M none
 test: test-netconfig
+# Task 429: optional /etc/netstart and the QEMU network profile.
+build/netstart-qemu: rootfs/etc/netstart.qemu | build/.dir
+	cp $< $@
+.PHONY: test-qemu-profile test-netstart
+test-qemu-profile:
+	$(PYTHON) tests/qemu_profile.py
+test-unit: test-qemu-profile
+test-netstart: test-qemu-profile test-upgrade-unit multi-iso rootfs build/netstart-qemu
+	$(PYTHON) tools/netstart_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/netstart_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-netstart
 # Task 428: numeric-address ping and nc.
 build/v7-ping.o: user/v7/cmd/ping.c user/v7/netconfig.h | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@
@@ -1891,7 +1916,7 @@ build/local_console.o: kernel/local_console.c | build/.dir
 run: run-$(CONSOLE)
 run-vga: build
 	$(PYTHON) tools/serial_terminal.py --prepare build/ttyS1
-	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -rtc base=utc -boot d -drive "file=$(DISK_IMAGE),format=raw,if=ide,index=0" -cdrom build/nexix.iso -vga std -display gtk -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -serial pipe:build/ttyS1 -mon chardev=console,mode=readline -no-reboot $(QEMU_DEBUG_ARGS)
+	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -rtc base=utc -boot d -drive "file=$(DISK_IMAGE),format=raw,if=ide,index=0" -cdrom build/nexix.iso -vga std -display gtk -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -serial pipe:build/ttyS1 -mon chardev=console,mode=readline -no-reboot $(QEMU_NIC_ARGS) $(QEMU_DEBUG_ARGS)
 
 .PHONY: test-vga
 test-vga: test-vga-unit test-keyboard-unit test-tty-lines-unit multi-iso rootfs
