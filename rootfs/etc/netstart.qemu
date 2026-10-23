@@ -4,5 +4,5 @@
 : '/etc/netstart only lo0 at 127.0.0.1 is ever configured. Upgrades keep'
 : '/etc/netstart as it is. The V7 shell has no # comments, hence the colons.'
 : 'Under make NIC=user this guest is 10.0.2.15 and the gateway 10.0.2.2.'
-/etc/ifconfig em0 10.0.2.15/24 up
-/etc/route add default 10.0.2.2
+/sbin/ifconfig em0 10.0.2.15/24 up
+/sbin/route add default 10.0.2.2

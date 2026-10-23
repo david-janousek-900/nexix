@@ -10,7 +10,7 @@
 #include <string.h>
 
 extern char **environ;
-static char *recovery_environment[]={"HOME=/root","PATH=/bin","TERM=ansi",0};
+static char *recovery_environment[]={"HOME=/root","PATH=/sbin:/bin:/usr/sbin:/usr/bin","TERM=ansi",0};
 static void reset(int);
 static void merge_signal(int);
 int merge(void);
@@ -22,7 +22,7 @@ int initial_boot = 1;
 #define	EVER	;;
 
 char	shell[]	= "/bin/sh";
-char	getty[]	 = "/etc/getty";
+char	getty[]	 = "/usr/libexec/getty";
 char	minus[]	= "-";
 char	runc[]	= "/etc/rc";
 char	netrc[]	= "/etc/netstart";

@@ -27,7 +27,7 @@ static int session(int line)
     if(identity(line,getpid()))return 10;
     snprintf(group,sizeof(group),"%d",getpgrp());
     pid_t pid=fork();if(pid<0)return 11;
-    if(!pid){execl("/etc/init","inherit",tag,group,(char *)0);_exit(12);}
+    if(!pid){execl("/sbin/init","inherit",tag,group,(char *)0);_exit(12);}
     if(wait(&status)!=pid || status)return 13;
     struct sgttyb settings;
     if(gtty(0,&settings))return 14;
@@ -63,7 +63,7 @@ int main(int argc,char **argv)
         if(!children[line]){
             char tag[2]={(char)('0'+line),0};
             if(setpgrp()!=getpid() || open(line?"/tmp/line1":"/dev/console",O_RDWR)!=0 || dup(0)!=1 || dup(0)!=2)_exit(25);
-            execl("/etc/init","session",tag,(char *)0);_exit(26);
+            execl("/sbin/init","session",tag,(char *)0);_exit(26);
         }
     }
     int status,failed=0,results[2]={0};

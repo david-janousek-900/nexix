@@ -10,7 +10,7 @@ def main():
         guest.expect(r'(?s)BOOT OK\r\nroot@[A-Za-z0-9.-]+# ')
         def handoff(text,terminal=0,status=0,cycle=False,profile='9'):
             redirects=' </dev/ttyS1 >/dev/ttyS1 2>/dev/ttyS1' if terminal else ''
-            line="/etc/getty "+profile+redirects+"; R=$?; stty 115200 -raw echo -lcase -nl erase '^?' kill '^U'; echo GETTY_STATUS_$R"
+            line="/usr/libexec/getty "+profile+redirects+"; R=$?; stty 115200 -raw echo -lcase -nl erase '^?' kill '^U'; echo GETTY_STATUS_$R"
             guest.send(line+'\n');guest.expect(re.escape(line+'\r\n'))
             prompt=b'login: '
             if profile!='9':prompt=bytes(c|((c.bit_count()&1)<<7) for c in prompt)

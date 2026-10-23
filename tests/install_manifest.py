@@ -158,9 +158,9 @@ class Installation(unittest.TestCase):
             lambda e: e[0].update(mode='9999'),
             lambda e: e[0].update(uid=-1),
             lambda e: e[0].update(component='unknown'),
-            lambda e: next(x for x in e if x['path']=='/etc/init')['source'].update(path='../escape'),
-            lambda e: next(x for x in e if x['path']=='/etc/init').update(path='/missing/init'),
-            lambda e: next(x for x in e if x['path']=='/etc/init').update(component='cmd.login'),
+            lambda e: next(x for x in e if x['path']=='/sbin/init')['source'].update(path='../escape'),
+            lambda e: next(x for x in e if x['path']=='/sbin/init').update(path='/missing/init'),
+            lambda e: next(x for x in e if x['path']=='/sbin/init').update(component='cmd.login'),
             lambda e: e.append(dict(path='/cycle',type='link',target='/cycle',component='distribution.config'))]
         for mutate in mutations:
             with self.subTest(mutate=mutate):

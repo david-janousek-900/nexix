@@ -58,8 +58,8 @@ try:
           stdout='loop\n')
         # Static IPv4 from /etc/netstart, then ARP: the gateway resolves, an
         # absent neighbour does not.
-        c('/etc/ifconfig em0 | grep inet', stdout='\tinet 10.0.2.15 netmask 255.255.255.0 broadcast 10.0.2.255\n')
-        c('/etc/route get 192.0.2.1', stdout='192.0.2.1 via 10.0.2.2 dev em0 src 10.0.2.15\n')
+        c('/sbin/ifconfig em0 | grep inet', stdout='\tinet 10.0.2.15 netmask 255.255.255.0 broadcast 10.0.2.255\n')
+        c('/sbin/route get 192.0.2.1', stdout='192.0.2.1 via 10.0.2.2 dev em0 src 10.0.2.15\n')
         c('/bin/ping -c 3 10.0.2.2 | grep transmitted',
           stdout='3 packets transmitted, 3 packets received, 0.0% packet loss\n')
         c('/bin/ping -c 1 -W 6 10.0.2.77 | grep transmitted',
@@ -88,7 +88,7 @@ try:
                 data += chunk
         assert data == b'reply\n', data
         # Counters moved on em0 and nothing was dropped or failed.
-        c('/etc/ifconfig em0 | grep -c "errors in 0 out 0, drops 0"', stdout='1\n')
+        c('/sbin/ifconfig em0 | grep -c "errors in 0 out 0, drops 0"', stdout='1\n')
 finally:
     tcp.shutdown(); udp.shutdown()
 print(f'PASS: {ram} TCP/IP acceptance: loopback, static IPv4, ARP, ping, UDP, outbound and forwarded inbound TCP')

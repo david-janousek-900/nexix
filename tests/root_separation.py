@@ -31,7 +31,7 @@ class Separation(unittest.TestCase):
         with self.assertRaises(ValueError):validate_profiles(full,bootstrap)
         full=load(MANIFEST);bootstrap=[e for e in bootstrap if e['path']!='/bin/sh']
         with self.assertRaises(ValueError):validate_profiles(full,bootstrap)
-        bootstrap=load(BOOTSTRAP);full=[e for e in full if e['path']!='/etc/init']
+        bootstrap=load(BOOTSTRAP);full=[e for e in full if e['path']!='/sbin/init']
         with self.assertRaises(ValueError):validate_profiles(full,bootstrap)
 
     def test_existing_disk_needs_no_seed(self):

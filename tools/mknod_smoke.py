@@ -17,15 +17,15 @@ with tempfile.TemporaryDirectory(prefix='nx-mknod-') as temp:
             login(guest, 'root', 'nexix')
             if phase == 0:
                 guest.command('umask 022')
-                guest.command('/etc/mknod /tmp/nx-null c 6 2')
-                guest.command('/etc/mknod /tmp/nx-block b 255 255')
-                guest.command('/etc/mknod /tmp/nx-null c 6 2', stdout='mknod: File exists\n', status=1)
+                guest.command('/sbin/mknod /tmp/nx-null c 6 2')
+                guest.command('/sbin/mknod /tmp/nx-block b 255 255')
+                guest.command('/sbin/mknod /tmp/nx-null c 6 2', stdout='mknod: File exists\n', status=1)
                 for args in ('', '/tmp/x z 1 2', '/tmp/x char 1 2', '/tmp/x c 256 0',
                              '/tmp/x c 0 256', '/tmp/x c -1 0', '/tmp/x c 0 1x',
                              '/tmp/x c 99999999999999999999 0', "/tmp/x c '' 0"):
-                    guest.command('/etc/mknod ' + args, stdout=usage, status=2)
+                    guest.command('/sbin/mknod ' + args, stdout=usage, status=2)
                 login(guest, 'bob', 'bob', 1, prompt='$ ')
-                guest.command('/etc/mknod /tmp/bob-node c 6 2', 1,
+                guest.command('/sbin/mknod /tmp/bob-node c 6 2', 1,
                               stdout='mknod: Not owner\n', status=1, prompt=r'\$ ')
                 guest.command('sync')
             guest.command('echo discarded > /tmp/nx-null')

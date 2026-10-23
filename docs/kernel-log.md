@@ -12,7 +12,7 @@ selection. Snapshots are chronological, use LF line endings, omit a partially
 overwritten oldest line and do not clear the buffer. Boot messages remain
 available after login. Panic messages use the same formatter and buffer.
 
-As root, run `dmesg` (`/bin/dmesg`, also `/etc/dmesg`) to print a snapshot.
+As root, run `dmesg` (`/bin/dmesg`, also `/sbin/dmesg`) to print a snapshot.
 `dmesg -` prints messages since its previous successful invocation and saves its
 snapshot in `/usr/adm/msgbuf` (root-owned mode 0600). The first invocation prints
 all retained messages; a repeated invocation without new messages is silent.

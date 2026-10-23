@@ -1,7 +1,11 @@
 # Nexix manual pages
 
-All 307 V7 manual distribution files (sections 0–8) are installed unchanged
-under `/usr/man`. Traditional vi/ex/view pages are additional section 1 pages.
+All 307 V7 manual distribution files (sections 0–8) are installed under
+`/usr/man`, unchanged except for system binary paths: seven pages (`init(8)`,
+`getty(8)`, `update(8)`, `crash(8)`, `mknod(1m)`, `wall(1m)` and `sa(1m)`) name
+the BSD locations, such as `/sbin/init`, instead of V7's `/etc` (task 432).
+`make test-man-pages` checks that each differs from its original by exactly
+those paths. Traditional vi/ex/view pages are additional section 1 pages.
 
 These are historical reference manuals. Presence of a manual does not mean its
 program or every documented interface has been ported. Consult `docs/tasks.md`

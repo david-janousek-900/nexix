@@ -25,8 +25,8 @@ cp /etc/netstart.qemu /etc/netstart
 It contains:
 
 ```sh
-/etc/ifconfig em0 10.0.2.15/24 up
-/etc/route add default 10.0.2.2
+/sbin/ifconfig em0 10.0.2.15/24 up
+/sbin/route add default 10.0.2.2
 ```
 
 **Writing the script:**

@@ -112,7 +112,7 @@ selects an existing file.
 
 ## Installed accton command (task 240)
 
-`/etc/accton [file]` selects an existing regular file; no operand disables
+`/usr/sbin/accton [file]` selects an existing regular file; no operand disables
 accounting. As in V7, only the first operand is used. The active source adapts
 `reference/v7/usr/src/cmd/accton.c` with native declarations and checks the
 syscall return rather than a possibly stale errno. Success returns 0 and syscall

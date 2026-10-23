@@ -1,4 +1,4 @@
-PATH=/bin
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
 HOME=/root
 TZ=GMT0
 export PATH HOME TZ

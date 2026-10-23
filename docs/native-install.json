@@ -28,6 +28,14 @@
       "component": "distribution.config"
     },
     {
+      "path": "/sbin",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config"
+    },
+    {
       "path": "/dev",
       "type": "directory",
       "mode": "0755",
@@ -52,6 +60,22 @@
       "component": "distribution.config"
     },
     {
+      "path": "/usr/bin",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config"
+    },
+    {
+      "path": "/usr/sbin",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config"
+    },
+    {
       "path": "/usr/adm",
       "type": "directory",
       "mode": "0755",
@@ -68,7 +92,7 @@
       "component": "distribution.config"
     },
     {
-      "path": "/etc/init",
+      "path": "/sbin/init",
       "type": "file",
       "mode": "0755",
       "uid": 0,
@@ -780,7 +804,7 @@
       }
     },
     {
-      "path": "/etc/getty",
+      "path": "/usr/libexec/getty",
       "type": "file",
       "mode": "0755",
       "uid": 0,
@@ -871,7 +895,7 @@
       }
     },
     {
-      "path": "/etc/wall",
+      "path": "/usr/bin/wall",
       "type": "file",
       "mode": "0755",
       "uid": 0,
@@ -2145,7 +2169,7 @@
       "format": "data"
     },
     {
-      "path": "/etc/dmesg",
+      "path": "/sbin/dmesg",
       "type": "file",
       "mode": "0755",
       "uid": 0,
@@ -2160,7 +2184,7 @@
     {
       "path": "/bin/dmesg",
       "type": "link",
-      "target": "/etc/dmesg",
+      "target": "/sbin/dmesg",
       "component": "cmd.dmesg"
     },
     {
@@ -7975,7 +7999,7 @@
       "format": "elf"
     },
     {
-      "path": "/etc/mknod",
+      "path": "/sbin/mknod",
       "type": "file",
       "mode": "0755",
       "uid": 0,
@@ -7988,7 +8012,7 @@
       "format": "elf"
     },
     {
-      "path": "/etc/accton",
+      "path": "/usr/sbin/accton",
       "type": "file",
       "mode": "0755",
       "uid": 0,
@@ -8001,7 +8025,7 @@
       "format": "elf"
     },
     {
-      "path": "/etc/ifconfig",
+      "path": "/sbin/ifconfig",
       "type": "file",
       "mode": "0755",
       "uid": 0,
@@ -8014,7 +8038,7 @@
       "format": "elf"
     },
     {
-      "path": "/etc/route",
+      "path": "/sbin/route",
       "type": "file",
       "mode": "0755",
       "uid": 0,
@@ -8027,7 +8051,7 @@
       "format": "elf"
     },
     {
-      "path": "/etc/update",
+      "path": "/usr/sbin/update",
       "type": "file",
       "mode": "0755",
       "uid": 0,

@@ -13,7 +13,7 @@ def main():
     qemu,iso,ram=sys.argv[1:4]
     with tempfile.TemporaryDirectory(prefix='nx-sessions-') as temp:
         plan=json.loads(MANIFEST.read_text())
-        entry=next(e for e in plan['entries'] if e['path']=='/etc/init')
+        entry=next(e for e in plan['entries'] if e['path']=='/sbin/init')
         entry.update(component='distribution.config',format='data',source={'root':'programs','path':'terminal-sessions.elf'})
         manifest=Path(temp)/'install.json';manifest.write_text(json.dumps(plan))
         disk=Path(temp)/'root.img';data=build(None,ROOT/'build',ROOT/'rootfs',manifest,spare_inodes=64,spare_blocks=2048)

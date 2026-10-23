@@ -13,7 +13,7 @@ static struct exec_args args;
 void v7_userland_selftest(void)
 {
     uint32_t before=page_free_count();
-    const struct embedded_program *init=userland_program("/etc/init");
+    const struct embedded_program *init=userland_program("/sbin/init");
     REQUIRE(init);
     struct exec_image init_image={0};
     REQUIRE(elf_load(init->start,init->end-init->start,&args,&init_image)==0);

@@ -22,7 +22,7 @@ error. The working disk and historical reference remain unchanged.
 
 ## mknod (task 219)
 
-`/etc/mknod name b/c major minor` creates a block or character node through
+`/sbin/mknod name b/c major minor` creates a block or character node through
 the native root-only syscall. Major and minor are decimal values from 0 to 255;
 the native device ABI stores each in eight bits. Empty values, signs, trailing
 characters and overflow are rejected before invoking the syscall. Exactly `b`
@@ -40,7 +40,7 @@ across two cold boots. It never writes the working disk.
 
 ## update (task 237)
 
-`/etc/update` retains V7's background sync daemon: fork once, let the parent
+`/usr/sbin/update` retains V7's background sync daemon: fork once, let the parent
 return, close standard descriptors, keep available system directories open,
 sync immediately and repeat every 30 seconds using SIGALRM. A failed fork now
 reports an error and returns 1. Extra operands are ignored, as in the original.

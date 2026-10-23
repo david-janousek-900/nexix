@@ -11,7 +11,7 @@ def main():
             guest.expect('login: ',line);guest.send(name+'\n',line);guest.expect('Password:',line)
             guest.send(password+'\n',line);guest.expect(re.escape(prompt),line)
         login('root','nexix',0,'# ');login('bob','bob',1,'$ ')
-        guest.command('/etc/init',stdout='init: must be pid 1\n',status=1)
+        guest.command('/sbin/init',stdout='init: must be pid 1\n',status=1)
         guest.command('TOKEN=KEPT',1,prompt=re.escape('$ '))
         guest.command('/bin/initcontrol two',stdout='INIT_STATE_OK\n')
         guest.command('/bin/initcontrol reload')

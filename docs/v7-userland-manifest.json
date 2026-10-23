@@ -987,7 +987,7 @@
       "outputs": [
         {
           "name": "accton",
-          "install": "/etc/accton",
+          "install": "/usr/sbin/accton",
           "role": "installed",
           "status": "implemented",
           "evidence": [
@@ -5234,7 +5234,7 @@
       "outputs": [
         {
           "name": "dmesg",
-          "install": "/etc/dmesg",
+          "install": "/sbin/dmesg",
           "role": "installed",
           "status": "implemented",
           "evidence": [
@@ -6898,7 +6898,7 @@
       "outputs": [
         {
           "name": "getty",
-          "install": "/etc/getty",
+          "install": "/usr/libexec/getty",
           "role": "installed",
           "status": "implemented",
           "evidence": [
@@ -7317,7 +7317,7 @@
       "outputs": [
         {
           "name": "init",
-          "install": "/etc/init",
+          "install": "/sbin/init",
           "role": "installed",
           "status": "implemented",
           "evidence": [
@@ -9914,7 +9914,7 @@
       "outputs": [
         {
           "name": "mknod",
-          "install": "/etc/mknod",
+          "install": "/sbin/mknod",
           "role": "installed",
           "status": "implemented",
           "evidence": [
@@ -18536,7 +18536,7 @@
       "outputs": [
         {
           "name": "update",
-          "install": "/etc/update",
+          "install": "/usr/sbin/update",
           "role": "installed",
           "status": "implemented",
           "evidence": [
@@ -19169,7 +19169,7 @@
       "outputs": [
         {
           "name": "wall",
-          "install": "/etc/wall",
+          "install": "/usr/bin/wall",
           "role": "installed",
           "status": "implemented",
           "evidence": [
@@ -25702,7 +25702,7 @@
       "outputs": [
         {
           "name": "ifconfig",
-          "install": "/etc/ifconfig",
+          "install": "/sbin/ifconfig",
           "role": "installed",
           "status": "implemented",
           "evidence": [
@@ -25713,7 +25713,7 @@
         },
         {
           "name": "route",
-          "install": "/etc/route",
+          "install": "/sbin/route",
           "role": "installed",
           "status": "implemented",
           "evidence": [

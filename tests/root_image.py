@@ -63,7 +63,7 @@ def lookup(path):
 class RootImage(unittest.TestCase):
     def test_programs_and_configuration(self):
         for name in ('init','sh','echo','cat','ls','pwd','cp','ln','rm','date','touch'):
-            path = ('/etc/' if name == 'init' else '/bin/') + name
+            path = ('/sbin/' if name == 'init' else '/bin/') + name
             number = lookup(path)
             self.assertEqual(inode(number)[0], 0o100755)
             self.assertEqual(contents(number), Path(f'build/v7-{name}.elf').read_bytes())

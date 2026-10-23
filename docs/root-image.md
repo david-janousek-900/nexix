@@ -13,7 +13,7 @@ configuration; see [installation staging](install-staging.md) and
 
 The bootstrap image includes:
 
-- `/etc/init` and `/bin/sh`.
+- `/sbin/init` and `/bin/sh`.
 - `/bin/echo`, `cat`, `ls`, `pwd`, `cp`, `ln`, `rm`, `date`, and `touch`.
 - `/etc/rc`, `/etc/ttys`, `/etc/passwd`, `/etc/hostname`, `/etc/profile`, and `/.profile` from `rootfs/bootstrap/`.
 - Empty `/etc/utmp` and `/usr/adm/wtmp` accounting files.

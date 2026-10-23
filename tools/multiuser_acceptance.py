@@ -78,7 +78,7 @@ def main():
             guest.send('TWO_USER_MESSAGE\n');guest.expect('TWO_USER_MESSAGE\r\n',1)
             guest.send('\x04');guest.expect('EOF\r\n',1);guest.expect('WRITE_STATUS_0\r\nroot@[A-Za-z0-9.-]+# ')
             guest.command('echo BOOT_BROADCAST > /tmp/broadcast')
-            wire='/etc/wall /tmp/broadcast; echo WALL_STATUS_$?';guest.send(wire+'\n');guest.expect(re.escape(wire+'\r\n'))
+            wire='/usr/bin/wall /tmp/broadcast; echo WALL_STATUS_$?';guest.send(wire+'\n');guest.expect(re.escape(wire+'\r\n'))
             message=re.escape('\x07\x07\x07Broadcast Message ...\r\n\r\nBOOT_BROADCAST\r\n')
             guest.expect(message);guest.expect('WALL_STATUS_0\r\nroot@[A-Za-z0-9.-]+# ');guest.expect(message,1)
             guest.send('passwd; echo PASSWORD_STATUS_$?\n',1);guest.expect('Old password:',1);guest.send('alice\n',1)

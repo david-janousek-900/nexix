@@ -113,7 +113,7 @@ def validate_profiles(full, bootstrap):
     if any('bootstrap' in e for e in full):
         raise ValueError('bootstrap flags belong to the fixed bootstrap manifest')
     selected={e['path']:e for e in bootstrap if e.get('format')=='elf'}
-    if not {'/etc/init','/bin/sh'}<=selected.keys() or any(not e.get('bootstrap') for e in selected.values()):
+    if not {'/sbin/init','/bin/sh'}<=selected.keys() or any(not e.get('bootstrap') for e in selected.values()):
         raise ValueError('bootstrap must embed its init/shell and selected programs')
     installed={e['path']:e for e in full if e.get('format')=='elf'}
     for path,e in selected.items():

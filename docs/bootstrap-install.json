@@ -28,6 +28,14 @@
       "component": "distribution.config"
     },
     {
+      "path": "/sbin",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config"
+    },
+    {
       "path": "/dev",
       "type": "directory",
       "mode": "0755",
@@ -68,7 +76,7 @@
       "component": "distribution.config"
     },
     {
-      "path": "/etc/init",
+      "path": "/sbin/init",
       "type": "file",
       "mode": "0755",
       "uid": 0,

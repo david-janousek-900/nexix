@@ -61,7 +61,7 @@ int main(int argc, char **argv)
         route.flags = 0;
         if (!FAILS(ioctl(fd, NX_SIOCSROUTE, &route), EPERM)) _exit(5);
         if (dup2(p[1], 2) < 0 || dup2(p[1], 1) < 0) _exit(6);
-        execl("/etc/ifconfig", "ifconfig", "lo0", "down", (char *)NULL);
+        execl("/sbin/ifconfig", "ifconfig", "lo0", "down", (char *)NULL);
         _exit(7);
     }
     close(p[1]);

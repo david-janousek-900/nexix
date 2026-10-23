@@ -24,7 +24,7 @@ with tempfile.TemporaryDirectory(prefix='nx-update-') as temp:
     guest = Guest(qemu, iso, disk, ram, 2)
     try:
         login(guest, 'root', 'nexix')
-        guest.command('/etc/update')
+        guest.command('/usr/sbin/update')
         guest.command("ps ax | grep -c 'update$'", stdout='1\n')
         # Wait for the child's immediate sync before selecting the baseline.
         end = time.monotonic() + 1

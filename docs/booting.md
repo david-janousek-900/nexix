@@ -14,7 +14,7 @@ GRUB loads Nexix, the kernel initializes memory, interrupts and the selected con
 then mounts the primary IDE master as the root. `make run` attaches
 `build/nexix.img`, initially copied from the full `build/distribution.img`.
 Without that device, the kernel uses a writable RAM copy of the packaged root.
-It reads `/etc/init` through the V7 filesystem and builds a native ELF64 user
+It reads `/sbin/init` through the V7 filesystem and builds a native ELF64 user
 address space. The first process receives PID 1; init forks the initial shell,
 which receives PID 2 and opens `/dev/console`. The console displays `# `.
 

@@ -18,9 +18,9 @@ with private_guest(qemu, iso, ram, 'netstart-on', NETSTART, single_user=False,
                    extra_args=('-nic', 'user,model=e1000')) as g:
     login(g, 'root', 'nexix')
     c = g.command
-    c('/etc/ifconfig em0 | grep inet', stdout='\tinet 10.0.2.15 netmask 255.255.255.0 broadcast 10.0.2.255\n',
+    c('/sbin/ifconfig em0 | grep inet', stdout='\tinet 10.0.2.15 netmask 255.255.255.0 broadcast 10.0.2.255\n',
       prompt=PROMPT)
-    c('/etc/route | grep default', stdout='default         10.0.2.2        0.0.0.0         em0\n', prompt=PROMPT)
+    c('/sbin/route | grep default', stdout='default         10.0.2.2        0.0.0.0         em0\n', prompt=PROMPT)
     c('/bin/ping -c 1 10.0.2.2 | grep transmitted', stdout='1 packets transmitted, 1 packets received, 0.0% packet loss\n',
       prompt=PROMPT)
 
@@ -31,15 +31,15 @@ with private_guest(qemu, iso, ram, 'netstart-off', {}, single_user=False,
     c = g.command
     c('test -f /etc/netstart', status=1, prompt=PROMPT)
     c('test -f /etc/netstart.qemu', prompt=PROMPT)
-    c('/etc/ifconfig em0 | grep -c inet', stdout='0\n', status=1, prompt=PROMPT)
-    c('/etc/route', stdout='Destination     Gateway         Netmask         Interface\n'
+    c('/sbin/ifconfig em0 | grep -c inet', stdout='0\n', status=1, prompt=PROMPT)
+    c('/sbin/route', stdout='Destination     Gateway         Netmask         Interface\n'
                            '127.0.0.0       link            255.0.0.0       lo0\n', prompt=PROMPT)
 
 # 3. /etc/netstart without a NIC: its failure is reported and boot goes on.
 with private_guest(qemu, iso, ram, 'netstart-nonic', NETSTART, single_user=False, extra_args=('-nic', 'none')) as g:
     g.expect('ifconfig: em0: No such device or address\r\n')
     login(g, 'root', 'nexix')
-    g.command('/etc/ifconfig | grep -c flags', stdout='1\n', prompt=PROMPT)
+    g.command('/sbin/ifconfig | grep -c flags', stdout='1\n', prompt=PROMPT)
 
 # 4. Host forwarding: the host reaches a guest listener through QEMU.
 port = free_port()

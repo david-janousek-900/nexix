@@ -20,8 +20,8 @@ make run-serial HOSTFWD="tcp:8080:7000"  # also forward host port 8080 to guest 
 Log in as `root` (password `nexix`), then configure the card:
 
 ```sh
-/etc/ifconfig em0 10.0.2.15/24 up
-/etc/route add default 10.0.2.2
+/sbin/ifconfig em0 10.0.2.15/24 up
+/sbin/route add default 10.0.2.2
 ping -c 3 10.0.2.2
 ```
 
@@ -41,8 +41,10 @@ echo hi | nc -u -w 2 10.0.2.2 7778        # UDP
 nc -l 7000                                # with HOSTFWD="tcp:8080:7000": host runs nc localhost 8080
 ```
 
-Root's `PATH` is `/bin`, so the administration commands are called by their
-full paths: `/etc/ifconfig` and `/etc/route`. Addresses are numeric; there
+The administration commands are in `/sbin`, on root's `PATH`
+(`/sbin:/bin:/usr/sbin:/usr/bin`), so plain `ifconfig` and `route` work; disks
+upgraded from before task 432 keep their old profile, so add `/sbin` there
+yourself. Addresses are numeric; there
 is no resolver.
 
 ## What is supported
@@ -132,7 +134,7 @@ fresh disks and upgrades get them:
 
 | Path | Mode | Purpose |
 |---|---|---|
-| `/etc/ifconfig`, `/etc/route` | 0755 | Interface and route configuration |
+| `/sbin/ifconfig`, `/sbin/route` | 0755 | Interface and route configuration |
 | `/bin/ping` | 4755 (setuid root) | ICMP echo; it gives up root after opening its socket |
 | `/bin/nc` | 0755 | TCP/UDP client and listener |
 | `/etc/netstart.qemu` | 0644 | Sample startup script; copy it to `/etc/netstart` |

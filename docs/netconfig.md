@@ -1,7 +1,7 @@
 # Interface and route configuration (task 427)
 
 Root configures [interfaces and static routes](networking-routing.md) with two
-installed commands, `/etc/ifconfig` and `/etc/route`. They are native programs
+installed commands, `/sbin/ifconfig` and `/sbin/route`. They are native programs
 built on configuration ioctls that any [socket](sockets.md) descriptor
 accepts.
 

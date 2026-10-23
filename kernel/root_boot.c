@@ -50,10 +50,17 @@ _Noreturn void rootfs_start(void)
         console_puts("ROOT IDE\r\nROOT MOUNTED\r\n");
     }
     v7_ino_t ino;
-    if(v7fs_lookup(&root_volume,V7_ROOTINO,"/etc/init",&ino))panic("missing init");
-    const char name[]="/etc/init";
-    for(size_t i=0;i<sizeof(name);++i)init_args.bytes[i]=name[i];
-    init_args.used=sizeof(name);init_args.argc=1;
+    /* BSD layout (task 432). A disk not yet upgraded still has V7's /etc/init:
+     * start it, and say how to finish the migration. */
+    const char *name="/sbin/init";
+    if(v7fs_lookup(&root_volume,V7_ROOTINO,name,&ino)) {
+        name="/etc/init";
+        if(v7fs_lookup(&root_volume,V7_ROOTINO,name,&ino))panic("missing init");
+        console_puts("ROOT OLD LAYOUT: starting /etc/init; upgrade this disk (make upgrade-disk)\r\n");
+    }
+    size_t length=0;
+    do init_args.bytes[length]=name[length]; while(name[length++]);
+    init_args.used=length;init_args.argc=1;
     const char *environment = console_mode() == BOOT_CONSOLE_VGA ? "CONSOLE=vga" :
         console_mode() == BOOT_CONSOLE_SERIAL ? "CONSOLE=serial" : "CONSOLE=multi";
     init_args.envc=1;init_args.envp[0]=init_args.used;

@@ -29,7 +29,7 @@ with private_guest(qemu, iso, ram, 'nettools', {'/tmp/as-user': 'as-user.elf'},
     # SIGINT ends an unbounded ping with its statistics.
     c('/bin/ping 127.0.0.1 > /tmp/int & sleep 3; kill -2 $!; wait; grep -c transmitted /tmp/int', stdout='1\n')
     # The gateway answers through em0; an absent host does not.
-    c('/etc/ifconfig em0 10.0.2.15/24 up; /etc/route add default 10.0.2.2')
+    c('/sbin/ifconfig em0 10.0.2.15/24 up; /sbin/route add default 10.0.2.2')
     c('/bin/ping -c 2 10.0.2.2 > /tmp/g')
     c('grep transmitted /tmp/g', stdout='2 packets transmitted, 2 packets received, 0.0% packet loss\n')
     c('/bin/ping -c 2 -W 2 10.0.2.77 > /tmp/a', status=1)

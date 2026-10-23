@@ -75,7 +75,7 @@ checks ttyname failure before stat. `make test-mesg` checks both lines, independ
 modes, non-TTY/error paths, and a real UID-100 process failing to chmod a root-owned
 terminal that it inherited open. V7's message permission semantics are retained.
 
-Task 98 installs `/etc/getty` from V7 `usr/src/cmd/getty.c`. Its speed-table loop,
+Task 98 installs `/usr/libexec/getty` from V7 `usr/src/cmd/getty.c`. Its speed-table loop,
 username editing, case detection and login exec remain source-based. Profile `9`
 adds 115200 baud with native Ctrl-C, raw username input and cooked/echo login
 handoff. Other profile entries retain their historical settings and source
@@ -214,7 +214,7 @@ errors are checked. `make test-write` exchanges real messages between Alice and
 Bob at 16/128 MiB, checks mesg denial/enable, invalid names/usage, explicit tty,
 the full escape-buffer boundary, EOF and Ctrl-C, then verifies both shells live.
 
-Task 107 installs V7 `/etc/wall`. It retains file/stdin input, the 50-record table,
+Task 107 installs V7 `/usr/bin/wall`. It retains file/stdin input, the 50-record table,
 per-recipient sleep/fork, source broadcast header and asynchronous child delivery.
 The parent retains status 0 even if a delivery child reports failure. Ordinary
 senders respect device permissions; root can broadcast to a `mesg n` terminal.

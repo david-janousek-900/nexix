@@ -2,7 +2,7 @@
 .SH NAME
 init, rc  \-  process control initialization
 .SH SYNOPSIS
-.B /etc/init
+.B /sbin/init
 .br
 .B /etc/rc
 .SH DESCRIPTION
@@ -54,7 +54,7 @@ since the
 is not completed until someone
 is dialed up and carrier established on the channel.
 Then
-.I /etc/getty
+.I /usr/libexec/getty
 is called with argument as specified by the last character of
 the
 .I ttys
