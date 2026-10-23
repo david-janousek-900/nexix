@@ -12,7 +12,7 @@ import stat
 import struct
 import tempfile
 import time
-from install_manifest import MANIFEST, read_stage
+from install_manifest import MANIFEST, load_retired, read_stage
 from mk_v7fs import Image, BSIZE, DIR, REG, CHR, BLK, MAX_INODE_BLOCKS, MAX_FILE_BLOCKS, file_blocks, long, short, write_image
 
 
@@ -167,7 +167,7 @@ class Volume:
         return h.hexdigest()
 
 
-def plan(volume,records,payloads,epoch):
+def plan(volume,records,payloads,epoch,retired=()):
     paths=dict(volume.paths);changes=[]
     kinds={'directory':DIR,'file':REG,'character':CHR,'block':BLK}
     for entry in records:
@@ -191,7 +191,35 @@ def plan(volume,records,payloads,epoch):
         paths[path]=Node(0,mode,entry['uid'],entry['gid'],(epoch,epoch,epoch),
                          len(payload),entry.get('device',0),payload=payload if kind=='file' else None)
         changes.append(('replace' if old else 'add',path))
+    # Retired installations are removed only while they are still regular
+    # files; anything an administrator put there instead is kept.
+    for r in retired:
+        node=paths.get(r['path'])
+        if node is not None and node.kind==REG:
+            del paths[r['path']];changes.append(('remove',r['path']))
     return paths,changes
+
+
+def retirement_notes(volume,paths,retired):
+    """Kept retired paths, and kept configuration that still names one."""
+    kept=[r['path'] for r in retired if r['path'] in paths]
+    warnings=[]
+    names=[(r['path'].encode(),r['replacement']) for r in retired]
+    for path,node in sorted(paths.items()):
+        if node.kind!=REG or node.payload is not None or node.size>65536:continue
+        if not (path.startswith('/etc/') or PurePosixPath(path).name=='.profile'):continue
+        text=volume.contents(node)
+        for old,new in names:
+            at=text.find(old)
+            while at>=0 and at+len(old)<len(text) and (chr(text[at+len(old)]).isalnum() or text[at+len(old)] in b'._'):
+                at=text.find(old,at+1)
+            if at>=0:warnings.append(f'{path} still names retired {old.decode()}; use {new}')
+    profile=paths.get('/root/.profile')
+    if retired and profile is not None and profile.kind==REG and profile.payload is None:
+        for line in volume.contents(profile).splitlines():
+            if line.startswith(b'PATH=') and b'/sbin' not in line:
+                warnings.append('/root/.profile PATH lacks /sbin and /usr/sbin, where system commands now live')
+    return kept,warnings
 
 
 def build_upgrade(volume,paths,epoch):
@@ -281,6 +309,7 @@ def upgrade(image_path,stage,manifest=MANIFEST,backup_path=None,apply=False,epoc
     image_path=Path(image_path);epoch=int(time.time()) if epoch is None else epoch
     if not 0<=epoch<=0xffffffff:raise ValueError('upgrade time exceeds V7 timestamp range')
     records,payloads=read_stage(stage,manifest)
+    retired=load_retired(manifest) if manifest is not None else []
     fd=os.open(image_path,os.O_RDWR|os.O_NOFOLLOW)
     candidate=None;result=None
     try:
@@ -288,10 +317,11 @@ def upgrade(image_path,stage,manifest=MANIFEST,backup_path=None,apply=False,epoc
         if not stat.S_ISREG(info.st_mode) or info.st_nlink!=1 or info.st_uid!=os.geteuid():raise ValueError('image must be a regular file with one host link')
         fcntl.lockf(fd,fcntl.LOCK_EX|fcntl.LOCK_NB)
         with mmap.mmap(fd,0,access=mmap.ACCESS_READ) as original:
-            volume=Volume(original);paths,changes=plan(volume,records,payloads,epoch)
+            volume=Volume(original);paths,changes=plan(volume,records,payloads,epoch,retired)
+            kept,warnings=retirement_notes(volume,paths,retired)
             report={'image':str(image_path),'changes':[{'action':a,'path':p} for a,p in changes],
                     'preserved_configuration':[e['path'] for e in records if e['path'] in volume.paths and e['type']=='file' and e.get('source',{}).get('root')=='config' and not int(e['mode'],8)&0o111],
-                    'applied':False}
+                    'retired_kept':kept,'warnings':warnings,'applied':False}
             if not apply or not changes:return report
             if backup_path is None:raise ValueError('--backup is required for --apply')
             old_hash=digest(original);backup(original,backup_path)

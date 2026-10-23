@@ -44,6 +44,21 @@ checked by the existing installation tools before the disk is read.
 
 ## Preservation policy
 
+- **Retired paths** (task 433). The installation manifest's `retired` list
+  names files an earlier release installed and the current one no longer does,
+  each with its replacement. Task 432 retired the nine system binaries that V7
+  kept in `/etc` (for example `/etc/init` for `/sbin/init`). An upgrade
+  removes a retired path while it is still a regular file and reports it as
+  `remove`; other links to the same inode keep it. Anything else found there,
+  such as a directory, is kept and listed under `retired_kept`. Nothing else
+  is ever deleted.
+- **Warnings.** Configuration is never rewritten, so the report's `warnings`
+  list every kept file under `/etc`, and every `.profile`, that still names a
+  retired path, with its replacement (for example an `/etc/netstart` calling
+  `/etc/ifconfig`). A root profile whose `PATH` lacks `/sbin` is reported too.
+  Fix those files after upgrading. A disk that has not been upgraded still
+  boots: the kernel starts `/etc/init` and prints `ROOT OLD LAYOUT`.
+
 - Files sourced from built programs, libraries and headers, plus installed
   executable scripts, are managed payloads and are replaced when their contents
   or packaged metadata differ. Review these destinations in the preview.

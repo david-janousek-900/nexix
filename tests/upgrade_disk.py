@@ -8,8 +8,8 @@ import tempfile
 import unittest
 from unittest.mock import patch
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
-from mk_v7fs import Image,REG,CHR,BLK,long,write_image
-from install_manifest import stage_tree
+from mk_v7fs import Image,REG,DIR,CHR,BLK,long,write_image
+from install_manifest import load_retired,stage_tree
 from upgrade_disk import Volume,upgrade
 
 
@@ -18,22 +18,25 @@ class Upgrade(unittest.TestCase):
         self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
         self.root=Path(self.temp.name);self.disk=self.root/'disk.img';self.backup=self.root/'backup.img'
         image=Image(1024,8)
-        image.inode(7,REG|0o755,b'old program',nlink=2)
+        image.inode(7,REG|0o755,b'old program',nlink=3)   # also the retired /etc/oldtool
         image.inode(8,REG|0o600,b'root:custom:0:0:Owner:/:/bin/sh\n')
         image.inode(9,REG|0o644,b'TZ=CET-1\nexport TZ\n')
         image.inode(10,REG|0o640,sparse=(10+128+128*128,b'SPARSE'),nlink=3,uid=100,gid=100)
         image.inode(12,CHR|0o620,device=256,nlink=2,uid=100,gid=100)
         image.inode(13,BLK|0o600,device=4096)
-        image.inode(14,REG|0o755,b'/etc/ifconfig em0 10.0.2.15/24 up\n')   # an administrator's /etc/netstart
+        image.inode(14,REG|0o755,b'/etc/oldtool em0 10.0.2.15/24 up\n')   # an administrator's /etc/netstart
+        image.directory(15,4,[],mode=0o755)                                   # a retired path reused as a directory
+        image.inode(17,REG|0o644,b'PATH=/bin\nexport PATH\n')              # root's old profile
+        image.directory(16,2,[('.profile',17)],mode=0o700)
         image.directory(6,5,[('keep',10),('alias',10),('toolcopy',7),('rawname',10)],mode=0o700,uid=100,gid=100)
         offset=1024+(6-1)*64+12
         block=(image.bytes[offset]<<16)|image.bytes[offset+1]|(image.bytes[offset+2]<<8)
         image.bytes[block*512+5*16+2:block*512+6*16]=b'\xffname'.ljust(14,b'\0')
         image.directory(5,2,[('alice',6)])
         image.directory(3,2,[('tool',7)])
-        image.directory(4,2,[('passwd',8),('netstart',14)])
+        image.directory(4,2,[('passwd',8),('netstart',14),('oldtool',7),('olddir',15)])
         image.directory(11,2,[('console',12),('ttyS0',12),('disk',13)])
-        image.directory(2,2,[('bin',3),('etc',4),('home',5),('dev',11),('.profile',9)])
+        image.directory(2,2,[('bin',3),('etc',4),('home',5),('dev',11),('.profile',9),('root',16)])
         for ino in image.allocated_inodes-{1}:
             image.bytes[1024+(ino-1)*64+52:1024+ino*64]=long(0x12345678)+long(123)+long(456)
         self.original=bytes(image.finish());write_image(self.disk,self.original)
@@ -57,7 +60,9 @@ class Upgrade(unittest.TestCase):
         add('/dev/console','character','0600',device=256)
         records.append(dict(path='/dev/ttyS0',type='link',target='/dev/console',component='distribution.devices'))
         add('/dev/new','character','0600',device=257)
-        self.manifest=self.root/'manifest.json';self.manifest.write_text(json.dumps(dict(schema_version=1,version='0.2.0',inventory='docs/v7-userland-manifest.json',entries=records)))
+        retired=[dict(path='/etc/oldtool',replacement='/bin/tool',task=432),dict(path='/etc/olddir',replacement='/bin/tool',task=432),
+                 dict(path='/etc/absent',replacement='/bin/tool',task=432)]
+        self.manifest=self.root/'manifest.json';self.manifest.write_text(json.dumps(dict(schema_version=1,version='0.2.0',inventory='docs/v7-userland-manifest.json',retired=retired,entries=records)))
         stage_tree(self.stage,self.manifest,self.programs,self.config)
 
     def run_upgrade(self,apply=True):
@@ -87,6 +92,32 @@ class Upgrade(unittest.TestCase):
         self.assertEqual(after.paths['/root'].mode&0o777,0o700)
         self.assertEqual(after.contents(after.paths['/etc/newconf']),b'new configuration\n')
         data=self.disk.read_bytes();self.assertFalse(self.run_upgrade()['applied']);self.assertEqual(self.disk.read_bytes(),data)
+
+    def test_retired_paths(self):
+        report=self.run_upgrade(False)
+        self.assertIn({'action':'remove','path':'/etc/oldtool'},report['changes'])
+        self.assertEqual(report['retired_kept'],['/etc/olddir'])
+        self.assertEqual(report['warnings'],['/etc/netstart still names retired /etc/oldtool; use /bin/tool',
+                                             '/root/.profile PATH lacks /sbin and /usr/sbin, where system commands now live'])
+        self.assertEqual(self.disk.read_bytes(),self.original)
+        self.assertTrue(self.run_upgrade()['applied'])
+        before=Volume(self.original);after=Volume(self.disk.read_bytes())
+        self.assertNotIn('/etc/oldtool',after.paths)                      # removed, with no link left behind
+        self.assertEqual(after.paths['/etc/olddir'].kind,DIR)              # not a regular file: kept
+        old=after.paths['/home/alice/toolcopy']                            # the other link keeps the old bytes
+        self.assertEqual(after.contents(old),b'old program')
+        self.assertEqual(old.ino,before.paths['/home/alice/toolcopy'].ino)
+        for name in ['/etc/netstart','/root/.profile']:                     # configuration is never rewritten
+            self.assertEqual(after.hash(after.paths[name]),before.hash(before.paths[name]))
+        report=self.run_upgrade(False)
+        self.assertFalse(any(c['action']=='remove' for c in report['changes']))   # nothing left to retire
+
+    def test_retired_list_is_validated(self):
+        data=json.loads(self.manifest.read_text())
+        for bad in [dict(path='/etc/x',replacement='/missing',task=432),dict(path='/bin/tool',replacement='/bin/tool',task=432),
+                    dict(path='/etc/x',replacement='/bin/tool'),dict(path='etc/x',replacement='/bin/tool',task=432)]:
+            data['retired']=[bad];self.manifest.write_text(json.dumps(data))
+            with self.subTest(bad=bad),self.assertRaisesRegex(ValueError,'retired|path'):load_retired(self.manifest)
 
     def test_existing_backup_is_never_overwritten(self):
         self.backup.write_bytes(b'keep backup')

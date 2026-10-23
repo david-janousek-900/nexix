@@ -109,6 +109,25 @@ def load(path=MANIFEST):
     return entries
 
 
+def load_retired(path=MANIFEST):
+    """Paths an earlier release installed and upgrades now remove (task 433).
+    Each names its replacement, which must be installed; no retired path may
+    still be installed."""
+    data = json.loads(Path(path).read_text())
+    retired = data.get('retired', [])
+    installed = {e['path'] for e in load(path)}
+    seen = set()
+    if not isinstance(retired, list):
+        raise ValueError('retired paths must be a list')
+    for r in retired:
+        if (not isinstance(r, dict) or set(r) != {'path', 'replacement', 'task'} or type(r['task']) is not int or
+                r['path'] in seen or r['path'] in installed or r['replacement'] not in installed):
+            raise ValueError(f'invalid retired path: {r!r}')
+        guest_path(r['path'])
+        seen.add(r['path'])
+    return retired
+
+
 def validate_profiles(full, bootstrap):
     if any('bootstrap' in e for e in full):
         raise ValueError('bootstrap flags belong to the fixed bootstrap manifest')

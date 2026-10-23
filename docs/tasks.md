@@ -19,8 +19,8 @@ The inventory accounts for **225 components, 2,144 distribution files and
 4 partial, 0 prototype and 127 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **434 tracking tasks: 241 done, 0 in progress
-and 193 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–202, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–432** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **434 tracking tasks: 242 done, 0 in progress
+and 192 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–202, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–433** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -773,5 +773,5 @@ links stay in `/etc`.
 | Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
 | 432 | Relocate system binaries to BSD directories | Done | init, dmesg, mknod, ifconfig and route in /sbin; accton and update in /usr/sbin; getty in /usr/libexec; wall in a new /usr/bin; nothing executable left in /etc; the kernel starts /sbin/init and, only for disks not yet upgraded, /etc/init with a ROOT OLD LAYOUT warning; init starts /usr/libexec/getty and its recovery shell, like root's profile, uses PATH=/sbin:/bin:/usr/sbin:/usr/bin (users /bin:/usr/bin); bootstrap image, netstart sample, inventory install fields, tools, tests and docs updated; the seven V7 manuals naming these binaries now give the new paths, checked to differ from the originals by exactly those paths (`make test-man-pages`); getty, wall, accton, mknod, update, dmesg, multi-user, terminal, console, syscall, libc, networking and boot suites at 16/128 MiB; Git history |
-| 433 | Retire relocated paths during disk upgrades | To do | After 432: the installation manifest lists retired paths; upgrades remove those regular files, keep anything else at those paths, report each removal and warn when preserved configuration (such as /etc/netstart or profiles) still names a retired path; upgrade an image with the old layout and verify removal, preservation, warnings and a clean boot |
+| 433 | Retire relocated paths during disk upgrades | Done | The installation manifest's validated `retired` list names the nine old /etc binaries with their replacements; upgrades remove each that is still a regular file (other hard links keep the old bytes), keep anything else there under `retired_kept`, and warn about kept /etc files and profiles that still name a retired path and about a root PATH without /sbin; [preservation policy](disk-upgrades.md#preservation-policy), `make test-upgrade-unit` (removal, kept directory, hard link, warnings, validation) and `make test-layout-upgrade`: a V7-layout disk with the pre-432 init boots with the ROOT OLD LAYOUT warning, upgrades with exactly those removals and warnings, then boots from /sbin/init with no binaries left in /etc at 16/128 MiB; Git history |
 | 434 | Verify and document the BSD directory layout | To do | After 432–433: fresh and upgraded images keep only configuration and rc scripts in /etc, checked from the manifest and on disk; a hierarchy guide for /bin, /sbin, /usr/bin, /usr/sbin, /usr/libexec, /usr/lib and /etc; full networking and affected regression suites |

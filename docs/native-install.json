@@ -2,6 +2,53 @@
   "schema_version": 1,
   "version": "0.2.0",
   "inventory": "docs/v7-userland-manifest.json",
+  "retired": [
+    {
+      "path": "/etc/init",
+      "replacement": "/sbin/init",
+      "task": 432
+    },
+    {
+      "path": "/etc/dmesg",
+      "replacement": "/sbin/dmesg",
+      "task": 432
+    },
+    {
+      "path": "/etc/mknod",
+      "replacement": "/sbin/mknod",
+      "task": 432
+    },
+    {
+      "path": "/etc/ifconfig",
+      "replacement": "/sbin/ifconfig",
+      "task": 432
+    },
+    {
+      "path": "/etc/route",
+      "replacement": "/sbin/route",
+      "task": 432
+    },
+    {
+      "path": "/etc/accton",
+      "replacement": "/usr/sbin/accton",
+      "task": 432
+    },
+    {
+      "path": "/etc/update",
+      "replacement": "/usr/sbin/update",
+      "task": 432
+    },
+    {
+      "path": "/etc/getty",
+      "replacement": "/usr/libexec/getty",
+      "task": 432
+    },
+    {
+      "path": "/etc/wall",
+      "replacement": "/usr/bin/wall",
+      "task": 432
+    }
+  ],
   "entries": [
     {
       "path": "/",

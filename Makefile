@@ -707,6 +707,26 @@ test-netconfig: test-net-config multi-iso rootfs build/netconfig-api.elf
 	$(PYTHON) tools/netconfig_smoke.py $(QEMU) build/nexix-multi.iso 128M e1000
 	$(PYTHON) tools/netconfig_smoke.py $(QEMU) build/nexix-multi.iso 16M none
 test: test-netconfig
+# Task 433: upgrading a disk with V7's /etc layout. The old init, profile
+# and netstart come from the last commit before task 432.
+LAYOUT_BASE = 1009b15
+build/old-layout/cmd/init.c: | build/.dir
+	mkdir -p $(@D)
+	git show $(LAYOUT_BASE):user/v7/cmd/init.c > $@
+	cp user/v7/session.h user/v7/hostname-file.h build/old-layout/
+build/old-layout/v7-init.o: build/old-layout/cmd/init.c user/v7/compat.h
+	$(CC) $(V7_CFLAGS) -Iuser/v7 -include user/v7/compat.h -c $< -o $@
+build/old-layout/v7-init.elf: build/crt0.o build/old-layout/v7-init.o build/v7-session.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o,$^) build/libc.a -o $@
+build/old-layout/profile build/old-layout/netstart: | build/.dir
+	mkdir -p $(@D)
+	git show $(LAYOUT_BASE):rootfs/profile > build/old-layout/profile
+	git show $(LAYOUT_BASE):rootfs/etc/netstart.qemu > build/old-layout/netstart
+.PHONY: test-layout-upgrade
+test-layout-upgrade: multi-iso rootfs stage build/old-layout/v7-init.elf build/old-layout/profile build/old-layout/netstart
+	$(PYTHON) tools/layout_upgrade_smoke.py $(QEMU) build/nexix-multi.iso 16M build/old-layout/v7-init.elf build/old-layout/profile build/old-layout/netstart
+	$(PYTHON) tools/layout_upgrade_smoke.py $(QEMU) build/nexix-multi.iso 128M build/old-layout/v7-init.elf build/old-layout/profile build/old-layout/netstart
+test: test-layout-upgrade
 # Task 431: TCP/IP guest acceptance against isolated host services, then
 # every networking suite and the affected regressions.
 .PHONY: test-tcpip-acceptance test-tcpip
