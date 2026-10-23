@@ -693,6 +693,21 @@ test-netconfig: test-net-config multi-iso rootfs build/netconfig-api.elf
 	$(PYTHON) tools/netconfig_smoke.py $(QEMU) build/nexix-multi.iso 128M e1000
 	$(PYTHON) tools/netconfig_smoke.py $(QEMU) build/nexix-multi.iso 16M none
 test: test-netconfig
+# Task 428: numeric-address ping and nc.
+build/v7-ping.o: user/v7/cmd/ping.c user/v7/netconfig.h | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/v7-nc.o: user/v7/cmd/nc.c user/v7/netconfig.h | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/as-user.o: tests/as-user.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/as-user.elf: build/as-user.o build/crt0.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld build/crt0.o build/as-user.o build/libc.a -o $@
+-include build/as-user.d
+.PHONY: test-nettools
+test-nettools: multi-iso rootfs build/as-user.elf
+	$(PYTHON) tools/nettools_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/nettools_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-nettools
 # Task 425: socket objects behind file descriptors.
 build/socket-api.o: tests/socket-api.c | build/.dir
 	$(CC) $(USER_CFLAGS) -c $< -o $@

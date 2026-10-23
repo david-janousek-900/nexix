@@ -75,7 +75,7 @@ Details:
   destinations.
 
 Configuration is not persistent. Task 429 adds the optional `/etc/netstart`
-that applies it at boot.
+that applies it at boot. Test connectivity with [`ping` and `nc`](nettools.md).
 
 ## Socket ioctls
 
