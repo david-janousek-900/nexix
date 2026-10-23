@@ -2414,6 +2414,32 @@
       "format": "elf"
     },
     {
+      "path": "/bin/ping",
+      "type": "file",
+      "mode": "4755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.nettools",
+      "source": {
+        "root": "programs",
+        "path": "v7-ping.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/nc",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.nettools",
+      "source": {
+        "root": "programs",
+        "path": "v7-nc.elf"
+      },
+      "format": "elf"
+    },
+    {
       "path": "/etc/hostname",
       "type": "file",
       "mode": "0644",

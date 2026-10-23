@@ -25706,6 +25706,62 @@
       ]
     },
     {
+      "id": "cmd.nettools",
+      "kind": "command",
+      "summary": "Native numeric-address ping and TCP/UDP nc",
+      "sources": [],
+      "source_files": [],
+      "source_availability": "native",
+      "native_sources": [
+        "user/v7/cmd/ping.c",
+        "user/v7/cmd/nc.c",
+        "user/v7/netconfig.h"
+      ],
+      "outputs": [
+        {
+          "name": "ping",
+          "install": "/bin/ping",
+          "role": "installed",
+          "status": "implemented",
+          "evidence": [
+            "user/v7/cmd/ping.c",
+            "docs/nettools.md",
+            "Makefile"
+          ]
+        },
+        {
+          "name": "nc",
+          "install": "/bin/nc",
+          "role": "installed",
+          "status": "implemented",
+          "evidence": [
+            "user/v7/cmd/nc.c",
+            "docs/nettools.md",
+            "Makefile"
+          ]
+        }
+      ],
+      "priority": 3,
+      "status": "implemented",
+      "dependencies": [
+        {
+          "target": "lib.libc",
+          "phase": "runtime",
+          "certainty": "confirmed",
+          "evidence": [
+            "libc/socket.c"
+          ],
+          "note": "Raw ICMP, stream and datagram sockets with timeouts."
+        }
+      ],
+      "blockers": [],
+      "unresolved": [],
+      "reference_includes": [],
+      "acceptance": [
+        "Test loopback and gateway echo, TCP/UDP payloads both ways, EOF, timeouts, SIGINT/SIGTERM handling, setuid ping as an ordinary user and command failures at 16/128 MiB."
+      ]
+    },
+    {
       "id": "cmd.clear",
       "kind": "command",
       "summary": "Native terminal clearing through TERM and termcap",
