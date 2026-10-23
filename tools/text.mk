@@ -152,3 +152,11 @@ test-sort: test-sort-unit multi-iso rootfs
 	$(PYTHON) tools/sort_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/sort_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-sort
+.PHONY: test-find-unit test-find
+test-find-unit:
+	$(PYTHON) tests/find.py
+test-unit: test-find-unit
+test-find: test-find-unit multi-iso rootfs
+	$(PYTHON) tools/find_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/find_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-find

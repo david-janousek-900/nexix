@@ -220,6 +220,41 @@ usable in a 16 MiB guest. A NUL input byte never follows an empty transition,
 lines are unbounded, a final unterminated line is a line, and `-b` uses V7's
 numbering. The host fixture compares 2,100 inputs with the V7 source.
 
+### find (task 149)
+
+`/bin/find path ... expression` retains V7 traversal (with `chdir` into each
+directory, reading 16-byte V7 directory records) and its expression language:
+`-name` glob patterns (a leading `.` must match explicitly), `-type [bcdf]`,
+`-perm [-]octal`, `-size [+-]n` (512-byte blocks), `-links`, `-inum`,
+`-user`/`-group` names from `/etc/passwd`/`/etc/group` or numbers,
+`-mtime`/`-atime`/`-ctime [+-]days`, `-newer file`, `-print`, `-exec cmd ;`
+and `-ok cmd ;` with `{}` replaced by the path, `-cpio archive`, `!`, `-o`,
+implied and explicit `-a`, and parentheses. As in V7 nothing is printed
+without `-print`. Parse errors exit 1, a bad starting directory exits 2 and
+unreadable entries are reported as `find: bad status-- path`.
+
+Native adaptations:
+
+- Expression nodes have explicit numeric, sign and pattern operands. V7
+  stored integers in pointer fields and read them back through overlaid
+  `int` structures, which only worked with 16-bit pointers.
+- Paths may be 1023 bytes (V7: 200, unchecked); deeper entries are reported
+  as `find: pathname too long` and skipped. Expressions are limited to 100
+  nodes and `-exec` to 49 arguments, with diagnostics.
+- `/` and other starting paths ending in `/` work: V7 relied on its kernel
+  reading an empty name as the current directory.
+- `-perm` accepts only octal digits; `-user`/`-group` lookups bound their
+  fields and tolerate a missing database; the `-cpio` creation error prints
+  the archive name (V7 passed a character as a string).
+- `-cpio` writes V7 binary headers (`070707`, little-endian shorts, words
+  high-first) from a heap buffer, refuses names longer than 255 bytes and pads
+  short file reads to the recorded size.
+- `-exec` children exit with `_exit` and the parent waits for its own child.
+  Output errors return 1.
+
+The host fixture reads host directories through a link-time shim that
+presents them as V7 directory records.
+
 ### join (task 150)
 
 `/bin/join [-an] [-e s] [-jn m] [-o list] [-tc] file1 file2` keeps V7's merge
