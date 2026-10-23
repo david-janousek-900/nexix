@@ -183,6 +183,50 @@ stdin. The column prefixes are writable arrays rather than modified string
 literals. Lines are unbounded instead of split at 255 bytes, and bytes compare
 unsigned. Missing files, `comm: illegal flag` and `comm: arg count` return 1.
 
+### diffh (task 142)
+
+`/usr/lib/diffh [-b] file1 file2` is V7's resynchronizing comparison for
+files too large for `diff`; `diff -h` executes it. It resynchronizes on three
+matching lines within 30-line windows and reports `a`, `d` and `c` changes,
+using `$` for changes that run to the end. Stored lines grow instead of being
+split at 254 bytes, buffers rotate instead of copying strings between
+fixed slots, directory arguments are unbounded, and a final line without a
+newline is treated as terminated (as `diff` does). The status now matches
+`diff`: 0 identical, 1 different, 2 for trouble such as `diffh: can't
+resynchronize` (V7 returned an undefined value and used 1 for errors).
+
+### diff (task 143)
+
+`/bin/diff [-efbh] file1 file2` retains Stone's longest-common-subsequence
+algorithm and V7's normal, `-e` (ed script) and `-f` (reverse script) output;
+`-b` ignores trailing blanks and compresses blank runs, `-` reads standard
+input through a temporary file, and a directory operand uses the other file's
+basename. The status is 0 for no differences, 1 for some and 2 for trouble.
+
+Native adaptations: V7's "compacting" reallocation freed a block before
+reallocating it (a use after free) and its shellsort stepped pointers below
+the array and used an uninitialized gap for empty inputs; both are replaced
+with defined equivalents. End of file is no longer signalled by a zero line
+hash, which a real line could produce. A final line without a newline is
+compared and printed as if terminated, where V7 dropped it or looped. The
+standard-input copy is created exclusively and checked, and directory-derived
+names are sized for both operands. The host fixture compares 1,600 random
+edits with the V7 source.
+
+### diff3 (task 144)
+
+The original `/bin/diff3 [-e|-3|-x] file1 file2 file3` script runs `diff`
+twice into `/tmp/d3a$$`/`/tmp/d3b$$` (removed on exit or signal) and passes
+the results to `/usr/lib/diff3`. The helper prints `====`, `====1`, `====2`
+and `====3` groups with each file's line ranges and text, or with `-e`, `-3`
+and `-x` an ed script for the changes from file 3 to merge into file 1.
+Change tables and lines grow on demand (V7 allowed 200 changes and aborted on
+lines of 255 bytes or more), `duplicate()` returns its missing value,
+the end-of-table entry no longer reads before the table when there are no
+changes, a missing diff file is reported, and internal errors exit 2 instead
+of aborting with a core image. The script's argument check is the original
+one, so a missing third operand also draws `test: argument expected`.
+
 ### egrep (task 147)
 
 `/bin/egrep [-bchlnsv] [-e] expr [file ...]` and `-f file` build V7's

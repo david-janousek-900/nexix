@@ -8477,6 +8477,58 @@
         "path": "v7-find.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/diff",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.diff",
+      "source": {
+        "root": "programs",
+        "path": "v7-diff.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/usr/lib/diffh",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.diffh",
+      "source": {
+        "root": "programs",
+        "path": "v7-diffh.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/usr/lib/diff3",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.diff3",
+      "source": {
+        "root": "programs",
+        "path": "v7-diff3.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/diff3",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "script.diff3",
+      "source": {
+        "root": "config",
+        "path": "bin/diff3"
+      },
+      "format": "data"
     }
   ]
 }

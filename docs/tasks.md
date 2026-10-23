@@ -10,17 +10,17 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 98 native ELF programs are
+to multi-user V7 login with persistent IDE storage. 101 native ELF programs are
 installed; the complete list and destinations are in [the installation manifest](native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
 The inventory accounts for **223 components, 2,144 distribution files and
-36 supporting/platform requirements**. Its component statuses are 100 implemented,
-7 partial, 0 prototype and 116 not ported; importing reference inputs does not
+36 supporting/platform requirements**. Its component statuses are 104 implemented,
+7 partial, 0 prototype and 112 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **411 tracking tasks: 238 done, 0 in progress
-and 173 to do**. Tasks **1–108, 119–141, 145–165, 168–202, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **411 tracking tasks: 241 done, 0 in progress
+and 170 to do**. Tasks **1–108, 119–165, 168–202, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–411** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -280,9 +280,9 @@ coverage and installation remain subject to later acceptance tasks.
 | 139 | Port cmp | Done | Git history; [native command contract](text-commands.md); retained binary comparison and V7 output, checked skip counts and native read errors; ASan/UBSan plus binary/pipe/status acceptance at 16/128 MiB |
 | 140 | Port col | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); retained page buffer, line motions and overstrikes with growing 1 MiB-bounded lines; 1,600 reference-algorithm comparisons, ASan/UBSan and 16/128 MiB guests |
 | 141 | Port comm | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); writable column prefixes, unbounded/unterminated lines, flags/stdin/errors; ASan/UBSan and 16/128 MiB guests |
-| 142 | Port diffh | To do | Source-defined behavior, byte fixtures and error cases |
-| 143 | Port diff | To do | Source-defined behavior, byte fixtures and error cases |
-| 144 | Port diff3 | To do | Private helper plus installed script |
+| 142 | Port diffh | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); retained resynchronizing comparison with growing lines, rotated buffers and diff-compatible statuses; 300 reference comparisons, ASan/UBSan and 16/128 MiB guests via diff -h |
+| 143 | Port diff | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); retained Stone LCS and normal/-e/-f/-b output without use-after-free reallocation, defined shellsort, distinct EOF and unterminated-line handling; 1,600 reference comparisons, ASan/UBSan and 16/128 MiB guests |
+| 144 | Port diff3 | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); original script plus /usr/lib/diff3 helper with growing tables and lines, fixed duplicate() and sentinel; 1,200 reference comparisons, ASan/UBSan and 16/128 MiB guests |
 | 145 | Port ed | Done | Git history; [editor contract](text-commands.md#ed-task-145); retained command/BRE/rotor logic with LP64 line-table fixes, bounded input and exclusive temp creation; ASan/UBSan, edit/save/reopen, growth, encrypted-file oracle, SIGINT/SIGHUP, shell escapes and permissions at 16/128 MiB |
 | 146 | Port grep | Done | Git history; [native command contract](text-commands.md); retained V7 flags and BRE bytecode, bounded compiler/matcher, LP64 counts; ASan/UBSan and installed files/pipes/status acceptance at 16/128 MiB |
 | 147 | Port egrep | Done | Git history; [native command contract](text-commands.md#retained-text-utilities-tasks-140164); retained grammar through native V7 yacc, 256-byte rows, bounded states/positions, separate -f stream and unbounded lines; 1,200 reference comparisons, ASan/UBSan and 16/128 MiB guests |

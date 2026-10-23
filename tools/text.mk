@@ -160,3 +160,21 @@ test-find: test-find-unit multi-iso rootfs
 	$(PYTHON) tools/find_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/find_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-find
+.PHONY: test-diff-unit
+test-diff-unit:
+	$(PYTHON) tests/diff.py
+test-unit: test-diff-unit
+.PHONY: test-diffh-unit
+test-diffh-unit:
+	$(PYTHON) tests/diffh.py
+test-unit: test-diffh-unit
+.PHONY: test-diff3-unit
+test-diff3-unit:
+	$(PYTHON) tests/diff3.py
+test-unit: test-diff3-unit
+# diff, its diffh helper and the diff3 helper plus original script share one guest run.
+.PHONY: test-diff
+test-diff: test-diff-unit test-diffh-unit test-diff3-unit multi-iso rootfs
+	$(PYTHON) tools/diff_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/diff_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-diff
