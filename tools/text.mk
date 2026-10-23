@@ -1,5 +1,13 @@
 # Tasks 140-164: retained V7 text commands. Each has an ASan/UBSan host
 # fixture (tests/<name>.py) and installed-command guest acceptance.
+
+# egrep's expression parser comes from the retained V7 yacc, as in cmake.
+build/gen-egrep/y.tab.c: user/v7/cmd/egrep.y build/host-nx-yacc rootfs/usr/lib/yaccpar
+	mkdir -p build/gen-egrep
+	cp user/v7/cmd/egrep.y build/gen-egrep/egrep.y
+	cd build/gen-egrep && NX_YACCPAR=$(CURDIR)/rootfs/usr/lib/yaccpar $(CURDIR)/build/host-nx-yacc egrep.y >/dev/null
+build/v7-egrep.o: build/gen-egrep/y.tab.c user/v7/compat.h | build/.dir
+	$(CC) $(V7_CFLAGS) -include user/v7/compat.h -c $< -o $@
 .PHONY: test-col-unit test-col
 test-col-unit:
 	$(PYTHON) tests/col.py
@@ -96,3 +104,19 @@ test-uniq: test-uniq-unit multi-iso rootfs
 	$(PYTHON) tools/uniq_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/uniq_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-uniq
+.PHONY: test-egrep-unit test-egrep
+test-egrep-unit:
+	$(PYTHON) tests/egrep.py
+test-unit: test-egrep-unit
+test-egrep: test-egrep-unit multi-iso rootfs
+	$(PYTHON) tools/egrep_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/egrep_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-egrep
+.PHONY: test-fgrep-unit test-fgrep
+test-fgrep-unit:
+	$(PYTHON) tests/fgrep.py
+test-unit: test-fgrep-unit
+test-fgrep: test-fgrep-unit multi-iso rootfs
+	$(PYTHON) tools/fgrep_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/fgrep_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-fgrep

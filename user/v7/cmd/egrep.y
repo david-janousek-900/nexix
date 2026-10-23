@@ -1,0 +1,598 @@
+/*
+ * egrep -- print lines containing (or not containing) a regular expression
+ *
+ *	status returns:
+ *		0 - ok, and some matches
+ *		1 - ok, but no matches
+ *		2 - some error
+ */
+%token CHAR DOT CCL NCCL OR CAT STAR PLUS QUEST
+%left OR
+%left CHAR DOT CCL NCCL '('
+%left CAT
+%left STAR PLUS QUEST
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+
+/* Native sizes: V7 used 350/4000/128/128 and indexed 8-bit input bytes
+   into 128-entry rows. */
+#define MAXLIN 1000
+#define MAXPOS 100000
+#define NCHARS 256
+#define NSTATES 512
+#define FINAL -1
+short gotofn[NSTATES][NCHARS];
+int state[NSTATES];
+char out[NSTATES];
+int line = 1;
+int name[MAXLIN];
+int left[MAXLIN];
+int right[MAXLIN];
+int parent[MAXLIN];
+int foll[MAXLIN];
+int positions[MAXPOS];
+int chars[MAXLIN];	/* class counts can exceed a byte */
+int nxtpos;
+int nxtchar = 0;
+int tmpstat[MAXLIN];
+int initstat[MAXLIN];
+int xstate;
+int count;
+int icount;
+char *input;
+
+long	lnum;
+int	bflag;
+int	cflag;
+int	fflag;
+int	lflag;
+int	nflag;
+int	hflag	= 1;
+int	sflag;
+int	vflag;
+int	nfile;
+long	blkno;
+long	tln;
+int	nsucc;
+
+int	f;
+char	*fname;
+FILE	*pfile;
+%}
+
+%%
+s:	t
+		={ unary(FINAL, $1);
+		  line--;
+		}
+	;
+t:	b r
+		={ $$ = node(CAT, $1, $2); }
+	| OR b r OR
+		={ $$ = node(CAT, $2, $3); }
+	| OR b r
+		={ $$ = node(CAT, $2, $3); }
+	| b r OR
+		={ $$ = node(CAT, $1, $2); }
+	;
+b:
+		={ $$ = enter(DOT);
+		   $$ = unary(STAR, $$); }
+	;
+r:	CHAR
+		={ $$ = enter($1); }
+	| DOT
+		={ $$ = enter(DOT); }
+	| CCL
+		={ $$ = cclenter(CCL); }
+	| NCCL
+		={ $$ = cclenter(NCCL); }
+	;
+
+r:	r OR r
+		={ $$ = node(OR, $1, $3); }
+	| r r %prec CAT
+		={ $$ = node(CAT, $1, $2); }
+	| r STAR
+		={ $$ = unary(STAR, $1); }
+	| r PLUS
+		={ $$ = unary(PLUS, $1); }
+	| r QUEST
+		={ $$ = unary(QUEST, $1); }
+	| '(' r ')'
+		={ $$ = $2; }
+	| error 
+	;
+
+%%
+yyerror(s) char *s; {
+	fprintf(stderr, "egrep: %s\n", s);
+	exit(2);
+}
+
+yylex() {
+	extern int yylval;
+	int cclcnt, x;
+	register char c, d;
+	switch(c = nextch()) {
+		case '$':
+		case '^': c = '\n';
+			goto defchar;
+		case '|': return (OR);
+		case '*': return (STAR);
+		case '+': return (PLUS);
+		case '?': return (QUEST);
+		case '(': return (c);
+		case ')': return (c);
+		case '.': return (DOT);
+		case '\0': return (0);
+		case '\n': return (OR);
+		case '[': 
+			x = CCL;
+			cclcnt = 0;
+			count = nxtchar++;
+			if ((c = nextch()) == '^') {
+				x = NCCL;
+				c = nextch();
+			}
+			do {
+				if (c == '\0') synerror();
+				if (c == '-' && cclcnt > 0 && chars[nxtchar-1] != 0) {
+					if ((d = nextch()) != 0) {
+						c = chars[nxtchar-1];
+						while (c < d) {
+							if (nxtchar >= MAXLIN) overflo();
+							chars[nxtchar++] = ++c;
+							cclcnt++;
+						}
+						continue;
+					}
+				}
+				if (nxtchar >= MAXLIN) overflo();
+				chars[nxtchar++] = c;
+				cclcnt++;
+			} while ((c = nextch()) != ']');
+			chars[count] = cclcnt;
+			return (x);
+		case '\\':
+			if ((c = nextch()) == '\0') synerror();
+		defchar:
+		default: yylval = c; return (CHAR);
+	}
+}
+nextch() {
+	register c;	/* int: an unsigned char never equals EOF */
+	if (fflag) {
+		if ((c = getc(pfile)) == EOF) return(0);
+	}
+	else if ((c = *input) != '\0')
+		input++;	/* never step past the terminator */
+	return(c);
+}
+
+synerror() {
+	fprintf(stderr, "egrep: syntax error\n");
+	exit(2);
+}
+
+enter(x) int x; {
+	if(line >= MAXLIN) overflo();
+	name[line] = x;
+	left[line] = 0;
+	right[line] = 0;
+	return(line++);
+}
+
+cclenter(x) int x; {
+	register linno;
+	linno = enter(x);
+	right[linno] = count;
+	return (linno);
+}
+
+node(x, l, r) {
+	if(line >= MAXLIN) overflo();
+	name[line] = x;
+	left[line] = l;
+	right[line] = r;
+	parent[l] = line;
+	parent[r] = line;
+	return(line++);
+}
+
+unary(x, d) {
+	if(line >= MAXLIN) overflo();
+	name[line] = x;
+	left[line] = d;
+	right[line] = 0;
+	parent[d] = line;
+	return(line++);
+}
+overflo() {
+	fprintf(stderr, "egrep: regular expression too long\n");
+	exit(2);
+}
+
+cfoll(v) {
+	register i;
+	if (left[v] == 0) {
+		count = 0;
+		for (i=1; i<=line; i++) tmpstat[i] = 0;
+		follow(v);
+		add(foll, v);
+	}
+	else if (right[v] == 0) cfoll(left[v]);
+	else {
+		cfoll(left[v]);
+		cfoll(right[v]);
+	}
+}
+cgotofn() {
+	register c, i, k;
+	int n, s;
+	char symbol[NCHARS];
+	int j, nc, pc, pos;
+	int curpos, num;
+	int number, newpos;
+	count = 0;
+	for (n=3; n<=line; n++) tmpstat[n] = 0;
+	if (cstate(line-1)==0) {
+		tmpstat[line] = 1;
+		count++;
+		out[0] = 1;
+	}
+	for (n=3; n<=line; n++) initstat[n] = tmpstat[n];
+	count--;		/*leave out position 1 */
+	icount = count;
+	tmpstat[1] = 0;
+	add(state, 0);
+	n = 0;
+	for (s=0; s<=n; s++)  {
+		if (out[s] == 1) continue;
+		for (i=0; i<NCHARS; i++) symbol[i] = 0;
+		num = positions[state[s]];
+		count = icount;
+		for (i=3; i<=line; i++) tmpstat[i] = initstat[i];
+		pos = state[s] + 1;
+		for (i=0; i<num; i++) {
+			curpos = positions[pos];
+			if ((c = name[curpos]) >= 0) {
+				if (c < NCHARS) symbol[c] = 1;
+				else if (c == DOT) {
+					for (k=0; k<NCHARS; k++)
+						if (k!='\n') symbol[k] = 1;
+				}
+				else if (c == CCL) {
+					nc = chars[right[curpos]];
+					pc = right[curpos] + 1;
+					for (k=0; k<nc; k++) symbol[chars[pc++]] = 1;
+				}
+				else if (c == NCCL) {
+					nc = chars[right[curpos]];
+					for (j = 0; j < NCHARS; j++) {
+						pc = right[curpos] + 1;
+						for (k = 0; k < nc; k++)
+							if (j==chars[pc++]) goto cont;
+						if (j!='\n') symbol[j] = 1;
+						cont:;
+					}
+				}
+				else printf("something's funny\n");
+			}
+			pos++;
+		}
+		for (c=0; c<NCHARS; c++) {
+			if (symbol[c] == 1) { /* nextstate(s,c) */
+				count = icount;
+				for (i=3; i <= line; i++) tmpstat[i] = initstat[i];
+				pos = state[s] + 1;
+				for (i=0; i<num; i++) {
+					curpos = positions[pos];
+					if ((k = name[curpos]) >= 0)
+						if (
+							(k == c)
+							| (k == DOT)
+							| (k == CCL && member(c, right[curpos], 1))
+							| (k == NCCL && member(c, right[curpos], 0))
+						) {
+							number = positions[foll[curpos]];
+							newpos = foll[curpos] + 1;
+							for (k=0; k<number; k++) {
+								if (tmpstat[positions[newpos]] != 1) {
+									tmpstat[positions[newpos]] = 1;
+									count++;
+								}
+								newpos++;
+							}
+						}
+					pos++;
+				} /* end nextstate */
+				if (notin(n)) {
+					if (n+1 >= NSTATES) overflo();	/* V7 allowed state[NSTATES] */
+					add(state, ++n);
+					if (tmpstat[line] == 1) out[n] = 1;
+					gotofn[s][c] = n;
+				}
+				else {
+					gotofn[s][c] = xstate;
+				}
+			}
+		}
+	}
+}
+
+cstate(v) {
+	register b;
+	if (left[v] == 0) {
+		if (tmpstat[v] != 1) {
+			tmpstat[v] = 1;
+			count++;
+		}
+		return(1);
+	}
+	else if (right[v] == 0) {
+		if (cstate(left[v]) == 0) return (0);
+		else if (name[v] == PLUS) return (1);
+		else return (0);
+	}
+	else if (name[v] == CAT) {
+		if (cstate(left[v]) == 0 && cstate(right[v]) == 0) return (0);
+		else return (1);
+	}
+	else { /* name[v] == OR */
+		b = cstate(right[v]);
+		if (cstate(left[v]) == 0 || b == 0) return (0);
+		else return (1);
+	}
+}
+
+
+member(symb, set, torf) {
+	register i, num, pos;
+	num = chars[set];
+	pos = set + 1;
+	for (i=0; i<num; i++)
+		if (symb == chars[pos++]) return (torf);
+	return (!torf);
+}
+
+notin(n) {
+	register i, j, pos;
+	for (i=0; i<=n; i++) {
+		if (positions[state[i]] == count) {
+			pos = state[i] + 1;
+			for (j=0; j < count; j++)
+				if (tmpstat[positions[pos++]] != 1) goto nxt;
+			xstate = i;
+			return (0);
+		}
+		nxt: ;
+	}
+	return (1);
+}
+
+add(array, n) int *array; {
+	register i;
+	if (nxtpos + count > MAXPOS) overflo();
+	array[n] = nxtpos;
+	positions[nxtpos++] = count;
+	for (i=3; i <= line; i++) {
+		if (tmpstat[i] == 1) {
+			positions[nxtpos++] = i;
+		}
+	}
+}
+
+follow(v) int v; {
+	int p;
+	if (v == line) return;
+	p = parent[v];
+	switch(name[p]) {
+		case STAR:
+		case PLUS:	cstate(v);
+				follow(p);
+				return;
+
+		case OR:
+		case QUEST:	follow(p);
+				return;
+
+		case CAT:	if (v == left[p]) {
+					if (cstate(right[p]) == 0) {
+						follow(p);
+						return;
+					}
+				}
+				else follow(p);
+				return;
+		case FINAL:	if (tmpstat[line] != 1) {
+					tmpstat[line] = 1;
+					count++;
+				}
+				return;
+	}
+}
+
+
+main(argc, argv)
+char **argv;
+{
+	while (--argc > 0 && (++argv)[0][0]=='-')
+		switch (argv[0][1]) {
+
+		case 's':
+			sflag++;
+			continue;
+
+		case 'h':
+			hflag = 0;
+			continue;
+
+		case 'b':
+			bflag++;
+			continue;
+
+		case 'c':
+			cflag++;
+			continue;
+
+		case 'e':
+			argc--;
+			argv++;
+			goto out;
+
+		case 'f':
+			fflag++;
+			continue;
+
+		case 'l':
+			lflag++;
+			continue;
+
+		case 'n':
+			nflag++;
+			continue;
+
+		case 'v':
+			vflag++;
+			continue;
+
+		default:
+			fprintf(stderr, "egrep: unknown flag\n");
+			continue;
+		}
+out:
+	if (argc<=0)
+		exit(2);
+	if (fflag) {
+		/* A separate stream: V7 replaced stdin, the default input. */
+		if ((pfile = fopen(fname = *argv, "r")) == NULL) {
+			fprintf(stderr, "egrep: can't open %s\n", fname);
+			exit(2);
+		}
+	}
+	else input = *argv;
+	argc--;
+	argv++;
+
+	yyparse();
+
+	cfoll(line-1);
+	cgotofn();
+	nfile = argc;
+	if (argc<=0) {
+		if (lflag) exit(1);
+		execute(0);
+	}
+	else while (--argc >= 0) {
+		execute(*argv);
+		argv++;
+	}
+	if (fflush(stdout) == EOF || ferror(stdout))
+		exit(2);
+	exit(nsucc == 0);
+}
+
+/*
+ * Lines accumulate in a growing buffer; V7 used a 1024-byte ring
+ * that lines longer than the ring overwrote before they were printed.
+ */
+char	*lbuf;
+long	lsize;
+
+execute(file)
+char *file;
+{
+	register cstat;
+	char buf[BUFSIZ];
+	int n, i, ch, istat, matched;
+	long len, offset;
+	if (file) {
+		if ((f = open(file, 0)) < 0) {
+			fprintf(stderr, "egrep: can't open %s\n", file);
+			exit(2);
+		}
+	}
+	else f = 0;
+	lnum = 1;
+	tln = 0;
+	blkno = 0;
+	len = 0;
+	offset = 0;
+	istat = cstat = gotofn[0]['\n'];
+	matched = out[istat];
+	for (;;) {
+		if ((n = read(f, buf, sizeof buf)) <= 0) {
+			if (n < 0) {
+				fprintf(stderr, "egrep: read error on %s\n", file ? file : "standard input");
+				exit(2);
+			}
+			break;
+		}
+		blkno += n;
+		for (i = 0; i < n; i++, offset++) {
+			ch = buf[i] & 0377;	/* all input chars made positive */
+			if (len >= lsize) {
+				char *grown = realloc(lbuf, lsize ? lsize*2 : BUFSIZ);
+				if (grown == NULL) {
+					fprintf(stderr, "egrep: line too long\n");
+					exit(2);
+				}
+				lbuf = grown;
+				lsize = lsize ? lsize*2 : BUFSIZ;
+			}
+			lbuf[len++] = ch;
+			if (!matched && out[cstat = gotofn[cstat][ch]])
+				matched = 1;
+			if (ch == '\n') {
+				if (endline(file, matched, len, offset) && lflag) {
+					close(f);
+					return;
+				}
+				len = 0;
+				matched = out[cstat = istat];
+			}
+		}
+	}
+	/* An unterminated final line ends at a virtual newline, so $ matches it. */
+	if (len > 0) {
+		if (!matched && out[gotofn[cstat]['\n']])
+			matched = 1;
+		if (endline(file, matched, len, offset) && lflag) {
+			close(f);
+			return;
+		}
+	}
+	close(f);
+	if (cflag) {
+		if (nfile > 1)
+			printf("%s:", file);
+		printf("%ld\n", tln);
+	}
+}
+
+/* Report one complete line as V7 did; returns 1 when it was selected. */
+endline(file, matched, len, offset)
+char *file;
+long len, offset;
+{
+	lnum++;
+	if (matched == vflag)
+		return(0);
+	nsucc = 1;
+	if (cflag) tln++;
+	else if (sflag)
+		;	/* ugh */
+	else if (lflag)
+		printf("%s\n", file);
+	else {
+		if (nfile > 1 && hflag) printf("%s:", file);
+		/* V7 reported the block before the newline's offset. */
+		if (bflag) printf("%ld:", (offset-1)/512);
+		if (nflag) printf("%ld:", lnum-1);
+		fwrite(lbuf, 1, len, stdout);
+	}
+	return(1);
+}

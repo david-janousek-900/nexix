@@ -8399,6 +8399,32 @@
         "path": "v7-tabs.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/egrep",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.egrep",
+      "source": {
+        "root": "programs",
+        "path": "v7-egrep.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/bin/fgrep",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.fgrep",
+      "source": {
+        "root": "programs",
+        "path": "v7-fgrep.elf"
+      },
+      "format": "elf"
     }
   ]
 }
