@@ -34,11 +34,20 @@ class Reference(unittest.TestCase):
         self.assertEqual(bsd.check_reference(self.index, self.root), [])
         self.assertEqual(bsd.dependency_audit(self.root),
                          json.loads((self.root / bsd.REFERENCE / 'audit.json').read_text()))
+        notice = (self.source / 'COPYRIGHT').read_text('latin1')
+        self.assertIn('The Regents of the University of California', notice)
+        self.assertIn('Redistribution and use in source and binary forms', notice)
         for name in bsd.SELECTED:
-            if name != 'COPYRIGHT':
-                header = (self.source / name).read_text('latin1').split('*/', 1)[0]
+            if name == 'COPYRIGHT':
+                continue
+            text = (self.source / name).read_text('latin1')
+            if name.startswith('usr/src/sys/'):   # kernel sources carry their own notice
+                header = text.split('*/', 1)[0]
                 self.assertIn('The Regents of the University of California.', header, name)
                 self.assertIn('Redistribution and use in source and binary forms', header, name)
+            elif 'Regents of the University of California' in text:   # layout files with a notice
+                self.assertIn('Redistribution and use in source and binary forms', text, name)
+            # Short layout files (Makefiles, mtree specs, MAKEDEV) fall under COPYRIGHT.
 
     def test_changed_bytes(self):
         (self.source / 'COPYRIGHT').write_bytes(b'changed')

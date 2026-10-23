@@ -16,7 +16,18 @@ REFERENCE = 'reference/bsd-lite2'
 LICENSE_URL = 'https://www.freebsd.org/copyright/license/'
 LICENSE_SHA256 = 'aa202f7c044300bbceb792f4cd0080002c8ee3dabe0fb7bd562c13bf13f9b23f'
 SELECTED = (
+    # In archive order. Layout evidence for tasks 432-443 (hierarchy, mtree
+    # specs, program directories, chgrp link, cpp wrapper, i386 device names)
+    # is marked; the rest is the networking selection of task 412.
     'COPYRIGHT',
+    'usr/src/bin/Makefile',   # layout
+    'usr/src/etc/etc.i386/MAKEDEV',   # layout
+    'usr/src/etc/mtree/4.4BSD.root',   # layout
+    'usr/src/etc/mtree/4.4BSD.usr',   # layout
+    'usr/src/etc/mtree/4.4BSD.var',   # layout
+    'usr/src/libexec/Makefile',   # layout
+    'usr/src/sbin/Makefile',   # layout
+    'usr/src/share/man/man7/hier.7',   # layout
     'usr/src/sys/i386/include/cpu.h',
     'usr/src/sys/i386/include/param.h',
     'usr/src/sys/i386/include/types.h',
@@ -118,6 +129,10 @@ SELECTED = (
     'usr/src/sys/sys/uio.h',
     'usr/src/sys/sys/un.h',
     'usr/src/sys/sys/unistd.h',
+    'usr/src/usr.bin/Makefile',   # layout
+    'usr/src/usr.bin/cpp/cpp.sh',   # layout
+    'usr/src/usr.sbin/Makefile',   # layout
+    'usr/src/usr.sbin/chown/Makefile',   # layout
 )
 
 
@@ -172,7 +187,7 @@ def dependency_audit(root=ROOT):
     base = root / REFERENCE / 'source'
     result = []
     for name in SELECTED:
-        if name == 'COPYRIGHT':
+        if not name.startswith('usr/src/sys/'):   # the ledger covers kernel sources only
             continue
         path = PurePosixPath(name)
         text = (base / name).read_text(encoding='latin1')

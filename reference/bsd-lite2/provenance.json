@@ -21,6 +21,62 @@
       "type": "file"
     },
     {
+      "path": "usr/src/bin/Makefile",
+      "size": 200,
+      "sha256": "3689169f6ea23d76313573096178d593210f04bfe9af5c1067c45ec7feb4b4ef",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/etc/etc.i386/MAKEDEV",
+      "size": 4005,
+      "sha256": "7a7925f7e39336e7e4379644108d4b3c72cb30cd16835d051ee4c6b010592975",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/etc/mtree/4.4BSD.root",
+      "size": 2517,
+      "sha256": "0303c12e317e3e7ecbc1f4e76221e1d643a0f5a937cff5feb23f95ec574ad07c",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/etc/mtree/4.4BSD.usr",
+      "size": 33670,
+      "sha256": "c66e13ba4ca2770a526748fb5f411509779ae823f14ed338480e4e1df1b947c7",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/etc/mtree/4.4BSD.var",
+      "size": 6926,
+      "sha256": "cc745ac2c44939ce7c952f780a8e17d93c6156cc80427b0434a150940fbcc37c",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/libexec/Makefile",
+      "size": 299,
+      "sha256": "f7998967bef0cc8c72bc9a3d84dae555e32031aa93a65f427226cd17535f8cea",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/sbin/Makefile",
+      "size": 477,
+      "sha256": "5833068e5aeb8b8845e66934c74c5b61282fefe158837ffc4795ecece5a31eb8",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/share/man/man7/hier.7",
+      "size": 16687,
+      "sha256": "9790ff7f157a763e4a8882feab29d12e570e25ff1253b419037bab28ef48204f",
+      "mode": 436,
+      "type": "file"
+    },
+    {
       "path": "usr/src/sys/i386/include/cpu.h",
       "size": 3970,
       "sha256": "fcf5449a12055c2323822db8100f2a038e912ea6f1708da7915f1b5e0f78bb51",
@@ -724,6 +780,34 @@
       "path": "usr/src/sys/sys/unistd.h",
       "size": 4475,
       "sha256": "9ac9dad1d85ae92931206830135c92c25b9b8eb98869098350832807ec3009ac",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/usr.bin/Makefile",
+      "size": 1618,
+      "sha256": "9c114c3f52886efd7b6368ab00b744338458ce232d8a1e82e101f9115edc143e",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/usr.bin/cpp/cpp.sh",
+      "size": 2783,
+      "sha256": "abd79d2430f519f27c9d0157b6ab37b9063a5ea9f15221ee4745e4b5b680969c",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/usr.sbin/Makefile",
+      "size": 808,
+      "sha256": "2153fe69d2b04032fa5786424ab9aa972ebbfa33fdbfe2c3ac83fb90ab5bfe42",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/usr.sbin/chown/Makefile",
+      "size": 162,
+      "sha256": "e9cd95150057592417e138d33ee77de78b00890ba3e70bd11e60c154d6b63044",
       "mode": 436,
       "type": "file"
     }
