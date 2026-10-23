@@ -135,8 +135,8 @@ fresh disks and upgrades get them:
 | Path | Mode | Purpose |
 |---|---|---|
 | `/sbin/ifconfig`, `/sbin/route` | 0755 | Interface and route configuration |
-| `/bin/ping` | 4755 (setuid root) | ICMP echo; it gives up root after opening its socket |
-| `/bin/nc` | 0755 | TCP/UDP client and listener |
+| `/sbin/ping` | 4755 (setuid root) | ICMP echo; it gives up root after opening its socket |
+| `/usr/bin/nc` | 0755 | TCP/UDP client and listener |
 | `/etc/netstart.qemu` | 0644 | Sample startup script; copy it to `/etc/netstart` |
 | `/usr/include/sys/socket.h`, `netinet/in.h`, `netinet/tcp.h`, `arpa/inet.h`, `sys/time.h`, `nexix/socket.h` | 0644 | Development headers |
 | `libc.a` | | Socket wrappers, byte order and address conversions |

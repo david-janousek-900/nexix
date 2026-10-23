@@ -1,7 +1,7 @@
 # File system hierarchy
 
 Nexix keeps V7's tree and follows the 4.4BSD rule for system programs (tasks
-432–434):
+432–435):
 - programs live in the binary directories;
 - `/etc` holds only configuration and rc scripts.
 
@@ -11,9 +11,9 @@ on upgraded disks.
 
 | Directory | Contents | Examples |
 |---|---|---|
-| `/bin` | Ordinary user commands (Nexix keeps V7's single `/bin` for them) | `sh`, `ls`, `cc`, `vi`, `ping`, `nc` |
-| `/sbin` | System programs needed to boot and repair, before `/usr` | `init`, `dmesg`, `mknod`, `ifconfig`, `route` |
-| `/usr/bin` | User commands that BSD keeps under `/usr` | `wall` |
+| `/bin` | Ordinary user commands (Nexix keeps V7's single `/bin` for them) | `sh`, `ls`, `cc`, `vi` |
+| `/sbin` | System programs needed to boot and repair, before `/usr` | `init`, `dmesg`, `mknod`, `ifconfig`, `route`, `ping` (setuid root) |
+| `/usr/bin` | User commands that BSD keeps under `/usr` | `wall`, `nc` |
 | `/usr/sbin` | Administration programs not needed for booting | `accton`, `update` |
 | `/usr/libexec` | Programs started by other programs, not by users | `getty`, `expreserve`, `exrecover`, `manfmt` |
 | `/lib`, `/usr/lib` | Compiler passes, startup objects, libraries, and data for programs | `cpp`, `c0`, `libc.a`, `crt0.o`; `ccom`, `lint1`, font tables |
@@ -25,18 +25,18 @@ on upgraded disks.
 | `/root`, `/home/<user>` | Home directories | `.profile` |
 | `/tmp` | Temporary files | |
 
-**`PATH`:** root's profile and `init`'s recovery shell use
-`/sbin:/bin:/usr/sbin:/usr/bin`. Users get `/bin:/usr/bin`.
+**`PATH`:** every profile, and `init`'s recovery shell, uses
+`/sbin:/bin:/usr/sbin:/usr/bin`, as in FreeBSD. Ordinary users therefore reach
+`ping` by name; programs that need root still refuse them.
 
 ## Differences from 4.4BSD
 
 - **User commands** stay in `/bin`, as in V7, instead of being split between
-  `/bin` and `/usr/bin`. `/usr/bin` holds only `wall`. This includes `ping`
-  and `nc`, which BSD installs as `/sbin/ping` and `/usr/bin/nc`.
+  `/bin` and `/usr/bin`. `/usr/bin` holds only `wall` and `nc`.
 - **Compiler passes and libraries** keep their V7 home in `/lib` (`cpp`, `c0`,
   `as2`, `libc.a`, `crt0.o`), where BSD uses `/usr/lib` and `/usr/libexec`.
 
-## The move from V7's `/etc` binaries (task 432)
+## The moves to BSD locations (tasks 432 and 435)
 
 | V7 path | Now |
 |---|---|
@@ -49,8 +49,10 @@ on upgraded disks.
 | `/etc/update` | `/usr/sbin/update` |
 | `/etc/getty` | `/usr/libexec/getty` |
 | `/etc/wall` | `/usr/bin/wall` |
+| `/bin/ping` (task 435) | `/sbin/ping` |
+| `/bin/nc` (task 435) | `/usr/bin/nc` |
 
-No links remain in `/etc`.
+No links remain at the old paths.
 
 **Upgrading an older disk:**
 - The upgrade removes the old binaries. It warns about kept configuration

@@ -12,7 +12,7 @@ from upgrade_disk import Volume
 
 BINARY_DIRECTORIES = ('/bin/', '/sbin/', '/usr/bin/', '/usr/sbin/', '/usr/libexec/', '/usr/lib/', '/lib/')
 retired = {r['path'] for r in load_retired()}
-assert len(retired) == 9
+assert len(retired) == 11   # nine /etc binaries (task 432), ping and nc (task 435)
 for name in ('docs/native-install.json', 'docs/bootstrap-install.json'):
     entries = json.loads((ROOT / name).read_text())['entries']
     paths = {e['path'] for e in entries}

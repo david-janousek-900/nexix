@@ -74,7 +74,7 @@ def main():
             c('grep -c /etc/ifconfig /etc/netstart', stdout='1\n')   # kept as written, hence the warning
             c('grep PATH= /root/.profile', stdout='PATH=/bin\n')
             c('/sbin/ifconfig em0 | grep -c inet', stdout='0\n', status=1)   # the stale netstart could not configure it
-            c('/bin/ping -c 1 127.0.0.1 | grep transmitted', stdout='1 packets transmitted, 1 packets received, 0.0% packet loss\n')
+            c('/sbin/ping -c 1 127.0.0.1 | grep transmitted', stdout='1 packets transmitted, 1 packets received, 0.0% packet loss\n')
         finally:
             g.close()
     print(f'PASS: {ram} V7-layout disk boots with a warning, upgrades to the BSD layout with removals and warnings, then boots cleanly')

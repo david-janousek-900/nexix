@@ -25758,7 +25758,7 @@
       "outputs": [
         {
           "name": "ping",
-          "install": "/bin/ping",
+          "install": "/sbin/ping",
           "role": "installed",
           "status": "implemented",
           "evidence": [
@@ -25769,7 +25769,7 @@
         },
         {
           "name": "nc",
-          "install": "/bin/nc",
+          "install": "/usr/bin/nc",
           "role": "installed",
           "status": "implemented",
           "evidence": [

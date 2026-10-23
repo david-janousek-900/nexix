@@ -1,6 +1,6 @@
 # ping and nc (task 428)
 
-`/bin/ping` and `/bin/nc` are small native network commands over the
+`/sbin/ping` and `/usr/bin/nc` are small native network commands over the
 [socket interface](sockets.md). Addresses are numeric only: there is no
 resolver. Configure interfaces first with [`ifconfig` and `route`](netconfig.md);
 loopback (127.0.0.1) works as soon as the stack has started.

@@ -21,13 +21,18 @@ with private_guest(qemu, iso, ram, 'netstart-on', NETSTART, single_user=False,
     c('/sbin/ifconfig em0 | grep inet', stdout='\tinet 10.0.2.15 netmask 255.255.255.0 broadcast 10.0.2.255\n',
       prompt=PROMPT)
     c('/sbin/route | grep default', stdout='default         10.0.2.2        0.0.0.0         em0\n', prompt=PROMPT)
-    c('/bin/ping -c 1 10.0.2.2 | grep transmitted', stdout='1 packets transmitted, 1 packets received, 0.0% packet loss\n',
+    c('/sbin/ping -c 1 10.0.2.2 | grep transmitted', stdout='1 packets transmitted, 1 packets received, 0.0% packet loss\n',
       prompt=PROMPT)
 
 # 2. Without it (the default image): nothing beyond lo0 is configured.
-with private_guest(qemu, iso, ram, 'netstart-off', {}, single_user=False,
+with private_guest(qemu, iso, ram, 'netstart-off', {}, single_user=False, terminals=2,
                    extra_args=('-nic', 'user,model=e1000')) as g:
     login(g, 'root', 'nexix')
+    # An ordinary user's PATH reaches /sbin/ping (setuid) and /usr/bin/nc by name.
+    login(g, 'alice', 'alice', 1, '$ ')
+    g.command('ping -c 1 127.0.0.1 | grep transmitted', 1, prompt=r'\$ ',
+              stdout='1 packets transmitted, 1 packets received, 0.0% packet loss\n')
+    g.command('nc 127.0.0.1 1 < /dev/null', 1, prompt=r'\$ ', stdout='nc: connect: Connection refused\n', status=1)
     c = g.command
     c('test -f /etc/netstart', status=1, prompt=PROMPT)
     c('test -f /etc/netstart.qemu', prompt=PROMPT)
@@ -46,7 +51,7 @@ port = free_port()
 forward = f'user,model=e1000,hostfwd=tcp:127.0.0.1:{port}-:7000'
 with private_guest(qemu, iso, ram, 'netstart-forward', NETSTART, single_user=False, extra_args=('-nic', forward)) as g:
     login(g, 'root', 'nexix')
-    g.command("/bin/sh -c '/bin/nc -l 7000 < /dev/null > /tmp/from-host &'", prompt=PROMPT)
+    g.command("/bin/sh -c '/usr/bin/nc -l 7000 < /dev/null > /tmp/from-host &'", prompt=PROMPT)
     time.sleep(2)
     with socket.create_connection(('127.0.0.1', port), timeout=20) as s:
         s.sendall(b'from host\n')
@@ -54,7 +59,7 @@ with private_guest(qemu, iso, ram, 'netstart-forward', NETSTART, single_user=Fal
         assert s.recv(16) == b''   # the guest closes after end of stream
     time.sleep(1)
     g.command('cat /tmp/from-host', stdout='from host\n', prompt=PROMPT)
-    g.command("/bin/sh -c 'echo to host | /bin/nc -l 7000 > /dev/null &'", prompt=PROMPT)
+    g.command("/bin/sh -c 'echo to host | /usr/bin/nc -l 7000 > /dev/null &'", prompt=PROMPT)
     time.sleep(2)
     with socket.create_connection(('127.0.0.1', port), timeout=20) as s:
         s.shutdown(socket.SHUT_WR)

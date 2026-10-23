@@ -47,6 +47,16 @@
       "path": "/etc/wall",
       "replacement": "/usr/bin/wall",
       "task": 432
+    },
+    {
+      "path": "/bin/ping",
+      "replacement": "/sbin/ping",
+      "task": 435
+    },
+    {
+      "path": "/bin/nc",
+      "replacement": "/usr/bin/nc",
+      "task": 435
     }
   ],
   "entries": [
@@ -2485,7 +2495,7 @@
       "format": "elf"
     },
     {
-      "path": "/bin/ping",
+      "path": "/sbin/ping",
       "type": "file",
       "mode": "4755",
       "uid": 0,
@@ -2498,7 +2508,7 @@
       "format": "elf"
     },
     {
-      "path": "/bin/nc",
+      "path": "/usr/bin/nc",
       "type": "file",
       "mode": "0755",
       "uid": 0,
