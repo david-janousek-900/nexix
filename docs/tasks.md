@@ -19,8 +19,8 @@ The inventory accounts for **225 components, 2,144 distribution files and
 4 partial, 0 prototype and 105 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **435 tracking tasks: 265 done, 0 in progress
-and 170 to do**. Tasks **1–108, 119–165, 168–202, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–435** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **443 tracking tasks: 265 done, 0 in progress
+and 178 to do**. Tasks **1–108, 119–165, 168–202, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–435** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -766,7 +766,9 @@ remain deferred. Each task requires focused tests, affected regressions and a co
 ### System directory layout (0.2.0)
 
 V7 kept system binaries in `/etc`; 4.4BSD moved them to `/sbin`, `/usr/sbin`
-and `/usr/libexec`, leaving `/etc` for configuration and rc scripts. Nexix
+and `/usr/libexec`, leaving `/etc` for configuration and rc scripts. Tasks
+436–443 close the remaining differences recorded in the
+[hierarchy guide](hier.md#differences-from-44bsd). Nexix
 adopts that rule, including BSD's `/usr/bin` for `wall`. No compatibility
 links stay in `/etc`.
 
@@ -776,3 +778,11 @@ links stay in `/etc`.
 | 433 | Retire relocated paths during disk upgrades | Done | The installation manifest's validated `retired` list names the nine old /etc binaries with their replacements; upgrades remove each that is still a regular file (other hard links keep the old bytes), keep anything else there under `retired_kept`, and warn about kept /etc files and profiles that still name a retired path and about a root PATH without /sbin; [preservation policy](disk-upgrades.md#preservation-policy), `make test-upgrade-unit` (removal, kept directory, hard link, warnings, validation) and `make test-layout-upgrade`: a V7-layout disk with the pre-432 init boots with the ROOT OLD LAYOUT warning, upgrades with exactly those removals and warnings, then boots from /sbin/init with no binaries left in /etc at 16/128 MiB; Git history |
 | 434 | Verify and document the BSD directory layout | Done | `make test-etc-layout`: both installation manifests and the built distribution image keep only non-executable configuration in /etc (10 files), every ELF program in /bin, /sbin, /usr/bin, /usr/sbin, /usr/libexec, /usr/lib or /lib, and no retired path; the layout upgrade test scans the upgraded image the same way; [file system hierarchy](hier.md) with the directory roles, PATHs, the V7-to-BSD move table and the remaining V7 differences (user commands in /bin, compiler passes in /lib); `make test-tcpip` (now with the layout checks), the moved commands' suites, manuals, upgrades and the unit suite pass; Git history |
 | 435 | Move ping and nc to BSD directories | Done | /sbin/ping (still setuid root) and /usr/bin/nc, with /bin/ping and /bin/nc in the manifest's retired list so upgrades remove them; every profile and the recovery shell use PATH=/sbin:/bin:/usr/sbin:/usr/bin, as in FreeBSD; inventory, tools, tests and docs updated; `make test-netstart` now has an ordinary user run ping and nc by name; ping/nc, TCP/IP acceptance, netstart, layout upgrade, upgrade, terminal, getty, wall, layout and unit suites at 16/128 MiB; Git history |
+| 436 | Remove the duplicate /bin/dmesg link | To do | After 435: /sbin/dmesg only, with /bin/dmesg retired on upgrade; dmesg, layout and upgrade suites |
+| 437 | Introduce /usr/share for architecture-independent data | To do | After 435: move /usr/man to /usr/share/man, /usr/pub to /usr/share/misc, /usr/doc to /usr/share/doc, /usr/lib/tmac to /usr/share/tmac, the troff font and terminal tables, yaccpar and lex forms to /usr/share, and the lint libraries to /usr/libdata/lint; the termcap database to /usr/share/misc/termcap with /etc/termcap a link; update man, nroff/troff, eqn, yacc, lex, lint and termcap readers, the manual fidelity test and the upgrade retirement list; manual, formatter, compiler-tool, layout and upgrade suites at 16/128 MiB |
+| 438 | Move variable data to /var | To do | After 435: add /var/log, /var/run, /var/account, /var/mail, /var/spool and /var/db; move wtmp to /var/log/wtmp, utmp to /var/run/utmp and the accounting file convention to /var/account/acct; update login, init, who, write, wall, ac/sa and accton, retire the old paths on upgrade while keeping their records; session, accounting, layout and upgrade suites at 16/128 MiB |
+| 439 | Retire /lib for /usr/lib and /usr/libexec | To do | After 435: compiler passes (cpp, c0, c1, c2, fc1, as2, ccom, lint1, lint2) and the lorder helper to /usr/libexec; libc.a, libm.a, libln.a and the startup objects to /usr/lib; update the cc, pcc, as, ld and lint drivers, the development kit and toolchain ABI tests, and the upgrade retirement list; compiler, toolchain, development, layout and upgrade suites at 16/128 MiB |
+| 440 | Split user commands between /bin and /usr/bin | To do | After 435: keep the 4.4BSD single-user essentials in /bin and move the rest to /usr/bin (chown to /usr/sbin); retire the old paths on upgrade; check scripts, profiles and tools that name /bin paths; every command, shell, development and upgrade suite at 16/128 MiB |
+| 441 | Add /mnt and /usr/local | To do | After 435: create /mnt (temporary mounts) and /usr/local with bin, lib and include, with /usr/local/bin after the system directories in PATH; layout and upgrade suites |
+| 442 | Split password hashes into /etc/master.passwd | To do | After 435: a root-only master.passwd holding hashes and a public passwd without them, as in 4.4BSD (with or without pwd.db/spwd.db databases); update login, su, passwd, newgrp and the account readers, and migrate existing accounts on upgrade without changing IDs or hashes; account, login, upgrade and security suites |
+| 443 | Adopt BSD device names | To do | After 435: decide and implement BSD-style names for the disk, tape and terminal devices in /dev (for example wd0/rwd0 and tty00) alongside or instead of the V7 names, with mount, tape, getty/ttys and storage tools updated; device, storage, terminal and upgrade suites |
