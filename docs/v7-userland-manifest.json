@@ -290,12 +290,14 @@
       "id": "yacc-skeleton",
       "category": "data",
       "status": "supplied",
-      "description": "Native yaccpar adapts the supplied V7 skeleton with bounded stacks, safe empty reductions and tested error recovery (task 170); combined lex/yacc consumer acceptance remains task 173.",
+      "description": "Native yaccpar adapts the supplied V7 skeleton with bounded stacks, safe empty reductions and tested error recovery (task 170); combined lex/yacc consumers are compiled by the native cc and run (task 173).",
       "evidence": [
         "reference/v7/usr/lib/yaccpar",
         "rootfs/usr/lib/yaccpar",
         "tests/yacc.py",
-        "docs/yacc.md"
+        "docs/yacc.md",
+        "tests/lexyacc.py",
+        "tools/lexyacc_smoke.py"
       ],
       "locations": [
         "/usr/lib/yaccpar"
@@ -309,7 +311,7 @@
       "id": "lex-skeletons",
       "category": "data",
       "status": "supplied",
-      "description": "Native ncform adapts the supplied driver (native-width pointer comparisons, uncompressed miss handling; task 171); separately pinned/adapted illumos nrform and tested native extended-byte ebcform equivalent are installed beside it. Exact historical ebcform text remains unrecovered; no mode is waived. Ratfor execution stays in task 173.",
+      "description": "Native ncform adapts the supplied driver (native-width pointer comparisons, uncompressed miss handling; task 171); separately pinned/adapted illumos nrform and tested native extended-byte ebcform equivalent are installed beside it. Exact historical ebcform text remains unrecovered; no mode is waived. C and extended-table scanners are compiled by the native cc and run (task 173); Ratfor scanner execution moves to task 216 with the native Fortran toolchain.",
       "evidence": [
         "reference/v7/usr/lib/lex/ncform",
         "reference/supplemental/provenance.json",
@@ -320,7 +322,9 @@
         "rootfs/usr/lib/lex/ncform",
         "rootfs/usr/lib/lex/nrform",
         "rootfs/usr/lib/lex/ebcform",
-        "tests/lex.py"
+        "tests/lex.py",
+        "tests/lexyacc.py",
+        "tools/lexyacc_smoke.py"
       ],
       "locations": [
         "/usr/lib/lex/ncform",
@@ -1892,98 +1896,136 @@
           "name": "awk",
           "install": "/bin/awk",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/awk/makefile"
+            "user/awk/run.c",
+            "user/awk/tran.c",
+            "user/awk/lib.c",
+            "user/awk/main.c",
+            "tools/awk.mk",
+            "tests/awk.py",
+            "tests/awk_run.py",
+            "tools/awk_parse_smoke.py",
+            "tools/awk_run_smoke.py",
+            "docs/awk.md"
           ]
         },
         {
           "name": "proc",
           "install": null,
           "role": "helper",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/awk/makefile"
+            "user/awk/proc.c",
+            "tools/awk_generate.py",
+            "tools/awk.mk",
+            "tests/awk.py",
+            "tools/awk_parse_smoke.py",
+            "docs/awk.md"
           ]
         },
         {
           "name": "tokenscript",
           "install": null,
           "role": "build_helper",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/awk/tokenscript"
+            "user/awk/tokenscript",
+            "user/awk/token.c",
+            "tools/awk_generate.py",
+            "tests/awk.py",
+            "tools/awk_parse_smoke.py",
+            "docs/awk.md"
           ]
         }
       ],
       "priority": 4,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/awk/awk.def",
+            "tools/awk.mk"
+          ],
+          "note": "Host compiler bootstraps the front end; native yacc and lex sources generate its parser and scanner."
         },
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/awk/awk.def",
+            "tools/awk.mk"
+          ],
+          "note": "Native stdio, stdlib, string, stdarg, ctype and math interfaces."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/awk/awk.def",
+            "tools/awk.mk"
+          ],
+          "note": "Native stdio, allocation, string and conversion routines."
         },
         {
           "target": "lib.libm",
           "phase": "build",
           "certainty": "confirmed",
           "evidence": [
-            "reference/v7/usr/src/cmd/awk/makefile"
+            "reference/v7/usr/src/cmd/awk/makefile",
+            "user/awk/run.c",
+            "tests/awk_run.py"
           ],
-          "note": "Direct reference recipe/source dependency."
+          "note": "Native double arithmetic and libm exp, log and sqrt."
         },
         {
           "target": "floating-point",
           "phase": "runtime",
-          "certainty": "inferred",
+          "certainty": "confirmed",
           "evidence": [
-            "reference/v7/usr/src/cmd/awk/makefile"
+            "reference/v7/usr/src/cmd/awk/makefile",
+            "user/awk/run.c",
+            "tests/awk_run.py"
           ],
-          "note": "Build recipes/source purpose identify this dependency; inspect supplied source before porting."
+          "note": "awk values are doubles; SSE2 arithmetic and conversions."
         },
         {
           "target": "cmd.yacc",
           "phase": "build",
           "certainty": "confirmed",
           "evidence": [
-            "reference/v7/usr/src/cmd/awk/makefile"
+            "reference/v7/usr/src/cmd/awk/makefile",
+            "tools/awk_generate.py",
+            "tools/awk_parse_smoke.py"
           ],
-          "note": "Direct reference recipe/source dependency."
+          "note": "awk.g.y is generated by the native yacc (y.tab.c, y.tab.h and awk.h)."
         },
         {
           "target": "cmd.lex",
           "phase": "build",
           "certainty": "confirmed",
           "evidence": [
-            "reference/v7/usr/src/cmd/awk/makefile"
+            "reference/v7/usr/src/cmd/awk/makefile",
+            "tools/awk_generate.py",
+            "tools/awk_parse_smoke.py"
           ],
-          "note": "Direct reference recipe/source dependency."
+          "note": "awk.lx.l is generated by the native lex with the ncform driver."
         },
         {
           "target": "cmd.ed",
           "phase": "build",
           "certainty": "confirmed",
           "evidence": [
-            "reference/v7/usr/src/cmd/awk/makefile"
+            "reference/v7/usr/src/cmd/awk/makefile",
+            "tools/awk_generate.py",
+            "tools/awk_parse_smoke.py"
           ],
-          "note": "Direct reference recipe/source dependency."
+          "note": "tokenscript rebuilds token.c with ed; the host build applies the same edits."
         }
       ],
       "reference_includes": [
@@ -2038,12 +2080,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Complete native ABI/API and data-asset audit before porting."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Run arithmetic, field matching and associative-array fixtures; regenerate parser/scanner tables.",
         "Verify each installed output and its documented behavior; test helpers through their consuming pipeline."
@@ -2068,10 +2106,20 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        174,
-        175,
-        176
+      "unresolved_tasks": [],
+      "native_sources": [
+        "user/awk/awk.def",
+        "user/awk/awk.g.y",
+        "user/awk/awk.lx.l",
+        "user/awk/b.c",
+        "user/awk/lib.c",
+        "user/awk/main.c",
+        "user/awk/parse.c",
+        "user/awk/proc.c",
+        "user/awk/run.c",
+        "user/awk/token.c",
+        "user/awk/tokenscript",
+        "user/awk/tran.c"
       ]
     },
     {
@@ -7985,7 +8033,9 @@
             "tests/lex.py",
             "tools/lex_smoke.py",
             "docs/lex.md",
-            "rootfs/usr/lib/lex/ncform"
+            "rootfs/usr/lib/lex/ncform",
+            "tests/lexyacc.py",
+            "tools/lexyacc_smoke.py"
           ]
         },
         {
@@ -8019,7 +8069,7 @@
         }
       ],
       "priority": 5,
-      "status": "partial",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -8102,12 +8152,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Combined native lex/yacc consumer acceptance, including generated scanners compiled by the native cc, remains task 173."
-      ],
-      "unresolved": [
-        "Complete generated C/extended-table/Ratfor scanner acceptance with the native C and Fortran toolchains in task 173."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Generate a scanner, compile it with libln and verify token/reject/pushback fixtures.",
         "Verify each installed output and its documented behavior; test helpers through their consuming pipeline."
@@ -8137,9 +8183,7 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        173
-      ],
+      "unresolved_tasks": [],
       "native_sources": [
         "user/lex/header.c",
         "user/lex/ldefs.c",
@@ -12608,6 +12652,7 @@
       ],
       "acceptance": [
         "Translate control-flow fixtures to Fortran and compile/run the translated result.",
+        "Translate, compile and run lex -r scanners generated with /usr/lib/lex/nrform (moved from task 173).",
         "Verify each installed output and its documented behavior; test helpers through their consuming pipeline."
       ],
       "source_files": [
@@ -19707,7 +19752,7 @@
         }
       ],
       "priority": 5,
-      "status": "partial",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
@@ -19765,12 +19810,8 @@
           ]
         }
       ],
-      "blockers": [
-        "Combined native lex/yacc consumer acceptance remains task 173."
-      ],
-      "unresolved": [
-        "Complete the combined lex/yacc generated-consumer acceptance, including Ratfor/Fortran prerequisites, in task 173."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
         "Generate a parser from a small grammar, compile it and verify valid/error inputs.",
         "Verify each installed output and its documented behavior; test helpers through their consuming pipeline."
@@ -19788,9 +19829,7 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        173
-      ],
+      "unresolved_tasks": [],
       "native_sources": [
         "user/yacc/y1.c",
         "user/yacc/y2.c",
@@ -20726,7 +20765,7 @@
       "dependencies": [],
       "reference_includes": [],
       "blockers": [
-        "Supplied data is staged and the native yacc skeleton and lex ncform driver are tested; remaining data consumers and integrations still need acceptance."
+        "Supplied data is staged; the yacc skeleton and lex C drivers are tested through natively compiled consumers; remaining data consumers and integrations still need acceptance."
       ],
       "unresolved": [
         "Audit native API/format compatibility and remaining transitive dependencies."
@@ -20735,7 +20774,6 @@
         "Integrate supplied inputs into the native port and verify their consuming programs."
       ],
       "unresolved_tasks": [
-        173,
         214,
         270,
         274,

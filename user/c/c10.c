@@ -1139,6 +1139,33 @@ strfunc(struct tnode *atp)
 }
 
 /*
+ * Nexix: accumulate an address constant built from one &name and
+ * integer constants; sign is -1 under the right operand of MINUS.
+ */
+static int
+addrcon(struct tnode *tree, struct tnode **addr, LTYPE *off, int sign)
+{
+	while (tree->op==ITOL || tree->op==LTOI)
+		tree = tree->tr1;
+	switch (tree->op) {
+	case CON:
+	case LCON:
+		*off += sign * tree->value;
+		return(1);
+	case AMPER:
+		if (*addr || sign < 0)
+			return(0);
+		*addr = tree;
+		return(1);
+	case PLUS:
+		return(addrcon(tree->tr1, addr, off, sign) && addrcon(tree->tr2, addr, off, sign));
+	case MINUS:
+		return(addrcon(tree->tr1, addr, off, sign) && addrcon(tree->tr2, addr, off, -sign));
+	}
+	return(0);
+}
+
+/*
  * Compile an initializing expression
  */
 void
@@ -1186,12 +1213,18 @@ doinit(int atype, struct tnode *atree)
 		putchar('\n');
 		return;
 	}
-	if (tree->op==PLUS && tree->tr1->op==AMPER && tree->tr2->op==CON && tsize(type)==8) {
-		tree->tr1->tr1->offset += tree->tr2->value;
-		printf("\t.quad\t");
-		pname(tree->tr1->tr1, 0);
-		putchar('\n');
-		return;
+	/* Nexix: LP64 address constants carry long offsets on either side,
+	 * sometimes as an unfolded sum. */
+	if (tsize(type)==8 && (tree->op==PLUS || tree->op==MINUS)) {
+		struct tnode *addr = 0;
+		LTYPE off = 0;
+		if (addrcon(tree, &addr, &off, 1) && addr) {
+			addr->tr1->offset += off;
+			printf("\t.quad\t");
+			pname(addr->tr1, 0);
+			putchar('\n');
+			return;
+		}
 	}
 	goto illinit;
 

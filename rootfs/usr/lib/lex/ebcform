@@ -1,5 +1,6 @@
 /* Native extended-byte equivalent of the missing V7 ebcform.
- * Derived from retained ncform; byte promotion and native pointer widths fixed. */
+ * Derived from retained ncform; byte promotion and native pointer widths fixed;
+ * tokens longer than yytext end at its capacity. */
 #include <stdint.h>
 int yylineno =1;
 # define YYU(x) ((unsigned char)(x))
@@ -45,6 +46,7 @@ yylook(){
 				if(yyz == 0)break;
 				if(yyz->yystoff == yycrank)break;
 				}
+			if(yylastch >= yytext+YYLMAX-1)break;	/* token fills yytext */
 			*yylastch++ = yych = input();
 		tryagain:
 # ifdef LEXDEBUG

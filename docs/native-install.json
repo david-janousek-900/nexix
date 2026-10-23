@@ -8287,6 +8287,19 @@
       }
     },
     {
+      "path": "/bin/awk",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.awk",
+      "format": "elf",
+      "source": {
+        "root": "programs",
+        "path": "v7-awk.elf"
+      }
+    },
+    {
       "path": "/bin/yacc",
       "type": "file",
       "mode": "0755",

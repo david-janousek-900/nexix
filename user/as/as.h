@@ -24,7 +24,7 @@ struct as_operand {
 };
 struct as_record {
     enum as_kind kind;size_t section,symbol;unsigned line,width,count;
-    char mnemonic[32];struct as_operand operands[3];
+    char mnemonic[32];struct as_operand *operands; /* three, allocated only for instructions with operands */
     struct as_expr expression;
     unsigned char *bytes;size_t length;
 };

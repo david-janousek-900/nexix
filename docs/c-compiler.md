@@ -98,6 +98,11 @@ PDP-11 are replaced by native forms:
 - floating-point bit tricks and the autoincrement and deferred addressing
   modes.
 
+Static pointer initializers accept one `&name` plus or minus integer
+constants, in any order and including unfolded sums. On LP64, c0 scales a
+pointer offset to a `long` constant and may put it on the left, as in the
+generated lex tables' `yycrank+-1` and `yysvec+1` (task 173).
+
 `user/c/table.s` is a new AMD64 table in the supplied cvopt description
 language. Templates use AT&T syntax with the original macros: operand
 addresses, instruction mnemonics, size suffixes, subtree evaluation into
@@ -218,6 +223,7 @@ the table to the same bytes as the bootstrap build's host cvopt.
   hidden result pointers, float parameters and results, variadic definitions
   and va_copy) linked with the GCC caller/callee `tests/c_abi_driver.c`;
 - the V7 dialect fixture `tests/c_v7dialect.c` against hand-computed results;
+- `tests/c_addrcon.c`, address-constant initializers, against GCC;
 - every libc header, and 90 supplied V7 command sources, through c0, c1 and
   the native assembler;
 - malformed sources, truncated or garbage intermediate files, 600

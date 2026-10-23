@@ -19,8 +19,8 @@ The inventory accounts for **224 components, 2,144 distribution files and
 7 partial, 0 prototype and 134 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **431 tracking tasks: 232 done, 0 in progress
-and 199 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–172, 177–202, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–427** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **431 tracking tasks: 236 done, 0 in progress
+and 195 to do**. Tasks **1–108, 119–139, 145–146, 152, 160, 165, 168–202, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–427** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -316,10 +316,10 @@ coverage and installation remain subject to later acceptance tasks.
 | 170 | Complete yacc skeleton and native parser generation | Done | Git history; [native skeleton](yacc.md); make test-yacc test-inventory test-install-unit; generated pointer semantics, empty rules, error recovery and overflow under ASan/UBSan, exact native generation and parser execution at 16/128 MiB |
 | 171 | Port lex scanner generation | Done | Git history; [native lex](lex.md); `make test-lex test-inventory test-install-unit`; production generator under ASan/UBSan, native ncform driver, C/uncompressed/%T scanner execution, Ratfor generation, checked limits and malformed specifications; exact guest output at 16/128 MiB as root/user |
 | 172 | Port libln and lex/smallex runtime targets | Done | Git history; [libln and smallex](lex.md#libln-and-smallex); `make test-lex test-inventory test-install-unit`; installed /lib/libln.a with REJECT/yyless/allprint/main/yywrap under ASan/UBSan, SMALL-limit generator; prebuilt and native `ld -lln` scanners at 16/128 MiB |
-| 173 | Complete lex/yacc native generator acceptance | To do | C/extended-table/Ratfor generated scanner acceptance; Ratfor execution requires native Fortran toolchain |
-| 174 | Port awk parser and generated helper tables | To do | Uses working lex/yacc; include proc/tokenscript |
-| 175 | Port awk interpreter and data model | To do | Fields, arrays, arithmetic, strings and native widths |
-| 176 | Complete awk I/O/functions and end-to-end acceptance | To do | Pipes, files, regex and complete program fixtures |
+| 173 | Complete lex/yacc native generator acceptance | Done | Git history; [native consumers](lex.md#native-consumers); `make test-lexyacc test-c-compiler test-as test-libc test-inventory test-install-unit`; installed cc compiles compressed/%T/libln scanners and a yacc+lex calculator at 16/128 MiB as root/user, uncompressed at 128 MiB; c1 LP64 address-constant initializers; leaner as records and in-place realloc; Ratfor execution moved to task 216 |
+| 174 | Port awk parser and generated helper tables | Done | Git history; [awk front end](awk.md); `make test-awk-parse test-lex test-lexyacc test-inventory test-install-unit`; native yacc/lex/tokenscript/proc generation, LP64 parser values and nodes, bounded strings, regex positions/states/bytes and lex tokens, single-owner follow sets; hand-checked trees/DFAs, diagnostics and 400 random programs under ASan/UBSan; guest regeneration with yacc/lex/ed/proc and native trees at 16/128 MiB as root/user |
+| 175 | Port awk interpreter and data model | Done | Git history; [awk interpreter](awk.md#interpreter-and-data-model-task-175); `make test-awk-run test-awk-parse test-inventory test-install-unit`; native-width numbers/conversions, safe OFMT, separate string constants, EOF records, null fields, bounded records/print/substr/split, temporary and array lifetimes; 40 exact cases (19 against mawk) and 300 random programs under ASan/UBSan; native awk at 16/128 MiB as root/user |
+| 176 | Complete awk I/O/functions and end-to-end acceptance | Done | Git history; [awk I/O and acceptance](awk.md#io-formatting-and-acceptance-task-176); `make test-awk-run test-awk-parse test-inventory test-install-unit`; installed /bin/awk; bounded per-call printf/sprintf with typed conversions, literal unknown items, redirection/file/pipe closing, grammar error recovery, deferred array freeing; 58 exact cases (25 against mawk, 42×28 regex matrix), complete programs and random printf formats under ASan/UBSan; 16/128 MiB as root/user |
 
 ### Native C/Fortran toolchains
 
@@ -373,7 +373,7 @@ are accounted for. Final native rebuild acceptance is task 207.
 | 213 | Port spline | To do | Numeric/language fixtures and native execution |
 | 214 | Port units | To do | Install units data and numeric conversion fixtures |
 | 215 | Port bas | To do | Supplied build is obsolete; restore required old library interfaces |
-| 216 | Port ratfor | To do | Numeric/language fixtures and native execution |
+| 216 | Port ratfor | To do | Numeric/language fixtures and native execution; also run `lex -r` scanners (from task 173) |
 | 217 | Port structure | To do | Retained restructuring engine |
 | 218 | Port beautify and struct script | To do | libln dependency and complete wrapper behavior |
 

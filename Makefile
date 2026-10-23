@@ -348,6 +348,7 @@ build/signals_abi.o: user/signals-test-abi.S include/nexix/syscall.h | build/.di
 include tools/object-tools.mk
 include tools/yacc.mk
 include tools/lex.mk
+include tools/awk.mk
 include tools/assembler.mk
 V7_CFLAGS = $(filter-out -std=c11 -Werror,$(USER_CFLAGS)) -std=gnu89 -funsigned-char -fcommon -fno-strict-aliasing -Wno-implicit-int -Wno-implicit-function-declaration -Wno-return-type -Wno-incompatible-pointer-types -Wno-int-conversion -Wno-pointer-sign -Wno-unused-parameter -Wno-parentheses -Wno-missing-field-initializers
 INSTALL_COMMANDS := $(shell $(PYTHON) tools/install_manifest.py --manifest $(INSTALL_MANIFEST) --commands)

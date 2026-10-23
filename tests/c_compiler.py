@@ -84,6 +84,16 @@ with tempfile.TemporaryDirectory(prefix='nx-c-') as tmp:
         r=execute(asm,'fixture-'+assembler,assembler)
         assert r.returncode==0 and r.stdout==oracle,(assembler,r.stdout,oracle)
     (OUT/'fixture.c').write_bytes(fixture.read_bytes());(OUT/'fixture.exp').write_bytes(oracle)
+    # LP64 address constants: long offsets on either side and unfolded sums.
+    addrcon=ROOT/'tests/c_addrcon.c'
+    subprocess.run(['cc','-std=gnu89','-w','-fno-builtin','-no-pie',str(addrcon),'-o',str(d/'addrcon-oracle')],check=True)
+    want=subprocess.run([str(d/'addrcon-oracle')],capture_output=True,timeout=20,check=True).stdout
+    assert want==b'13 12 11 11\n1 11 1 1\n4 ress z\n',want
+    asm_ac=compile(addrcon,'addrcon')
+    for assembler in ('gnu','native'):
+        r=execute(asm_ac,'addrcon-'+assembler,assembler)
+        assert r.returncode==0 and r.stdout==want,(assembler,r.stdout)
+    (OUT/'addrcon.c').write_bytes(addrcon.read_bytes());(OUT/'addrcon.exp').write_bytes(want)
     # Task 200: the optimized program must behave identically.
     opt=optimize(asm)
     for assembler in ('gnu','native'):

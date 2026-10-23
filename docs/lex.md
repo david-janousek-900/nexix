@@ -43,6 +43,11 @@ invalid `%` requests remain warnings, as in V7.
 `yycrank` use `uintptr_t` rather than truncating to `int`, and an unmatched
 character in an uncompressed (`-f`) state is pushed back and ends the token, as
 in the compressed path. The supplied form fell through and consumed it.
+A byte beyond the character table (128 entries without `%T`) has no fallback
+character and takes the default action. The supplied form indexed past `yymatch`.
+A token ends when it fills `yytext` (`YYLMAX`), and the rest of the input is
+scanned as the next token. The supplied form wrote past `yytext` and
+`yylstate`. `ebcform` has the same bound (task 174).
 `/usr/lib/lex/ebcform`, selected when a `%T` table declares more than 128 codes,
 and `/usr/lib/lex/nrform`, used by `-r`, are the task 88 native/pinned inputs
 documented in [support inputs](support-inputs.md).
@@ -86,8 +91,26 @@ scanners built from that C, check diagnostics and exercise ordinary-user generat
 They also run a scanner prebuilt with `libln.a`, list the installed archive, and
 link the same scanner object against `/lib/libln.a` with the native `ld -lln`.
 
-Task 173 completes combined lex/yacc consumer acceptance, compiles generated
-scanners with the native `cc` and executes Ratfor scanners with the native
-Fortran toolchain. The installed `c0` still rejects the address-constant
-initializers in generated tables (`yycrank+N`, `yysvec+N`).
-Host GCC remains the bootstrap C compiler for the generated test scanners.
+Host GCC remains the bootstrap C compiler for the sanitizer scanners.
+
+## Native consumers
+
+Task 173 compiles generated programs with the installed `cc`. `make test-lexyacc`
+first builds a calculator (`tests/lexyacc`) from a yacc grammar using `yacc -d`
+token definitions and a lex scanner, links it with libln's `yywrap` under
+ASan/UBSan and compares its output, including error recovery, with the checked
+result. In 16/128 MiB guests, as root and as an ordinary user, the installed
+lex, yacc, cc and libln then build and run the compressed, `%T` extended-byte
+and libln scanners and the calculator, comparing each output.
+The uncompressed `-f` scanner is compiled and run at 128 MiB. At 16 MiB its
+13,000 lines of assembly exceed the process heap, and `as` must fail with its
+out-of-memory diagnostic and leave no program.
+
+This required c0/c1 to accept the generated tables' address-constant
+initializers ([C compiler](c-compiler.md)) and smaller assembler records and
+in-place `realloc` growth ([assembler](assembler.md), [libc](libc.md)).
+
+Ratfor scanners are generated and compared here. Translating, compiling and
+running them moved to task 216 (ratfor), which needs the native Fortran
+toolchain (tasks 203–206).
+

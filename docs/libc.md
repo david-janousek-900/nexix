@@ -86,7 +86,9 @@ Task 13 adds file and pipe wrappers and headers; see [files.md](files.md).
 Task 14 adds sgtty/ioctl headers and stty/gtty/ioctl/isatty; see [tty.md](tty.md).
 Task 15 adds signals, brk/sbrk, setjmp/longjmp and init/shell service wrappers;
 see [signals.md](signals.md). Task 16 adds malloc and userland support; see
-[userland.md](userland.md). String
+[userland.md](userland.md). `realloc` grows the block at the break in place, so
+arrays doubled while they are the newest allocation do not strand their old
+copies (task 173). String
 functions follow their usual C buffer contracts; they do not validate pointers
 or allocate storage. getenv returns a pointer into the environment, not a copy.
 The wait-status helpers expose exited and signaled status encodings, including

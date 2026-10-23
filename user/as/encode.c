@@ -107,7 +107,8 @@ static int condition(const char *s) {
     return -1;
 }
 static int encode(const struct as_record *r,struct encoder *e) {
-    const struct as_operand *a=r->operands,*b=a+1,*c=a+2;struct reg x={0},y={0};
+    static const struct as_operand none[3];
+    const struct as_operand *a=r->operands?r->operands:none,*b=a+1,*c=a+2;struct reg x={0},y={0};
     int ar=!getreg(a,&x),br=!getreg(b,&y);char name[32];strcpy(name,r->mnemonic);
     static const struct {const char *name;unsigned code,n;} simple[]={
         {"int3",0xcc,1},{"movsb",0xa4,1},{"movsw",0x66a5,2},{"movsl",0xa5,1},{"movsq",0x48a5,2},

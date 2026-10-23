@@ -23,7 +23,8 @@ lookahead boundary with 80 terminals, and checks malformed grammars and storage
 limits, output failures and the supplied PCC grammar. Disposable 16/128 MiB guests compare generated C, headers and state reports
 byte-for-byte with the checked host output and exercise ordinary-user generation.
 Task 170 completes the generated-parser stack/error/overflow acceptance described
-below; task 173 remains the combined lex/yacc consumer acceptance gate.
+below. Task 173 compiles a lex/yacc consumer with the native `cc`; see
+[lex](lex.md#native-consumers).
 
 ## Native parser skeleton
 

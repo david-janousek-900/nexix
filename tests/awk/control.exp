@@ -1,0 +1,51 @@
+(PROGRAM nil
+  (PASTAT nil
+    (ASSIGN var:i con:1)
+    (WHILE
+      (=LE var:i var:NF)
+      (IF
+        (=MATCH
+          (=INDIRECT var:i) dfa{000100010000})
+        (POSTINCR
+          (=ARRAY count
+            (=INDIRECT var:i)))
+        (IF
+          (=GT
+            (=FNCN length
+              (=INDIRECT var:i)) con:3)
+          (POSTINCR var:long)
+          (CONTINUE)))
+      (POSTINCR var:i))
+    (FOR
+      (ASSIGN var:j con:"0")
+      (=LT var:j con:3)
+      (POSTINCR var:j)
+      (ASSIGN var:s
+        (=CAT var:s var:j)))
+    (FOR nil nil nil
+      (BREAK))
+    (IN w count
+      (PRINT
+        var:w
+        (=ARRAY count var:w) GT con:"/dev/null"))
+    (IF
+      (=EQ var:NF con:"0")
+      (NEXT) nil))
+  (ASSIGN var:x
+    (=ADD
+      (=UMINUS var:y)
+      (=MOD
+        (=DIVIDE
+          (=MULT var:z
+            (=MINUS con:2 con:3)) con:4) con:5)))
+  (ADDEQ var:x con:1)
+  (SUBEQ var:x con:2)
+  (MULTEQ var:x con:3)
+  (DIVEQ var:x con:4)
+  (MODEQ var:x con:5)
+  (PRINT
+    (=PREINCR var:x)
+    (=POSTINCR var:x)
+    (=PREDECR var:x)
+    (=POSTDECR var:x) '|' con:"cat")
+  (EXIT))

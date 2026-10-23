@@ -1,0 +1,39 @@
+(PROGRAM nil
+  (PASTAT
+    (=MATCH fld:$record dfa{011111110111})
+    (PRINT
+      (=SUBSTR con:$record con:2 nil)
+      (=SUBSTR con:$record con:1 con:3)
+      (=INDEX con:$record con:"\"quoted\\\"")
+      (=SPLIT fld:$2 parts con:",")
+      (=SPRINTF
+        con:"%5.2f"
+        fld:$1) APPEND con:"log"))
+  (PASTAT
+    (=BOR
+      (=NOT
+        (=EQ fld:$1 con:"x"))
+      (=NOT
+        (=MATCH fld:$record dfa{000000000000})))
+    (PRINT
+      (=FNCN exp con:1)
+      (=FNCN log con:2)
+      (=FNCN sqrt con:9)
+      (=FNCN int con:3.9) -))
+  (PASTAT
+    (=LT fld:$1 fld:$2)
+    (PRINT con:"lt" -))
+  (PASTAT
+    (=LE fld:$1 fld:$2)
+    (PRINT con:"le" -))
+  (PASTAT
+    (=NE fld:$1 fld:$2)
+    (PRINT con:"ne" -))
+  (PASTAT
+    (=GE fld:$1 fld:$2)
+    (PRINT con:"ge" -))
+  (PASTAT
+    (=MATCH
+      (=INDIRECT var:NF) dfa{000000000000})
+    (ASSIGN fld:$2 con:"new")
+    (PRINT fld:$record -)) nil)

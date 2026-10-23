@@ -26,7 +26,11 @@ operands/expressions, invalid alignment/scale, embedded NULs, oversized names,
 lines, sources and excessive expression nesting. It is a native compiler assembly
 language, not a complete implementation of GNU macro-assembler extensions.
 Symbols, section offsets, data expressions and instruction operands remain typed
-first-pass records for subsequent layout, relocation and encoding work.
+first-pass records for subsequent layout, relocation and encoding work. Operands
+are allocated only for instructions that have them, so data directives, which
+make up most of generated tables, need about a third of the record size. A
+3,000-line generated lex scanner then assembles within the 1.3 MB of heap a
+16 MiB guest leaves a process; the 13,000-line uncompressed scanner needs 128 MiB.
 
 `make test-as-parse` checks production code with ASan/UBSan, validates the same
 fixture independently with GNU `as` and `readelf`, and inspects symbol binding,
