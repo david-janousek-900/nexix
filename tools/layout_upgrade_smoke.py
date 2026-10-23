@@ -59,6 +59,9 @@ def main():
                                       '/etc/netstart still names retired /etc/route; use /sbin/route',
                                       '/root/.profile PATH lacks /sbin and /usr/sbin, where system commands now live'], \
             report['warnings']
+        upgraded = Volume(disk.read_bytes())
+        assert not [p for p, n in upgraded.paths.items() if p.startswith('/etc/') and n.kind == REG and
+                    upgraded.contents(n)[:4] == b'\x7fELF'], 'ELF programs left in /etc'
         # After: /sbin/init starts directly, /etc holds no system binaries,
         # and the administrator's files are untouched.
         g = Guest(qemu, iso, disk, ram, extra_args=nic)

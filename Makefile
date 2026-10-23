@@ -722,6 +722,10 @@ build/old-layout/profile build/old-layout/netstart: | build/.dir
 	mkdir -p $(@D)
 	git show $(LAYOUT_BASE):rootfs/profile > build/old-layout/profile
 	git show $(LAYOUT_BASE):rootfs/etc/netstart.qemu > build/old-layout/netstart
+.PHONY: test-etc-layout
+test-etc-layout: rootfs
+	$(PYTHON) tests/etc_layout.py
+test: test-etc-layout
 .PHONY: test-layout-upgrade
 test-layout-upgrade: multi-iso rootfs stage build/old-layout/v7-init.elf build/old-layout/profile build/old-layout/netstart
 	$(PYTHON) tools/layout_upgrade_smoke.py $(QEMU) build/nexix-multi.iso 16M build/old-layout/v7-init.elf build/old-layout/profile build/old-layout/netstart
@@ -734,7 +738,7 @@ test-tcpip-acceptance: multi-iso rootfs build/netstart-qemu
 	$(PYTHON) tools/tcpip_acceptance.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/tcpip_acceptance.py $(QEMU) build/nexix-multi.iso 128M
 test: test-tcpip-acceptance
-test-tcpip: test-net-host test-tcpip-acceptance test-socket-api test-netconfig test-nettools test-netstart test-pci-guest test-libc test-syscall test-syscall-policy test-process test-files test-signals test-console test-inventory
+test-tcpip: test-etc-layout test-layout-upgrade test-net-host test-tcpip-acceptance test-socket-api test-netconfig test-nettools test-netstart test-pci-guest test-libc test-syscall test-syscall-policy test-process test-files test-signals test-console test-inventory
 # Task 430: whole-stack robustness, and every network sanitizer test at once.
 NET_ROBUST_SOURCES = kernel/net/tcp.c kernel/net/udp.c kernel/net/icmp.c kernel/net/ip.c kernel/net/route.c kernel/net/arp.c kernel/net/if.c kernel/net/pool.c kernel/net/mbuf.c kernel/net/compat.c
 build/net-robust-test: tests/net_robust.c $(NET_ROBUST_SOURCES) $(NET_TCP_HEADERS) kernel/include/net/udp.h | build/.dir

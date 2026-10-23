@@ -160,6 +160,8 @@ Both modes attach an e1000 on QEMU user networking (`NIC=none` removes it), and
 `/etc/netstart.qemu` to `/etc/netstart` to configure the network at boot; see
 [network startup](docs/netstart.md), [ifconfig/route](docs/netconfig.md) and
 [ping/nc](docs/nettools.md); the [networking guide](docs/networking.md) covers it all.
+System programs follow the BSD layout (`/sbin`, `/usr/sbin`, `/usr/libexec`); `/etc`
+holds only configuration and rc scripts. See the [file system hierarchy](docs/hier.md).
 
 After logging in, try:
 
