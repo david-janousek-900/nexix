@@ -1,3 +1,4 @@
+#include <netdb.h>
 #include <nexix/dectape.h>
 #include <nexix/modem.h>
 #include <nexix/tape.h>
@@ -155,3 +156,8 @@ _Static_assert(offsetof(struct sockaddr_in,sin_family)==0 && offsetof(struct soc
 _Static_assert(offsetof(struct sockaddr,sa_data)==2 && offsetof(struct timeval,tv_usec)==8 &&
                offsetof(struct nx_timeval,usec)==8, "sockaddr/timeval offsets");
 _Static_assert(_Alignof(struct sockaddr_storage)>=_Alignof(struct sockaddr_in), "storage holds any address");
+
+SIZE(struct hostent,32); FIELD(struct hostent,h_addr_list,24);
+SIZE(struct netent,24); FIELD(struct netent,n_net,20);
+SIZE(struct servent,32); FIELD(struct servent,s_proto,24);
+SIZE(struct protoent,24); FIELD(struct protoent,p_proto,16);

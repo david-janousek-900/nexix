@@ -3,6 +3,7 @@
  * EFAULT. Runs as a non-root user inside the boot self-test, so it never
  * creates a socket (that would start the stack before its own self-test);
  * live sockets are tested on a normal boot by tests/socket-api.c. */
+#include <netdb.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
@@ -133,6 +134,13 @@ int socket_test(void)
     CHECK(inet_ntop(AF_INET, &addr, text, sizeof(text)) == text && !strcmp(text, "192.0.2.1"));
     CHECK(!inet_ntop(AF_INET, &addr, text, 9) && errno == ENOSPC);
     CHECK(close(pair[0]) == 0 && close(pair[1]) == 0 && FAILS(listen(file, 1), EBADF));
+    CHECK(inet_network("192.0.2")==0xc00002);
+    addr=inet_makeaddr(127,1);
+    CHECK(inet_netof(addr)==127&&inet_lnaof(addr)==1);
+    CHECK(!strcmp(hstrerror(HOST_NOT_FOUND),"Unknown host"));
+    CHECK(!getservbyname(NULL,NULL)&&errno==EINVAL);
+    CHECK(!getprotobyname(NULL)&&errno==EINVAL);
+    CHECK(!getnetbyaddr(127,AF_UNSPEC)&&errno==EAFNOSUPPORT);
     /* Unassigned numbers after the socket calls stay invalid. */
     CHECK(nx_syscall6(NX_SYS_LAST + 1, 0, 0, 0, 0, 0, 0) == -EINVAL);
     return 0;

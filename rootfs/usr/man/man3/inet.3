@@ -1,0 +1,13 @@
+.TH INET 3
+.SH NAME
+inet_network, inet_makeaddr, inet_lnaof, inet_netof \- network database interfaces
+.SH SYNOPSIS
+#include <netdb.h>
+.br
+#include <arpa/inet.h>
+.SH DESCRIPTION
+inet_network parses one to four decimal, octal or hexadecimal bytes into a host-order network number; invalid input returns INADDR_NONE. inet_makeaddr combines a classful network and host into a network-order in_addr. inet_lnaof and inet_netof extract host-order local and network numbers.
+.PP
+Database entries and aliases use static storage, overwritten by the next call for that database. These interfaces are not reentrant. Lookup matches canonical names and aliases. set*ent rewinds an open file and keeps it open after lookups when stayopen is nonzero; end*ent closes and clears stayopen.
+.PP
+Malformed records and physical lines of 1024 bytes or more are skipped. A record supports 35 aliases. Comments begin with #. Lookups return NULL on missing entries or I/O failure.

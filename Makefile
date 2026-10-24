@@ -247,7 +247,7 @@ test-exec: check build/test-selftest.iso
 
 # Native userland: compiler freestanding headers plus Nexix headers only.
 USER_CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-builtin -fno-stack-protector -fno-pie -m64 -mno-red-zone -mno-avx -fno-asynchronous-unwind-tables -nostdinc -isystem $(shell $(CC) -print-file-name=include) -Ilibc/include -Iinclude -MMD -MP
-LIBC_OBJECTS = build/libc_packet.o build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o build/libc_float.o build/libc_convert.o build/libc_scan.o build/libc_ctype.o build/libc_numbers.o build/libc_bytes.o build/libc_gcvt.o build/libc_abort.o build/libc_mktemp.o build/libc_errors.o build/libc_perror.o build/libc_passwd.o build/libc_group.o build/libc_crypt.o build/libc_terminal.o build/libc_getpass.o build/libc_system.o build/libc_popen.o build/libc_ptrace.o build/libc_profil.o build/libc_monitor.o build/libc_mcount.o build/libc_nlist.o build/libc_kinfo.o build/libc_uname.o build/libc_lock.o build/libc_phys.o build/libc_mpx.o build/libc_socket.o build/libc_inet.o
+LIBC_OBJECTS = build/libc_packet.o build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o build/libc_float.o build/libc_convert.o build/libc_scan.o build/libc_ctype.o build/libc_numbers.o build/libc_bytes.o build/libc_gcvt.o build/libc_abort.o build/libc_mktemp.o build/libc_errors.o build/libc_perror.o build/libc_passwd.o build/libc_group.o build/libc_crypt.o build/libc_terminal.o build/libc_getpass.o build/libc_system.o build/libc_popen.o build/libc_ptrace.o build/libc_profil.o build/libc_monitor.o build/libc_mcount.o build/libc_nlist.o build/libc_kinfo.o build/libc_uname.o build/libc_lock.o build/libc_phys.o build/libc_mpx.o build/libc_socket.o build/libc_inet.o build/libc_netdb.o
 -include $(LIBC_OBJECTS:.o=.d) build/libc_program.d
 build/crt0.o: libc/arch/x86_64/crt0.S | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
@@ -2627,3 +2627,21 @@ test-timer-periods-unit: build/timer-periods-test
 	./build/timer-periods-test
 test-unit: test-timer-periods-unit
 .PHONY: test-timer-periods-unit
+
+# Tasks 445–446: bounded libc network databases.
+NETDB_NAMES = fopen fclose rewind ferror getc getservent setservent endservent getservbyname getservbyport getprotoent setprotoent endprotoent getprotobyname getprotobynumber getnetent setnetent endnetent getnetbyname getnetbyaddr hstrerror herror h_errno errno
+NETDB_TEST_FLAGS = $(addprefix -D,$(foreach n,$(NETDB_NAMES),$(n)=nx_test_$(n)))
+build/netdb-unit-test: tests/netdb.c libc/netdb.c libc/netdb_private.h libc/inet.c libc/include/netdb.h | build/.dir
+	$(HOST_CC) -std=c11 -O1 -g -Wall -Wextra -Werror -fno-builtin -fsanitize=address,undefined -fno-pie -no-pie $(NETDB_TEST_FLAGS) -Ilibc/include -Iinclude tests/netdb.c libc/netdb.c libc/inet.c -o $@
+.PHONY: test-netdb-unit
+test-netdb-unit: build/netdb-unit-test
+	./build/netdb-unit-test
+test-unit: test-netdb-unit
+build/netdb-guest.o: tests/netdb-guest.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/netdb-guest.elf: build/crt0.o build/netdb-guest.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+.PHONY: test-netdb-guest
+test-netdb-guest: build/netdb-guest.elf multi-iso rootfs
+	$(PYTHON) tools/netdb_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/netdb_smoke.py $(QEMU) build/nexix-multi.iso 128M

@@ -33,7 +33,7 @@ contents would be incorrect.
 
 ## 4.4BSD-Lite2 networking reference
 
-`reference/bsd-lite2/source/` retains 102 selected upstream files from mirror
+`reference/bsd-lite2/source/` retains 167 selected upstream files from mirror
 commit `50587b00e922225c62f1706266587f435898126d`, with archive/per-file hashes
 in its provenance index. The UC Regents notices remain unchanged. The original
 distribution copyright is also preserved in [LICENSES/BSD-4.4-Lite2.txt](LICENSES/BSD-4.4-Lite2.txt).
@@ -45,7 +45,7 @@ retained in `reference/bsd-lite2/berkeley-license.html`. Source/binary notice,
 disclaimer and non-endorsement conditions remain; the amendment does not change
 other contributors' conditions or Nexix's Caldera obligations. File-specific
 notices take precedence. See the [dependency and licensing audit](docs/bsd-networking-audit.md).
-Future binary ports must package applicable notices and license materials.
+Active database adapters retain the Berkeley and DEC notices. Installed databases and libc ship the applicable notices in `/usr/doc/net/LICENSE`. Subsequent ports must extend those materials for their file-specific conditions.
 
 ## Ratfor lex skeleton: CDDL-1.0
 

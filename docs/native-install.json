@@ -8769,6 +8769,183 @@
         "path": "bin/diff3"
       },
       "format": "data"
+    },
+    {
+      "path": "/etc/services",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config",
+      "source": {
+        "root": "config",
+        "path": "etc/services"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/etc/protocols",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config",
+      "source": {
+        "root": "config",
+        "path": "etc/protocols"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/etc/networks",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config",
+      "source": {
+        "root": "config",
+        "path": "etc/networks"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/usr/include/netdb.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.headers",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/netdb.h"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/usr/man/man3/getservent.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/getservent.3"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/usr/man/man3/getprotoent.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/getprotoent.3"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/usr/man/man3/getnetent.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/getnetent.3"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/usr/man/man3/herror.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/herror.3"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/usr/man/man3/inet.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/inet.3"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/usr/man/man5/services.5",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man5/services.5"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/usr/man/man5/protocols.5",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man5/protocols.5"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/usr/man/man5/networks.5",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man5/networks.5"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/usr/doc/net",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config"
+    },
+    {
+      "path": "/usr/doc/net/LICENSE",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config",
+      "source": {
+        "root": "config",
+        "path": "usr/doc/net/LICENSE"
+      },
+      "format": "data"
     }
   ]
 }

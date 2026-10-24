@@ -1,0 +1,13 @@
+.TH GETNETENT 3
+.SH NAME
+getnetent, getnetbyname, getnetbyaddr, setnetent, endnetent \- network database interfaces
+.SH SYNOPSIS
+#include <netdb.h>
+.br
+#include <arpa/inet.h>
+.SH DESCRIPTION
+Networks are read from /etc/networks. IPv4 network numbers are host-order uint32_t values. getnetbyaddr accepts AF_INET.
+.PP
+Database entries and aliases use static storage, overwritten by the next call for that database. These interfaces are not reentrant. Lookup matches canonical names and aliases. set*ent rewinds an open file and keeps it open after lookups when stayopen is nonzero; end*ent closes and clears stayopen.
+.PP
+Malformed records and physical lines of 1024 bytes or more are skipped. A record supports 35 aliases. Comments begin with #. Lookups return NULL on missing entries or I/O failure.
