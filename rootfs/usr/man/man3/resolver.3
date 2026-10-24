@@ -1,0 +1,24 @@
+.TH RESOLVER 3
+.SH NAME
+res_init, res_mkquery, res_send, res_query, res_search, res_querydomain \- DNS stub resolver
+.SH SYNOPSIS
+#include <resolv.h>
+.SH DESCRIPTION
+res_init reads resolver(5). res_mkquery constructs a bounded DNS query with
+an unpredictable ID. res_send returns a matching server reply into the
+caller buffer; res_query also maps DNS errors into h_errno. res_search tries
+the Lite2 domain search list and HOSTALIASES; res_querydomain joins a name
+and domain or removes a final dot. Functions return the reply length or -1.
+.PP
+UDP uses SO_RCVTIMEO and retrans shifted by the attempt, divided by server
+count after the first attempt. Replies must match source, port, ID, opcode
+and question. Truncation retries over a length-prefixed TCP connection.
+Oversized TCP replies are drained, returned clipped and marked truncated.
+ECONNRESET allows one reconnect/requery. RES_USEVC forces TCP;
+RES_STAYOPEN keeps a TCP connection until _res_close or an error.
+.PP
+EINTR stops immediately. A server refusal at every attempted server produces
+ECONNREFUSED; a silent server does not. NXDOMAIN maps HOST_NOT_FOUND,
+empty answers NO_DATA, SERVFAIL TRY_AGAIN, and permanent errors NO_RECOVERY.
+SERVFAIL, NOTIMP and REFUSED skip a server. State and result storage are not
+reentrant. No IPv6, EDNS0, DNSSEC or select/poll is implemented.

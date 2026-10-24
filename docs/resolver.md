@@ -65,3 +65,32 @@ and invalidated by reinitialization.
 `make test-res-init test-res-init-guest` exercises defaults, invalid/long
 lines, server/search limits, overrides and full hostname handling under host
 sanitizers and with actual files and syscalls at 16/128 MiB.
+
+## Query transport (task 450)
+
+res_send/res_query/res_search/res_querydomain and HOSTALIASES use blocking
+native IPv4 sockets. UDP connects for a single server and otherwise uses
+sendto/recvfrom. Every response must come from the queried address and port,
+match ID, QR/opcode and the expanded question name/type/class. A fixed
+monotonic deadline survives ignored replies and partial TCP reads. Timeout
+backoff follows Lite2 (`retrans << attempt`, divided by server count after
+the first attempt, minimum one second). Caller timeout/retry fields must
+remain within 1–3600 seconds and 1–10 attempts; invalid state returns EINVAL.
+
+Truncation retries on TCP; RES_USEVC also forces TCP. The length prefix and
+query share one send buffer; partial I/O is completed within the deadline.
+Oversized answers are fully drained, clipped to capacity and marked TC.
+One ECONNRESET reconnect/requery is allowed. RES_STAYOPEN keeps the stream;
+_res_close releases it, and a forked child opens its own stream on next use.
+EINTR aborts immediately. SERVFAIL/NOTIMP/REFUSED skip that server. Only an
+all-refused attempt set reports ECONNREFUSED; a mixed refusal/timeout cannot
+trigger hosts fallback. NXDOMAIN, NODATA, temporary and permanent failures
+map to HOST_NOT_FOUND, NO_DATA, TRY_AGAIN and NO_RECOVERY respectively.
+Search follows Lite2's search-first order, trailing-dot handling and
+single-label HOSTALIASES. Configuration remains global and non-reentrant.
+
+`make test-resolver-transport` uses a scripted transport under ASan/UBSan,
+covering bad IDs/sources/questions, failover, deadlines, reset, partial I/O,
+connection reuse, oversized draining, error mapping and search/aliases.
+`make test-resolver-guest` exercises the production code against an actual
+UDP/TCP server bound to lo0, with disposable 16/128 MiB no-NIC guests.

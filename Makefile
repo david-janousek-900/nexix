@@ -2706,3 +2706,23 @@ build/res-init-guest.elf: build/crt0.o build/res-init-guest.o build/libc.a user/
 test-res-init-guest: build/res-init-guest.elf multi-iso rootfs
 	$(PYTHON) tools/res_init_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/res_init_smoke.py $(QEMU) build/nexix-multi.iso 128M
+
+# Task 450: DNS transport over blocking native sockets.
+build/libc.a: build/libc_res_send.o
+RES_TRANSPORT_NAMES = res_init res_send res_query res_search res_querydomain hostalias _res_close socket close connect send sendto recv recvfrom setsockopt times getenv
+RES_TRANSPORT_FLAGS = $(NETDB_TEST_FLAGS) $(DNS_CODEC_TEST_FLAGS) $(HOSTS_TEST_NAMES) $(addprefix -D,$(foreach n,$(RES_TRANSPORT_NAMES),$(n)=nx_test_$(n)))
+build/res-transport-test: tests/res_transport.c libc/res_send.c libc/dns_codec.c libc/netdb.c libc/hosts.c libc/inet.c | build/.dir
+	$(HOST_CC) -std=c11 -O1 -g -Wall -Wextra -Werror -fno-builtin -fsanitize=address,undefined -fno-pie -no-pie $(RES_TRANSPORT_FLAGS) -Ilibc/include -Iinclude $^ -o $@
+.PHONY: test-resolver-transport
+test-resolver-transport: build/res-transport-test
+	./build/res-transport-test
+test-unit: test-resolver-transport
+
+build/resolver-guest.o: tests/resolver-guest.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/resolver-guest.elf: build/crt0.o build/resolver-guest.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+.PHONY: test-resolver-guest
+test-resolver-guest: build/resolver-guest.elf multi-iso rootfs
+	$(PYTHON) tools/resolver_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/resolver_smoke.py $(QEMU) build/nexix-multi.iso 128M
