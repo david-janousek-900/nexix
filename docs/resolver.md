@@ -94,3 +94,28 @@ covering bad IDs/sources/questions, failover, deadlines, reset, partial I/O,
 connection reuse, oversized draining, error mapping and search/aliases.
 `make test-resolver-guest` exercises the production code against an actual
 UDP/TCP server bound to lo0, with disposable 16/128 MiB no-NIC guests.
+
+## Host lookup (task 451)
+
+gethostbyname/gethostbyaddr supply IPv4 A/PTR lookup with CNAME aliases.
+The parser checks every record and supported embedded name against the
+message end before returning a result, follows up to 35 CNAME links regardless
+of record order, rejects loops and ignores unrelated address records. Returned
+addresses use typed, aligned in_addr storage. Results expose at most 35
+addresses/aliases and use static non-reentrant storage. Numeric digit/dot
+names without a final dot use inet_aton directly; invalid numeric names fail
+without DNS. PTR results retain the caller's original four address bytes,
+including when the caller's input was unaligned.
+
+Lookup is DNS first; only ECONNREFUSED permits hosts fallback. NXDOMAIN,
+NODATA, malformed responses and timeout do not. sethostent(1) combines hosts
+iteration with RES_USEVC/RES_STAYOPEN; endhostent closes both the hosts stream
+and TCP connection and clears these options.
+
+`make test-host-answers` covers CNAME order/loops, PTR, address caps/alignment,
+numeric handling, fallback policy and 40,000 seeded answer mutations under
+ASan/UBSan. The resolver guest server also exercises multi-address CNAME, PTR,
+malformed lengths and real no-server hosts fallback at 16/128 MiB.
+
+The V7 filesystem uses `gethost.3` for the host manual; the man command
+maps the five host API names to it, avoiding the 14-byte filename limit.

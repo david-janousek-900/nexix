@@ -52,6 +52,7 @@
  */
 
 /* Native bounded /etc/hosts adapter. DNS lookup is layered on in task 451. */
+#include <resolv.h>
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <string.h>
@@ -69,8 +70,8 @@ void _sethtent(int stay)
 }
 void _endhtent(void)
 { if(hostfile && !stayopen) {fclose(hostfile);hostfile=NULL;} }
-void sethostent(int stay) { _sethtent(stay); }
-void endhostent(void) { stayopen=0; _endhtent(); }
+void sethostent(int stay) { if(stay)_res.options|=RES_STAYOPEN|RES_USEVC; _sethtent(stay); }
+void endhostent(void) { stayopen=0; _endhtent(); _res.options&=~(RES_STAYOPEN|RES_USEVC); _res_close(); }
 struct hostent *_gethtent(void)
 {
     if(!hostfile && !(hostfile=fopen(_PATH_HOSTS,"r"))) return NULL;

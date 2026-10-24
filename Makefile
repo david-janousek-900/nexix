@@ -2648,7 +2648,7 @@ test-netdb-guest: build/netdb-guest.elf multi-iso rootfs
 
 HOSTS_TEST_NAMES = $(addprefix -D,$(foreach n,gethostent sethostent endhostent,$(n)=nx_test_$(n)))
 build/hosts-unit-test: tests/hosts.c libc/hosts.c libc/netdb.c libc/netdb_private.h libc/inet.c libc/include/netdb.h | build/.dir
-	$(HOST_CC) -std=c11 -O1 -g -Wall -Wextra -Werror -fno-builtin -fsanitize=address,undefined -fno-pie -no-pie $(NETDB_TEST_FLAGS) $(HOSTS_TEST_NAMES) -Ilibc/include -Iinclude tests/hosts.c libc/hosts.c libc/netdb.c libc/inet.c -o $@
+	$(HOST_CC) -std=c11 -O1 -g -Wall -Wextra -Werror -fno-builtin -fsanitize=address,undefined -fno-pie -no-pie $(NETDB_TEST_FLAGS) $(HOSTS_TEST_NAMES) -D_res=nx_test__res -D_res_close=nx_test__res_close -Ilibc/include -Iinclude tests/hosts.c libc/hosts.c libc/netdb.c libc/inet.c -o $@
 .PHONY: test-hosts-unit
 test-hosts-unit: build/hosts-unit-test
 	./build/hosts-unit-test
@@ -2726,3 +2726,14 @@ build/resolver-guest.elf: build/crt0.o build/resolver-guest.o build/libc.a user/
 test-resolver-guest: build/resolver-guest.elf multi-iso rootfs
 	$(PYTHON) tools/resolver_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/resolver_smoke.py $(QEMU) build/nexix-multi.iso 128M
+
+# Task 451: bounded host answer parsing and DNS-first host lookups.
+build/libc.a: build/libc_gethost.o
+HOST_ANSWER_NAMES = gethostbyname gethostbyaddr res_search res_query _res_close
+HOST_ANSWER_FLAGS = $(NETDB_TEST_FLAGS) $(DNS_CODEC_TEST_FLAGS) $(HOSTS_TEST_NAMES) $(addprefix -D,$(foreach n,$(HOST_ANSWER_NAMES),$(n)=nx_test_$(n)))
+build/host-answer-test: tests/host_answers.c libc/gethost.c libc/hosts.c libc/netdb.c libc/dns_codec.c libc/inet.c | build/.dir
+	$(HOST_CC) -std=c11 -O1 -g -Wall -Wextra -Werror -fno-builtin -fsanitize=address,undefined -fno-pie -no-pie $(HOST_ANSWER_FLAGS) -Ilibc/include -Iinclude $^ -o $@
+.PHONY: test-host-answers
+test-host-answers: build/host-answer-test
+	./build/host-answer-test
+test-unit: test-host-answers

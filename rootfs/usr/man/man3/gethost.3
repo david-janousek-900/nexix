@@ -1,0 +1,20 @@
+.TH GETHOSTBYNAME 3
+.SH NAME
+gethostbyname, gethostbyaddr, gethostent, sethostent, endhostent \- IPv4 host lookup
+.SH SYNOPSIS
+#include <netdb.h>
+.SH DESCRIPTION
+gethostbyname searches DNS with resolver(3); gethostbyaddr performs an
+in-addr.arpa PTR lookup for a four-byte AF_INET address. Only ECONNREFUSED
+permits fallback to hosts(5). Timeouts, NXDOMAIN and NODATA do not use hosts.
+All-digit/dot names without a final dot use inet_aton without DNS.
+.PP
+Returned hostent storage is static and non-reentrant. Addresses are aligned
+four-byte network-order values. Up to 35 addresses and 35 CNAME aliases are
+returned. CNAME chains may appear out of order; cycles and malformed records
+fail with NO_RECOVERY. No matching address yields NO_DATA.
+.PP
+gethostent iterates /etc/hosts. sethostent rewinds it; a nonzero argument also
+sets RES_USEVC and RES_STAYOPEN. endhostent closes the file and resolver TCP
+connection and clears those flags. Lookup failure returns NULL and sets
+h_errno; use herror or hstrerror to describe it. No IPv6 support is included.

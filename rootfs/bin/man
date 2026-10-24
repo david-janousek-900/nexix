@@ -41,6 +41,9 @@ do
 		opt="$opt $i" ;;
 
 	*)
+        case $i in
+        gethostbyname | gethostbyaddr | gethostent | sethostent | endhostent) i=gethost ;;
+        esac
 		if test "$sec" = 0
         then
             front=1

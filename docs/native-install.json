@@ -9037,6 +9037,19 @@
         "path": "usr/man/man3/resolver.3"
       },
       "format": "data"
+    },
+    {
+      "path": "/usr/man/man3/gethost.3",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man3/gethost.3"
+      },
+      "format": "data"
     }
   ]
 }

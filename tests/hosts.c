@@ -1,3 +1,4 @@
+#include <resolv.h>
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <stdio.h>
@@ -6,6 +7,8 @@
 #include "../libc/netdb_private.h"
 #define CHECK(c) do { if(!(c))return __LINE__; } while(0)
 int errno;
+struct __res_state _res;
+void _res_close(void) {}
 static FILE stream;
 static const char *data;
 static int live, opens,fail_after=-1;

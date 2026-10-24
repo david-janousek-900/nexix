@@ -9,5 +9,6 @@ void _endhtent(void);
 struct hostent *_gethtent(void);
 struct hostent *_gethtbyname(const char *);
 struct hostent *_gethtbyaddr(const void *, int, int);
+struct hostent *_nx_host_answer(const unsigned char *, int, int);
 int _nx_dns_equal(const char *, const char *);
 #endif
