@@ -42,7 +42,7 @@ provenance grants a license for unrelated additions.
 
 ## BSD networking reference
 
-`bsd-lite2/source/` separately preserves 102 selected networking/support files
+`bsd-lite2/source/` separately preserves 167 selected networking, layout and resolver files
 from a pinned 4.4BSD-Lite2 mirror snapshot. Its provenance index records the
 immutable commit, full archive SHA-256 and per-file hashes. The retained
 Berkeley license document is separately hash-pinned. These sources are not

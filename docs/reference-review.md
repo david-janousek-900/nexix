@@ -81,7 +81,7 @@ does not modify kernel or libc runtime behavior.
 
 ## Follow-up measures (tasks 389–411)
 
-Reference audit totals: **2,144 files; 225 components; 36 requirements; 443 tasks (265 done, 0 in progress, 178 to do).**
+Reference audit totals: **2,144 files; 225 components; 36 requirements; 455 tasks (266 done, 0 in progress, 189 to do).**
 
 No unowned reference component was found. Twenty implemented command components
 still declared pending API/ABI/transitive-dependency audits with only completed

@@ -28,9 +28,107 @@
       "type": "file"
     },
     {
+      "path": "usr/src/contrib/bind-4.9.2/man/resolver.5",
+      "size": 5477,
+      "sha256": "065c240401c3a6641a2698a340769d6241e66a4bed06947386554b60661e0555",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/contrib/bind-4.9.2/tools/nslookup/Makefile",
+      "size": 4387,
+      "sha256": "805a813ef40e844701ae19b86a1544a5f91d0244614404f7f62ae38ad127fab9",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/contrib/bind-4.9.2/tools/nslookup/commands.l",
+      "size": 7076,
+      "sha256": "d17ebc9fbd5e496dfc627fc520f6e18cd02ef771c8ed94267f44cfe34bba023d",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/contrib/bind-4.9.2/tools/nslookup/debug.c",
+      "size": 12848,
+      "sha256": "930fb28bcc3189e80789f8bf46e1c3c8d9a1e66eb077eb9aa8afd81edea05645",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/contrib/bind-4.9.2/tools/nslookup/getinfo.c",
+      "size": 22382,
+      "sha256": "d63139c15648278bb861431ff641c203f5711fe2036eef5f490b6de7e629c3d2",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/contrib/bind-4.9.2/tools/nslookup/list.c",
+      "size": 23558,
+      "sha256": "5e702cd812b267f14c6e7589f3f9087c6eae651e72901c34a2aed4875b033334",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/contrib/bind-4.9.2/tools/nslookup/main.c",
+      "size": 30017,
+      "sha256": "75c2156c9f29c096c426665adf1e7ba4fcc1e88244d45691cc2cac6147f1bd16",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/contrib/bind-4.9.2/tools/nslookup/nslookup.help",
+      "size": 1760,
+      "sha256": "5e273a5179dbd07ba6bd0f1acd17fb8dc941947045fb3b3312fc0837f1b58940",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/contrib/bind-4.9.2/tools/nslookup/pathnames.h",
+      "size": 3287,
+      "sha256": "6cf81bfb2288ec554dc04928c39dcbc38f7016f179f4019f324014487f9661bc",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/contrib/bind-4.9.2/tools/nslookup/res.h",
+      "size": 5703,
+      "sha256": "615a5b4b6055e54ce14fe4df07fba468979c18ef4f316cb0d58aeff7bb9695d9",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/contrib/bind-4.9.2/tools/nslookup/send.c",
+      "size": 10993,
+      "sha256": "d6000ad2784e3cfdc5f47949e94eb0be6a78885d8c737a09ab455824f4424433",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/contrib/bind-4.9.2/tools/nslookup/skip.c",
+      "size": 6403,
+      "sha256": "6f6cdca54750be9a31c3291e9ffd11824a3c38b30aa2d03f433335c8213d6aba",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/contrib/bind-4.9.2/tools/nslookup/subr.c",
+      "size": 14346,
+      "sha256": "535de4b9516c0489394b1e023b01e1c570405adee976c681c9963c29a576dd70",
+      "mode": 436,
+      "type": "file"
+    },
+    {
       "path": "usr/src/etc/etc.i386/MAKEDEV",
       "size": 4005,
       "sha256": "7a7925f7e39336e7e4379644108d4b3c72cb30cd16835d051ee4c6b010592975",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/etc/hosts",
+      "size": 327,
+      "sha256": "41b1561482600615c51578e8fdfafaad0126537cfc321b4320f80a20cfdbf65d",
       "mode": 436,
       "type": "file"
     },
@@ -56,6 +154,244 @@
       "type": "file"
     },
     {
+      "path": "usr/src/etc/networks",
+      "size": 297,
+      "sha256": "838050106087091999486122c4a4d95e13304043c6519214528803e6919936c1",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/etc/protocols",
+      "size": 670,
+      "sha256": "9e1174e2164af08dfab41b6a3ad8dc76e3d7ac92a2796272526e818bf228da20",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/etc/services",
+      "size": 2162,
+      "sha256": "498fd0c3c2db1f3e1fe684b9da55e469bd1dd49eb35492ac8017e7a7dd0d2388",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/include/arpa/nameser.h",
+      "size": 10835,
+      "sha256": "7a24c3a9960b1b9e62f555bddc99d3622d0b7f1141736a2a5b747b01ea01378b",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/include/netdb.h",
+      "size": 5783,
+      "sha256": "1da4dcec41e7082a4968454e7907ccd8dd01d88e0813a19fb1cdb3dff3e4f19c",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/include/resolv.h",
+      "size": 6537,
+      "sha256": "2c293e0a2ada492ba27cf614a38ef3c1d7f702784254db35fac1c0157ffbf21d",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/gethostbyname.3",
+      "size": 6962,
+      "sha256": "0b3bfcc6d2fd8c76f72849dfd3232b985f6c9c8d9e00fe84877ffec2cb4b7cfd",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/gethostnamadr.c",
+      "size": 11289,
+      "sha256": "ac1a3ade0791aadf3927fafa45f48fabc6c0975db9de79073cc7dee2e2171ced",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/getnetbyaddr.c",
+      "size": 2296,
+      "sha256": "2349ee0f0b43998c7137889b6ad9f4b1cfccf1c9b953f8330cc95a2c443f3438",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/getnetbyname.c",
+      "size": 2409,
+      "sha256": "ed6c1ac0127ba844101b5eb026b5e24b4f501159d4f349decb3c5be8de8c2655",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/getnetent.3",
+      "size": 4298,
+      "sha256": "69f5e7a1b500f90d0d8122d6a945d8d9ba373a155b85443b83ebcdac8fc1d2a9",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/getnetent.c",
+      "size": 3359,
+      "sha256": "14a7417b9a8c0fb3b26c378b5abc340668b16800002ef5959d9302af34010e12",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/getproto.c",
+      "size": 2268,
+      "sha256": "8efef30697c6dd3eb2c516d5bc13fa7893d19b715de74ea6c8b3e66356d39441",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/getprotoent.3",
+      "size": 4064,
+      "sha256": "cf6cf827fc3d4646fa085ae13e8a674ca26c316b899710149476b5fe43f0478f",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/getprotoent.c",
+      "size": 3375,
+      "sha256": "abaac2ba3c3c8a3cb18f836d15dcaa4da39e0a8c9330197a004775176cdbe04c",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/getprotoname.c",
+      "size": 2427,
+      "sha256": "daf1093d67289fffe3d3c9ce7812f081aeef756b6c342b4ba593d2c57e9e61e5",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/getservbyname.c",
+      "size": 2505,
+      "sha256": "167fdb5cb75ae19a54d004dd25c043015ae1274a8fc4a523662fa6dfda14cc1f",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/getservbyport.c",
+      "size": 2366,
+      "sha256": "d185fc269488b0886b801e8e941a80e576d2a528198f9af4abf6ecd237151a6d",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/getservent.3",
+      "size": 4381,
+      "sha256": "6386a8b63befaa8a3f98ca06096a43d409c34fcdebc591f9097fc05f08940ce3",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/getservent.c",
+      "size": 3405,
+      "sha256": "fa8fa1b3c9ea53594fa240179af9725909806f55c32f178189b154853b2ba0ee",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/herror.c",
+      "size": 4131,
+      "sha256": "329474561cf04a9701bf9135df2de32c62045a06a4b7a8fb19dcbea5d5f9ec59",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/inet.3",
+      "size": 5838,
+      "sha256": "5179cebd210c44e821b53f92ad4d9b9e9fdef27e1f6071549d78329513a19103",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/inet_lnaof.c",
+      "size": 2399,
+      "sha256": "ff28a959c7165cb99cbf10cc2c987f00bbf10ec0056a0b421e77bcd88160c8d1",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/inet_makeaddr.c",
+      "size": 2586,
+      "sha256": "ed2361527d4353dbae86465a66aa0a65ca0fe8d93c914ee73201be7e567e5e53",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/inet_netof.c",
+      "size": 2435,
+      "sha256": "fd0c2ca99cbe726a96a57d976831bb2ea3534670621eb9e21a275e51eaa72423",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/inet_network.c",
+      "size": 3014,
+      "sha256": "1db0d88177f005978c7314f42f88a9f697373479ef7fda015c8a21fa265e1005",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/res_comp.c",
+      "size": 9244,
+      "sha256": "65c35d86b3c13fa1b1cc80411a9e4e805873233dbcb8671a3c42ee672c6ba8af",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/res_debug.c",
+      "size": 17002,
+      "sha256": "1260130c7b2b5c112841a25dd545089e0b1e08e6e02e474d7b584cd072bd548b",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/res_init.c",
+      "size": 7624,
+      "sha256": "2469144317eabb613fe5192bb918e6c44092ad76ee71490ded38bb31346deb5c",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/res_mkquery.c",
+      "size": 7615,
+      "sha256": "5d4aa994c47c59211ef867db50b4edfc8f01119247dc45f1607c4fb1eb83393d",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/res_query.c",
+      "size": 9574,
+      "sha256": "0cfb0633bec5cf19864547345a0ffc0e7ee81c4966f096850c327e96b1cffa43",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/res_send.c",
+      "size": 12526,
+      "sha256": "5024d42c7c2a202e6364ee6829c8497a5ffd47c261e76b1f56ab2663e4fb7760",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/resolver.3",
+      "size": 8260,
+      "sha256": "6490888d9832719cc60212ac62bfbe9991f8cb30275f2f3a0d6f0b241ca5f6c4",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/lib/libc/net/sethostent.c",
+      "size": 2261,
+      "sha256": "b1a6080ec0f36a5caba5db5c0d0edc8e97e3f9b2c69e094c50b3469ce4b9c59c",
+      "mode": 436,
+      "type": "file"
+    },
+    {
       "path": "usr/src/libexec/Makefile",
       "size": 299,
       "sha256": "f7998967bef0cc8c72bc9a3d84dae555e32031aa93a65f427226cd17535f8cea",
@@ -70,9 +406,44 @@
       "type": "file"
     },
     {
+      "path": "usr/src/share/man/man5/hosts.5",
+      "size": 3721,
+      "sha256": "dd426cba0548020ec76520ee1f16e4fc95b3cc699508f810f619c608a7ceb1b7",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/share/man/man5/networks.5",
+      "size": 3300,
+      "sha256": "a303999f36ec40068e9e22a1112fa9f405470716aad1ae02c72d1abe4634b1f7",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/share/man/man5/protocols.5",
+      "size": 2891,
+      "sha256": "5394fe1edc2ac1b756153318e132708067c035591aa27fdc4204943883107549",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/share/man/man5/services.5",
+      "size": 3047,
+      "sha256": "53abc4aadb7cb7e16efd015db93246f714337fd46d35bb427a8d3d498bb200fe",
+      "mode": 436,
+      "type": "file"
+    },
+    {
       "path": "usr/src/share/man/man7/hier.7",
       "size": 16687,
       "sha256": "9790ff7f157a763e4a8882feab29d12e570e25ff1253b419037bab28ef48204f",
+      "mode": 436,
+      "type": "file"
+    },
+    {
+      "path": "usr/src/share/man/man7/hostname.7",
+      "size": 4112,
+      "sha256": "022023640fb39b5f99047f79e5d755055ada501ca4277a8f1d928174b384f9b1",
       "mode": 436,
       "type": "file"
     },

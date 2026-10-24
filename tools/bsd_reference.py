@@ -16,18 +16,68 @@ REFERENCE = 'reference/bsd-lite2'
 LICENSE_URL = 'https://www.freebsd.org/copyright/license/'
 LICENSE_SHA256 = 'aa202f7c044300bbceb792f4cd0080002c8ee3dabe0fb7bd562c13bf13f9b23f'
 SELECTED = (
-    # In archive order. Layout evidence for tasks 432-443 (hierarchy, mtree
-    # specs, program directories, chgrp link, cpp wrapper, i386 device names)
-    # is marked; the rest is the networking selection of task 412.
     'COPYRIGHT',
-    'usr/src/bin/Makefile',   # layout
-    'usr/src/etc/etc.i386/MAKEDEV',   # layout
-    'usr/src/etc/mtree/4.4BSD.root',   # layout
-    'usr/src/etc/mtree/4.4BSD.usr',   # layout
-    'usr/src/etc/mtree/4.4BSD.var',   # layout
-    'usr/src/libexec/Makefile',   # layout
-    'usr/src/sbin/Makefile',   # layout
-    'usr/src/share/man/man7/hier.7',   # layout
+    'usr/src/bin/Makefile',
+    'usr/src/contrib/bind-4.9.2/man/resolver.5',
+    'usr/src/contrib/bind-4.9.2/tools/nslookup/Makefile',
+    'usr/src/contrib/bind-4.9.2/tools/nslookup/commands.l',
+    'usr/src/contrib/bind-4.9.2/tools/nslookup/debug.c',
+    'usr/src/contrib/bind-4.9.2/tools/nslookup/getinfo.c',
+    'usr/src/contrib/bind-4.9.2/tools/nslookup/list.c',
+    'usr/src/contrib/bind-4.9.2/tools/nslookup/main.c',
+    'usr/src/contrib/bind-4.9.2/tools/nslookup/nslookup.help',
+    'usr/src/contrib/bind-4.9.2/tools/nslookup/pathnames.h',
+    'usr/src/contrib/bind-4.9.2/tools/nslookup/res.h',
+    'usr/src/contrib/bind-4.9.2/tools/nslookup/send.c',
+    'usr/src/contrib/bind-4.9.2/tools/nslookup/skip.c',
+    'usr/src/contrib/bind-4.9.2/tools/nslookup/subr.c',
+    'usr/src/etc/etc.i386/MAKEDEV',
+    'usr/src/etc/hosts',
+    'usr/src/etc/mtree/4.4BSD.root',
+    'usr/src/etc/mtree/4.4BSD.usr',
+    'usr/src/etc/mtree/4.4BSD.var',
+    'usr/src/etc/networks',
+    'usr/src/etc/protocols',
+    'usr/src/etc/services',
+    'usr/src/include/arpa/nameser.h',
+    'usr/src/include/netdb.h',
+    'usr/src/include/resolv.h',
+    'usr/src/lib/libc/net/gethostbyname.3',
+    'usr/src/lib/libc/net/gethostnamadr.c',
+    'usr/src/lib/libc/net/getnetbyaddr.c',
+    'usr/src/lib/libc/net/getnetbyname.c',
+    'usr/src/lib/libc/net/getnetent.3',
+    'usr/src/lib/libc/net/getnetent.c',
+    'usr/src/lib/libc/net/getproto.c',
+    'usr/src/lib/libc/net/getprotoent.3',
+    'usr/src/lib/libc/net/getprotoent.c',
+    'usr/src/lib/libc/net/getprotoname.c',
+    'usr/src/lib/libc/net/getservbyname.c',
+    'usr/src/lib/libc/net/getservbyport.c',
+    'usr/src/lib/libc/net/getservent.3',
+    'usr/src/lib/libc/net/getservent.c',
+    'usr/src/lib/libc/net/herror.c',
+    'usr/src/lib/libc/net/inet.3',
+    'usr/src/lib/libc/net/inet_lnaof.c',
+    'usr/src/lib/libc/net/inet_makeaddr.c',
+    'usr/src/lib/libc/net/inet_netof.c',
+    'usr/src/lib/libc/net/inet_network.c',
+    'usr/src/lib/libc/net/res_comp.c',
+    'usr/src/lib/libc/net/res_debug.c',
+    'usr/src/lib/libc/net/res_init.c',
+    'usr/src/lib/libc/net/res_mkquery.c',
+    'usr/src/lib/libc/net/res_query.c',
+    'usr/src/lib/libc/net/res_send.c',
+    'usr/src/lib/libc/net/resolver.3',
+    'usr/src/lib/libc/net/sethostent.c',
+    'usr/src/libexec/Makefile',
+    'usr/src/sbin/Makefile',
+    'usr/src/share/man/man5/hosts.5',
+    'usr/src/share/man/man5/networks.5',
+    'usr/src/share/man/man5/protocols.5',
+    'usr/src/share/man/man5/services.5',
+    'usr/src/share/man/man7/hier.7',
+    'usr/src/share/man/man7/hostname.7',
     'usr/src/sys/i386/include/cpu.h',
     'usr/src/sys/i386/include/param.h',
     'usr/src/sys/i386/include/types.h',
@@ -129,10 +179,10 @@ SELECTED = (
     'usr/src/sys/sys/uio.h',
     'usr/src/sys/sys/un.h',
     'usr/src/sys/sys/unistd.h',
-    'usr/src/usr.bin/Makefile',   # layout
-    'usr/src/usr.bin/cpp/cpp.sh',   # layout
-    'usr/src/usr.sbin/Makefile',   # layout
-    'usr/src/usr.sbin/chown/Makefile',   # layout
+    'usr/src/usr.bin/Makefile',
+    'usr/src/usr.bin/cpp/cpp.sh',
+    'usr/src/usr.sbin/Makefile',
+    'usr/src/usr.sbin/chown/Makefile',
 )
 
 
@@ -187,7 +237,7 @@ def dependency_audit(root=ROOT):
     base = root / REFERENCE / 'source'
     result = []
     for name in SELECTED:
-        if not name.startswith('usr/src/sys/'):   # the ledger covers kernel sources only
+        if not name.endswith(('.c', '.h', '.l')):
             continue
         path = PurePosixPath(name)
         text = (base / name).read_text(encoding='latin1')
@@ -198,16 +248,21 @@ def dependency_audit(root=ROOT):
                 target = PurePosixPath('usr/src/sys/i386/include') / include[8:]
             elif '/' not in include:
                 target = path.parent / include
+            if str(target) not in SELECTED and not name.startswith('usr/src/sys/'):
+                target = PurePosixPath('usr/src/include') / include
+                if str(target) not in SELECTED:
+                    target = path.parent / include
             retained = str(target) in SELECTED
             deferred = include.startswith(('netns/', 'netiso/', 'netccitt/')) or include in {
                 'bpfilter.h', 'net/bpf.h', 'hy.h', 'imp.h', 'sys/ktrace.h', 'sys/ioctl_compat.h'}
             includes.append(dict(include=include, disposition='reference' if retained else
                                  'deferred-feature' if deferred else 'native-adapter',
                                  reference=str(target) if retained else None))
-        part = path.parts[3]
+        part = path.parts[3] if name.startswith('usr/src/sys/') else 'resolver'
         tasks = {'net': [418, 419, 427], 'netinet': [419, 420, 421, 422, 423],
                  'kern': [413, 414, 415, 424, 425, 426],
-                 'sys': [413, 414, 424, 425], 'i386': [413]}[part]
+                 'sys': [413, 414, 424, 425], 'i386': [413],
+                 'resolver': [444, 445, 446, 447, 448, 449, 450, 451, 453]}[part]
         result.append(dict(path=name, tasks=tasks, license='Berkeley notice with 1999 amendment',
                            includes=includes))
     return dict(schema_version=1, scope='Lexical includes, including disabled feature branches; not a compilable dependency closure.',
@@ -270,12 +325,28 @@ def import_reference(index, contents, root=ROOT):
     writes = {base / 'source' / name: data for name, data in contents.items()}
     writes[root / 'LICENSES/BSD-4.4-Lite2.txt'] = contents['COPYRIGHT']
     writes[base / 'provenance.json'] = (json.dumps(index, indent=2) + '\n').encode()
+    ledger = base / 'provenance.json'
+    if not regular_path(ledger, root):
+        raise ValueError('refusing non-regular reference provenance')
+    if ledger.exists() and ledger.read_bytes() != writes[ledger]:
+        previous = json.loads(ledger.read_text())
+        previous_files = previous.pop('files')
+        expected = dict(index)
+        expected.pop('files')
+        if previous != expected or not all(record in index['files'] for record in previous_files):
+            raise ValueError('refusing incompatible reference provenance migration')
+        for record in previous_files:
+            path = base / 'source' / record['path']
+            if not regular_path(path, root) or digest(path.read_bytes()) != record['sha256']:
+                raise ValueError('refusing migration of changed reference bytes')
     for path, data in writes.items():
+        if path == ledger:
+            continue
         if not regular_path(path, root) or (path.exists() and (not path.is_file() or path.read_bytes() != data)):
             raise ValueError(f'refusing to overwrite differing/non-regular reference: {path}')
     for path, data in writes.items():
         path.parent.mkdir(parents=True, exist_ok=True)
-        if not path.exists():
+        if not path.exists() or path == ledger:
             path.write_bytes(data)
 
 

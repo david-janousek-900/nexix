@@ -19,8 +19,8 @@ The inventory accounts for **225 components, 2,144 distribution files and
 4 partial, 0 prototype and 105 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **443 tracking tasks: 265 done, 0 in progress
-and 178 to do**. Tasks **1–108, 119–165, 168–202, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–435** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **455 tracking tasks: 266 done, 0 in progress
+and 189 to do**. Tasks **1–108, 119–165, 168–202, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–435, 444** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -737,8 +737,8 @@ service ports before startup integration. IDs do not imply execution order.
 All tasks follow the [networking contract](networking-roadmap.md), including
 single-core QEMU/e1000, static IPv4 and blocking sockets. Dependencies below
 identify prerequisite capabilities; driver and ABI work can proceed independently
-where dependencies permit. DHCP, DNS, IPv6, nonblocking sockets and select/poll
-remain deferred. Each task requires focused tests, affected regressions and a commit.
+where dependencies permit. DHCP, IPv6, nonblocking sockets and select/poll
+remain deferred; name resolution follows in tasks 444–455. Each task requires focused tests, affected regressions and a commit.
 
 | Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
@@ -786,3 +786,34 @@ links stay in `/etc`.
 | 441 | Add /mnt and /usr/local | To do | After 435: create /mnt (temporary mounts) and /usr/local with bin, sbin, lib, libexec, libdata, include and man as in the 4.4BSD usr spec and hier(7), with /usr/local/bin after the system directories in PATH; layout and upgrade suites |
 | 442 | Split password hashes into /etc/master.passwd | To do | After 435: a root-only master.passwd holding hashes and a public passwd without them, as in 4.4BSD (with or without pwd.db/spwd.db databases); update login, su, passwd, newgrp and the account readers, and migrate existing accounts on upgrade without changing IDs or hashes; account, login, upgrade and security suites |
 | 443 | Adopt BSD device names | To do | After 435: decide and implement 4.4BSD i386 names from etc.i386/MAKEDEV (wd*/rwd* disks, fd* floppies, com* serial ports, wt*/rwt* tape) for the Nexix devices, alongside or instead of the V7 names, with mount, tape, getty/ttys and storage tools updated; device, storage, terminal and upgrade suites |
+
+### Name resolution (0.2.0)
+
+4.4BSD-Lite2 resolves names in libc: `gethostnamadr.c` asks the name servers
+in `/etc/resolv.conf` through the BIND 4.9 stub resolver (`res_init.c`,
+`res_query.c`, `res_send.c`, `res_mkquery.c`, `res_comp.c`) and reads
+`/etc/hosts` only when no name server answers at all (`ECONNREFUSED`);
+`/etc/services`, `/etc/protocols` and `/etc/networks` are read by their own
+`get*ent` routines. Tasks 444–455 port that client side to Nexix's blocking
+IPv4 sockets. Without `select`, the resolver waits with `SO_RCVTIMEO`; with no
+`nameserver` line it asks 127.0.0.1 (Lite2 sent to `INADDR_ANY`, which Nexix
+does not route), so a guest without a local server still falls back to
+`/etc/hosts` at once through the ICMP port-unreachable error. The `named`
+server, `named-xfer`, `dig`, `host`, `rcmd`/`hosts.equiv`, IPv6 records,
+EDNS0 and DNSSEC stay out of scope; tests never depend on the public
+Internet.
+
+| Task | Description | Status | Evidence / notes / acceptance |
+|---:|---|---|---|
+| 444 | Pin and audit the 4.4BSD-Lite2 resolver sources | Done | [Source audit](resolver-audit.md); 167 hash-pinned files, additive provenance migration; `make test-bsd-reference test-inventory`; Git history. Scope: Add to the pinned reference set: `lib/libc/net` (gethostnamadr, sethostent, herror, res_comp, res_debug, res_init, res_mkquery, res_query, res_send, get{serv,proto,net}* and inet_{network,makeaddr,lnaof,netof} with their section 3 manuals), `include/{netdb,resolv}.h`, `include/arpa/nameser.h`, `etc/{hosts,services,protocols,networks}`, `share/man/man7/hostname.7` and BIND 4.9.2's `resolver.5` and `tools/nslookup`; record the LP64 and safety findings (`(u_int32_t)bp` alignment cast, HEADER bit-field order, unchecked `cp + n` against the end of message in getanswer, sequential `++_res.id` query IDs, replies accepted from any source, `gethostent` declared but never defined, `select`/`writev` dependencies, static result buffers); amend the [networking contract](networking-roadmap.md) to move the stub resolver from deferred into 0.2.0 with the limits above; `make test-bsd-reference test-inventory` |
+| 445 | Add `<netdb.h>` and the services, protocols and networks databases | To do | After 444: `<netdb.h>` (hostent, netent, servent, protoent, `h_errno`, HOST_NOT_FOUND/TRY_AGAIN/NO_RECOVERY/NO_DATA, `_PATH_*`), `herror`/`hstrerror`, `get{serv,proto,net}ent`, `set*ent`/`end*ent`, `getservbyname`/`getservbyport`, `getprotobyname`/`getprotobynumber`, `getnetbyname`/`getnetbyaddr` and `inet_network`/`inet_makeaddr`/`inet_lnaof`/`inet_netof`; install `/etc/services`, `/etc/protocols` and `/etc/networks` from the Lite2 files; comments, alias limits, long and malformed lines, port byte order and stayopen rewind; manuals; host unit tests (ASan/UBSan), ring-3 `make test-libc` checks and `make test-header-abi` |
+| 446 | Read `/etc/hosts` | To do | After 445: Lite2's `_sethtent`/`_gethtent`/`_gethtbyname`/`_gethtbyaddr` with case-insensitive name and alias matches, plus the documented but missing public `gethostent`; reject lines whose address fails `inet_aton` instead of storing `INADDR_NONE`; 35 aliases, overlong lines and comments; install a default `/etc/hosts` with `127.0.0.1 localhost`; `hosts(5)`; host unit tests and ring-3 libc checks |
+| 447 | Port the DNS message codec | To do | After 444: `<arpa/nameser.h>` with x86_64 bit-field order and the RFC 1035 constants, `dn_comp`, `dn_expand`, `dn_skipname`, `_getshort`/`_getlong`/`putshort`/`putlong`, `res_mkquery` and the `res_debug` printers (`p_type`, `p_class`, `fp_query`) used by `RES_DEBUG` and nslookup; every read bounded by the message end, compression-pointer loops and forward pointers, labels over 63 and names over 255 bytes rejected; host unit tests with RFC 1035 vectors and 40000 seeded mutations per run under ASan/UBSan, as in task 430 |
+| 448 | Provide unpredictable resolver query IDs | To do | After 444: replace Lite2's sequential `++_res.id` with IDs user space cannot predict; add and document a native entropy interface (for example a `getentropy`-style system call keyed like the TCP initial sequence numbers of task 423) or justify an alternative; ABI records, `make test-header-abi`, host and ring-3 tests for distribution and repeated calls across fork |
+| 449 | Read `/etc/resolv.conf` | To do | After 445: `<resolv.h>`, `_res` and `res_init` with `domain`, `search` (6 domains) and up to 3 `nameserver` lines, `LOCALDOMAIN`, the default domain taken from the full name in [/etc/hostname](hostname.md), the derived search list (`LOCALDOMAINPARTS`), Lite2's 5 s timeout and 4 attempts, and 127.0.0.1 as the default server; comments, invalid addresses, overlong lines and missing files; `resolver(5)`; host unit tests with a path override and ring-3 checks |
+| 450 | Port the resolver query transport | To do | After 447–449: `res_send`, `res_query`, `res_search`, `res_querydomain` and `HOSTALIASES`; UDP waits through `SO_RCVTIMEO` with Lite2's back-off (`retrans << try`, divided by the server count), a connected socket for one server (ECONNREFUSED means no server) and `recvfrom` for several; accept only replies from the queried server's address and port whose ID and question match; SERVFAIL/NOTIMP/REFUSED skip that server; a truncated reply retries over TCP with the length prefix and message in one write (no `writev`), flushing an oversized answer and requerying once after ECONNRESET; `RES_STAYOPEN`/`RES_USEVC` and `_res_close`; `h_errno` mapping and EINTR behaviour documented; `resolver(3)`; host tests against a scripted transport and `make test-resolver-guest` against a server bound to lo0 at 16/128 MiB |
+| 451 | Port `gethostbyname` and `gethostbyaddr` | To do | After 446 and 450: Lite2 `getanswer` with every length checked against the message end, LP64-correct alignment of copied addresses, CNAME aliases, up to 35 addresses and aliases, PTR answers for in-addr.arpa; all-numeric names answered without a query unless they end in a dot; Lite2 order (DNS, then `/etc/hosts` only on ECONNREFUSED) and `sethostent`/`endhostent` keeping a TCP connection; `gethostbyname(3)`; host tests and the guest server checks of task 450 |
+| 452 | Accept host and service names in network commands | To do | After 451: `ping`, `nc`, `ifconfig` and `route` accept names as well as numeric addresses (4.4BSD's netstart passed `$hostname` to ifconfig), `nc` accepts service names through `getservbyname`, and `ping -n` selects numeric output while replies are otherwise shown with names as in 4.4BSD; unknown names exit 2 with an `herror` message; [command contract](nettools.md), [configuration contract](netconfig.md) and manuals; `make test-nettools test-netconfig` at 16/128 MiB |
+| 453 | Port nslookup | To do | After 451: BIND 4.9.2 `tools/nslookup` as `/usr/sbin/nslookup` with its help file; `commands.l` built with the native lex; `send.c`'s `select` replaced by `SO_RCVTIMEO`; interactive and command-line modes, `server`/`lserver`, `set` options (type, class, domain, search, retry, timeout, vc, debug), SIGINT returning to the prompt, and `ls` zone listings over TCP; `nslookup(8)`; guest tests against the task 450 server at 16/128 MiB |
+| 454 | Install resolver configuration in startup, QEMU profile and upgrades | To do | After 449: `/etc/resolv.conf.qemu` (`nameserver 10.0.2.3`, QEMU's DNS) installed like `/etc/netstart.qemu`, with `/etc/resolv.conf` optional; installation manifest entries and upgrades that keep existing `/etc/hosts`, `/etc/resolv.conf`, `/etc/services`, `/etc/protocols` and `/etc/networks`; [startup and profile](netstart.md) and [hierarchy](hier.md) updated; `make test-qemu-profile test-upgrade-unit test-netstart test-etc-layout` |
+| 455 | Complete name resolution acceptance and documentation | To do | After 451–454: `make test-resolver-acceptance` with disposable 16/128 MiB guests querying a host DNS stub on 127.0.0.1 (reached as 10.0.2.2, never the public Internet): A records with several addresses, CNAME chains, PTR, NXDOMAIN, NODATA, SERVFAIL, REFUSED, truncation to TCP, replies with a wrong ID or source ignored, a silent server timing out with the documented retries, failover to a second server, the search list, and no server falling back to `/etc/hosts`; whole-resolver host robustness test (ASan/UBSan, seeded mutated answers); `make test-tcpip` includes the resolver suites; [name resolution guide](resolver.md) and the [networking guide](networking.md) updated |

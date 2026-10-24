@@ -3,6 +3,1589 @@
   "scope": "Lexical includes, including disabled feature branches; not a compilable dependency closure.",
   "files": [
     {
+      "path": "usr/src/contrib/bind-4.9.2/tools/nslookup/commands.l",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "res.h",
+          "disposition": "reference",
+          "reference": "usr/src/contrib/bind-4.9.2/tools/nslookup/res.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/contrib/bind-4.9.2/tools/nslookup/debug.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "../../conf/portability.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "arpa/inet.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "arpa/nameser.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/arpa/nameser.h"
+        },
+        {
+          "include": "netdb.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/netdb.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "res.h",
+          "disposition": "reference",
+          "reference": "usr/src/contrib/bind-4.9.2/tools/nslookup/res.h"
+        },
+        {
+          "include": "resolv.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/resolv.h"
+        },
+        {
+          "include": "stdio.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/contrib/bind-4.9.2/tools/nslookup/getinfo.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "../../conf/portability.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "arpa/inet.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "arpa/nameser.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/arpa/nameser.h"
+        },
+        {
+          "include": "ctype.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "res.h",
+          "disposition": "reference",
+          "reference": "usr/src/contrib/bind-4.9.2/tools/nslookup/res.h"
+        },
+        {
+          "include": "resolv.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/resolv.h"
+        },
+        {
+          "include": "stdio.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/contrib/bind-4.9.2/tools/nslookup/list.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "../../conf/portability.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "arpa/inet.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "arpa/nameser.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/arpa/nameser.h"
+        },
+        {
+          "include": "ctype.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "errno.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "limits.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "netdb.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/netdb.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "res.h",
+          "disposition": "reference",
+          "reference": "usr/src/contrib/bind-4.9.2/tools/nslookup/res.h"
+        },
+        {
+          "include": "resolv.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/resolv.h"
+        },
+        {
+          "include": "stdio.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/contrib/bind-4.9.2/tools/nslookup/main.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "../../conf/portability.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "arpa/inet.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "arpa/nameser.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/arpa/nameser.h"
+        },
+        {
+          "include": "ctype.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "errno.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "limits.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "netdb.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/netdb.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "pathnames.h",
+          "disposition": "reference",
+          "reference": "usr/src/contrib/bind-4.9.2/tools/nslookup/pathnames.h"
+        },
+        {
+          "include": "res.h",
+          "disposition": "reference",
+          "reference": "usr/src/contrib/bind-4.9.2/tools/nslookup/res.h"
+        },
+        {
+          "include": "resolv.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/resolv.h"
+        },
+        {
+          "include": "setjmp.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "signal.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "stdio.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/contrib/bind-4.9.2/tools/nslookup/pathnames.h",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/contrib/bind-4.9.2/tools/nslookup/res.h",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": []
+    },
+    {
+      "path": "usr/src/contrib/bind-4.9.2/tools/nslookup/send.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "../../conf/portability.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "arpa/inet.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "arpa/nameser.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/arpa/nameser.h"
+        },
+        {
+          "include": "errno.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "res.h",
+          "disposition": "reference",
+          "reference": "usr/src/contrib/bind-4.9.2/tools/nslookup/res.h"
+        },
+        {
+          "include": "resolv.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/resolv.h"
+        },
+        {
+          "include": "stdio.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/time.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/time.h"
+        },
+        {
+          "include": "sys/uio.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/uio.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/contrib/bind-4.9.2/tools/nslookup/skip.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "../../conf/portability.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "arpa/nameser.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/arpa/nameser.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "resolv.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/resolv.h"
+        },
+        {
+          "include": "stdio.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/contrib/bind-4.9.2/tools/nslookup/subr.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "../../conf/portability.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "arpa/inet.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "arpa/nameser.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/arpa/nameser.h"
+        },
+        {
+          "include": "netdb.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/netdb.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "res.h",
+          "disposition": "reference",
+          "reference": "usr/src/contrib/bind-4.9.2/tools/nslookup/res.h"
+        },
+        {
+          "include": "setjmp.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "signal.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "stdio.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/types.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/types.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/include/arpa/nameser.h",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "sys/types.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/types.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/include/netdb.h",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "sys/cdefs.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/cdefs.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/include/resolv.h",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "stdio.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/cdefs.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/cdefs.h"
+        },
+        {
+          "include": "sys/types.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/types.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/lib/libc/net/gethostnamadr.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "arpa/inet.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "arpa/nameser.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/arpa/nameser.h"
+        },
+        {
+          "include": "ctype.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "errno.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "netdb.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/netdb.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "resolv.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/resolv.h"
+        },
+        {
+          "include": "stdio.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "string.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/lib/libc/net/getnetbyaddr.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "netdb.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/netdb.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/lib/libc/net/getnetbyname.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "netdb.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/netdb.h"
+        },
+        {
+          "include": "string.h",
+          "disposition": "native-adapter",
+          "reference": null
+        }
+      ]
+    },
+    {
+      "path": "usr/src/lib/libc/net/getnetent.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "arpa/inet.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "netdb.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/netdb.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "stdio.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "string.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/types.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/types.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/lib/libc/net/getproto.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "netdb.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/netdb.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/lib/libc/net/getprotoent.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "netdb.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/netdb.h"
+        },
+        {
+          "include": "stdio.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "stdlib.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "string.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/types.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/types.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/lib/libc/net/getprotoname.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "netdb.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/netdb.h"
+        },
+        {
+          "include": "string.h",
+          "disposition": "native-adapter",
+          "reference": null
+        }
+      ]
+    },
+    {
+      "path": "usr/src/lib/libc/net/getservbyname.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "netdb.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/netdb.h"
+        },
+        {
+          "include": "string.h",
+          "disposition": "native-adapter",
+          "reference": null
+        }
+      ]
+    },
+    {
+      "path": "usr/src/lib/libc/net/getservbyport.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "netdb.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/netdb.h"
+        },
+        {
+          "include": "string.h",
+          "disposition": "native-adapter",
+          "reference": null
+        }
+      ]
+    },
+    {
+      "path": "usr/src/lib/libc/net/getservent.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "netdb.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/netdb.h"
+        },
+        {
+          "include": "stdio.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "stdlib.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "string.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/types.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/types.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/lib/libc/net/herror.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "netdb.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/netdb.h"
+        },
+        {
+          "include": "string.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/types.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/types.h"
+        },
+        {
+          "include": "sys/uio.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/uio.h"
+        },
+        {
+          "include": "unistd.h",
+          "disposition": "native-adapter",
+          "reference": null
+        }
+      ]
+    },
+    {
+      "path": "usr/src/lib/libc/net/inet_lnaof.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "arpa/inet.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/lib/libc/net/inet_makeaddr.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "arpa/inet.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/lib/libc/net/inet_netof.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "arpa/inet.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/lib/libc/net/inet_network.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "arpa/inet.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "ctype.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "sys/types.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/types.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/lib/libc/net/res_comp.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "arpa/nameser.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/arpa/nameser.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "resolv.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/resolv.h"
+        },
+        {
+          "include": "stdio.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/lib/libc/net/res_debug.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "arpa/inet.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "arpa/nameser.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/arpa/nameser.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "resolv.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/resolv.h"
+        },
+        {
+          "include": "stdio.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "string.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/lib/libc/net/res_init.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "arpa/inet.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "arpa/nameser.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/arpa/nameser.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "resolv.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/resolv.h"
+        },
+        {
+          "include": "stdio.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "stdlib.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "string.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "unistd.h",
+          "disposition": "native-adapter",
+          "reference": null
+        }
+      ]
+    },
+    {
+      "path": "usr/src/lib/libc/net/res_mkquery.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "arpa/nameser.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/arpa/nameser.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "resolv.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/resolv.h"
+        },
+        {
+          "include": "stdio.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "string.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/lib/libc/net/res_query.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "arpa/inet.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "arpa/nameser.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/arpa/nameser.h"
+        },
+        {
+          "include": "ctype.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "errno.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "netdb.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/netdb.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "resolv.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/resolv.h"
+        },
+        {
+          "include": "stdio.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "stdlib.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "string.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        }
+      ]
+    },
+    {
+      "path": "usr/src/lib/libc/net/res_send.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "arpa/inet.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "arpa/nameser.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/arpa/nameser.h"
+        },
+        {
+          "include": "errno.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "resolv.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/resolv.h"
+        },
+        {
+          "include": "stdio.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "string.h",
+          "disposition": "native-adapter",
+          "reference": null
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        },
+        {
+          "include": "sys/socket.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/socket.h"
+        },
+        {
+          "include": "sys/time.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/time.h"
+        },
+        {
+          "include": "sys/uio.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/uio.h"
+        },
+        {
+          "include": "unistd.h",
+          "disposition": "native-adapter",
+          "reference": null
+        }
+      ]
+    },
+    {
+      "path": "usr/src/lib/libc/net/sethostent.c",
+      "tasks": [
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453
+      ],
+      "license": "Berkeley notice with 1999 amendment",
+      "includes": [
+        {
+          "include": "arpa/nameser.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/arpa/nameser.h"
+        },
+        {
+          "include": "netdb.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/netdb.h"
+        },
+        {
+          "include": "netinet/in.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/netinet/in.h"
+        },
+        {
+          "include": "resolv.h",
+          "disposition": "reference",
+          "reference": "usr/src/include/resolv.h"
+        },
+        {
+          "include": "sys/param.h",
+          "disposition": "reference",
+          "reference": "usr/src/sys/sys/param.h"
+        }
+      ]
+    },
+    {
       "path": "usr/src/sys/i386/include/cpu.h",
       "tasks": [
         413

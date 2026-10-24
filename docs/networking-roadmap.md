@@ -90,6 +90,22 @@ reject unsupported families, options and flags explicitly.
 ## Initial scope and defaults
 
 Target one e1000 interface on single-core QEMU i440fx, with the existing IDE
-and VGA/serial baseline. DHCP, DNS resolution, IPv6, nonblocking sockets,
+and VGA/serial baseline. DHCP, IPv6, nonblocking sockets,
 select/poll, physical hardware and remote login services are deferred.
 TCP/IP remains a 0.2.0 feature; V7 serial communications and UUCP remain in 0.1.0.
+
+## Name resolution (tasks 444–455)
+
+The 0.2.0 client scope includes the 4.4BSD-Lite2/BIND 4.9 stub resolver,
+IPv4 A/PTR and CNAME answers, `/etc/hosts`, `/etc/resolv.conf`, the services,
+protocols and networks databases, name-aware commands and BIND nslookup.
+Use blocking IPv4 sockets with SO_RCVTIMEO, TCP fallback and checked reply
+source, ID and question. Query IDs require native unpredictable entropy.
+Without configured servers, query 127.0.0.1 so ECONNREFUSED permits hosts-file
+fallback. Preserve Lite2's DNS-first policy; timeout and NXDOMAIN do not fall
+back. Search lists support six domains and configuration three nameservers.
+
+No named, named-xfer, dig, host, rcmd/hosts.equiv, IPv6 records, EDNS0 or
+DNSSEC is included. All acceptance servers are isolated local fixtures;
+tests must not depend on public Internet DNS. See the
+[resolver source audit](resolver-audit.md) and tasks 444–455.

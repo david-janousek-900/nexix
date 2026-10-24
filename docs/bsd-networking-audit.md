@@ -16,8 +16,8 @@ The full downloaded archive is not committed.
 
 `reference/bsd-lite2/provenance.json` records the archive prefix, URL/hash,
 commit, and every selected member's path, byte count, SHA-256, original mode
-and type. All **114 files** are regular archive members copied byte for byte
-(102 for networking, plus 12 layout files used by the [hierarchy guide](hier.md#differences-from-44bsd)):
+and type. All **167 files** are regular archive members copied byte for byte
+(102 for networking, 12 layout files and 53 [resolver inputs](resolver-audit.md)):
 39 `netinet` files, 17 Ethernet/loopback/routing/raw-socket `net` files, six
 `kern/uipc_*` files, 36 supporting `sys` headers, three i386 headers and the
 distribution `COPYRIGHT`. The explicit selection is also pinned in the checker.
