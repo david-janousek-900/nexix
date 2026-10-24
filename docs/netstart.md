@@ -88,3 +88,19 @@ need no forwarding; they leave through QEMU's NAT.
     reaches login with only `lo0`;
   - **with a host forward:** a host client sends to a guest `nc` listener
     through the forwarded port, and a guest listener sends back to the host.
+
+## Resolver profile (task 454)
+
+DNS configuration is separately optional. After enabling netstart, enable
+QEMU's DNS with `cp /etc/resolv.qemu /etc/resolv.conf`. The sample contains
+`nameserver 10.0.2.3`. Its name is shortened from the planned
+`resolv.conf.qemu` because V7 directory components allow only 14 bytes.
+The default image has no `/etc/resolv.conf`; absence selects loopback DNS
+and permits immediate hosts fallback when no local server is listening.
+
+The profile and hosts/services/protocols/networks files are configuration:
+upgrades install missing files and preserve existing bytes, ownership, modes
+and timestamps. `/etc/resolv.conf` is administrator-owned and outside the
+manifest; upgrades keep it too. Startup does not rewrite resolver files.
+Tests verify the manifest/profile, preserved custom databases and resolv.conf,
+and cold boots with optional network/DNS configuration at 16/128 MiB.

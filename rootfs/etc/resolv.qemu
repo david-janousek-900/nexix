@@ -1,0 +1,2 @@
+# QEMU user networking DNS. Copy to /etc/resolv.conf to enable.
+nameserver 10.0.2.3

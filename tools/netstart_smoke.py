@@ -36,6 +36,8 @@ with private_guest(qemu, iso, ram, 'netstart-off', {}, single_user=False, termin
     c = g.command
     c('test -f /etc/netstart', status=1, prompt=PROMPT)
     c('test -f /etc/netstart.qemu', prompt=PROMPT)
+    c('test -f /etc/resolv.conf',status=1,prompt=PROMPT)
+    c('grep nameserver /etc/resolv.qemu',stdout='nameserver 10.0.2.3\n',prompt=PROMPT)
     c('/sbin/ifconfig em0 | grep -c inet', stdout='0\n', status=1, prompt=PROMPT)
     c('/sbin/route', stdout='Destination     Gateway         Netmask         Interface\n'
                            '127.0.0.0       link            255.0.0.0       lo0\n', prompt=PROMPT)

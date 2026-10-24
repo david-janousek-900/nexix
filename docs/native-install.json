@@ -9102,6 +9102,19 @@
         "path": "usr/man/man8/route.8"
       },
       "format": "data"
+    },
+    {
+      "path": "/etc/resolv.qemu",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config",
+      "source": {
+        "root": "config",
+        "path": "etc/resolv.qemu"
+      },
+      "format": "data"
     }
   ]
 }

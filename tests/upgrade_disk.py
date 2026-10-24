@@ -34,7 +34,11 @@ class Upgrade(unittest.TestCase):
         image.bytes[block*512+5*16+2:block*512+6*16]=b'\xffname'.ljust(14,b'\0')
         image.directory(5,2,[('alice',6)])
         image.directory(3,2,[('tool',7)])
-        image.directory(4,2,[('passwd',8),('netstart',14),('oldtool',7),('olddir',15)])
+        dns=[]
+        for ino,name in enumerate(('hosts','resolv.conf','services','protocols','networks'),18):
+            image.inode(ino,REG|0o640,('administrator '+name+'\n').encode(),uid=100,gid=100)
+            dns.append((name,ino))
+        image.directory(4,2,[('passwd',8),('netstart',14),('oldtool',7),('olddir',15)]+dns)
         image.directory(11,2,[('console',12),('ttyS0',12),('disk',13)])
         image.directory(2,2,[('bin',3),('etc',4),('home',5),('dev',11),('.profile',9),('root',16)])
         for ino in image.allocated_inodes-{1}:
@@ -57,6 +61,9 @@ class Upgrade(unittest.TestCase):
         records.append(dict(path='/bin/link',type='link',target='/bin/tool',component='distribution.config'))
         for name,source in [('/etc/passwd','passwd'),('/.profile','profile'),('/root/.profile','profile'),('/etc/newconf','newconf')]:
             add(name,'file','0644',dict(root='config',path=source))
+        for name in ('hosts','services','protocols','networks','resolv.qemu'):
+            (self.config/name).write_text('new default '+name+'\n')
+            add('/etc/'+name,'file','0644',dict(root='config',path=name))
         add('/dev/console','character','0600',device=256)
         records.append(dict(path='/dev/ttyS0',type='link',target='/dev/console',component='distribution.devices'))
         add('/dev/new','character','0600',device=257)
@@ -75,7 +82,7 @@ class Upgrade(unittest.TestCase):
         self.assertTrue(self.run_upgrade()['applied'])
         self.assertEqual(self.backup.read_bytes(),self.original)
         before=Volume(self.original);after=Volume(self.disk.read_bytes())
-        for name in ['/etc/passwd','/etc/netstart','/.profile','/home/alice/keep','/home/alice/alias','/home/alice/toolcopy','/home/alice/\udcffname','/dev/console','/dev/disk']:
+        for name in ['/etc/hosts','/etc/resolv.conf','/etc/services','/etc/protocols','/etc/networks','/etc/passwd','/etc/netstart','/.profile','/home/alice/keep','/home/alice/alias','/home/alice/toolcopy','/home/alice/\udcffname','/dev/console','/dev/disk']:
             a,b=before.paths[name],after.paths[name]
             self.assertEqual((a.ino,a.mode,a.uid,a.gid,a.device,a.times),(b.ino,b.mode,b.uid,b.gid,b.device,b.times),name)
             if a.kind==REG:self.assertEqual(before.hash(a),after.hash(b),name)

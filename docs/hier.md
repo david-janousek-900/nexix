@@ -132,3 +132,8 @@ No links remain at the old paths.
 
 **Manuals:** the historical V7 manuals for these programs give the new paths.
 They are otherwise unchanged, as `make test-man-pages` checks.
+
+Resolver configuration (454): `/etc/hosts`, `/etc/services`, `/etc/protocols`
+and `/etc/networks` are installed defaults preserved on upgrade.
+`/etc/resolv.conf` remains optional and administrator-owned. The QEMU sample
+is `/etc/resolv.qemu`, shortened to fit V7's 14-byte filename limit.

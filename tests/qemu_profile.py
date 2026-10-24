@@ -24,3 +24,13 @@ assert status and 'HOSTFWD needs NIC=user' in err
 text = (ROOT / 'Makefile').read_text()
 assert text.count('-no-reboot $(QEMU_NIC_ARGS) $(QEMU_DEBUG_ARGS)') == 2
 print('PASS: NIC=user/none, HOSTFWD forwards, rejected profiles and run-target wiring')
+
+# Resolver profile stays opt-in and uses a V7-safe sample filename (454).
+import json
+records={e['path']:e for e in json.loads((ROOT/'docs/native-install.json').read_text())['entries']}
+assert '/etc/resolv.conf' not in records
+assert records['/etc/resolv.qemu']['source']=={'root':'config','path':'etc/resolv.qemu'}
+assert 'nameserver 10.0.2.3' in (ROOT/'rootfs/etc/resolv.qemu').read_text()
+for name in ('hosts','services','protocols','networks'):
+    assert records['/etc/'+name]['source']['root']=='config'
+print('PASS: optional resolver profile and preserved database configuration entries')
