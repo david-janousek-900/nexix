@@ -3,6 +3,13 @@
   "policy": "Every public function declaration must have a native libc/libm export or an explicit unfinished owner. Export presence is not complete semantic acceptance.",
   "deferred": {
     "gethostbyname": 451,
-    "gethostbyaddr": 451
+    "gethostbyaddr": 451,
+    "res_init": 449,
+    "res_send": 450,
+    "res_query": 450,
+    "res_search": 450,
+    "res_querydomain": 450,
+    "hostalias": 450,
+    "_res_close": 450
   }
 }

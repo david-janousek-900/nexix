@@ -2653,3 +2653,14 @@ build/hosts-unit-test: tests/hosts.c libc/hosts.c libc/netdb.c libc/netdb_privat
 test-hosts-unit: build/hosts-unit-test
 	./build/hosts-unit-test
 test-unit: test-hosts-unit
+
+# Task 447: bounded DNS codec and message printers.
+build/libc.a: build/libc_dns_codec.o
+DNS_CODEC_NAMES = _res dn_comp dn_expand dn_skipname res_mkquery p_type p_class fp_query fp_nquery _getshort _getlong putshort putlong fprintf fputs fputc
+DNS_CODEC_TEST_FLAGS = $(addprefix -D,$(foreach n,$(DNS_CODEC_NAMES),$(n)=nx_test_$(n)))
+build/dns-codec-test: tests/dns_codec.c libc/dns_codec.c libc/include/resolv.h libc/include/arpa/nameser.h | build/.dir
+	$(HOST_CC) -std=c11 -O1 -g -Wall -Wextra -Werror -fno-builtin -fsanitize=address,undefined -fno-pie -no-pie $(DNS_CODEC_TEST_FLAGS) -Ilibc/include -Iinclude tests/dns_codec.c libc/dns_codec.c -o $@
+.PHONY: test-dns-codec
+test-dns-codec: build/dns-codec-test
+	./build/dns-codec-test
+test-unit: test-dns-codec

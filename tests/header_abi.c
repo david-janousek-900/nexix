@@ -1,3 +1,4 @@
+#include <resolv.h>
 #include <netdb.h>
 #include <nexix/dectape.h>
 #include <nexix/modem.h>
@@ -161,3 +162,5 @@ SIZE(struct hostent,32); FIELD(struct hostent,h_addr_list,24);
 SIZE(struct netent,24); FIELD(struct netent,n_net,20);
 SIZE(struct servent,32); FIELD(struct servent,s_proto,24);
 SIZE(struct protoent,24); FIELD(struct protoent,p_proto,16);
+
+SIZE(HEADER,12); FIELD(HEADER,qdcount,4); FIELD(HEADER,arcount,10);

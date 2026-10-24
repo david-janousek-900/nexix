@@ -3,6 +3,7 @@
  * EFAULT. Runs as a non-root user inside the boot self-test, so it never
  * creates a socket (that would start the stack before its own self-test);
  * live sockets are tested on a normal boot by tests/socket-api.c. */
+#include <resolv.h>
 #include <netdb.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -146,6 +147,11 @@ int socket_test(void)
     struct hostent *host_entry=gethostent();
     CHECK(host_entry ? (host_entry->h_addrtype==AF_INET&&host_entry->h_length==4) : errno!=0);
     endhostent();
+    unsigned char dns[256]; char expanded[256];
+    int dns_size=dn_comp("www.example.test",dns,sizeof(dns),NULL,NULL);
+    CHECK(dns_size==18&&dn_expand(dns,dns+dns_size,dns,expanded,sizeof(expanded))==dns_size);
+    CHECK(!strcmp(expanded,"www.example.test"));
+    CHECK(res_mkquery(QUERY,"example.test",C_IN,T_A,NULL,0,NULL,dns,sizeof(dns))>0);
     /* Unassigned numbers after the socket calls stay invalid. */
     CHECK(nx_syscall6(NX_SYS_LAST + 1, 0, 0, 0, 0, 0, 0) == -EINVAL);
     return 0;
