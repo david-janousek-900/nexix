@@ -8,11 +8,13 @@ ELF64 executables; Nexix does not emulate PDP-11 binaries.
 
 The current development version is **0.2.0**. It boots in QEMU to multi-user login
 on a VGA/PS/2 console by default, with optional serial mode. It provides persistent
-IDE storage, the V7 Bourne shell and 101 native ELF programs. The kernel provides protected process
+IDE storage, the V7 Bourne shell and 103 native ELF programs. The kernel provides protected process
 address spaces, scheduling, fork/exec, signals, pipes, permissions and filesystem
 operations. Native libc, libm, startup objects and headers support the ported
 programs. The complete V7 port and guest self-hosting are still unfinished.
-TCP/IP networking is planned for **0.2.0**; it is not currently available.
+Version 0.2.0 adds TCP/IP networking adapted from 4.4BSD-Lite2: an e1000 driver,
+static IPv4, ARP, ICMP, UDP, TCP and blocking sockets, with `ifconfig`, `route`,
+`ping` and `nc`. See the [networking guide](docs/networking.md).
 
 Traditional BSD `vi`, `ex` and read-only `view` are installed alongside V7 `ed`.
 See [vi usage, recovery and tests](docs/vi-port.md). The `clear` command clears
@@ -255,6 +257,7 @@ only the expected diagnostic. See [validation](docs/validation.md) for details.
 - [Architecture](docs/architecture.md), [boot sequence](docs/booting.md) and [storage](docs/storage.md)
 - [Userland](docs/userland.md), [multi-user sessions](docs/multi-user.md) and [time/timezones](docs/time.md)
 - [Kernel messages and dmesg](docs/kernel-log.md)
+- [Networking](docs/networking.md) and [file system hierarchy](docs/hier.md)
 - [Native C preprocessor](docs/cpp.md)
 - [Development interfaces](docs/development-interfaces.md) and [syscall ABI](docs/syscall-abi.md)
 - [Tasks and release scope](docs/tasks.md) and [task coverage rules](docs/roadmap-coverage.md)

@@ -30,7 +30,7 @@ and original metadata to the recorded archive. See [source provenance](../refere
 
 The reference inventory still covers 217 historical components. Native-only
 additions are recorded separately: `cmd.uname`, `cmd.hostname`, `cmd.clear`,
-`cmd.vi`, `cmd.uptime` and `cmd.more` bring the total to 223. The additional traditional-vi requirement records
+`cmd.netconfig`, `cmd.nettools`, `cmd.vi`, `cmd.uptime` and `cmd.more` bring the total to 225. The additional traditional-vi requirement records
 the separately pinned release and its tested native terminal/editor/recovery port.
 `source_availability: native` requires nonempty `native_sources` outside
 `reference/`, and empty reference `sources`/`source_files`. Native additions

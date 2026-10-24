@@ -64,9 +64,9 @@ baseline. Task 413 resolves the primitive type, byte-order, checksum and wire
 representation hazards. BSD VM allocation, mbuf geometry and queue ownership
 are replaced by the [task 414 pools](networking-pools.md); interrupt levels, waits and timers are replaced by the
 [task 415 worker](networking-worker.md). Protocol
-control blocks and reassembly metadata will use these types in tasks 418–423.
-Nexix credentials, copyin/copyout, descriptors and errors will be adapted when
-their socket consumers are implemented. No permissive allocator, locking,
+control blocks and reassembly metadata use these types (tasks 418–423).
+Nexix credentials, copyin/copyout, descriptors and errors were adapted with
+their socket consumers (tasks 424–426). No permissive allocator, locking,
 privilege, random-number or user-copy stubs are supplied.
 
 `make test-net-compat` compiles each private header independently with kernel

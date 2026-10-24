@@ -128,13 +128,14 @@ documented in [syscall-abi.md](syscall-abi.md); the signal ABI is documented in 
 Native userland uses ELF64;
 PDP-11 a.out execution is deferred. `fork` uses eager copying.
 
-Networking is planned as a direct 4.4BSD-Lite2 stack port with an e1000 driver,
-replacing the earlier lwIP proposal. Adapt BSD packet buffers, socket state and
-protocol timers to Nexix's allocator, file descriptors and V7 sleep/wakeup.
-Serialize stack access on the supported single CPU; interrupt handlers queue
-bounded work for a schedulable kernel worker. Start with static IPv4, Ethernet
-and loopback, ARP, ICMP, UDP, TCP and blocking sockets. Pin upstream inputs,
-retain their notices and audit LP64 assumptions. See the
+Networking is a direct 4.4BSD-Lite2 stack port with an e1000 driver,
+replacing the earlier lwIP proposal. BSD packet buffers, socket state and
+protocol timers are adapted to Nexix's allocator, file descriptors and V7
+sleep/wakeup.
+Stack access is serialized on the supported single CPU; interrupt handlers queue
+bounded work for a schedulable kernel worker. It provides static IPv4, Ethernet
+and loopback, ARP, ICMP, UDP, TCP and blocking sockets. Upstream inputs are
+pinned with their notices retained, and LP64 assumptions are audited. See the
 [0.2.0 networking roadmap](networking-roadmap.md) for milestones and acceptance.
 The private [compatibility foundation](networking-compat.md) supplies fixed-width
 protocol types, byte-array wire records, byte-order/checksum helpers, sequence
@@ -147,8 +148,9 @@ the QEMU e1000 through an uncached MMIO window, and its
 [static routes and ARP](networking-routing.md) choose next hops for
 [IPv4 datagrams](networking-ip.md) and
 [ICMP and raw echo sockets](networking-icmp.md), [UDP](networking-udp.md) and
-[TCP](networking-tcp.md); hardware and stack integration remain
-planned work.
+[TCP](networking-tcp.md). User programs reach the stack through
+[socket descriptors](sockets.md); the [networking guide](networking.md) covers
+setup, limits and acceptance tests.
 
 Architecture references: [Intel system programming manuals](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html)
 and [Multiboot2 boot information format](https://www.gnu.org/software/grub/manual/multiboot2/html_node/Boot-information-format.html).
