@@ -9011,6 +9011,19 @@
         "path": "dev-include/sys/random.h"
       },
       "format": "data"
+    },
+    {
+      "path": "/usr/man/man5/resolver.5",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man5/resolver.5"
+      },
+      "format": "data"
     }
   ]
 }

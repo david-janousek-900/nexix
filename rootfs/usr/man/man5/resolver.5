@@ -1,0 +1,16 @@
+.TH RESOLVER 5
+.SH NAME
+resolver \- resolver configuration
+.SH DESCRIPTION
+/etc/resolv.conf is optional. Lines specify domain followed by a default
+domain, search followed by up to six domains, or nameserver followed by an
+IPv4 address. Up to three nameservers are retained. Blank lines, # and ;
+comments, invalid addresses and lines longer than 1023 bytes are ignored.
+Later domain or search directives replace the earlier choice.
+.PP
+LOCALDOMAIN overrides the configured domain/search with its first word,
+following 4.4BSD-Lite2. Without a domain, use the suffix of the full hostname.
+The derived search list contains up to three levels, stopping at two domain
+components. With no server configured, query 127.0.0.1 port 53.
+The defaults are five seconds and four attempts with exponential backoff.
+The state in _res and its search strings is not reentrant.

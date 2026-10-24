@@ -2687,3 +2687,22 @@ test-entropy-guest: build/entropy-guest.elf multi-iso rootfs
 	$(PYTHON) tools/entropy_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/entropy_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test-unit: test-entropy-unit
+
+# Task 449: resolver configuration, with a private test path override.
+build/libc.a: build/libc_res_init.o
+RES_INIT_NAMES = res_init _res getenv gethostname
+RES_INIT_TEST_FLAGS = $(NETDB_TEST_FLAGS) $(addprefix -D,$(foreach n,$(RES_INIT_NAMES),$(n)=nx_test_$(n))) -D_PATH_RESCONF='"/test/resolv.conf"'
+build/res-init-test: tests/res_init.c libc/res_init.c libc/netdb.c libc/inet.c libc/include/resolv.h | build/.dir
+	$(HOST_CC) -std=c11 -O1 -g -Wall -Wextra -Werror -fno-builtin -fsanitize=address,undefined -fno-pie -no-pie $(RES_INIT_TEST_FLAGS) -Ilibc/include -Iinclude tests/res_init.c libc/res_init.c libc/netdb.c libc/inet.c -o $@
+.PHONY: test-res-init
+test-res-init: build/res-init-test
+	./build/res-init-test
+test-unit: test-res-init
+build/res-init-guest.o: tests/res-init-guest.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/res-init-guest.elf: build/crt0.o build/res-init-guest.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+.PHONY: test-res-init-guest
+test-res-init-guest: build/res-init-guest.elf multi-iso rootfs
+	$(PYTHON) tools/res_init_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/res_init_smoke.py $(QEMU) build/nexix-multi.iso 128M

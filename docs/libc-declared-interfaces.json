@@ -4,7 +4,6 @@
   "deferred": {
     "gethostbyname": 451,
     "gethostbyaddr": 451,
-    "res_init": 449,
     "res_send": 450,
     "res_query": 450,
     "res_search": 450,

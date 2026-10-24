@@ -45,3 +45,23 @@ failure, atomic user-buffer behavior, user pointers, query-ID distribution,
 repeated calls and fork independence at 16/128 MiB. Guests without RDRAND
 verify EIO without altering destination bytes. Codec tests inject entropy to
 remain deterministic and also check failure propagation.
+
+## Configuration (task 449)
+
+`res_init` reads optional `/etc/resolv.conf`: up to three IPv4 nameservers,
+`domain`, or six search domains. Each directive must be a complete token.
+Comments start with # or ; and overlong physical lines are consumed and
+ignored. Invalid, unspecified, multicast and broadcast server addresses are
+ignored. Later domain/search directives replace earlier ones. LOCALDOMAIN
+uses its first word as the overriding domain, matching this Lite2 snapshot.
+Absent a configured domain, use the suffix of the full native hostname.
+Derived search tries at most three levels, stopping at two components.
+An empty domain still provides one empty search suffix so single-label
+lookups query a server. No configured server means 127.0.0.1:53. Defaults
+are five seconds and four attempts; explicit nonzero retrans/retry fields
+are preserved. Configuration and search pointers are global, non-reentrant
+and invalidated by reinitialization.
+
+`make test-res-init test-res-init-guest` exercises defaults, invalid/long
+lines, server/search limits, overrides and full hostname handling under host
+sanitizers and with actual files and syscalls at 16/128 MiB.
