@@ -18,16 +18,18 @@ with private_guest(qemu, iso, ram, 'netconfig-' + nic, {'/tmp/netconfig': 'netco
     c('/sbin/ifconfig | grep -c "^	*packets in"', stdout='2\n' if nic == 'e1000' else '1\n')
     c('/sbin/route', stdout='Destination     Gateway         Netmask         Interface\n'
                            '127.0.0.0       link            255.0.0.0       lo0\n')
+    c('/sbin/ifconfig lo0 localhost/8 up')
+    c('/sbin/route get localhost',stdout='127.0.0.1 dev lo0 src 127.0.0.1 local\n')
     c('/sbin/route get 127.1.2.3', stdout='127.1.2.3 dev lo0 src 127.0.0.1\n')
     # Malformed input is refused before anything changes.
-    c('/sbin/ifconfig lo0 1.2.3', stdout='ifconfig: bad address 1.2.3\n', status=2)
+    c('/sbin/ifconfig lo0 999.1', stdout='ifconfig: 999.1: Unknown host\n', status=2)
     c('/sbin/ifconfig lo0 127.0.0.1/33', stdout='ifconfig: bad prefix /33\n', status=2)
     c('/sbin/ifconfig lo0 127.0.0.1 netmask 255.0.255.0', stdout='ifconfig: lo0: Invalid argument\n', status=1)
     c('/sbin/ifconfig lo0 up down', stdout=USAGE_IF, status=2)
     c('/sbin/ifconfig lo0 netmask 255.0.0.0', stdout=USAGE_IF, status=2)
     c('/sbin/ifconfig em9 up', stdout='ifconfig: em9: No such device or address\n', status=1)
     c('/sbin/route add default 10.0.2.2', stdout='route: 10.0.2.2: Network is unreachable\n', status=1)
-    c('/sbin/route add default 1.2.3.x', stdout='route: bad gateway 1.2.3.x\n', status=2)
+    c('/sbin/route add default 1.2.3.x', stdout='route: 1.2.3.x: Unknown host\n', status=2)
     c('/sbin/route get 224.0.0.1', stdout='route: 224.0.0.1: Invalid argument\n', status=1)
     c('/sbin/route get 8.8.8.8', stdout='route: 8.8.8.8: Network is unreachable\n', status=1)
     if nic == 'e1000':

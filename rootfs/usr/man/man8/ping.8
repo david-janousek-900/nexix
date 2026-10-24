@@ -1,0 +1,7 @@
+.TH PING 8
+.SH NAME
+ping \- IPv4 network command
+.SH SYNOPSIS
+ping [-n] [-c count] [-i seconds] [-W seconds] [-s size] host
+.SH DESCRIPTION
+Send ICMP echo requests. Host names use resolver(3); replies show reverse names unless -n selects numeric output. Unknown names exit 2. The installed setuid command drops privilege after opening its raw socket, before resolving names.

@@ -43,10 +43,7 @@ int main(int argc, char **argv)
     struct nx_route route;
     memset(&route, 0, sizeof(route));
     if (argc == 4 && !strcmp(argv[1], "add") && !strcmp(argv[2], "default")) {
-        if (inet_pton(AF_INET, argv[3], &route.gateway) != 1) {
-            fprintf(stderr, "route: bad gateway %s\n", argv[3]);
-            return 2;
-        }
+        if(netconfig_resolve("route",argv[3],&route.gateway))return 2;
         if (ioctl(fd, NX_SIOCSROUTE, &route) < 0) { netconfig_fail("route", argv[3]); return 1; }
         return 0;
     }
@@ -58,10 +55,7 @@ int main(int argc, char **argv)
         struct nx_route_lookup l;
         char d[INET_ADDRSTRLEN], g[INET_ADDRSTRLEN], s[INET_ADDRSTRLEN];
         memset(&l, 0, sizeof(l));
-        if (inet_pton(AF_INET, argv[2], &l.dst) != 1) {
-            fprintf(stderr, "route: bad destination %s\n", argv[2]);
-            return 2;
-        }
+        if(netconfig_resolve("route",argv[2],&l.dst))return 2;
         if (ioctl(fd, NX_SIOCLOOKUP, &l) < 0) { netconfig_fail("route", argv[2]); return 1; }
         printf("%s", netconfig_text(l.dst, d));
         if (l.flags & NX_RT_GATEWAY) printf(" via %s", netconfig_text(l.next_hop, g));

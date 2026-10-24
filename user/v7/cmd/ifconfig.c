@@ -71,7 +71,7 @@ int main(int argc, char **argv)
             }
             have_mask = 1;
         } else {
-            char address[INET_ADDRSTRLEN + 4], *slash;
+            char address[1029], *slash;
             if (c.change & (NX_IFC_ADDRESS | NX_IFC_CLEAR) || strlen(word) >= sizeof(address)) return usage();
             strcpy(address, word);
             if ((slash = strchr(address, '/'))) {
@@ -82,10 +82,7 @@ int main(int argc, char **argv)
                 *slash = 0;
                 have_mask = 1;
             }
-            if (inet_pton(AF_INET, address, &c.addr) != 1) {
-                fprintf(stderr, "ifconfig: bad address %s\n", address);
-                return 2;
-            }
+            if (netconfig_resolve("ifconfig",address,&c.addr))return 2;
             c.change |= NX_IFC_ADDRESS;
         }
     }

@@ -21,11 +21,16 @@ static void forward(int n)
     signal(n, SIG_DFL);
     kill(getpid(), n);
 }
-static int port_number(const char *text, unsigned short *out)
+static int port_number(const char *text, unsigned short *out,int udp)
 {
     char *end;
     long value = strtol(text, &end, 10);
-    if (end == text || *end || value < 1 || value > 65535) {
+    if(end==text||*end){
+        struct servent *service=getservbyname(text,udp?"udp":"tcp");
+        if(service){*out=(unsigned short)service->s_port;return 0;}
+        h_errno=HOST_NOT_FOUND;fputs("nc: ",stderr);herror(text);return -1;
+    }
+    if (value < 1 || value > 65535) {
         fprintf(stderr, "nc: bad port %s\n", text);
         return -1;
     }
@@ -102,11 +107,8 @@ int main(int argc, char **argv)
     struct sockaddr_in a;
     memset(&a, 0, sizeof(a));
     a.sin_family = AF_INET;
-    if (!listen_mode && inet_pton(AF_INET, argv[i], &a.sin_addr) != 1) {
-        fprintf(stderr, "nc: bad address %s\n", argv[i]);
-        return 2;
-    }
-    if (port_number(argv[argc - 1], &a.sin_port) < 0) return 2;
+    if(!listen_mode&&netconfig_resolve("nc",argv[i],&a.sin_addr.s_addr))return 2;
+    if (port_number(argv[argc - 1], &a.sin_port,udp) < 0) return 2;
     signal(SIGINT, forward);
     signal(SIGTERM, forward);
     signal(SIGHUP, forward);

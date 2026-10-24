@@ -9050,6 +9050,58 @@
         "path": "usr/man/man3/gethost.3"
       },
       "format": "data"
+    },
+    {
+      "path": "/usr/man/man8/ping.8",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man8/ping.8"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/usr/man/man1/nc.1",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man1/nc.1"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/usr/man/man8/ifconfig.8",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man8/ifconfig.8"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/usr/man/man8/route.8",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man8/route.8"
+      },
+      "format": "data"
     }
   ]
 }

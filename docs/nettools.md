@@ -1,14 +1,13 @@
 # ping and nc (task 428)
 
 `/sbin/ping` and `/usr/bin/nc` are small native network commands over the
-[socket interface](sockets.md). Addresses are numeric only: there is no
-resolver. Configure interfaces first with [`ifconfig` and `route`](netconfig.md);
+[socket interface](sockets.md). Addresses accept numeric IPv4 or host names through the [resolver](resolver.md). Configure interfaces first with [`ifconfig` and `route`](netconfig.md);
 loopback (127.0.0.1) works as soon as the stack has started.
 
 ## ping
 
 ```
-ping [-c count] [-i seconds] [-W seconds] [-s size] address
+ping [-n] [-c count] [-i seconds] [-W seconds] [-s size] address
 ```
 
 `ping` sends ICMP echo requests from a raw socket and prints each reply:
@@ -120,3 +119,15 @@ their output and status:
   - a reserved-port bind as uid 42;
   - a listener killed by `SIGTERM` (shell status 143) whose port is free for
     the next listener.
+
+## Name support (task 452)
+
+All four network commands accept host names and libc numeric forms. Unknown
+names exit 2 with `herror` diagnostics. nc also resolves service names in
+/etc/services for the selected tcp/udp protocol, in either client or listener
+mode. Invalid numeric ports retain their bad-port diagnostic. ping resolves
+after opening its raw socket and dropping setuid privilege. Replies normally
+show the reverse name and numeric address; -n suppresses reverse lookup and
+prints numeric output. The header and statistics keep their numeric target.
+Acceptance explicitly tests numeric and named output, hosts fallback, unknown
+names/services, service-name listeners and existing TCP/UDP behavior.

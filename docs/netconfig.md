@@ -26,7 +26,7 @@ route delete default
 route get destination                           where a destination goes
 ```
 
-**Addresses and masks.** Addresses are strict dotted quads. A mask is `/bits`
+**Addresses and masks.** Addresses accept numeric IPv4 forms and host names via libc DNS/hosts lookup. A mask is `/bits`
 (1–32), a dotted quad, or `0x` hex. An address without a mask gets BSD's
 classful default: /8, /16 or /24.
 
@@ -36,8 +36,8 @@ it up fails, the previous address (or none) is restored and nothing has
 changed.
 
 **Errors.** Malformed text is rejected by the command before any request
-(`bad address`, `bad prefix`, `bad netmask`, `bad gateway`, or the usage
-message; exit status 2). Kernel refusals print `command: subject: message`
+(`bad prefix`, `bad netmask`, or the usage message; exit status 2).
+Unknown host/gateway names also exit 2, with herror diagnostics. Kernel refusals print `command: subject: message`
 and exit 1:
 
 | Refusal | Error |

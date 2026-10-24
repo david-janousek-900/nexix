@@ -1,6 +1,7 @@
 /* Shared helpers for the native ifconfig and route commands (task 427). */
 #ifndef NEXIX_NETCONFIG_H
 #define NEXIX_NETCONFIG_H
+#include <netdb.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <netinet/in.h>
@@ -22,6 +23,15 @@ static inline void netconfig_fail(const char *command, const char *subject)
 {
     if (subject) fprintf(stderr, "%s: %s: %s\n", command, subject, netconfig_error(errno));
     else fprintf(stderr, "%s: %s\n", command, netconfig_error(errno));
+}
+/* Resolve a host, copying the static libc result before the next lookup. */
+static inline int netconfig_resolve(const char *command,const char *name,uint32_t *address)
+{
+    if(inet_pton(AF_INET,name,address)==1)return 0;
+    struct hostent *host=gethostbyname(name);
+    if(!host){fprintf(stderr,"%s: ",command);herror(name);return -1;}
+    if(host->h_addrtype!=AF_INET||host->h_length!=4||!host->h_addr){h_errno=NO_DATA;fprintf(stderr,"%s: ",command);herror(name);return -1;}
+    memcpy(address,host->h_addr,4);return 0;
 }
 /* Dotted-quad text of a network-order address. */
 static inline const char *netconfig_text(uint32_t address, char text[INET_ADDRSTRLEN])

@@ -1,0 +1,7 @@
+.TH NC 1
+.SH NAME
+nc \- IPv4 network command
+.SH SYNOPSIS
+nc [-u] [-w seconds] host service; nc -l [-u] [-w seconds] service
+.SH DESCRIPTION
+Connect or listen for TCP (default) or UDP (-u). Hosts may be names or numeric addresses; services may be numeric ports or /etc/services names for the selected protocol. Unknown names/services exit 2. -w limits blocking socket waits.

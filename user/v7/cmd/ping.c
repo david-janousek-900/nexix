@@ -7,10 +7,11 @@
 #include <sys/timeb.h>
 #define MAXDATA 1472   /* one Ethernet frame */
 static volatile sig_atomic_t stop;
+static int numeric;
 static void interrupt(int n) { (void)n; stop = 1; }
 static int usage(void)
 {
-    fputs("usage: ping [-c count] [-i seconds] [-W seconds] [-s size] address\n", stderr);
+    fputs("usage: ping [-n] [-c count] [-i seconds] [-W seconds] [-s size] address\n", stderr);
     return 2;
 }
 static long now_ms(void)
@@ -34,6 +35,19 @@ static unsigned short checksum(const unsigned char *p, size_t n)
     if (n & 1) sum += (unsigned)p[n - 1] << 8;
     while (sum >> 16) sum = (sum & 0xffff) + (sum >> 16);
     return (unsigned short)~sum;
+}
+static const char *from_text(struct in_addr address,char *text)
+{
+    netconfig_text(address.s_addr,text);
+    if(numeric)return text;
+    static uint32_t cached;static int have_cache;static char label[1200];
+    if(!have_cache||cached!=address.s_addr){
+        struct hostent *host=gethostbyaddr(&address,4,AF_INET);
+        if(host)snprintf(label,sizeof(label),"%s (%s)",host->h_name,text);
+        else snprintf(label,sizeof(label),"%s",text);
+        cached=address.s_addr;have_cache=1;
+    }
+    return label;
 }
 static long sent_at[1024];
 static unsigned char seen[65536 / 8];
@@ -61,7 +75,7 @@ static void reply(const unsigned char *b, ssize_t n, const struct sockaddr_in *f
             if (rtt > rtt_max) rtt_max = rtt;
         }
         printf("%ld bytes from %s: icmp_seq=%u ttl=%d time=%ld ms%s\n", (long)(n - (ssize_t)hl),
-               netconfig_text(from->sin_addr.s_addr, text), seq, b[8], rtt, duplicate ? " (DUP!)" : "");
+               from_text(from->sin_addr, text), seq, b[8], rtt, duplicate ? " (DUP!)" : "");
         return;
     }
     /* Unreachable or time exceeded, quoting our echo request. */
@@ -75,7 +89,7 @@ static void reply(const unsigned char *b, ssize_t n, const struct sockaddr_in *f
                                             "Port Unreachable", "Fragmentation Needed"};
         const char *what = icmp[0] == 11 ? "Time to live exceeded"
                          : icmp[1] < 5 ? unreachable[icmp[1]] : "Destination Unreachable";
-        printf("From %s icmp_seq=%u %s\n", netconfig_text(from->sin_addr.s_addr, text),
+        printf("From %s icmp_seq=%u %s\n", from_text(from->sin_addr, text),
                (unsigned)(echo[6] << 8 | echo[7]), what);
     }
 }
@@ -98,6 +112,7 @@ int main(int argc, char **argv)
     long count = -1, interval = 1, linger = 1, size = 56;
     int i = 1;
     for (; i < argc && argv[i][0] == '-' && argv[i][1]; ++i) {
+        if(!strcmp(argv[i],"-n")){numeric=1;continue;}
         long *target = !strcmp(argv[i], "-c") ? &count : !strcmp(argv[i], "-i") ? &interval
                      : !strcmp(argv[i], "-W") ? &linger : !strcmp(argv[i], "-s") ? &size : NULL;
         long high = target == &size ? MAXDATA : target == &count ? 65535 : 60;
@@ -107,14 +122,11 @@ int main(int argc, char **argv)
     struct sockaddr_in to;
     memset(&to, 0, sizeof(to));
     to.sin_family = AF_INET;
-    if (inet_pton(AF_INET, argv[i], &to.sin_addr) != 1) {
-        fprintf(stderr, "ping: bad address %s\n", argv[i]);
-        return 2;
-    }
     int fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
     int error = errno;
     if (setuid(getuid()) < 0) { netconfig_fail("ping", "setuid"); return 2; }   /* drop root at once */
     if (fd < 0) { errno = error; netconfig_fail("ping", "socket"); return 2; }
+    if(netconfig_resolve("ping",argv[i],&to.sin_addr.s_addr))return 2;
     ident = (unsigned short)getpid();
     signal(SIGINT, interrupt);
     char text[INET_ADDRSTRLEN];
