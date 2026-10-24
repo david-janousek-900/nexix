@@ -26,3 +26,18 @@ ring-3 suite checks errors and conversions without starting the network stack.
 
 `make test-netdb-guest` reads the installed BSD databases in disposable
 16/128 MiB guests with no NIC, through the production libc.
+
+## Hosts file (task 446)
+
+`gethostent`, `sethostent` and `endhostent` iterate `/etc/hosts`. The private
+Lite2 `_getht*` entry points provide name/alias and reverse lookup for the DNS
+layer. Names compare without ASCII case; addresses must pass inet_aton.
+Aligned typed in_addr storage replaces historical pointer casts. Each entry
+supports 35 aliases, with the same full-line rejection rules as the other
+databases. The installed default is `127.0.0.1 localhost`.
+
+`make test-hosts-unit` covers case-insensitive names/aliases, invalid and
+broadcast addresses, overflow, I/O errors, missing files and stream reuse
+under ASan/UBSan. `make test-netdb-guest` iterates the installed hosts file
+through the public libc at 16/128 MiB. The self-test libc suite also checks
+entry layout and stream cleanup without starting the network stack.

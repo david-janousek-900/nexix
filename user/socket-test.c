@@ -141,6 +141,11 @@ int socket_test(void)
     CHECK(!getservbyname(NULL,NULL)&&errno==EINVAL);
     CHECK(!getprotobyname(NULL)&&errno==EINVAL);
     CHECK(!getnetbyaddr(127,AF_UNSPEC)&&errno==EAFNOSUPPORT);
+    sethostent(1); endhostent();
+    errno=0;
+    struct hostent *host_entry=gethostent();
+    CHECK(host_entry ? (host_entry->h_addrtype==AF_INET&&host_entry->h_length==4) : errno!=0);
+    endhostent();
     /* Unassigned numbers after the socket calls stay invalid. */
     CHECK(nx_syscall6(NX_SYS_LAST + 1, 0, 0, 0, 0, 0, 0) == -EINVAL);
     return 0;

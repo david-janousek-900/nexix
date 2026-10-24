@@ -1,0 +1,13 @@
+.TH HOSTS 5
+.SH NAME
+hosts \- static IPv4 host database
+.SH DESCRIPTION
+/etc/hosts contains an IPv4 address, canonical name and up to 35 aliases,
+separated by spaces or tabs. Comments begin with #. Names and aliases match
+without regard to ASCII case. Invalid addresses, malformed records and lines
+longer than 1023 bytes are skipped completely. The default file maps
+127.0.0.1 to localhost.
+.PP
+gethostent iterates entries using static storage overwritten on the next call.
+sethostent rewinds and optionally keeps the stream open across lookups;
+endhostent closes it. These interfaces are not reentrant.
