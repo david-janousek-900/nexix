@@ -15,7 +15,7 @@ stage = 'startup'
 with tempfile.TemporaryDirectory(prefix='nexix-time-') as directory:
     disk = Path(directory) / 'root.img'
     disk.write_bytes(Path('build/root.img').read_bytes())
-    p = subprocess.Popen([sys.argv[1], '-machine','pc','-accel','tcg','-cpu','qemu64',
+    p = subprocess.Popen([sys.argv[1], '-machine','pc','-accel','tcg','-cpu','qemu64,+rdrand',
         '-smp','1','-m',ram,'-rtc','base=2024-02-29T12:34:56,clock=vm','-boot','d',
         '-drive',f'file={disk},format=raw,if=ide,index=0','-cdrom',sys.argv[2],
         '-display','none','-serial','stdio','-monitor','none','-no-reboot'],

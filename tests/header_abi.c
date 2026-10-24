@@ -1,3 +1,5 @@
+#include <sys/random.h>
+#include <nexix/syscall.h>
 #include <resolv.h>
 #include <netdb.h>
 #include <nexix/dectape.h>
@@ -131,7 +133,7 @@ _Static_assert(NX_HP_INTERLEAVED_MINOR(2,1)==0111,"HP interleaved minor ABI");
 #include <arpa/inet.h>
 #include <errno.h>
 #include <nexix/socket.h>
-_Static_assert(NX_SYS_SOCKET==77 && NX_SYS_SENDTO==83 && NX_SYS_GETSOCKOPT==88 && NX_SYS_LAST==88, "socket syscall numbers");
+_Static_assert(NX_SYS_SOCKET==77 && NX_SYS_SENDTO==83 && NX_SYS_GETSOCKOPT==88 && NX_SYS_LAST==89, "socket syscall numbers");
 _Static_assert(ENOSYS==35 && ENOTSOCK==36 && EAFNOSUPPORT==43 && ECONNRESET==49 && ECONNREFUSED==54 &&
                EINPROGRESS==57 && EWOULDBLOCK==EAGAIN, "networking errno numbers");
 _Static_assert(AF_INET==2 && SOCK_STREAM==1 && SOCK_DGRAM==2 && SOCK_RAW==3 && IPPROTO_TCP==6 &&
@@ -164,3 +166,5 @@ SIZE(struct servent,32); FIELD(struct servent,s_proto,24);
 SIZE(struct protoent,24); FIELD(struct protoent,p_proto,16);
 
 SIZE(HEADER,12); FIELD(HEADER,qdcount,4); FIELD(HEADER,arcount,10);
+
+_Static_assert(NX_SYS_GETENTROPY==89,"entropy ABI number");

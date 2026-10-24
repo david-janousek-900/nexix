@@ -45,7 +45,7 @@ class Guest:
         self.temp=tempfile.TemporaryDirectory(prefix='nx-serial-');self.sockets=[];self.writers=[];self.buffers=[bytearray() for _ in range(terminals)];self.positions=[0]*terminals
         self.timeout=timeout;self.process=None;self.diagnostics=tempfile.TemporaryFile()
         paths=[str(Path(self.temp.name)/str(i)) for i in range(terminals)]
-        args=[qemu,'-machine','pc','-accel','tcg','-cpu','qemu64','-smp','1','-m',ram,'-rtc',f'base={rtc},clock=vm','-cdrom',str(iso),'-boot','d','-display','none','-monitor','none','-no-reboot']
+        args=[qemu,'-machine','pc','-accel','tcg','-cpu','qemu64,+rdrand','-smp','1','-m',ram,'-rtc',f'base={rtc},clock=vm','-cdrom',str(iso),'-boot','d','-display','none','-monitor','none','-no-reboot']
         if disk is not None:args+=['-drive',f'file={disk},format=raw,if=ide,index=0']
         args+=list(extra_args)
         for path in paths:

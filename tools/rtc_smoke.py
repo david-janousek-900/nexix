@@ -4,7 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-command = [sys.argv[1], '-machine', 'pc', '-accel', 'tcg', '-cpu', 'qemu64',
+command = [sys.argv[1], '-machine', 'pc', '-accel', 'tcg', '-cpu', 'qemu64,+rdrand',
            '-smp', '1', '-m', '128M', '-rtc', 'base=2024-02-29T12:34:56,clock=vm',
            '-cdrom', sys.argv[2], '-display', 'none', '-serial', 'stdio',
            '-monitor', 'none', '-no-reboot']

@@ -35,7 +35,7 @@ def data(payload, size, seq, ack=0):
 
 
 def main():
-    command = [sys.argv[1], '-machine', 'pc', '-accel', 'tcg', '-cpu', 'qemu64',
+    command = [sys.argv[1], '-machine', 'pc', '-accel', 'tcg', '-cpu', 'qemu64,+rdrand',
                '-smp', '1', '-m', sys.argv[3], '-cdrom', sys.argv[2], '-display', 'none',
                '-serial', 'stdio', '-monitor', 'none', '-no-reboot']
     process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)

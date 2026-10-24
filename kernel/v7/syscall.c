@@ -1,3 +1,4 @@
+#include "entropy.h"
 #include "klog.h"
 #include "utsname.h"
 /* Native trap dispatch based on V7 sys/trap.c and sys/sysent.c numbering. */
@@ -38,6 +39,17 @@ static int64_t invoke(uint64_t number, struct interrupt_frame *frame)
     case NX_SYS_SHUTDOWN: case NX_SYS_SENDTO: case NX_SYS_RECVFROM: case NX_SYS_GETSOCKNAME:
     case NX_SYS_GETPEERNAME: case NX_SYS_SETSOCKOPT: case NX_SYS_GETSOCKOPT:
         return socket_syscall(number, u->u_arg);
+    case NX_SYS_GETENTROPY: {
+        size_t length=u->u_arg[1]; uintptr_t destination=u->u_arg[0];
+        if(length>256)return -NX_EIO;
+        if(!length)return 0;
+        if(!user_access_ok(&p->p_vm,destination,length,true))return -NX_EFAULT;
+        unsigned char bytes[256];
+        int error=entropy_fill(bytes,length);
+        if(!error)error=copyout(&p->p_vm,destination,bytes,length);
+        for(size_t i=0;i<sizeof(bytes);++i)((volatile unsigned char *)bytes)[i]=0;
+        return error;
+    }
     case NX_SYS_UNAME:return uname_request(u->u_arg[0]);
     case NX_SYS_SETHOSTNAME:return hostname_request(u->u_arg[0],u->u_arg[1]);
     case NX_SYS_KLOG:return klog_request(u->u_arg[0],u->u_arg[1]);

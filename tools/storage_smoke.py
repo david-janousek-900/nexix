@@ -13,7 +13,7 @@ ram = sys.argv[3] if len(sys.argv) > 3 else '128M'
 log = bytearray()
 
 def boot(disk, commands, initial=rb'(?s)ROOT IDE\r\n(?:\[[^\]\r\n]+\] )?ROOT MOUNTED.*BOOT OK\r\nroot@[A-Za-z0-9.-]+# ', rtc='2024-02-29T12:34:56'):
-    command = [sys.argv[1], '-machine', 'pc', '-accel', 'tcg', '-cpu', 'qemu64',
+    command = [sys.argv[1], '-machine', 'pc', '-accel', 'tcg', '-cpu', 'qemu64,+rdrand',
                '-smp', '1', '-m', ram, '-rtc', f'base={rtc},clock=vm',
                '-boot', 'd', '-cdrom', sys.argv[2],
                '-drive', f'file={disk},format=raw,if=ide,index=0',

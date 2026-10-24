@@ -252,7 +252,7 @@ indirect-call instruction or user pointer.
 
 Slot 39 remains the documented native setpgrp operation; its useful native
 behavior intentionally supersedes V7's not-yet-implemented nullsys placeholder.
-Slots 64–88 are native extensions, not aliases of reserved original slots.
+Slots 64–89 are native extensions, not aliases of reserved original slots.
 The fallback for an assigned-but-unavailable implementation is ENOSYS, distinct
 from invalid/reserved numbers. All currently assigned calls have dispatcher
 implementations. The private int 0x81 test transport retains ENOSYS for inactive
@@ -263,3 +263,20 @@ hooks and remains outside the public syscall ABI.
 and full-width unknown numbers, unchanged libc errno and process survival at
 16/128 MiB. `make test-syscall` also checks these returns from assembly while
 retaining the register/flags and user-copy regression coverage.
+
+## Entropy (task 448)
+
+`getentropy(buffer, length)` uses native syscall 89. Length is a full-width
+size_t limited to 256 bytes; larger requests return EIO. Zero length succeeds
+without inspecting the pointer. Nonzero output must be fully writable user
+memory (EFAULT); validation precedes generation. The kernel generates into a
+private buffer and copies only on complete success, so failure leaves user
+bytes unchanged. There are no partial successful results. RDRAND, gated by
+CPUID and checked carry flags with ten attempts per word, supplies entropy.
+An unavailable/exhausted source returns EIO; there is no timestamp/PID fallback.
+The temporary kernel buffer is cleared after use. No privilege is required.
+
+QEMU launchers use `-cpu qemu64,+rdrand`. Systems without that CPU capability
+still boot; resolver query construction reports entropy failure. Native guest
+tests also boot with `-cpu qemu64,-rdrand` to exercise this failure contract.
+Forked processes request fresh kernel entropy rather than copying PRNG state.

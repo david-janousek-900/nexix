@@ -24,7 +24,7 @@ ram = sys.argv[4] if len(sys.argv) > 4 else "128M"
 # Optional QEMU -nic value (e.g. "none" or "user,model=e1000"); QEMU's default
 # for -machine pc is one e1000 on user networking.
 nic = sys.argv[5] if len(sys.argv) > 5 else None
-command = [sys.argv[1], "-machine", "pc", "-accel", "tcg", "-cpu", "qemu64",
+command = [sys.argv[1], "-machine", "pc", "-accel", "tcg", "-cpu", "qemu64,+rdrand",
            "-smp", "1", "-m", ram, "-cdrom", sys.argv[2], "-display", "none",
            "-serial", "stdio", "-monitor", "none", "-no-reboot"] + (["-nic", nic] if nic else [])
 try:

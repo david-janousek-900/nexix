@@ -12,7 +12,7 @@ from root_separation_fixture import fixture
 
 def boot(qemu,iso,ram,disk,second,log):
     extra=[] if disk is None else ['-drive',f'file={disk},format=raw,if=ide,index=0']
-    process=subprocess.Popen([qemu,'-machine','pc','-accel','tcg','-cpu','qemu64','-smp','1','-m',ram,
+    process=subprocess.Popen([qemu,'-machine','pc','-accel','tcg','-cpu','qemu64,+rdrand','-smp','1','-m',ram,
         '-cdrom',iso,'-boot','d','-display','none','-serial','stdio','-monitor','none','-no-reboot',*extra],
         stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     output=bytearray();position=0

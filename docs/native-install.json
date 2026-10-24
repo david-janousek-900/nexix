@@ -8998,6 +8998,19 @@
         "path": "dev-include/arpa/nameser.h"
       },
       "format": "data"
+    },
+    {
+      "path": "/usr/include/sys/random.h",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "lib.libc",
+      "source": {
+        "root": "programs",
+        "path": "dev-include/sys/random.h"
+      },
+      "format": "data"
     }
   ]
 }

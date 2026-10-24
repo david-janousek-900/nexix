@@ -50,7 +50,7 @@ def check_media(disks):
 
 
 def boot(qemu, iso, ram, disks, number, owned=True):
-    command = [qemu, '-machine', 'pc', '-accel', 'tcg', '-cpu', 'qemu64', '-smp', '1',
+    command = [qemu, '-machine', 'pc', '-accel', 'tcg', '-cpu', 'qemu64,+rdrand', '-smp', '1',
                '-m', ram, '-drive', f'file={iso},format=raw,media=cdrom,if=ide,index=3,readonly=on',
                '-boot', 'd', '-display', 'none', '-serial', 'stdio',
                '-monitor', 'none', '-no-reboot', '-drive', f'file={disks[0]},format=raw,if=ide,index=1',

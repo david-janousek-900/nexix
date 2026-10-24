@@ -52,6 +52,7 @@
  */
 
 /* Bounds-checked native adaptation of Lite2 res_comp/res_mkquery. */
+#include <sys/random.h>
 #include <resolv.h>
 #include <netdb.h>
 #include <string.h>
@@ -180,7 +181,10 @@ int res_mkquery(int op,const char *name,int class,int type,const unsigned char *
 {
     (void)newrr;
     if((op!=QUERY&&op!=IQUERY)||!buf||capacity<HFIXEDSZ||class<0||class>65535||type<0||type>65535) return -1;
-    memset(buf,0,HFIXEDSZ); putshort(++_res.id,buf);
+    uint16_t id;
+    if(getentropy(&id,sizeof(id)))return -1;
+    _res.id=id;
+    memset(buf,0,HFIXEDSZ); putshort(id,buf);
     buf[2]=(unsigned char)((op<<3)|((_res.options&RES_RECURSE)?1:0));
     int n=HFIXEDSZ;
     if(op==QUERY) {

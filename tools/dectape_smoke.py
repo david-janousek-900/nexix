@@ -94,7 +94,7 @@ def check_media(path):
 
 
 def boot(qemu, iso, ram, disk, number, owned=True):
-    command = [qemu, '-machine', 'pc', '-accel', 'tcg', '-cpu', 'qemu64', '-smp', '1',
+    command = [qemu, '-machine', 'pc', '-accel', 'tcg', '-cpu', 'qemu64,+rdrand', '-smp', '1',
                '-m', ram, '-cdrom', iso, '-display', 'none', '-serial', 'stdio',
                '-monitor', 'none', '-no-reboot', '-drive', f'file={disk},format=raw,if=ide,index=1']
     process = subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)

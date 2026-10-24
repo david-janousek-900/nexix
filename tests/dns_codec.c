@@ -1,6 +1,12 @@
 #include <resolv.h>
 #include <string.h>
 #include <stdarg.h>
+#include <errno.h>
+int errno;
+static uint32_t random32(void);
+static int entropy_fail;
+int getentropy(void *out,size_t length)
+{if(entropy_fail){errno=EIO;return -1;} unsigned char *p=out;for(size_t i=0;i<length;++i)p[i]=(unsigned char)random32();return 0;}
 #define CHECK(c) do {if(!(c))return __LINE__;}while(0)
 int fprintf(FILE *f,const char *s,...){(void)f;(void)s;return 0;}
 int fputs(const char *s,FILE *f){(void)f;(void)s;return 0;}
@@ -55,5 +61,6 @@ int main(void)
         input[chars]=0; /* chars is at most 299 */
         (void)dn_comp(input,msg,(int)(random32()%256),NULL,NULL);
     }
+    entropy_fail=1;CHECK(res_mkquery(QUERY,"example.test",C_IN,T_A,NULL,0,NULL,msg,sizeof(msg))==-1&&errno==EIO);
     puts("PASS: DNS codec vectors, compression, LP64 header layout and 40000 seeded mutations");return 0;
 }

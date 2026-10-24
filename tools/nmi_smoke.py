@@ -11,7 +11,7 @@ from pathlib import Path
 with tempfile.TemporaryDirectory() as directory:
     path = directory + '/qmp'
     process = subprocess.Popen([sys.argv[1], '-machine', 'pc', '-accel', 'tcg',
-        '-cpu', 'qemu64', '-m', '128M', '-cdrom', sys.argv[2], '-display', 'none',
+        '-cpu', 'qemu64,+rdrand', '-m', '128M', '-cdrom', sys.argv[2], '-display', 'none',
         '-serial', 'stdio', '-qmp', 'unix:'+path+',server=on,wait=off', '-no-reboot'],
         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output = bytearray()

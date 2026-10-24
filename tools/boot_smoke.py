@@ -8,7 +8,7 @@ import sys
 import time
 
 ram = sys.argv[3] if len(sys.argv) > 3 else '128M'
-command = [sys.argv[1], '-machine', 'pc', '-accel', 'tcg', '-cpu', 'qemu64',
+command = [sys.argv[1], '-machine', 'pc', '-accel', 'tcg', '-cpu', 'qemu64,+rdrand',
            '-smp', '1', '-m', ram, '-cdrom', sys.argv[2], '-display', 'none',
            '-serial', 'stdio', '-monitor', 'none', '-no-reboot']
 output = bytearray()

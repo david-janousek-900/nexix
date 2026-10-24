@@ -11,7 +11,7 @@ from mk_large_image_fixture import fixture
 
 
 def boot(disk, qemu, iso, ram, second, log):
-    process=subprocess.Popen([qemu,'-machine','pc','-accel','tcg','-cpu','qemu64','-smp','1','-m',ram,
+    process=subprocess.Popen([qemu,'-machine','pc','-accel','tcg','-cpu','qemu64,+rdrand','-smp','1','-m',ram,
         '-cdrom',iso,'-boot','d','-drive',f'file={disk},format=raw,if=ide,index=0',
         '-display','none','-serial','stdio','-monitor','none','-no-reboot'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     output=bytearray();position=0

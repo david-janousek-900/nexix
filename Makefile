@@ -152,7 +152,7 @@ multi-iso: check build/nexix-multi.iso
 build: iso disk
 run-serial: build serial-iso
 	$(PYTHON) tools/serial_terminal.py --prepare build/ttyS1
-	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -rtc base=utc -boot d -drive "file=$(DISK_IMAGE),format=raw,if=ide,index=0" -cdrom build/nexix-serial.iso -display none -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -serial pipe:build/ttyS1 -mon chardev=console,mode=readline -no-reboot $(QEMU_NIC_ARGS) $(QEMU_DEBUG_ARGS)
+	$(QEMU) -machine pc -accel tcg -cpu qemu64,+rdrand -smp 1 -m 128M -rtc base=utc -boot d -drive "file=$(DISK_IMAGE),format=raw,if=ide,index=0" -cdrom build/nexix-serial.iso -display none -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -serial pipe:build/ttyS1 -mon chardev=console,mode=readline -no-reboot $(QEMU_NIC_ARGS) $(QEMU_DEBUG_ARGS)
 
 .PHONY: terminal
 terminal:
@@ -328,7 +328,7 @@ test-tty: check build/test-tty.iso build/test-tty-demo.iso
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-tty.iso tty 128M
 	$(PYTHON) tools/smoke.py $(QEMU) build/test-tty-demo.iso tty-demo 16M
 run-tty: check build/test-tty-demo.iso
-	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -cdrom build/test-tty-demo.iso -display none -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -mon chardev=console,mode=readline -no-reboot
+	$(QEMU) -machine pc -accel tcg -cpu qemu64,+rdrand -smp 1 -m 128M -cdrom build/test-tty-demo.iso -display none -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -mon chardev=console,mode=readline -no-reboot
 
 build/tty-unit-test: kernel/v7/tty_controller.c kernel/include/tty_controller.h tests/packet-inactive.c tests/tty.c kernel/v7/tty.c kernel/include/tty.h kernel/include/serial.h kernel/include/uaccess.h kernel/include/process.h kernel/include/v7/core.h include/nexix/tty.h include/nexix/errno.h | build/.dir
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/tty.c tests/packet-inactive.c kernel/v7/tty.c kernel/v7/tty_controller.c -o $@
@@ -1960,7 +1960,7 @@ build/local_console.o: kernel/local_console.c | build/.dir
 run: run-$(CONSOLE)
 run-vga: build
 	$(PYTHON) tools/serial_terminal.py --prepare build/ttyS1
-	$(QEMU) -machine pc -accel tcg -cpu qemu64 -smp 1 -m 128M -rtc base=utc -boot d -drive "file=$(DISK_IMAGE),format=raw,if=ide,index=0" -cdrom build/nexix.iso -vga std -display gtk -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -serial pipe:build/ttyS1 -mon chardev=console,mode=readline -no-reboot $(QEMU_NIC_ARGS) $(QEMU_DEBUG_ARGS)
+	$(QEMU) -machine pc -accel tcg -cpu qemu64,+rdrand -smp 1 -m 128M -rtc base=utc -boot d -drive "file=$(DISK_IMAGE),format=raw,if=ide,index=0" -cdrom build/nexix.iso -vga std -display gtk -chardev stdio,id=console,mux=on,signal=off -serial chardev:console -serial pipe:build/ttyS1 -mon chardev=console,mode=readline -no-reboot $(QEMU_NIC_ARGS) $(QEMU_DEBUG_ARGS)
 
 .PHONY: test-vga
 test-vga: test-vga-unit test-keyboard-unit test-tty-lines-unit multi-iso rootfs
@@ -2656,7 +2656,7 @@ test-unit: test-hosts-unit
 
 # Task 447: bounded DNS codec and message printers.
 build/libc.a: build/libc_dns_codec.o
-DNS_CODEC_NAMES = _res dn_comp dn_expand dn_skipname res_mkquery p_type p_class fp_query fp_nquery _getshort _getlong putshort putlong fprintf fputs fputc
+DNS_CODEC_NAMES = _res dn_comp dn_expand dn_skipname res_mkquery p_type p_class fp_query fp_nquery _getshort _getlong putshort putlong fprintf fputs fputc getentropy errno
 DNS_CODEC_TEST_FLAGS = $(addprefix -D,$(foreach n,$(DNS_CODEC_NAMES),$(n)=nx_test_$(n)))
 build/dns-codec-test: tests/dns_codec.c libc/dns_codec.c libc/include/resolv.h libc/include/arpa/nameser.h | build/.dir
 	$(HOST_CC) -std=c11 -O1 -g -Wall -Wextra -Werror -fno-builtin -fsanitize=address,undefined -fno-pie -no-pie $(DNS_CODEC_TEST_FLAGS) -Ilibc/include -Iinclude tests/dns_codec.c libc/dns_codec.c -o $@
@@ -2664,3 +2664,26 @@ build/dns-codec-test: tests/dns_codec.c libc/dns_codec.c libc/include/resolv.h l
 test-dns-codec: build/dns-codec-test
 	./build/dns-codec-test
 test-unit: test-dns-codec
+
+# Task 448: native entropy, with no predictable fallback.
+OBJECTS += build/entropy.o build/entropy_arch.o
+build/entropy.o: kernel/entropy.c kernel/include/entropy.h | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+build/entropy_arch.o: kernel/arch/x86_64/entropy.c kernel/include/entropy.h | build/.dir
+	$(CC) $(CFLAGS) -c $< -o $@
+build/nexix.elf: build/entropy.o build/entropy_arch.o
+-include build/entropy.d build/entropy_arch.d build/libc_entropy.d build/entropy-guest.d
+build/libc.a: build/libc_entropy.o
+build/entropy-test: tests/entropy.c kernel/entropy.c kernel/include/entropy.h | build/.dir
+	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/entropy.c kernel/entropy.c -o $@
+build/entropy-guest.o: tests/entropy-guest.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/entropy-guest.elf: build/crt0.o build/entropy-guest.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+.PHONY: test-entropy-unit test-entropy-guest
+test-entropy-unit: build/entropy-test
+	./build/entropy-test
+test-entropy-guest: build/entropy-guest.elf multi-iso rootfs
+	$(PYTHON) tools/entropy_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/entropy_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test-unit: test-entropy-unit

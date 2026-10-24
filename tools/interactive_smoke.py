@@ -19,7 +19,7 @@ if ide:
     extra = ['-boot', 'd', '-drive', f'file={disk},format=raw,if=ide,index=0']
 try:
     process = subprocess.Popen([sys.argv[1], '-machine', 'pc', '-accel', 'tcg',
-        '-cpu', 'qemu64', '-smp', '1', '-m', ram, '-cdrom', sys.argv[2],
+        '-cpu', 'qemu64,+rdrand', '-smp', '1', '-m', ram, '-cdrom', sys.argv[2],
         '-display', 'none', '-serial', 'stdio', '-monitor', 'none', '-no-reboot'] + extra,
         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 except FileNotFoundError:
