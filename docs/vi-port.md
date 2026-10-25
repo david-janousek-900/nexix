@@ -5,6 +5,12 @@ The selected source is Traditional Vi release 050325, derived from BSD ex/vi
 reference/ex-vi; active adaptations belong under user/vi. The V7 snapshot is
 unchanged. This is an additional 0.1.0 component, with tasks 374–385.
 
+The planned replacement is the pinned 4.4BSD-Lite2 nvi 1.43 port in
+[tasks 485–503](tasks.md#replace-traditional-vi-with-44bsd-lite2-nvi).
+The current editor remains installed until candidate acceptance and the tested
+upgrade/recovery migration are complete. The evidence below describes Traditional
+Vi, not an already completed nvi port.
+
 Initial scope is single-byte vi/ex/view on VGA/PS/2 and serial terminals.
 Multibyte/UTF-8, locale message catalogs and System V regex extensions are
 excluded from the initial configuration; the supplied historical regex path
