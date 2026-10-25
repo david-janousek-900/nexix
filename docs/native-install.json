@@ -9258,6 +9258,32 @@
         "path": "v7-spline.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/units",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.units",
+      "source": {
+        "root": "programs",
+        "path": "v7-units.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/usr/lib/units",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.units",
+      "source": {
+        "root": "programs",
+        "path": "units-data"
+      },
+      "format": "data"
     }
   ]
 }

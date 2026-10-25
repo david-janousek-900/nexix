@@ -123,3 +123,27 @@ output coordinates. It covers automatic abscissas, malformed numbers and the
 checked numerically with a 2e-5 tolerance, including sample count, descending
 coordinates and endpoints; decimal formatting need not match host printf
 byte for byte.
+
+## units (task 214)
+
+`/bin/units [table]` retains the original dimensional lookup, metric prefixes,
+plural handling, powers, fractions and legacy decimal-exponent syntax. The
+complete historical `/usr/lib/units` is installed unchanged: the engine reports
+437 units and 3,191 bytes of names. Alternate tables and the reference dump flag
+remain available. Unknown units and incompatible dimensions print the reference
+diagnostics and reprompt; these recoverable conditions retain the original
+successful EOF status.
+
+Dimension counters now have checked integer width instead of relying on signed
+char. Name/table storage, hash probing, input-line length, fraction recursion
+and exponent work are bounded. Database errors, numeric range failures and I/O
+errors report failure. Names may contain up to 255 bytes, within the existing
+bounded name pool. A final stdin line without a newline is processed normally.
+The retained numeric syntax uses `1+3` for 1,000 and `1|2` for one-half; a zero
+coefficient retains the source's omitted-coefficient interpretation.
+
+Sanitizer and native 16/128 MiB tests cover independent length/time/force/angle
+and compound-unit conversions, fractions, data integrity, conformability and
+unknown units, missing tables and read failures. Host robustness fixtures also
+exhaust name/hash storage and reject oversized names, exponents, nested fractions
+and NUL input without reading outside their buffers.

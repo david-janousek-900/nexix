@@ -237,7 +237,7 @@ their sources alone does not provide a working native equivalent.
 | `formatter-tables` | generated | Native terminal/font tables are regenerated and tested with nroff/troff by tasks 265–267; historical binary table layouts are not installed as native objects. |
 | `formatter-macros` | supplied | Original tmac macros are installed unchanged and exercised by native nroff/troff; task 281 complete. |
 | `bibliography-data` | supplied | Original inputs are supplied in the full archive. Native integration, generated formats and functional acceptance remain pending. |
-| `units-data` | supplied | Original inputs are supplied in the full archive. Native integration, generated formats and functional acceptance remain pending. |
+| `units-data` | supplied | Original V7 units database installed unchanged; native dimensional conversions and incompatibility diagnostics pass task 214 acceptance at 16/128 MiB. |
 | `bc-math` | supplied | All six separately recovered V6 lib.b functions are installed unchanged and exercised through native bc/dc; make test-bc at 16/128 MiB. |
 | `fortune-data` | supplied | Original inputs are supplied in the full archive. Native integration, generated formats and functional acceptance remain pending. |
 | `quiz-data` | supplied | Original inputs are supplied in the full archive. Native integration, generated formats and functional acceptance remain pending. |

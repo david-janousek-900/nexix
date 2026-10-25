@@ -487,9 +487,11 @@
       "id": "units-data",
       "category": "data",
       "status": "supplied",
-      "description": "Original inputs are supplied in the full archive. Native integration, generated formats and functional acceptance remain pending.",
+      "description": "Original V7 units database installed unchanged; native dimensional conversions and incompatibility diagnostics pass task 214 acceptance at 16/128 MiB.",
       "evidence": [
-        "reference/v7/usr/lib/units"
+        "reference/v7/usr/lib/units",
+        "tools/units_smoke.py",
+        "tests/units.py"
       ],
       "locations": [
         "/usr/lib/units"
@@ -18411,37 +18413,46 @@
           "name": "units",
           "install": "/bin/units",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/units.c",
+            "tools/units_smoke.py",
+            "Makefile"
           ]
         }
       ],
       "priority": 7,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
           "phase": "build",
           "certainty": "confirmed",
           "evidence": [
+            "user/v7/cmd/units.c",
             "Makefile"
           ],
-          "note": "Existing Nexix bootstrap uses host GCC/binutils."
+          "note": "Audited native build uses Nexix public headers and libc; host GCC/binutils bootstrap, no host runtime linkage."
         },
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/units.c",
+            "Makefile"
+          ],
+          "note": "Audited native build uses Nexix public headers and libc; host GCC/binutils bootstrap, no host runtime linkage."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/units.c",
+            "Makefile"
+          ],
+          "note": "Audited native build uses Nexix public headers and libc; host GCC/binutils bootstrap, no host runtime linkage."
         },
         {
           "target": "units-data",
@@ -18466,15 +18477,10 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
-        "Convert known compatible units using a supplied database; reject incompatible units.",
-        "Verify native build, reference options, exit status and malformed-input handling."
+        "make test-units: retained dimensional engine and unchanged 437-unit database, independent conversion/conformability fixtures, sanitized name/hash/exponent/fraction bounds and installed 16/128 MiB acceptance"
       ],
       "source_files": [
         "reference/v7/usr/src/cmd/units.c"
@@ -18486,8 +18492,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        214
+      "native_sources": [
+        "user/v7/cmd/units.c"
       ]
     },
     {
@@ -20726,7 +20732,7 @@
       "source_availability": "not_applicable",
       "outputs": [],
       "priority": 11,
-      "status": "not_ported",
+      "status": "partial",
       "dependencies": [],
       "reference_includes": [],
       "blockers": [
@@ -20736,16 +20742,19 @@
         "Audit native API/format compatibility and remaining transitive dependencies."
       ],
       "acceptance": [
-        "Integrate supplied inputs into the native port and verify their consuming programs."
+        "Integrate supplied inputs into the native port and verify their consuming programs.",
+        "make test-units: complete units database and native dimensional conversions at 16/128 MiB."
       ],
       "unresolved_tasks": [
-        214,
         270,
         274,
         278,
         285,
         304,
         409
+      ],
+      "scope_notes": [
+        "Units data is installed unchanged and passes native conversion/integrity acceptance under task 214; remaining data-consumer ownership stays with the unresolved task IDs."
       ]
     },
     {

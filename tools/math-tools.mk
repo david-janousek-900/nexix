@@ -68,3 +68,14 @@ test-spline: test-spline-unit multi-iso rootfs
 	$(PYTHON) tools/spline_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/spline_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-spline
+
+# Task 214: install the original units data without transforming it.
+build/units-data: reference/v7/usr/lib/units | build/.dir
+	cp $< $@
+.PHONY: test-units-unit test-units
+test-units-unit:
+	$(PYTHON) tests/units.py
+test-units: test-units-unit multi-iso rootfs
+	$(PYTHON) tools/units_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/units_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-units
