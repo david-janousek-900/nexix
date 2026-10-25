@@ -45,7 +45,7 @@ retained in `reference/bsd-lite2/berkeley-license.html`. Source/binary notice,
 disclaimer and non-endorsement conditions remain; the amendment does not change
 other contributors' conditions or Nexix's Caldera obligations. File-specific
 notices take precedence. See the [dependency and licensing audit](docs/bsd-networking-audit.md).
-Active database adapters retain the Berkeley and DEC notices. Installed databases and libc ship the applicable notices in `/usr/doc/net/LICENSE`. Subsequent ports must extend those materials for their file-specific conditions.
+Active resolver, database and nslookup adapters retain the Berkeley and DEC notices. Installed databases and libc ship the applicable notices in `/usr/doc/net/LICENSE`. Subsequent ports must extend those materials for their file-specific conditions.
 
 ## Ratfor lex skeleton: CDDL-1.0
 

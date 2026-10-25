@@ -2,3 +2,6 @@
 /reference/bsd-lite2/source/** -text -whitespace
 /reference/bsd-lite2/berkeley-license.html -text -whitespace
 /LICENSES/BSD-4.4-Lite2.txt -text -whitespace
+
+# Native lex output is compared byte for byte with guest regeneration.
+/user/nslookup/commands.c -whitespace

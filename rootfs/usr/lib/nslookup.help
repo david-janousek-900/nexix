@@ -1,0 +1,22 @@
+nslookup [-option[=value]] [name|- [server]]
+Interactive commands (BIND 4.9.2 grammar):
+  name [server]         look up a host using the current or specified server
+  server name           choose a default server using the current server
+  lserver name          choose a server using the initial server
+  set all               show options
+  set type=A|PTR|MX|NS|SOA|TXT|ANY
+  set class=IN|CHAOS|HS|ANY
+  set domain=domain     set the default search domain
+  set search|nosearch   enable or disable domain search
+  set defname|nodefname enable or disable default domain suffixes
+  set retry=1..10       query attempts
+  set timeout=1..3600   timeout in seconds
+  set port=1..65535     server port (native test/service extension)
+  set vc|novc           force TCP or use UDP with TCP fallback
+  set debug|nodebug     show DNS messages
+  ls domain             list a zone over TCP (AXFR)
+  help or ?             show this file
+  exit                  leave
+Lookup and ls output can be redirected with > or >>. Ctrl-C returns to the
+prompt. finger and view are outside the native resolver client scope; use
+the pager for saved listings. IPv4 only; no DNSSEC or EDNS0.

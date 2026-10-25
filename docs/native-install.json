@@ -9115,6 +9115,58 @@
         "path": "etc/resolv.qemu"
       },
       "format": "data"
+    },
+    {
+      "path": "/usr/sbin/nslookup",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.nettools",
+      "source": {
+        "root": "programs",
+        "path": "v7-nslookup.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/usr/lib/nslookup.help",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.nettools",
+      "source": {
+        "root": "config",
+        "path": "usr/lib/nslookup.help"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/usr/man/man8/nslookup.8",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.nettools",
+      "source": {
+        "root": "config",
+        "path": "usr/man/man8/nslookup.8"
+      },
+      "format": "data"
+    },
+    {
+      "path": "/usr/doc/net/Caldera.pdf",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "distribution.config",
+      "source": {
+        "root": "config",
+        "path": "usr/doc/net/Caldera.pdf"
+      },
+      "format": "data"
     }
   ]
 }

@@ -2737,3 +2737,20 @@ build/host-answer-test: tests/host_answers.c libc/gethost.c libc/hosts.c libc/ne
 test-host-answers: build/host-answer-test
 	./build/host-answer-test
 test-unit: test-host-answers
+
+# Task 453: BIND 4.9.2 nslookup command lexer and native adapters.
+build/nslookup-main.o: user/nslookup/main.c user/nslookup/res.h | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/nslookup-commands.o: user/nslookup/commands.c user/nslookup/res.h | build/.dir
+	$(CC) $(V7_CFLAGS) -w -Iuser/nslookup -c $< -o $@
+build/v7-nslookup.elf: build/crt0.o build/nslookup-main.o build/nslookup-commands.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+-include build/nslookup-main.d build/nslookup-commands.d
+build/nslookup-commands.l: user/nslookup/commands.l | build/.dir
+	cp $< $@
+build/nslookup-commands.c: user/nslookup/commands.c | build/.dir
+	cp $< $@
+.PHONY: test-nslookup
+test-nslookup: build/nslookup-commands.l build/nslookup-commands.c multi-iso rootfs
+	$(PYTHON) tools/nslookup_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/nslookup_smoke.py $(QEMU) build/nexix-multi.iso 128M

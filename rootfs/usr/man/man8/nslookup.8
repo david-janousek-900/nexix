@@ -1,0 +1,17 @@
+.TH NSLOOKUP 8
+.SH NAME
+nslookup \- query Internet name servers
+.SH SYNOPSIS
+nslookup [-option[=value]] [name|- [server]]
+.SH DESCRIPTION
+The BIND 4.9.2 command grammar uses the native libc resolver and blocking
+IPv4 sockets. With a name, print its lookup result and exit. With no name,
+or a dash, read interactive commands. An optional server selects the server.
+server and lserver resolve a new server using the current and initial server,
+respectively. set supports type, class, domain, search, retry, timeout, vc and
+debug. ls performs TCP AXFR zone listing. Ctrl-C interrupts a query or input
+and returns to the prompt. See /usr/lib/nslookup.help for commands.
+.PP
+The native port option selects a nonstandard server port. Zone transfers
+require a server permitting AXFR. Unavailable legacy finger/view commands
+are reported explicitly. No IPv6, EDNS0 or DNSSEC is supported.

@@ -439,7 +439,7 @@
       "id": "formatter-tables",
       "category": "data",
       "status": "generated",
-      "description": "Native terminal/font tables are regenerated and tested with nroff/troff by tasks 265–267; historical binary table layouts are not installed as native objects.",
+      "description": "Native terminal/font tables are regenerated and tested with nroff/troff by tasks 265\u2013267; historical binary table layouts are not installed as native objects.",
       "evidence": [
         "reference/v7/usr/src/cmd/troff/font/makefile",
         "reference/v7/usr/src/cmd/troff/term/makefile"
@@ -551,7 +551,7 @@
       "id": "v7-source-archives",
       "category": "format",
       "status": "supplied",
-      "description": "All twelve historical source/lesson archives are extracted and round-trip tested by task 87; plotting/learn consumers retain tasks 283–285/289–293.",
+      "description": "All twelve historical source/lesson archives are extracted and round-trip tested by task 87; plotting/learn consumers retain tasks 283\u2013285/289\u2013293.",
       "evidence": [
         "reference/v7/usr/src/libplot/makefile"
       ],
@@ -1627,7 +1627,7 @@
         "user/v7/cmd/as.c"
       ],
       "scope_notes": [
-        "Tasks 181–184 replace PDP-11 assembly with native C parsing, x86_64 encoding, ELF64 objects and installed as/as2 pipeline."
+        "Tasks 181\u2013184 replace PDP-11 assembly with native C parsing, x86_64 encoding, ELF64 objects and installed as/as2 pipeline."
       ]
     },
     {
@@ -20749,7 +20749,7 @@
     {
       "id": "distribution.manuals",
       "kind": "documentation",
-      "summary": "Manual sections 0–8",
+      "summary": "Manual sections 0\u20138",
       "sources": [
         "reference/v7/usr/man/man0/intro",
         "reference/v7/usr/man/man0/permindex",
@@ -25704,14 +25704,18 @@
     {
       "id": "cmd.nettools",
       "kind": "command",
-      "summary": "Native numeric-address ping and TCP/UDP nc",
+      "summary": "IPv4 ping, TCP/UDP nc and BIND nslookup with name resolution",
       "sources": [],
       "source_files": [],
       "source_availability": "native",
       "native_sources": [
         "user/v7/cmd/ping.c",
         "user/v7/cmd/nc.c",
-        "user/v7/netconfig.h"
+        "user/v7/netconfig.h",
+        "user/nslookup/main.c",
+        "user/nslookup/commands.l",
+        "user/nslookup/commands.c",
+        "user/nslookup/res.h"
       ],
       "outputs": [
         {
@@ -25733,6 +25737,17 @@
           "evidence": [
             "user/v7/cmd/nc.c",
             "docs/nettools.md",
+            "Makefile"
+          ]
+        },
+        {
+          "name": "nslookup",
+          "install": "/usr/sbin/nslookup",
+          "role": "installed",
+          "status": "implemented",
+          "evidence": [
+            "user/nslookup/main.c",
+            "docs/resolver.md",
             "Makefile"
           ]
         }

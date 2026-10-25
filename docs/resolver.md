@@ -119,3 +119,29 @@ malformed lengths and real no-server hosts fallback at 16/128 MiB.
 
 The V7 filesystem uses `gethost.3` for the host manual; the man command
 maps the five host API names to it, avoiding the 14-byte filename limit.
+
+## nslookup (task 453)
+
+`/usr/sbin/nslookup` adapts BIND 4.9.2's tools/nslookup command interface.
+The retained command grammar is `user/nslookup/commands.l`, adapted only for
+native declarations and a bounded 2048-byte scanner buffer. The checked-in
+`commands.c` is produced by the native Nexix lex implementation, and guest
+acceptance regenerates it with the installed native lex and compares bytes.
+Native adapters replace the BSD-specific socket, signal and result layers;
+no historical select or writev dependency remains.
+
+Command-line and interactive modes support A/PTR host lookup, general DNS
+type/class queries, server/lserver, type/class/domain/search/defname/recurse,
+retry/timeout/vc/debug options, help and output redirection. The native port
+option permits a test/service port. Server selection uses the current or
+initial resolver respectively. ls requests AXFR over TCP, prints records and
+stops after the closing SOA, validating framing and message bounds. Transfers
+are bounded to 4096 messages; reads use SO_RCVTIMEO. SIGINT interrupts input
+or a query and returns to the prompt. Legacy finger/view are explicitly
+unavailable in this resolver-client scope; help documents the supported set.
+The installed help is `/usr/lib/nslookup.help`, and its manual is nslookup(8).
+
+`make test-nslookup` runs an isolated host DNS stub bound only to 127.0.0.1
+(reached from the guest as 10.0.2.2). At 16/128 MiB it verifies lexer
+reproduction, multi-address CLI lookup, PTR, forced TCP, NXDOMAIN, interactive
+settings/server selection, AXFR and a successful query after SIGINT.
