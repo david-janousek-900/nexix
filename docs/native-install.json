@@ -9206,6 +9206,19 @@
         "path": "bc-lib.b"
       },
       "format": "data"
+    },
+    {
+      "path": "/bin/factor",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.factor",
+      "source": {
+        "root": "programs",
+        "path": "v7-factor.elf"
+      },
+      "format": "elf"
     }
   ]
 }

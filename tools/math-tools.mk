@@ -24,3 +24,11 @@ test-bc: test-bc-unit multi-iso rootfs
 	$(PYTHON) tools/bc_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/bc_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-bc
+
+.PHONY: test-factor-unit test-factor
+test-factor-unit:
+	$(PYTHON) tests/factor.py
+test-factor: test-factor-unit multi-iso rootfs
+	$(PYTHON) tools/factor_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/factor_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-factor

@@ -6544,65 +6544,53 @@
           "name": "factor",
           "install": "/bin/factor",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/factor.c",
+            "tools/factor_smoke.py",
+            "Makefile"
           ]
         }
       ],
       "priority": 7,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
           "phase": "build",
           "certainty": "confirmed",
           "evidence": [
+            "user/v7/cmd/factor.c",
             "Makefile"
           ],
-          "note": "Existing Nexix bootstrap uses host GCC/binutils."
+          "note": "Audited native build uses Nexix public headers and libc; host GCC/binutils bootstrap, no host runtime linkage."
         },
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/factor.c",
+            "Makefile"
+          ],
+          "note": "Audited native build uses Nexix public headers and libc; host GCC/binutils bootstrap, no host runtime linkage."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
-        },
-        {
-          "target": "pdp11-assembly",
-          "phase": "build",
           "certainty": "confirmed",
           "evidence": [
-            "reference/v7/usr/src/cmd/factor.s"
+            "user/v7/cmd/factor.c",
+            "Makefile"
           ],
-          "note": "Source is historical assembly."
-        },
-        {
-          "target": "pdp11-assembly",
-          "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "note": "Audited native build uses Nexix public headers and libc; host GCC/binutils bootstrap, no host runtime linkage."
         }
       ],
       "reference_includes": [],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
-        "Factor known composite and prime inputs using the adapted native implementation.",
-        "Verify native build, reference options, exit status and malformed-input handling."
+        "make test-factor: sanitizer-backed independent factorization oracle, exact 56-bit range and installed stdin/prime/semiprime fixtures at 16/128 MiB; native integer equivalent of retained PDP-11 assembly"
       ],
       "source_files": [
         "reference/v7/usr/src/cmd/factor.s"
@@ -6614,9 +6602,10 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        210
-      ]
+      "native_sources": [
+        "user/v7/cmd/factor.c"
+      ],
+      "port_notes": "Native C equivalent of retained factor.s uses exact uint64 arithmetic below 2^56 rather than PDP-11 floating instructions; preserves blank-line/five-space factor output and the decimal converter including ignored spaces and nonnumeric termination. Native errors and extra operands have checked statuses."
     },
     {
       "id": "cmd.fgrep",
