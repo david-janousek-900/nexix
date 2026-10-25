@@ -60,3 +60,23 @@ print `Ouch.` with failure status, and extra operands are rejected explicitly.
 Sanitizer tests use an independent factorization oracle, the maximum valid
 56-bit input and overflow cases. Native 16/128 MiB fixtures include repeated
 factors, a prime, a large semiprime, 2^55, stdin and range rejection.
+
+## primes (task 211)
+
+`/bin/primes [start]` reads the same decimal start convention as factor and
+prints ascending primes at or above a positive start below 2^56. With no operand
+it reads stdin. Zero/nonnumeric starts end the command; overflow reports `Ouch.`.
+Output is immediate, and a closed reader terminates the producer normally through
+SIGPIPE. The generator stops at the documented 56-bit domain ceiling.
+
+This is a native equivalent of the supplied PDP-11 assembly, with a constant-space
+integer primality implementation rather than its floating-point sieve. Modular
+multiplication avoids overflowing 64-bit products and needs no compiler 128-bit
+runtime helpers. Testing the first twelve prime bases is deterministic throughout
+the supported range: the smallest composite passing all twelve is above 2^64
+([Sorenson and Webster, Theorem 1.1](https://arxiv.org/abs/1509.00864)).
+
+Tests compare 20,000 classifications with an independent sieve, reject known
+strong pseudoprimes and check the upper-domain prime against GNU factor as an
+independent host oracle. Native fixtures at 16/128 MiB check streaming, stdin,
+pipe-reader close/reaping, exact near-ceiling values and range errors.

@@ -9219,6 +9219,19 @@
         "path": "v7-factor.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/primes",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.primes",
+      "source": {
+        "root": "programs",
+        "path": "v7-primes.elf"
+      },
+      "format": "elf"
     }
   ]
 }

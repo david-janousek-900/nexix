@@ -11570,65 +11570,53 @@
           "name": "primes",
           "install": "/bin/primes",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/primes.c",
+            "tools/primes_smoke.py",
+            "Makefile"
           ]
         }
       ],
       "priority": 7,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
           "phase": "build",
           "certainty": "confirmed",
           "evidence": [
+            "user/v7/cmd/primes.c",
             "Makefile"
           ],
-          "note": "Existing Nexix bootstrap uses host GCC/binutils."
+          "note": "Audited native build uses Nexix public headers and libc; host GCC/binutils bootstrap, no host runtime linkage."
         },
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/primes.c",
+            "Makefile"
+          ],
+          "note": "Audited native build uses Nexix public headers and libc; host GCC/binutils bootstrap, no host runtime linkage."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
-        },
-        {
-          "target": "pdp11-assembly",
-          "phase": "build",
           "certainty": "confirmed",
           "evidence": [
-            "reference/v7/usr/src/cmd/primes.s"
+            "user/v7/cmd/primes.c",
+            "Makefile"
           ],
-          "note": "Source is historical assembly."
-        },
-        {
-          "target": "pdp11-assembly",
-          "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "note": "Audited native build uses Nexix public headers and libc; host GCC/binutils bootstrap, no host runtime linkage."
         }
       ],
       "reference_includes": [],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
-        "Generate the expected primes for a small known range using native code.",
-        "Verify native build, reference options, exit status and malformed-input handling."
+        "make test-primes: independent 20,000-number sieve, strong pseudoprime vectors and exact near-2^56 streaming at 16/128 MiB; bounded native equivalent of retained PDP-11 assembly"
       ],
       "source_files": [
         "reference/v7/usr/src/cmd/primes.s"
@@ -11640,9 +11628,10 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        211
-      ]
+      "native_sources": [
+        "user/v7/cmd/primes.c"
+      ],
+      "port_notes": "Native C equivalent of retained primes.s preserves decimal starts and ascending output below 2^56; deterministic twelve-base primality replaces PDP-11 floating-point sieve machinery with constant storage and exact modular arithmetic. Generation stops at the documented domain ceiling."
     },
     {
       "id": "cmd.prof",

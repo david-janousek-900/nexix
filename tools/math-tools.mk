@@ -32,3 +32,16 @@ test-factor: test-factor-unit multi-iso rootfs
 	$(PYTHON) tools/factor_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/factor_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-factor
+
+.PHONY: test-primes-unit test-primes
+test-primes-unit:
+	$(PYTHON) tests/primes.py
+test-primes: test-primes-unit multi-iso rootfs
+	$(PYTHON) tools/primes_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/primes_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-primes
+build/primes-prefix.o: tests/primes-prefix.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/primes-prefix.elf: build/crt0.o build/primes-prefix.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+test-primes: build/primes-prefix.elf
