@@ -80,3 +80,24 @@ Tests compare 20,000 classifications with an independent sieve, reject known
 strong pseudoprimes and check the upper-domain prime against GNU factor as an
 independent host oracle. Native fixtures at 16/128 MiB check streaming, stdin,
 pipe-reader close/reaping, exact near-ceiling values and range errors.
+
+## random (task 212)
+
+`/bin/random [-e] [-r] [divisor]` retains the V7 15-bit random sequence and
+selection expression `rand()/32768.0*divisor < 1`. It seeds from native time;
+`-e` skips input and returns the scaled random exit value. `-r` retains the
+reference choice of leaving stdio buffering at its default. Normal line mode
+also returns a random exit value; a nonzero status need not indicate an error.
+
+Dynamic checked line storage replaces gets. Selected lines preserve embedded
+NUL bytes; a final unterminated line is processed and receives a newline.
+Invalid options, malformed/nonfinite divisors, read/write failures and divisors
+whose float-rounded exit values could overflow int report failure. Zero selects
+all lines, as in the original expression. Random exit values retain the native
+shell's low-eight-bit process-status convention.
+
+Sanitizer fixtures compile with the actual native libc rand implementation and
+a private fixed clock, then compare selected bytes and statuses with an
+independent Python sequence oracle. A fixed-clock build of the same command
+runs in 16/128 MiB guests alongside the installed time-seeded executable; tests
+cover line/exit modes, long lines, zero/all selection and numeric errors.

@@ -9232,6 +9232,19 @@
         "path": "v7-primes.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/random",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.random",
+      "source": {
+        "root": "programs",
+        "path": "v7-random.elf"
+      },
+      "format": "elf"
     }
   ]
 }

@@ -45,3 +45,18 @@ build/primes-prefix.o: tests/primes-prefix.c | build/.dir
 build/primes-prefix.elf: build/crt0.o build/primes-prefix.o build/libc.a user/user.ld
 	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
 test-primes: build/primes-prefix.elf
+
+# Task 212: private fixed-clock executable uses the installed command source.
+build/random-fixed.o: user/v7/cmd/random.c | build/.dir
+	$(CC) $(USER_CFLAGS) -DRANDOM_CLOCK=nx_random_clock -c $< -o $@
+build/random-clock.o: tests/random-clock.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/random-fixed.elf: build/crt0.o build/random-fixed.o build/random-clock.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+.PHONY: test-random-unit test-random
+test-random-unit:
+	$(PYTHON) tests/random_command.py
+test-random: test-random-unit build/random-fixed.elf multi-iso rootfs
+	$(PYTHON) tools/random_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/random_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-random

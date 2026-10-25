@@ -12342,37 +12342,46 @@
           "name": "random",
           "install": "/bin/random",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/random.c",
+            "tools/random_smoke.py",
+            "Makefile"
           ]
         }
       ],
       "priority": 7,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
           "phase": "build",
           "certainty": "confirmed",
           "evidence": [
+            "user/v7/cmd/random.c",
             "Makefile"
           ],
-          "note": "Existing Nexix bootstrap uses host GCC/binutils."
+          "note": "Audited native build uses Nexix public headers and libc; host GCC/binutils bootstrap, no host runtime linkage."
         },
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/random.c",
+            "Makefile"
+          ],
+          "note": "Audited native build uses Nexix public headers and libc; host GCC/binutils bootstrap, no host runtime linkage."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/random.c",
+            "Makefile"
+          ],
+          "note": "Audited native build uses Nexix public headers and libc; host GCC/binutils bootstrap, no host runtime linkage."
         },
         {
           "target": "floating-point",
@@ -12392,15 +12401,10 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
-        "With a controlled seed/clock, test line selection and exit-value modes; audit rand width.",
-        "Verify native build, reference options, exit status and malformed-input handling."
+        "make test-random: fixed-clock independent native PRNG selection/exit oracle, long/binary lines and invalid numeric bounds under sanitizers and at 16/128 MiB; retained V7 line/exit modes"
       ],
       "source_files": [
         "reference/v7/usr/src/cmd/random.c"
@@ -12412,8 +12416,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        212
+      "native_sources": [
+        "user/v7/cmd/random.c"
       ]
     },
     {
