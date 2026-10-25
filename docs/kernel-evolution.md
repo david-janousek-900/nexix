@@ -14,6 +14,11 @@ commit `50587b00e922225c62f1706266587f435898126d`, the same full archive pinned 
 This proposal concerns architecture and implementation order; its memory
 calculations are layout estimates, not measured performance improvements.
 
+Implementation ownership is in [tasks 456–484](tasks.md#kernel-evolution-after-the-44bsd-review)
+and the broader [BSD kernel enhancement tasks 504–551](tasks.md#enhance-the-native-kernel-with-44bsd-lite2-features).
+Signal/job-control and file-locking work is shared with the nvi replacement
+rather than implemented twice.
+
 ## What the current kernel already provides
 
 The current kernel is a native V7-derived system, rather than the original
