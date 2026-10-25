@@ -9167,6 +9167,19 @@
         "path": "usr/doc/net/Caldera.pdf"
       },
       "format": "data"
+    },
+    {
+      "path": "/bin/dc",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.dc",
+      "source": {
+        "root": "programs",
+        "path": "v7-dc.elf"
+      },
+      "format": "elf"
     }
   ]
 }

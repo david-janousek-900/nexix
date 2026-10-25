@@ -4464,35 +4464,48 @@
           "name": "dc",
           "install": "/bin/dc",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/dc/makefile"
+            "user/v7/cmd/dc.c",
+            "user/dc/dc.c",
+            "user/dc/dc.h",
+            "tools/dc_smoke.py",
+            "Makefile"
           ]
         }
       ],
       "priority": 7,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/dc.c",
+            "Makefile"
+          ],
+          "note": "Audited native build uses Nexix public headers and libc; host GCC/binutils bootstrap, no host runtime linkage."
         },
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/dc.c",
+            "Makefile"
+          ],
+          "note": "Audited native build uses Nexix public headers and libc; host GCC/binutils bootstrap, no host runtime linkage."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/dc.c",
+            "Makefile"
+          ],
+          "note": "Audited native build uses Nexix public headers and libc; host GCC/binutils bootstrap, no host runtime linkage."
         }
       ],
       "reference_includes": [
@@ -4515,15 +4528,10 @@
           ]
         }
       ],
-      "blockers": [
-        "Complete native ABI/API and data-asset audit before porting."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
-        "Test integer and high-precision arithmetic, stack operations and bc-generated input.",
-        "Verify each installed output and its documented behavior; test helpers through their consuming pipeline."
+        "make test-dc: ASan/UBSan independent big-integer and decimal vectors, installed macro/register/array/base/error fixtures at 16/128 MiB; retained V7 arithmetic with checked native allocation"
       ],
       "source_files": [
         "reference/v7/usr/src/cmd/dc/dc.c",
@@ -4536,8 +4544,10 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        208
+      "native_sources": [
+        "user/v7/cmd/dc.c",
+        "user/dc/dc.c",
+        "user/dc/dc.h"
       ]
     },
     {

@@ -365,6 +365,7 @@ include tools/lex.mk
 include tools/awk.mk
 include tools/text.mk
 include tools/assembler.mk
+include tools/math-tools.mk
 V7_CFLAGS = $(filter-out -std=c11 -Werror,$(USER_CFLAGS)) -std=gnu89 -funsigned-char -fcommon -fno-strict-aliasing -Wno-implicit-int -Wno-implicit-function-declaration -Wno-return-type -Wno-incompatible-pointer-types -Wno-int-conversion -Wno-pointer-sign -Wno-unused-parameter -Wno-parentheses -Wno-missing-field-initializers
 INSTALL_COMMANDS := $(shell $(PYTHON) tools/install_manifest.py --manifest $(INSTALL_MANIFEST) --commands)
 INSTALL_INPUTS := $(shell $(PYTHON) tools/install_manifest.py --manifest $(INSTALL_MANIFEST) --config $(INSTALL_CONFIG) --inputs)

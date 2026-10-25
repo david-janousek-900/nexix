@@ -10,17 +10,17 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 103 native ELF programs are
+to multi-user V7 login with persistent IDE storage. 118 native ELF programs are
 installed; the complete list and destinations are in [the installation manifest](native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
 The inventory accounts for **225 components, 2,144 distribution files and
-36 supporting/platform requirements**. Its component statuses are 116 implemented,
-4 partial, 0 prototype and 105 not ported; importing reference inputs does not
+36 supporting/platform requirements**. Its component statuses are 117 implemented,
+4 partial, 0 prototype and 104 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **551 tracking tasks: 277 done, 0 in progress
-and 274 to do**. Tasks **1–108, 119–165, 168–202, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–435, 444–455** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **551 tracking tasks: 278 done, 0 in progress
+and 273 to do**. Tasks **1–108, 119–165, 168–202, 208, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–435, 444–455** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -366,7 +366,7 @@ are accounted for. Final native rebuild acceptance is task 207.
 
 | Task | Description | Status | Evidence / notes / acceptance |
 |---:|---|---|---|
-| 208 | Port dc | To do | Numeric/language fixtures and native execution |
+| 208 | Port dc | Done | make test-dc: ASan/UBSan independent big-integer and decimal vectors, installed macro/register/array/base/error fixtures at 16/128 MiB; retained V7 arithmetic with checked native allocation; Git history |
 | 209 | Port bc | To do | dc integration; install/test all six functions from the separately recovered lib.b input |
 | 210 | Port factor | To do | Numeric/language fixtures and native execution |
 | 211 | Port primes | To do | Numeric/language fixtures and native execution |
