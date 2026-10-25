@@ -1,8 +1,9 @@
 # Resolver reference audit (task 444)
 
 The immutable snapshot and archive hash in [the BSD audit](bsd-networking-audit.md)
-now cover 167 files: the earlier 114 plus 53 resolver, database, public header,
-manual, configuration and BIND 4.9.2 nslookup inputs. Per-file bytes and
+initially covered 167 selected files: the earlier 114 plus 53 resolver, database,
+public header, manual, configuration and BIND 4.9.2 nslookup inputs. The complete
+pinned mirror is now retained; this audit still covers the selected port inputs. Per-file bytes and
 metadata are recorded in `reference/bsd-lite2/provenance.json`; the include
 ledger includes libc, headers and nslookup. References remain unmodified.
 

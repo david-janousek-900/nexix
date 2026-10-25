@@ -1,4 +1,4 @@
-"""Verify/import the pinned 4.4BSD-Lite2 networking reference; never execute it."""
+"""Verify/import the complete pinned 4.4BSD-Lite2 reference; never execute it."""
 import argparse
 import hashlib
 import json
@@ -13,6 +13,9 @@ ARCHIVE_URL = f'https://codeload.github.com/sergev/4.4BSD-Lite2/tar.gz/{COMMIT}'
 ARCHIVE_SHA256 = '5a851582c4c3a5053ef2f4f41df347996969a95c3c7236b0b9e99319ff02c3ef'
 PREFIX = f'4.4BSD-Lite2-{COMMIT}/'
 REFERENCE = 'reference/bsd-lite2'
+FILE_COUNT = 20550
+MANIFEST_SHA256 = 'af1d66e93e050685cd74429d15a327211aeca052106be65f4ce740a15d6879a1'
+LINK_POLICY = 'Archive symlinks are regular files containing the UTF-8 link target without a newline; original types and targets are recorded here.'
 LICENSE_URL = 'https://www.freebsd.org/copyright/license/'
 LICENSE_SHA256 = 'aa202f7c044300bbceb792f4cd0080002c8ee3dabe0fb7bd562c13bf13f9b23f'
 SELECTED = (
@@ -195,36 +198,65 @@ def safe_name(name):
     return bool(name) and not path.is_absolute() and '..' not in path.parts and str(path) == name
 
 
+def manifest_digest(index):
+    """Pin metadata as well as bytes; offline checks cannot accept a rewritten ledger."""
+    return digest(json.dumps({key: index[key] for key in ('files', 'directories')},
+                             sort_keys=True, separators=(',', ':')).encode())
+
+
 def archive_index(archive):
     if digest(archive.read_bytes()) != ARCHIVE_SHA256:
         raise ValueError('archive SHA-256 does not match pinned BSD snapshot')
-    contents, records = {}, []
+    contents, records, directories = {}, [], []
     with tarfile.open(archive, 'r:gz') as tar:
         seen = set()
         for member in tar:
             if not safe_name(member.name) or member.name in seen:
                 raise ValueError(f'unsafe or duplicate archive path: {member.name}')
             seen.add(member.name)
-            if not member.name.startswith(PREFIX):
+            if member.name == PREFIX.rstrip('/') and member.isdir():
+                name = '.'
+            elif member.name.startswith(PREFIX):
+                name = member.name[len(PREFIX):]
+                if not safe_name(name):
+                    raise ValueError(f'unsafe archive path: {member.name}')
+            else:
+                raise ValueError(f'archive path outside pinned prefix: {member.name}')
+            metadata = dict(path=name, mode=member.mode, uid=member.uid,
+                            gid=member.gid, mtime=member.mtime)
+            if member.isdir():
+                directories.append(dict(**metadata, type='directory'))
                 continue
-            name = member.name[len(PREFIX):]
-            if name not in SELECTED:
-                continue
-            if not member.isfile():
+            if name in SELECTED and not member.isfile():
                 raise ValueError(f'non-regular selected archive member: {name}')
-            data = tar.extractfile(member).read()
+            if member.isfile():
+                data = tar.extractfile(member).read()
+                kind, target = 'file', None
+            elif member.issym():
+                # Preserve even absolute historical targets as inert text, never host links.
+                data = member.linkname.encode('utf-8')
+                kind, target = 'symlink', member.linkname
+            else:
+                raise ValueError(f'unsupported archive member type: {name}')
             contents[name] = data
-            records.append(dict(path=name, size=len(data), sha256=digest(data),
-                                mode=member.mode, type='file'))
-    if set(contents) != set(SELECTED):
+            records.append(dict(**metadata, size=len(data), sha256=digest(data),
+                                type=kind, link_target=target))
+    if not set(SELECTED).issubset(contents):
         raise ValueError('archive is missing selected BSD reference files')
-    return dict(schema_version=1, release='4.4BSD-Lite2',
-                repository='https://github.com/sergev/4.4BSD-Lite2', commit=COMMIT,
-                archive_url=ARCHIVE_URL, archive_sha256=ARCHIVE_SHA256,
-                archive_prefix=PREFIX, reference_root=f'{REFERENCE}/source',
-                license_document=dict(path='berkeley-license.html', url=LICENSE_URL,
-                                      sha256=LICENSE_SHA256),
-                files=sorted(records, key=lambda record: record['path'])), contents
+    # No archived link/file may become an ancestor during materialization.
+    for name in contents:
+        if any(str(parent) in contents for parent in PurePosixPath(name).parents):
+            raise ValueError(f'archive file/link used as parent: {name}')
+    index = dict(schema_version=2, release='4.4BSD-Lite2',
+                 repository='https://github.com/sergev/4.4BSD-Lite2', commit=COMMIT,
+                 archive_url=ARCHIVE_URL, archive_sha256=ARCHIVE_SHA256,
+                 archive_prefix=PREFIX, reference_root=f'{REFERENCE}/source',
+                 link_policy=LINK_POLICY,
+                 license_document=dict(path='berkeley-license.html', url=LICENSE_URL,
+                                       sha256=LICENSE_SHA256),
+                 directories=sorted(directories, key=lambda record: record['path']),
+                 files=sorted(records, key=lambda record: record['path']))
+    return index, contents
 
 
 def regular_path(path, base):
@@ -271,11 +303,11 @@ def dependency_audit(root=ROOT):
 
 def check_reference(index, root=ROOT):
     errors = []
-    expected_metadata = dict(schema_version=1, release='4.4BSD-Lite2',
+    expected_metadata = dict(schema_version=2, release='4.4BSD-Lite2',
                              repository='https://github.com/sergev/4.4BSD-Lite2',
                              commit=COMMIT, archive_url=ARCHIVE_URL,
                              archive_sha256=ARCHIVE_SHA256, archive_prefix=PREFIX,
-                             reference_root=f'{REFERENCE}/source',
+                             reference_root=f'{REFERENCE}/source', link_policy=LINK_POLICY,
                              license_document=dict(path='berkeley-license.html',
                                                    url=LICENSE_URL, sha256=LICENSE_SHA256))
     if not isinstance(index, dict) or any(index.get(k) != v for k, v in expected_metadata.items()):
@@ -283,17 +315,22 @@ def check_reference(index, root=ROOT):
     records = index.get('files')
     if not isinstance(records, list):
         return ['invalid BSD reference file list']
+    if (len(records) != FILE_COUNT or not isinstance(index.get('directories'), list) or
+            manifest_digest(index) != MANIFEST_SHA256):
+        errors.append('BSD full-distribution manifest mismatch')
     names = []
+    seen = set()
     base = root / REFERENCE / 'source'
     for record in records:
         if not isinstance(record, dict):
             errors.append('invalid BSD reference record')
             continue
         name = record.get('path')
-        if not isinstance(name, str) or not safe_name(name) or name not in SELECTED or name in names:
-            errors.append(f'unsafe, duplicate or unselected BSD reference path: {name}')
+        if not isinstance(name, str) or not safe_name(name) or name in seen:
+            errors.append(f'unsafe or duplicate BSD reference path: {name}')
             continue
         names.append(name)
+        seen.add(name)
         path = base / name
         if not regular_path(path, root) or not path.is_file():
             errors.append(f'missing/non-regular BSD reference file: {name}')
@@ -301,12 +338,16 @@ def check_reference(index, root=ROOT):
         data = path.read_bytes()
         if record.get('size') != len(data) or record.get('sha256') != digest(data):
             errors.append(f'BSD reference content mismatch: {name}')
-        if record.get('type') != 'file' or type(record.get('mode')) is not int:
+        kind = record.get('type')
+        target = record.get('link_target')
+        if (kind not in {'file', 'symlink'} or type(record.get('mode')) is not int or
+                (kind == 'file' and target is not None) or
+                (kind == 'symlink' and (not isinstance(target, str) or data != target.encode('utf-8')))):
             errors.append(f'invalid BSD reference metadata: {name}')
-    if names != list(SELECTED):
+    if names != sorted(seen) or not set(SELECTED).issubset(seen):
         errors.append('BSD reference selection/order mismatch')
     actual = {p.relative_to(base).as_posix() for p in base.rglob('*') if p.is_file() or p.is_symlink()}
-    if actual != set(SELECTED):
+    if actual != seen:
         errors.append('BSD reference contains missing or unrecorded files')
     license_path = root / REFERENCE / 'berkeley-license.html'
     if (not regular_path(license_path, root) or not license_path.is_file() or
@@ -320,7 +361,7 @@ def check_reference(index, root=ROOT):
 
 
 def import_reference(index, contents, root=ROOT):
-    """Preflight the whole selection; never overwrite differing reference bytes."""
+    """Preflight the whole distribution; never overwrite differing reference bytes."""
     base = root / REFERENCE
     writes = {base / 'source' / name: data for name, data in contents.items()}
     writes[root / 'LICENSES/BSD-4.4-Lite2.txt'] = contents['COPYRIGHT']
@@ -333,7 +374,15 @@ def import_reference(index, contents, root=ROOT):
         previous_files = previous.pop('files')
         expected = dict(index)
         expected.pop('files')
-        if previous != expected or not all(record in index['files'] for record in previous_files):
+        if previous.get('schema_version') == 1:
+            expected.pop('directories')
+            expected.pop('link_policy')
+            expected['schema_version'] = 1
+        by_name = {record['path']: record for record in index['files']}
+        if previous != expected or not all(
+                record['path'] in by_name and all(by_name[record['path']].get(k) == v
+                                                  for k, v in record.items())
+                for record in previous_files):
             raise ValueError('refusing incompatible reference provenance migration')
         for record in previous_files:
             path = base / 'source' / record['path']
@@ -344,6 +393,12 @@ def import_reference(index, contents, root=ROOT):
             continue
         if not regular_path(path, root) or (path.exists() and (not path.is_file() or path.read_bytes() != data)):
             raise ValueError(f'refusing to overwrite differing/non-regular reference: {path}')
+    for record in index.get('directories', []):
+        directory = base / 'source' / record['path']
+        if not regular_path(directory, root) or (directory.exists() and not directory.is_dir()):
+            raise ValueError(f'refusing non-directory reference path: {directory}')
+    for record in index.get('directories', []):
+        (base / 'source' / record['path']).mkdir(parents=True, exist_ok=True)
     for path, data in writes.items():
         path.parent.mkdir(parents=True, exist_ok=True)
         if not path.exists() or path == ledger:
@@ -374,7 +429,8 @@ def main():
         audit_path.write_text(json.dumps(audit, indent=2) + '\n')
     elif json.loads(audit_path.read_text()) != audit:
         raise ValueError('BSD dependency audit differs from retained sources')
-    print(f'PASS: {len(SELECTED)} pinned BSD reference files and Berkeley license document')
+    count = len(json.loads(ledger.read_text())['files'])
+    print(f'PASS: {count} pinned BSD reference entries and Berkeley license document')
 
 
 if __name__ == '__main__':

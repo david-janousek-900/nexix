@@ -1,5 +1,6 @@
 # Preserve pinned upstream bytes, including historical whitespace and line endings.
-/reference/bsd-lite2/source/** -text -whitespace
+# Historical manuals/tests contain merge-marker examples and repeated-character headings.
+/reference/bsd-lite2/source/** -text -whitespace conflict-marker-size=10000
 /reference/bsd-lite2/berkeley-license.html -text -whitespace
 /LICENSES/BSD-4.4-Lite2.txt -text -whitespace
 

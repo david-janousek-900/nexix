@@ -19,7 +19,7 @@ The current virtual layout is:
 | --- | --- |
 | `0 .. 1 GiB` | Shared supervisor-only identity map, with the null-page guard |
 | `1 GiB .. 128 TiB` | Independent user mappings in the lower canonical range |
-| Upper canonical range | Unmapped; not yet supported by the mapping API |
+| Upper canonical range | Shared supervisor-only MMIO window at `0xffffff8000000000`; no general kernel-VA allocator |
 
 Every address space owns its PML4 and initial PDPT. The PDPT entry for the first
 GiB references a shared kernel directory and remains supervisor-only, including
@@ -180,3 +180,9 @@ Character-device descriptors use the file layer's ownership across fork/exec/exi
 Native ioctl and legacy stty/gtty export eight-byte sgtty and six-byte tchars
 records. Controlling-terminal association, the demo, test coverage and remaining
 signal/job-control work are documented in [tty.md](tty.md).
+
+## Kernel improvement analysis
+
+The [4.4BSD and Nexix kernel analysis](kernel-evolution.md) compares the current
+resident kernel with BSD VM, vnode and I/O designs, and proposes staged memory,
+fault-handling, storage and scheduling improvements.

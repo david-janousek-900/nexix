@@ -1,4 +1,4 @@
-# UNIX V7 reference distribution
+# Historical reference distributions
 
 Baseline: [TUHS Henry Spencer V7 distribution](https://www.tuhs.org/Archive/Distributions/Research/Henry_Spencer_v7/v7.tar.gz).
 
@@ -40,12 +40,55 @@ The historical UNIX license is retained as `Caldera-license.pdf` alongside this
 file. Its terms apply to the historical distribution; do not assume that
 provenance grants a license for unrelated additions.
 
-## BSD networking reference
+## Complete 4.4BSD-Lite2 reference
 
-`bsd-lite2/source/` separately preserves 167 selected networking, layout and resolver files
-from a pinned 4.4BSD-Lite2 mirror snapshot. Its provenance index records the
-immutable commit, full archive SHA-256 and per-file hashes. The retained
-Berkeley license document is separately hash-pinned. These sources are not
-part of the V7 archive and are not compiled into Nexix yet.
-See the [baseline and dependency/LP64 audit](../docs/bsd-networking-audit.md).
-Run `make test-bsd-reference` for offline integrity and rejection tests.
+`bsd-lite2/source/` preserves the entire
+[4.4BSD-Lite2 mirror](https://github.com/sergev/4.4BSD-Lite2) at commit
+`50587b00e922225c62f1706266587f435898126d`, including kernel, libraries,
+commands, contributed software, manuals, configuration and Domestic/Foreign
+source trees. This is a complete pinned mirror snapshot, not a claim of
+independently authenticated original CSRG release media.
+
+Archive SHA-256:
+`5a851582c4c3a5053ef2f4f41df347996969a95c3c7236b0b9e99319ff02c3ef`
+
+The import retains **19,228 regular files byte for byte** and **1,322 symbolic
+links as inert regular files containing their original link-target text without
+a newline**. No historical link is followed or recreated as a host filesystem
+link. `bsd-lite2/provenance.json` records all 20,550 file/link entries and 1,639
+directories, including original modes, ownership, timestamps, link types and
+targets. Empty directories are recorded in the index and recreated on import;
+Git does not preserve empty directories. Historical modes and ownership are
+metadata, not required checkout permissions. Full-manifest and per-file hashes
+are checked offline, separately from the V7 distribution index.
+
+Existing source paths and the earlier 167 selected source files are unchanged.
+`bsd-lite2/audit.json` remains the focused networking/layout/resolver include
+and task-ownership audit; it is not an audit of every newly retained component.
+See [the networking audit](../docs/bsd-networking-audit.md) and
+[the kernel analysis](../docs/kernel-evolution.md). Importing reference sources
+does not build them or complete native porting tasks.
+
+The original `COPYRIGHT` and individual source/license notices are unchanged.
+The retained Berkeley license amendment document is separately hash-pinned.
+Contributed code has its own notices; the distribution-level Berkeley notice
+is not a blanket license for every contributed file.
+
+Verify locally without downloading:
+
+```sh
+make TOOLCHAIN_PREFIX= test-bsd-reference
+make TOOLCHAIN_PREFIX= test-inventory
+```
+
+Compare against the pinned full archive, or fill missing files:
+
+```sh
+python3 tools/bsd_reference.py /path/to/bsd-lite2.tar.gz
+python3 tools/bsd_reference.py /path/to/bsd-lite2.tar.gz --import-reference
+```
+
+The importer verifies the archive hash before reading members, rejects unsafe
+or duplicate paths and unsupported types, and preflights existing files before
+writing. It refuses to overwrite differing reference bytes. Preserve this tree
+unchanged and place active native ports elsewhere.

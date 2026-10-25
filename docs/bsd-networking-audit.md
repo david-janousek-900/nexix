@@ -1,9 +1,12 @@
 # 4.4BSD-Lite2 networking baseline (task 412)
 
-The reference is a **selected source subset**, not a complete BSD distribution
-or a working Nexix port. It is retained under `reference/bsd-lite2/source/`;
-active adaptations belong outside that tree. No BSD code is linked into Nexix
-by this task. V7 reference bytes and inventory component counts are unchanged.
+The initial task imported a selected networking subset. The repository now
+retains the **complete pinned mirror snapshot** under
+`reference/bsd-lite2/source/`; see [reference import details](../reference/README.md).
+This document and the include ledger audit only the 167 networking, layout and
+resolver inputs selected for the initial ports. Active adaptations belong
+outside the pristine reference tree; reference retention does not establish a
+working native port. V7 reference bytes and inventory counts are unchanged.
 
 ## Origin and integrity
 
@@ -15,13 +18,16 @@ The archive URL names that immutable commit; its SHA-256 is
 The full downloaded archive is not committed.
 
 `reference/bsd-lite2/provenance.json` records the archive prefix, URL/hash,
-commit, and every selected member's path, byte count, SHA-256, original mode
-and type. All **167 files** are regular archive members copied byte for byte
-(102 for networking, 12 layout files and 53 [resolver inputs](resolver-audit.md)):
-39 `netinet` files, 17 Ethernet/loopback/routing/raw-socket `net` files, six
-`kern/uipc_*` files, 36 supporting `sys` headers, three i386 headers and the
-distribution `COPYRIGHT`. The explicit selection is also pinned in the checker.
-There are no imported symlinks or binaries.
+commit and every member's metadata. The complete snapshot contains 19,228
+regular files and 1,322 symlinks retained as inert link-target text, plus
+1,639 directory records. A pinned full-manifest digest protects the member
+list and metadata alongside per-file content hashes.
+
+The original **167 selected files** remain byte-identical regular archive
+members (102 networking, 12 layout and 53 [resolver inputs](resolver-audit.md)).
+The explicit audit selection remains pinned in the checker independently of
+full-tree retention. Historical links and any binary artifacts are references,
+not host links or native Nexix executables.
 Narrow Git attributes disable newline conversion and whitespace diagnostics for
 the pristine source and license copies; historical whitespace is part of their
 verified bytes. Native tools and adaptations retain normal whitespace checks.
@@ -33,7 +39,7 @@ make test-bsd-reference
 make test-inventory
 ```
 
-To independently compare the committed subset and index against the archive:
+To independently compare the committed complete tree and index against the archive:
 
 ```sh
 curl -fL https://codeload.github.com/sergev/4.4BSD-Lite2/tar.gz/50587b00e922225c62f1706266587f435898126d -o /tmp/bsd-lite2.tar.gz
@@ -43,14 +49,15 @@ python3 tools/bsd_reference.py /tmp/bsd-lite2.tar.gz
 The tool verifies the full archive hash before parsing, rejects unsafe/duplicate
 paths and non-regular selected entries, and compares the derived index with the
 committed index. `--import-reference` fills missing reference files but refuses
-to replace differing bytes, including provenance. `--write-audit` regenerates
+to replace differing bytes. The earlier subset provenance can migrate additively
+to the full metadata-rich index after all existing bytes are verified. `--write-audit` regenerates
 the lexical include ledger after reference verification. Neither option is used
-by tests. Original ownership/timestamps are not needed to build this source-only
-subset; file modes/types are provenance, not host checkout requirements.
+by tests. Original ownership/timestamps are not needed to verify this historical
+snapshot; file modes/types are provenance, not host checkout requirements.
 
 ## Dependency and adaptation decisions
 
-`reference/bsd-lite2/audit.json` enumerates every retained C/header file, its
+`reference/bsd-lite2/audit.json` enumerates every selected C/header/lexer file, its
 owning/supporting task IDs, licensing disposition and literal includes. Includes
 are classified as retained references, native adapters or deferred features.
 This is a lexical audit including conditional branches, not a claim of a
@@ -59,7 +66,7 @@ dependencies; they must not replace Nexix kernel or public headers wholesale.
 
 | Subsystem | Dependency / porting decision | Tasks |
 |---|---|---|
-| Types and machine headers | Replace BSD `sys/types.h`, `param.h` and `machine/*` assumptions with private native compatibility types; no BSD CPU/VM implementation is imported. Missing i386 ansi/endian/limits headers are upstream cross-architecture symlinks and will be replaced by native definitions. | 413 |
+| Types and machine headers | Replace BSD `sys/types.h`, `param.h` and `machine/*` assumptions with private native compatibility types; no BSD CPU/VM implementation is used in the native kernel. Missing i386 ansi/endian/limits headers are upstream cross-architecture symlinks and will be replaced by native definitions. | 413 |
 | Packet memory | `uipc_mbuf.c` uses `mb_map`, `kmem_malloc`, cluster reference counts and `splimp`; replace VM allocation with bounded Nexix pools and retain explicit ownership. | 414 |
 | Execution and timers | Replace `splnet`/`splimp`/`splx`, soft network interrupts, BSD sleep/wakeup and protocol fast/slow timers with serialized worker processing, native waits and timer adaptation. Preserve caller interrupt state. | 415 |
 | Interfaces and routing | Adapt `ifnet`, interface queues, radix routing, route references and ARP callouts; e1000 is a new native driver, not historical BSD hardware code. | 416–420, 427 |
