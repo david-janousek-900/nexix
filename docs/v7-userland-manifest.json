@@ -14547,37 +14547,46 @@
           "name": "spline",
           "install": "/bin/spline",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/v7/cmd/spline.c",
+            "tools/spline_smoke.py",
+            "Makefile"
           ]
         }
       ],
       "priority": 7,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
           "phase": "build",
           "certainty": "confirmed",
           "evidence": [
+            "user/v7/cmd/spline.c",
             "Makefile"
           ],
-          "note": "Existing Nexix bootstrap uses host GCC/binutils."
+          "note": "Audited native build uses Nexix public headers and libc; host GCC/binutils bootstrap, no host runtime linkage."
         },
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/spline.c",
+            "Makefile"
+          ],
+          "note": "Audited native build uses Nexix public headers and libc; host GCC/binutils bootstrap, no host runtime linkage."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/v7/cmd/spline.c",
+            "Makefile"
+          ],
+          "note": "Audited native build uses Nexix public headers and libc; host GCC/binutils bootstrap, no host runtime linkage."
         },
         {
           "target": "floating-point",
@@ -14595,15 +14604,10 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Full syscall, libc-symbol, ABI and transitive runtime dependency audit remains pending."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
-        "Interpolate a known data series with verified numerical tolerances.",
-        "Verify native build, reference options, exit status and malformed-input handling."
+        "make test-spline: retained Hamming interpolation checked against independent dense natural/general/periodic systems, malformed/1000-point bounds under sanitizers and installed output at 16/128 MiB"
       ],
       "source_files": [
         "reference/v7/usr/src/cmd/spline.c"
@@ -14615,8 +14619,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        213
+      "native_sources": [
+        "user/v7/cmd/spline.c"
       ]
     },
     {

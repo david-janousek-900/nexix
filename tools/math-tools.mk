@@ -60,3 +60,11 @@ test-random: test-random-unit build/random-fixed.elf multi-iso rootfs
 	$(PYTHON) tools/random_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/random_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-random
+
+.PHONY: test-spline-unit test-spline
+test-spline-unit:
+	$(PYTHON) tests/spline.py
+test-spline: test-spline-unit multi-iso rootfs
+	$(PYTHON) tools/spline_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/spline_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-spline

@@ -101,3 +101,25 @@ a private fixed clock, then compare selected bytes and statuses with an
 independent Python sequence oracle. A fixed-clock build of the same command
 runs in 16/128 MiB guests alongside the installed time-seeded executable; tests
 cover line/exit modes, long lines, zero/all selection and numeric errors.
+
+## spline (task 213)
+
+`/bin/spline` retains the supplied Hamming tridiagonal interpolation engine,
+including natural/general boundary conditions, periodic mode, automatic
+abscissas and the historical descending output order. It keeps the 1,000-point
+input bound. The numeric reader now terminates and validates tokens, reports
+missing ordinates and rejects extra input rather than overflowing or dropping
+it. Allocation and interpolation-count arithmetic are checked; point counts
+must be positive and at most one million.
+
+Periodic endpoint slopes use the first interval's spacing rather than reading
+past the last supplied abscissa. Pivot failures retain the source's raw-point
+fallback. The point arrays and disk formats have no external ABI changes.
+
+`make test-spline` uses independent dense linear systems for natural, general
+and cyclic second derivatives, and evaluates the cubic formula at the actual
+output coordinates. It covers automatic abscissas, malformed numbers and the
+1,000-point periodic boundary under ASan/UBSan. Installed 16/128 MiB output is
+checked numerically with a 2e-5 tolerance, including sample count, descending
+coordinates and endpoints; decimal formatting need not match host printf
+byte for byte.

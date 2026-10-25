@@ -10,17 +10,17 @@ multi-user startup, RTC-derived time and correct persistent V7 timestamps.
 ### Current implementation and scope
 
 The roadmap review baseline is commit `fa6076d`. Current fresh installations boot
-to multi-user V7 login with persistent IDE storage. 122 native ELF programs are
+to multi-user V7 login with persistent IDE storage. 123 native ELF programs are
 installed; the complete list and destinations are in [the installation manifest](native-install.json).
 Native libc/libm archives, four startup variants and public headers are installed;
 see [development interfaces](development-interfaces.md).
 The inventory accounts for **225 components, 2,144 distribution files and
-36 supporting/platform requirements**. Its component statuses are 121 implemented,
-4 partial, 0 prototype and 100 not ported; importing reference inputs does not
+36 supporting/platform requirements**. Its component statuses are 122 implemented,
+4 partial, 0 prototype and 99 not ported; importing reference inputs does not
 complete their native ports.
 
-The expanded roadmap below has **551 tracking tasks: 282 done, 0 in progress
-and 269 to do**. Tasks **1–108, 119–165, 168–202, 208–212, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–435, 444–455** are complete. These counts are a work breakdown, not an
+The expanded roadmap below has **551 tracking tasks: 283 done, 0 in progress
+and 268 to do**. Tasks **1–108, 119–165, 168–202, 208–213, 219, 223, 226, 237, 240, 251, 253, 261–262, 264–269, 281–282, 286–287, 295, 351, 357, 362–388, 410–435, 444–455** are complete. These counts are a work breakdown, not an
 estimate of the percentage of porting effort completed. Tasks 1–24 retain
 their previous scope. Completed portions of the old task 25 are separated
 into tasks 25–36; its remaining work is listed individually.
@@ -371,7 +371,7 @@ are accounted for. Final native rebuild acceptance is task 207.
 | 210 | Port factor | Done | make test-factor: sanitizer-backed independent factorization oracle, exact 56-bit range and installed stdin/prime/semiprime fixtures at 16/128 MiB; native integer equivalent of retained PDP-11 assembly; Git history |
 | 211 | Port primes | Done | make test-primes: independent 20,000-number sieve, strong pseudoprime vectors and exact near-2^56 streaming at 16/128 MiB; bounded native equivalent of retained PDP-11 assembly; Git history |
 | 212 | Port random | Done | make test-random: fixed-clock independent native PRNG selection/exit oracle, long/binary lines and invalid numeric bounds under sanitizers and at 16/128 MiB; retained V7 line/exit modes; Git history |
-| 213 | Port spline | To do | Numeric/language fixtures and native execution |
+| 213 | Port spline | Done | make test-spline: retained Hamming interpolation checked against independent dense natural/general/periodic systems, malformed/1000-point bounds under sanitizers and installed output at 16/128 MiB; Git history |
 | 214 | Port units | To do | Install units data and numeric conversion fixtures |
 | 215 | Port bas | To do | Supplied build is obsolete; restore required old library interfaces |
 | 216 | Port ratfor | To do | Numeric/language fixtures and native execution; also run `lex -r` scanners (from task 173) |

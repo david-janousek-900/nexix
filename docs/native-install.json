@@ -9245,6 +9245,19 @@
         "path": "v7-random.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/spline",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.spline",
+      "source": {
+        "root": "programs",
+        "path": "v7-spline.elf"
+      },
+      "format": "elf"
     }
   ]
 }
