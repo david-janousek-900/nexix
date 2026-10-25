@@ -8,7 +8,7 @@
       "origin": "reference/supplemental/v6/lib.b",
       "disposition": "recovered-source-lineage",
       "consumer_tasks": [209],
-      "note": "All six historical math functions are supplied. Native bc/dc execution and numerical acceptance remain task 209."
+      "note": "All six historical math functions are installed unchanged and pass native bc/dc numerical acceptance under task 209 at 16/128 MiB."
     },
     {
       "id": "lex-ratfor",

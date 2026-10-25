@@ -238,7 +238,7 @@ their sources alone does not provide a working native equivalent.
 | `formatter-macros` | supplied | Original tmac macros are installed unchanged and exercised by native nroff/troff; task 281 complete. |
 | `bibliography-data` | supplied | Original inputs are supplied in the full archive. Native integration, generated formats and functional acceptance remain pending. |
 | `units-data` | supplied | Original inputs are supplied in the full archive. Native integration, generated formats and functional acceptance remain pending. |
-| `bc-math` | supplied | Historical V6 lib.b recovered separately from the V7 source-history snapshot and retained unchanged; all six math function inputs supplied. Native bc/dc -l installation and numeric acceptance remain task 209. |
+| `bc-math` | supplied | All six separately recovered V6 lib.b functions are installed unchanged and exercised through native bc/dc; make test-bc at 16/128 MiB. |
 | `fortune-data` | supplied | Original inputs are supplied in the full archive. Native integration, generated formats and functional acceptance remain pending. |
 | `quiz-data` | supplied | Original inputs are supplied in the full archive. Native integration, generated formats and functional acceptance remain pending. |
 | `v7-source-archives` | supplied | All twelve historical source/lesson archives are extracted and round-trip tested by task 87; plotting/learn consumers retain tasks 283–285/289–293. |

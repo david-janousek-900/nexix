@@ -8,3 +8,19 @@ test-dc: test-dc-unit multi-iso rootfs
 	$(PYTHON) tools/dc_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/dc_smoke.py $(QEMU) build/nexix-multi.iso 128M
 test: test-dc
+
+# Task 209: V7 grammar, native-width semantic values and separately pinned lib.b.
+build/bc/bc.c: user/bc/bc.y tools/generate_bc.py build/host-nx-yacc rootfs/usr/lib/yaccpar | build/.dir
+	$(PYTHON) tools/generate_bc.py
+build/v7-bc.o: build/bc/bc.c user/v7/compat.h | build/.dir
+	$(CC) $(V7_CFLAGS) -include user/v7/compat.h -c $< -o $@
+build/bc-lib.b: user/v7/bc/lib.b reference/supplemental/v6/lib.b | build/.dir
+	cmp $< reference/supplemental/v6/lib.b
+	cp $< $@
+.PHONY: test-bc-unit test-bc
+test-bc-unit: build/bc/bc.c
+	$(PYTHON) tests/bc.py
+test-bc: test-bc-unit multi-iso rootfs
+	$(PYTHON) tools/bc_smoke.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/bc_smoke.py $(QEMU) build/nexix-multi.iso 128M
+test: test-bc

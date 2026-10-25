@@ -503,13 +503,15 @@
       "id": "bc-math",
       "category": "data",
       "status": "supplied",
-      "description": "Historical V6 lib.b recovered separately from the V7 source-history snapshot and retained unchanged; all six math function inputs supplied. Native bc/dc -l installation and numeric acceptance remain task 209.",
+      "description": "All six separately recovered V6 lib.b functions are installed unchanged and exercised through native bc/dc; make test-bc at 16/128 MiB.",
       "evidence": [
         "reference/supplemental/provenance.json",
         "reference/supplemental/v6/lib.b",
         "user/v7/bc/lib.b",
         "docs/support-inputs.json",
-        "tests/support_inputs.py"
+        "tests/support_inputs.py",
+        "tools/bc_smoke.py",
+        "tests/bc.py"
       ],
       "locations": [
         "/usr/lib/lib.b"
@@ -2287,37 +2289,46 @@
           "name": "bc",
           "install": "/bin/bc",
           "role": "installed",
-          "status": "not_ported",
+          "status": "implemented",
           "evidence": [
-            "reference/v7/usr/src/cmd/cmake"
+            "user/bc/bc.y",
+            "tools/bc_smoke.py",
+            "Makefile"
           ]
         }
       ],
       "priority": 7,
-      "status": "not_ported",
+      "status": "implemented",
       "dependencies": [
         {
           "target": "native-build-tools",
           "phase": "build",
           "certainty": "confirmed",
           "evidence": [
+            "user/bc/bc.y",
             "Makefile"
           ],
-          "note": "Existing Nexix bootstrap uses host GCC/binutils."
+          "note": "Audited native build uses Nexix public headers and libc; host GCC/binutils bootstrap, no host runtime linkage."
         },
         {
           "target": "headers",
           "phase": "build",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/bc/bc.y",
+            "Makefile"
+          ],
+          "note": "Audited native build uses Nexix public headers and libc; host GCC/binutils bootstrap, no host runtime linkage."
         },
         {
           "target": "lib.libc",
           "phase": "runtime",
-          "certainty": "inferred",
-          "evidence": [],
-          "note": "Dependency inferred from component purpose; complete source/API audit remains pending."
+          "certainty": "confirmed",
+          "evidence": [
+            "user/bc/bc.y",
+            "Makefile"
+          ],
+          "note": "Audited native build uses Nexix public headers and libc; host GCC/binutils bootstrap, no host runtime linkage."
         },
         {
           "target": "cmd.yacc",
@@ -2355,15 +2366,10 @@
           ]
         }
       ],
-      "blockers": [
-        "Native API/width audit and functional port pending."
-      ],
-      "unresolved": [
-        "Native bc/dc integration and all six recovered lib.b function fixtures remain task 209; input provenance/disposition is resolved by task 88."
-      ],
+      "blockers": [],
+      "unresolved": [],
       "acceptance": [
-        "Evaluate arithmetic, variables and a loop through dc; exercise optional math library.",
-        "Verify native build, reference options, exit status and malformed-input handling."
+        "make test-bc: sanitized retained yacc/DC pipeline, all six recovered lib.b functions and native yacc byte reproduction at 16/128 MiB; checked LP64 bundles and parser errors"
       ],
       "source_files": [
         "reference/v7/usr/src/cmd/bc.y"
@@ -2375,8 +2381,8 @@
           "artifact": "historical_binary"
         }
       ],
-      "unresolved_tasks": [
-        209
+      "native_sources": [
+        "user/bc/bc.y"
       ]
     },
     {

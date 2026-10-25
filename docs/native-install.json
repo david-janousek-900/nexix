@@ -9180,6 +9180,32 @@
         "path": "v7-dc.elf"
       },
       "format": "elf"
+    },
+    {
+      "path": "/bin/bc",
+      "type": "file",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.bc",
+      "source": {
+        "root": "programs",
+        "path": "v7-bc.elf"
+      },
+      "format": "elf"
+    },
+    {
+      "path": "/usr/lib/lib.b",
+      "type": "file",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "component": "cmd.bc",
+      "source": {
+        "root": "programs",
+        "path": "bc-lib.b"
+      },
+      "format": "data"
     }
   ]
 }
