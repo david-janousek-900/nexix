@@ -9,10 +9,11 @@
 int errno;
 static uint64_t now;
 static int mode,received,sends,connects,resets;
+static uint32_t mutation=0x4e585752;
 static unsigned char query[1024],tcpframe[2048];
 static int qsize;static size_t tcp_size,tcp_pos;
 static struct sockaddr_in target;
-enum {VALID,WRONG_ID,WRONG_SOURCE,WRONG_QUESTION,SILENT,REFUSAL,SERVFAIL_FIRST,TRUNCATED,TCP_RESET,OVERSIZED,NX,NODATA,SEARCH,INTERRUPTED,MIXED};
+enum {VALID,WRONG_ID,WRONG_SOURCE,WRONG_QUESTION,SILENT,REFUSAL,SERVFAIL_FIRST,TRUNCATED,TCP_RESET,OVERSIZED,NX,NODATA,SEARCH,INTERRUPTED,MIXED,MUTATED};
 int res_init(void){_res.options|=RES_INIT;return 0;}
 int getentropy(void *out,size_t length){static unsigned id;unsigned char *p=out;for(size_t i=0;i<length;++i)p[i]=(unsigned char)++id;return 0;}
 clock_t times(struct tms *t){memset(t,0,sizeof(*t));return (clock_t)now;}
@@ -31,6 +32,7 @@ static int response(unsigned char *out)
     if(mode==NODATA)putshort(0,out+6);
     if(mode==SERVFAIL_FIRST&&ntohs(target.sin_port)==53)out[3]=0x82;
     if(mode==SEARCH){char name[256];dn_expand(query,query+qsize,query+12,name,sizeof(name));if(!strncmp(name,"host.first",10)){out[3]=0x83;putshort(0,out+6);}}
+    if(mode==MUTATED&&received==1){out[mutation%(unsigned)n]^=(unsigned char)(mutation>>16);if(mutation&256)n=(int)(mutation%((unsigned)n+1));}
     return n;
 }
 ssize_t send(int fd,const void *buffer,size_t length,int flags)
@@ -105,5 +107,9 @@ int main(void)
     setup(VALID);aliases="alias canonical.test\n";CHECK(res_search("Alias",C_IN,T_A,answer,sizeof(answer))>0&&sends==1);
     CHECK(!strcmp(hostalias("alias"),"canonical.test"));
     setup(VALID);CHECK(res_querydomain("example.test.",NULL,C_IN,T_A,answer,sizeof(answer))>0);
-    _res_close();puts("PASS: scripted resolver transport, reply validation, failover, TCP/reset/drain, errors and search");return 0;
+    for(unsigned i=0;i<40000;++i){
+        mutation^=mutation<<13;mutation^=mutation>>17;mutation^=mutation<<5;
+        setup(MUTATED);(void)gethostbyname("example.test");
+    }
+    _res_close();puts("PASS: scripted resolver transport, reply validation, failover, TCP/reset/drain, errors, search and 40000 whole-lookup mutations");return 0;
 }

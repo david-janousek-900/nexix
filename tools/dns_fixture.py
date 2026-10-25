@@ -76,7 +76,7 @@ class DNSFixture:
         if not query:return None
         host,kind,question=self.question(query);self.queries.append((host,kind,tcp))
         flags=0x8180;answers=[]
-        known={'silent.test','missing.test','servfail.test','failover.test','refused.test','empty.test','truncated.test','zone.test','alias.test','canonical.test','middle.test','multi.test','txt.test','badid.test','badsource.test','badquestion.test','host.search.test','host.second.test'}
+        known={'silent.test','missing.test','servfail.test','failover.test','refused.test','empty.test','truncated.test','zone.test','alias.test','canonical.test','middle.test','multi.test','txt.test','mx.test','badid.test','badsource.test','badquestion.test','host.search.test','host.second.test'}
         if host not in known and kind!=12:
             return query[:2]+struct.pack('!HHHHH',0x8183,1,0,0,0)+question
         if host=='silent.test':return None
@@ -96,6 +96,7 @@ class DNSFixture:
         elif kind==1:
             answers=[record(host,1,b'\xc0\x00\x02\x0a')]
             if host=='multi.test':answers.append(record(host,1,b'\xc0\x00\x02\x0b'))
+        elif kind==15:answers=[record(host,15,struct.pack('!H',10)+name('mail.test'))]
         elif kind==16:answers=[record(host,16,b'\x07fixture')]
         elif kind==2:answers=[record(host,2,name('ns.test'))]
         response=query[:2]+struct.pack('!HHHHH',flags,1,len(answers),0,0)+question+b''.join(answers)

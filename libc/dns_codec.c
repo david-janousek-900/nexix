@@ -201,10 +201,83 @@ int res_mkquery(int op,const char *name,int class,int type,const unsigned char *
 }
 const char *p_type(int type)
 {
-    switch(type) {case T_A:return "A";case T_NS:return "NS";case T_CNAME:return "CNAME";case T_SOA:return "SOA";case T_PTR:return "PTR";case T_MX:return "MX";case T_TXT:return "TXT";case T_AXFR:return "AXFR";case T_ANY:return "ANY";default:return "UNKNOWN";}
+    switch(type) {
+    case T_A:return "A";case T_NS:return "NS";case T_MD:return "MD";case T_MF:return "MF";
+    case T_CNAME:return "CNAME";case T_SOA:return "SOA";case T_MB:return "MB";case T_MG:return "MG";
+    case T_MR:return "MR";case T_NULL:return "NULL";case T_WKS:return "WKS";case T_PTR:return "PTR";
+    case T_HINFO:return "HINFO";case T_MINFO:return "MINFO";case T_MX:return "MX";case T_TXT:return "TXT";
+    case T_RP:return "RP";case T_AFSDB:return "AFSDB";case T_NSAP:return "NSAP";case T_NSAP_PTR:return "NSAP-PTR";
+    case T_UINFO:return "UINFO";case T_UID:return "UID";case T_GID:return "GID";case T_UNSPEC:return "UNSPEC";
+    case T_AXFR:return "AXFR";case T_MAILB:return "MAILB";case T_MAILA:return "MAILA";case T_ANY:return "ANY";
+    default:{static char text[24];snprintf(text,sizeof(text),"TYPE%d",type);return text;}
+    }
 }
 const char *p_class(int class)
-{ return class==C_IN?"IN":class==C_ANY?"ANY":class==C_CHAOS?"CHAOS":class==C_HS?"HS":"UNKNOWN"; }
+{
+    switch(class){case C_IN:return "IN";case C_ANY:return "ANY";case C_CHAOS:return "CHAOS";case C_HS:return "HS";
+    default:{static char text[24];snprintf(text,sizeof(text),"CLASS%d",class);return text;}}
+}
+static int print_name(const unsigned char *msg,const unsigned char *end,const unsigned char **cursor,const unsigned char *limit,FILE *file)
+{
+    char text[1025];int n=dn_expand(msg,end,*cursor,text,sizeof(text));
+    if(n<0||(size_t)n>(size_t)(limit-*cursor))return -1;
+    fputs(*text?text:".",file);*cursor+=n;return 0;
+}
+static int print_strings(const unsigned char *p,const unsigned char *end,int expected,FILE *file)
+{
+    unsigned count=0;
+    while(p<end){
+        unsigned bytes=*p++;if((size_t)(end-p)<bytes)return -1;
+        if(count++)fputc(' ',file);
+        fputc('"',file);
+        for(unsigned i=0;i<bytes;++i){unsigned c=*p++;
+            if(c=='"'||c=='\\'){fputc('\\',file);fputc((int)c,file);}
+            else if(c<32||c>=127)fprintf(file,"\\%03u",c);
+            else fputc((int)c,file);
+        }
+        fputc('"',file);
+    }
+    return !count||(expected&&(unsigned)expected!=count)?-1:0;
+}
+static int print_data(const unsigned char *msg,const unsigned char *end,unsigned type,unsigned class,const unsigned char *p,unsigned bytes,FILE *file)
+{
+    const unsigned char *limit=p+bytes;
+    if(type==T_A&&class==C_IN){
+        if(bytes!=4)return -1;
+        fprintf(file,"%u.%u.%u.%u",p[0],p[1],p[2],p[3]);return 0;
+    }
+    switch(type){
+    case T_NS:case T_MD:case T_MF:case T_CNAME:case T_MB:case T_MG:case T_MR:case T_PTR:case T_NSAP_PTR:
+        if(print_name(msg,end,&p,limit,file))return -1;
+        return p==limit?0:-1;
+    case T_MX:case T_AFSDB:
+        if(bytes<3)return -1;
+        fprintf(file,"%u ",_getshort(p));p+=2;
+        if(print_name(msg,end,&p,limit,file))return -1;
+        return p==limit?0:-1;
+    case T_MINFO:case T_RP:case T_SOA:
+        if(print_name(msg,end,&p,limit,file))return -1;
+        fputc(' ',file);
+        if(print_name(msg,end,&p,limit,file))return -1;
+        if(type!=T_SOA)return p==limit?0:-1;
+        if(limit-p!=20)return -1;
+        for(unsigned i=0;i<5;++i)fprintf(file," %u",_getlong(p+4*i));
+        return 0;
+    case T_TXT:return print_strings(p,limit,0,file);
+    case T_HINFO:return print_strings(p,limit,2,file);
+    case T_UID:case T_GID:
+        if(bytes!=4)return -1;
+        fprintf(file,"%u",_getlong(p));return 0;
+    case T_NSAP:
+        fputs("0x",file);for(unsigned i=0;i<bytes;++i)fprintf(file,"%02x",p[i]);return 0;
+    case T_WKS:
+        if(bytes<5||bytes>8197)return -1;
+        fprintf(file,"%u.%u.%u.%u %u",p[0],p[1],p[2],p[3],p[4]);
+        for(unsigned i=5;i<bytes;++i)for(unsigned bit=0;bit<8;++bit)if(p[i]&(128u>>bit))fprintf(file," %u",(i-5)*8+bit);
+        return 0;
+    default:fprintf(file,"[%u bytes]",bytes);return 0;
+    }
+}
 /* Always use the length-bearing entry point on received messages. */
 int fp_nquery(const unsigned char *msg,int length,FILE *file)
 {
@@ -221,9 +294,7 @@ int fp_nquery(const unsigned char *msg,int length,FILE *file)
             if(section) {
                 uint32_t ttl=_getlong(p);unsigned bytes=_getshort(p+4);p+=6;if((size_t)(end-p)<bytes)return -1;
                 fprintf(file,"\t%u\t",ttl);
-                if(type==T_A&&bytes==4)fprintf(file,"%u.%u.%u.%u",p[0],p[1],p[2],p[3]);
-                else if(type==T_CNAME||type==T_NS||type==T_PTR) {n=dn_expand(msg,end,p,name,sizeof(name));if(n<0||(unsigned)n!=bytes)return -1;fputs(name,file);}
-                else fprintf(file,"[%u bytes]",bytes);
+                if(print_data(msg,end,type,class,p,bytes,file))return -1;
                 p+=bytes;
             }
             fputc('\n',file);

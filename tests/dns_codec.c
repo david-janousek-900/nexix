@@ -46,6 +46,24 @@ int main(void)
     int n=res_mkquery(QUERY,"example.com",C_IN,T_A,NULL,0,NULL,msg,sizeof(msg));
     CHECK(n==29&&_getshort(msg+4)==1&&msg[2]==1&&_getshort(msg+25)==T_A);
     CHECK(fp_nquery(msg,n,(FILE *)1)==0&&fp_nquery(msg,n-1,(FILE *)1)<0);
+    /* RFC-format RDATA vectors: all printer reads must respect RDLENGTH. */
+    static const unsigned char mx[]={0,10,0xc0,12};
+    static const unsigned char txt[]={7,'f','i','x','t','u','r','e'};
+    static const unsigned char hinfo[]={3,'c','p','u',2,'o','s'};
+    static const unsigned char soa[]={0xc0,12,0xc0,12,0,0,0,1,0,0,0,60,0,0,0,60,0,0,0,60,0,0,0,60};
+    static const unsigned char wks[]={192,0,2,1,6,128,1};
+    struct vector {int type;const unsigned char *data;unsigned size;int valid;} vectors[]={
+        {T_MX,mx,sizeof(mx),1},{T_TXT,txt,sizeof(txt),1},{T_HINFO,hinfo,sizeof(hinfo),1},
+        {T_SOA,soa,sizeof(soa),1},{T_WKS,wks,sizeof(wks),1},
+        {T_MX,mx,2,0},{T_TXT,txt,0,0},{T_HINFO,txt,sizeof(txt),0},{T_SOA,soa,4,0},{T_WKS,wks,4,0}};
+    for(unsigned i=0;i<sizeof(vectors)/sizeof(*vectors);++i){
+        struct vector *v=&vectors[i];int end=res_mkquery(QUERY,"example.com",C_IN,v->type,NULL,0,NULL,msg,sizeof(msg));
+        msg[2]|=128;putshort(1,msg+6);msg[end++]=0xc0;msg[end++]=12;
+        putshort((uint16_t)v->type,msg+end);putshort(C_IN,msg+end+2);putlong(60,msg+end+4);putshort((uint16_t)v->size,msg+end+8);end+=10;
+        memcpy(msg+end,v->data,v->size);end+=(int)v->size;
+        CHECK((fp_nquery(msg,end,(FILE *)1)==0)==v->valid);
+        CHECK(fp_nquery(msg,end-1,(FILE *)1)<0);
+    }
     unsigned char a[4]={1,2,3,4};CHECK(res_mkquery(IQUERY,NULL,C_IN,T_A,a,4,NULL,msg,sizeof(msg))==27);
     CHECK(res_mkquery(99,NULL,C_IN,T_A,NULL,0,NULL,msg,sizeof(msg))<0);
     putlong(0x12345678,msg);putshort(0xabcd,msg+4);CHECK(_getlong(msg)==0x12345678&&_getshort(msg+4)==0xabcd);

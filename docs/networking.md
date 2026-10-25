@@ -4,7 +4,8 @@ Nexix 0.2.0 has an IPv4 network stack adapted from **4.4BSD-Lite2**:
 - an Intel e1000 driver (QEMU's default card) and a loopback interface;
 - ARP, static routing, IPv4 with fragmentation, ICMP, UDP and TCP;
 - BSD sockets on ordinary file descriptors;
-- the `ifconfig`, `route`, `ping` and `nc` commands.
+- IPv4 DNS/hosts resolution, network databases and `nslookup`;
+- the name-aware `ifconfig`, `route`, `ping` and `nc` commands.
 
 This page is the guide: setup, use, interfaces, limits, installed files and
 evidence. The [roadmap](networking-roadmap.md) links each component's own
@@ -44,8 +45,10 @@ nc -l 7000                                # with HOSTFWD="tcp:8080:7000": host r
 The administration commands are in `/sbin`, on root's `PATH`
 (`/sbin:/bin:/usr/sbin:/usr/bin`), so plain `ifconfig` and `route` work; disks
 upgraded from before task 432 keep their old profile, so add `/sbin` there
-yourself. Addresses are numeric; there
-is no resolver.
+yourself. Addresses accept host names; see the [resolver guide](resolver.md).
+Enable QEMU DNS separately with `cp /etc/resolv.qemu /etc/resolv.conf`.
+Without that optional file, the resolver queries 127.0.0.1 and uses
+`/etc/hosts` if no server listens. The sample name fits V7 filenames.
 
 ## What is supported
 
@@ -58,11 +61,12 @@ is no resolver.
 | UDP | Datagrams up to 9216 bytes, broadcast receive, port unreachable | [UDP](networking-udp.md) |
 | TCP | RFC 793 states, MSS, Nagle, RFC 6298 timers, Reno, persist probes, RFC 5961 checks, TIME_WAIT | [TCP](networking-tcp.md) |
 | Sockets | `AF_INET` stream, datagram and raw sockets on descriptors, with fork/dup sharing, close-on-exec, `SIGPIPE`, `O_NONBLOCK`, flags, options and timeouts | [socket ABI](sockets.md) |
-| Commands | `ifconfig`, `route`, `ping` (setuid root), `nc` | [configuration](netconfig.md), [ping/nc](nettools.md) |
+| Commands | `ifconfig`, `route`, `ping` (setuid root), `nc`, `nslookup` | [configuration](netconfig.md), [ping/nc](nettools.md) |
+| Name resolution | A/PTR/CNAME, DNS-first hosts fallback, services/protocols/networks databases, search lists and TCP fallback | [resolver](resolver.md), [databases](netdb.md) |
 | Startup | Optional `/etc/netstart`; a make profile for the card and host forwards | [startup](netstart.md) |
 
 **Not supported:**
-- IPv6, multicast, IP forwarding, DHCP, DNS or a resolver;
+- IPv6, multicast, IP forwarding, DHCP, authoritative DNS, EDNS0 or DNSSEC;
 - `select`/`poll`;
 - TCP window scaling, timestamps, SACK, urgent data and keepalive;
 - dynamic routing, or more than one gateway;
@@ -73,7 +77,7 @@ is no resolver.
 C programs use the usual BSD headers and calls:
 
 - `<sys/socket.h>`, `<netinet/in.h>`, `<netinet/tcp.h>`, `<arpa/inet.h>` and
-  `<sys/time.h>`;
+  `<sys/time.h>`, `<netdb.h>`, `<resolv.h>` and `<arpa/nameser.h>`;
 - `socket`, `bind`, `listen`, `accept`, `connect`, `shutdown`, `send`,
   `recv`, `sendto`, `recvfrom`, `getsockname`, `getpeername`, `setsockopt`
   and `getsockopt`;
@@ -84,6 +88,11 @@ The native ABI is documented in [sockets](sockets.md):
 - syscalls 77–88 and errno 36–57, appended without renumbering anything;
 - fixed 16-byte `sockaddr_in` records;
 - the exact validation order of every argument.
+
+Name and database interfaces include gethostbyname/gethostbyaddr, resolver(3)
+and the getserv/getproto/getnet families. Query IDs use native getentropy
+(syscall 89): QEMU profiles enable RDRAND, and an unavailable source fails
+with EIO rather than constructing predictable DNS queries.
 
 The configuration ioctls are in [netconfig](netconfig.md). A minimal TCP
 client:
@@ -176,3 +185,20 @@ The acceptance guests cover these scenarios:
 - **Counters:** no errors or drops on `em0` afterwards.
 
 No test uses the public Internet.
+
+## Resolver acceptance (task 455)
+
+`make test-resolver-acceptance` uses disposable guests at 16 and 128 MiB,
+querying host DNS fixtures bound only to 127.0.0.1 and reached as 10.0.2.2.
+The fixtures never forward queries. Coverage includes multiple A records,
+out-of-order CNAME chains, PTR, NXDOMAIN, NODATA, SERVFAIL, REFUSED, UDP
+truncation to TCP, ignored bad IDs/sources/questions, silent-server backoff,
+server failover, search lists and no-server fallback to /etc/hosts. Hosts
+entries do not override negative DNS answers. Host assertions check actual
+retry counts and UDP/TCP/failover/search query sequences.
+
+`make test-resolver-robust` runs codec, host-answer and entire public lookup
+paths with ASan/UBSan and 40,000 seeded mutations per suite. `make test-tcpip`
+includes every resolver/database/configuration/entropy/nslookup suite and
+the existing networking, syscall, process, file, signal and console checks.
+See [the detailed resolver contract](resolver.md) for limits and interfaces.

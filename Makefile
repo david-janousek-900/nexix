@@ -247,7 +247,7 @@ test-exec: check build/test-selftest.iso
 
 # Native userland: compiler freestanding headers plus Nexix headers only.
 USER_CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding -fno-builtin -fno-stack-protector -fno-pie -m64 -mno-red-zone -mno-avx -fno-asynchronous-unwind-tables -nostdinc -isystem $(shell $(CC) -print-file-name=include) -Ilibc/include -Iinclude -MMD -MP
-LIBC_OBJECTS = build/libc_packet.o build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o build/libc_float.o build/libc_convert.o build/libc_scan.o build/libc_ctype.o build/libc_numbers.o build/libc_bytes.o build/libc_gcvt.o build/libc_abort.o build/libc_mktemp.o build/libc_errors.o build/libc_perror.o build/libc_passwd.o build/libc_group.o build/libc_crypt.o build/libc_terminal.o build/libc_getpass.o build/libc_system.o build/libc_popen.o build/libc_ptrace.o build/libc_profil.o build/libc_monitor.o build/libc_mcount.o build/libc_nlist.o build/libc_kinfo.o build/libc_uname.o build/libc_lock.o build/libc_phys.o build/libc_mpx.o build/libc_socket.o build/libc_inet.o build/libc_netdb.o build/libc_hosts.o
+LIBC_OBJECTS = build/libc_packet.o build/libc_syscall.o build/libc_syscalls.o build/libc_string.o build/libc_stdlib.o build/libc_signal.o build/libc_setjmp.o build/libc_stdio.o build/libc_malloc.o build/libc_exec.o build/libc_time.o build/libc_sleep.o build/libc_float.o build/libc_convert.o build/libc_scan.o build/libc_ctype.o build/libc_numbers.o build/libc_bytes.o build/libc_gcvt.o build/libc_abort.o build/libc_mktemp.o build/libc_errors.o build/libc_perror.o build/libc_passwd.o build/libc_group.o build/libc_crypt.o build/libc_terminal.o build/libc_getpass.o build/libc_system.o build/libc_popen.o build/libc_ptrace.o build/libc_profil.o build/libc_monitor.o build/libc_mcount.o build/libc_nlist.o build/libc_kinfo.o build/libc_uname.o build/libc_lock.o build/libc_phys.o build/libc_mpx.o build/libc_socket.o build/libc_inet.o build/libc_netdb.o build/libc_hosts.o build/libc_dns_codec.o build/libc_entropy.o build/libc_res_init.o build/libc_res_send.o build/libc_gethost.o
 -include $(LIBC_OBJECTS:.o=.d) build/libc_program.d
 build/crt0.o: libc/arch/x86_64/crt0.S | build/.dir
 	$(CC) -m64 -ffreestanding -fno-pie -c $< -o $@
@@ -2629,6 +2629,7 @@ test-unit: test-timer-periods-unit
 .PHONY: test-timer-periods-unit
 
 # Tasks 445–446: bounded libc network databases.
+RESOLVER_HEADERS = libc/include/netdb.h libc/include/resolv.h libc/include/arpa/inet.h libc/include/arpa/nameser.h libc/netdb_private.h
 NETDB_NAMES = fopen fclose rewind ferror getc getservent setservent endservent getservbyname getservbyport getprotoent setprotoent endprotoent getprotobyname getprotobynumber getnetent setnetent endnetent getnetbyname getnetbyaddr hstrerror herror h_errno errno
 NETDB_TEST_FLAGS = $(addprefix -D,$(foreach n,$(NETDB_NAMES),$(n)=nx_test_$(n)))
 build/netdb-unit-test: tests/netdb.c libc/netdb.c libc/netdb_private.h libc/inet.c libc/include/netdb.h | build/.dir
@@ -2655,7 +2656,6 @@ test-hosts-unit: build/hosts-unit-test
 test-unit: test-hosts-unit
 
 # Task 447: bounded DNS codec and message printers.
-build/libc.a: build/libc_dns_codec.o
 DNS_CODEC_NAMES = _res dn_comp dn_expand dn_skipname res_mkquery p_type p_class fp_query fp_nquery _getshort _getlong putshort putlong fprintf fputs fputc getentropy errno
 DNS_CODEC_TEST_FLAGS = $(addprefix -D,$(foreach n,$(DNS_CODEC_NAMES),$(n)=nx_test_$(n)))
 build/dns-codec-test: tests/dns_codec.c libc/dns_codec.c libc/include/resolv.h libc/include/arpa/nameser.h | build/.dir
@@ -2673,7 +2673,6 @@ build/entropy_arch.o: kernel/arch/x86_64/entropy.c kernel/include/entropy.h | bu
 	$(CC) $(CFLAGS) -c $< -o $@
 build/nexix.elf: build/entropy.o build/entropy_arch.o
 -include build/entropy.d build/entropy_arch.d build/libc_entropy.d build/entropy-guest.d
-build/libc.a: build/libc_entropy.o
 build/entropy-test: tests/entropy.c kernel/entropy.c kernel/include/entropy.h | build/.dir
 	$(HOST_CC) -std=c11 -O2 -Wall -Wextra -Werror -Ikernel/include -Iinclude tests/entropy.c kernel/entropy.c -o $@
 build/entropy-guest.o: tests/entropy-guest.c | build/.dir
@@ -2689,7 +2688,6 @@ test-entropy-guest: build/entropy-guest.elf multi-iso rootfs
 test-unit: test-entropy-unit
 
 # Task 449: resolver configuration, with a private test path override.
-build/libc.a: build/libc_res_init.o
 RES_INIT_NAMES = res_init _res getenv gethostname
 RES_INIT_TEST_FLAGS = $(NETDB_TEST_FLAGS) $(addprefix -D,$(foreach n,$(RES_INIT_NAMES),$(n)=nx_test_$(n))) -D_PATH_RESCONF='"/test/resolv.conf"'
 build/res-init-test: tests/res_init.c libc/res_init.c libc/netdb.c libc/inet.c libc/include/resolv.h | build/.dir
@@ -2708,11 +2706,10 @@ test-res-init-guest: build/res-init-guest.elf multi-iso rootfs
 	$(PYTHON) tools/res_init_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 # Task 450: DNS transport over blocking native sockets.
-build/libc.a: build/libc_res_send.o
 RES_TRANSPORT_NAMES = res_init res_send res_query res_search res_querydomain hostalias _res_close socket close connect send sendto recv recvfrom setsockopt times getenv
 RES_TRANSPORT_FLAGS = $(NETDB_TEST_FLAGS) $(DNS_CODEC_TEST_FLAGS) $(HOSTS_TEST_NAMES) $(addprefix -D,$(foreach n,$(RES_TRANSPORT_NAMES),$(n)=nx_test_$(n)))
-build/res-transport-test: tests/res_transport.c libc/res_send.c libc/dns_codec.c libc/netdb.c libc/hosts.c libc/inet.c | build/.dir
-	$(HOST_CC) -std=c11 -O1 -g -Wall -Wextra -Werror -fno-builtin -fsanitize=address,undefined -fno-pie -no-pie $(RES_TRANSPORT_FLAGS) -Ilibc/include -Iinclude $^ -o $@
+build/res-transport-test: tests/res_transport.c libc/res_send.c libc/dns_codec.c libc/netdb.c libc/hosts.c libc/gethost.c libc/inet.c $(RESOLVER_HEADERS) | build/.dir
+	$(HOST_CC) -std=c11 -O1 -g -Wall -Wextra -Werror -fno-builtin -fsanitize=address,undefined -fno-pie -no-pie $(RES_TRANSPORT_FLAGS) -Dgethostbyname=nx_test_gethostbyname -Dgethostbyaddr=nx_test_gethostbyaddr -Ilibc/include -Iinclude $(filter %.c,$^) -o $@
 .PHONY: test-resolver-transport
 test-resolver-transport: build/res-transport-test
 	./build/res-transport-test
@@ -2728,11 +2725,10 @@ test-resolver-guest: build/resolver-guest.elf multi-iso rootfs
 	$(PYTHON) tools/resolver_smoke.py $(QEMU) build/nexix-multi.iso 128M
 
 # Task 451: bounded host answer parsing and DNS-first host lookups.
-build/libc.a: build/libc_gethost.o
 HOST_ANSWER_NAMES = gethostbyname gethostbyaddr res_search res_query _res_close
 HOST_ANSWER_FLAGS = $(NETDB_TEST_FLAGS) $(DNS_CODEC_TEST_FLAGS) $(HOSTS_TEST_NAMES) $(addprefix -D,$(foreach n,$(HOST_ANSWER_NAMES),$(n)=nx_test_$(n)))
-build/host-answer-test: tests/host_answers.c libc/gethost.c libc/hosts.c libc/netdb.c libc/dns_codec.c libc/inet.c | build/.dir
-	$(HOST_CC) -std=c11 -O1 -g -Wall -Wextra -Werror -fno-builtin -fsanitize=address,undefined -fno-pie -no-pie $(HOST_ANSWER_FLAGS) -Ilibc/include -Iinclude $^ -o $@
+build/host-answer-test: tests/host_answers.c libc/gethost.c libc/hosts.c libc/netdb.c libc/dns_codec.c libc/inet.c $(RESOLVER_HEADERS) | build/.dir
+	$(HOST_CC) -std=c11 -O1 -g -Wall -Wextra -Werror -fno-builtin -fsanitize=address,undefined -fno-pie -no-pie $(HOST_ANSWER_FLAGS) -Ilibc/include -Iinclude $(filter %.c,$^) -o $@
 .PHONY: test-host-answers
 test-host-answers: build/host-answer-test
 	./build/host-answer-test
@@ -2754,3 +2750,17 @@ build/nslookup-commands.c: user/nslookup/commands.c | build/.dir
 test-nslookup: build/nslookup-commands.l build/nslookup-commands.c multi-iso rootfs
 	$(PYTHON) tools/nslookup_smoke.py $(QEMU) build/nexix-multi.iso 16M
 	$(PYTHON) tools/nslookup_smoke.py $(QEMU) build/nexix-multi.iso 128M
+
+# Task 455: isolated end-to-end DNS and whole-resolver robustness.
+build/resolver-acceptance.o: tests/resolver-acceptance.c | build/.dir
+	$(CC) $(USER_CFLAGS) -c $< -o $@
+build/resolver-acceptance.elf: build/crt0.o build/resolver-acceptance.o build/libc.a user/user.ld
+	$(LD) -nostdlib -z max-page-size=0x1000 -T user/user.ld $(filter %.o %.a,$^) -o $@
+.PHONY: test-resolver-acceptance test-resolver-robust
+test-resolver-acceptance: build/resolver-acceptance.elf multi-iso rootfs
+	$(PYTHON) tools/resolver_acceptance.py $(QEMU) build/nexix-multi.iso 16M
+	$(PYTHON) tools/resolver_acceptance.py $(QEMU) build/nexix-multi.iso 128M
+test-resolver-robust: test-dns-codec test-host-answers test-resolver-transport
+test-tcpip: test-netdb-unit test-hosts-unit test-res-init test-entropy-unit test-entropy-guest test-res-init-guest test-netdb-guest test-resolver-robust test-resolver-guest test-resolver-acceptance test-nslookup
+
+-include build/netdb-guest.d build/res-init-guest.d build/resolver-guest.d build/resolver-acceptance.d

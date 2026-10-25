@@ -22,6 +22,10 @@ def old_disk(path, old_init, old_profile, old_netstart):
     for r in load_retired():
         paths[r['path']] = paths.pop(r['replacement'])
     for directory in ('/sbin', '/usr/sbin', '/usr/bin'):
+        # Post-layout additions (such as nslookup) were absent on the old
+        # disk. Remove those descendants before removing the old directories.
+        for name in list(paths):
+            if name.startswith(directory+'/'):paths.pop(name)
         paths.pop(directory)
     def file(name, payload, mode):
         old = paths.get(name)
@@ -70,7 +74,7 @@ def main():
             assert b'ROOT OLD LAYOUT' not in bytes(g.buffers[0])
             c = lambda line, **e: g.command(line, prompt=PROMPT, **e)
             c('for f in init getty wall dmesg mknod accton ifconfig route update; do test -f /etc/$f && echo $f; done; true')
-            c('test -f /sbin/init && test -f /usr/libexec/getty && test -f /usr/bin/wall && test -f /usr/sbin/update')   # V7 test has no -x
+            c('test -f /sbin/init && test -f /usr/libexec/getty && test -f /usr/bin/wall && test -f /usr/sbin/update && test -f /usr/sbin/nslookup')   # V7 test has no -x
             c('grep -c /etc/ifconfig /etc/netstart', stdout='1\n')   # kept as written, hence the warning
             c('grep PATH= /root/.profile', stdout='PATH=/bin\n')
             c('/sbin/ifconfig em0 | grep -c inet', stdout='0\n', status=1)   # the stale netstart could not configure it

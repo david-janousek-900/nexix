@@ -64,5 +64,6 @@ int main(void)
         unsigned pos=seed%(unsigned)valid_length;response[pos]^=(unsigned char)(seed>>16);
         (void)_nx_host_answer(response,valid_length,0);
     }
+    _res.options=RES_DEFAULT;sethostent(1);CHECK((_res.options&(RES_USEVC|RES_STAYOPEN))==(RES_USEVC|RES_STAYOPEN));endhostent();CHECK(!(_res.options&(RES_USEVC|RES_STAYOPEN)));
     puts("PASS: host answers, CNAME order/loops, PTR, address limits/alignment, numeric lookup, fallback and 40000 mutations");return 0;
 }

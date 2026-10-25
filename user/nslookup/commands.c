@@ -122,6 +122,8 @@ extern struct yysvf yysvec[], *yybgin;
  */
 
 #include "res.h"
+/* Native stdio retries EINTR; interactive reads must reach the prompt. */
+#define getc nslookup_input
 extern char rootServerName[];
 void PrintHelp(void);
 
@@ -293,6 +295,16 @@ default:
 fprintf(yyout,"bad switch yylook %d",nstr);
 } return(0); }
 /* end of yylex */
+
+/* Discard lookahead and partial tokens after an input interrupt. */
+void nslookup_lexer_reset(void)
+{
+    extern int yyprevious;
+    yysptr=yysbuf;
+    yyprevious=10;
+    yyleng=0;
+    yymorfg=0;
+}
 int yyvstop[] ={
 0,
 

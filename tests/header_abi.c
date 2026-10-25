@@ -168,3 +168,8 @@ SIZE(struct protoent,24); FIELD(struct protoent,p_proto,16);
 SIZE(HEADER,12); FIELD(HEADER,qdcount,4); FIELD(HEADER,arcount,10);
 
 _Static_assert(NX_SYS_GETENTROPY==89,"entropy ABI number");
+
+SIZE(struct __res_state,392); FIELD(struct __res_state,options,8);
+FIELD(struct __res_state,nsaddr_list,20); FIELD(struct __res_state,id,68);
+FIELD(struct __res_state,dnsrch,72); FIELD(struct __res_state,defdname,128);
+FIELD(struct __res_state,pfcode,384);

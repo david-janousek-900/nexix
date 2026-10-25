@@ -145,3 +145,49 @@ The installed help is `/usr/lib/nslookup.help`, and its manual is nslookup(8).
 (reached from the guest as 10.0.2.2). At 16/128 MiB it verifies lexer
 reproduction, multi-address CLI lookup, PTR, forced TCP, NXDOMAIN, interactive
 settings/server selection, AXFR and a successful query after SIGINT.
+
+## Acceptance and regressions (task 455)
+
+`make test-resolver-acceptance` checks the complete production resolver from
+disposable 16/128 MiB guests against two host-loopback DNS fixtures. It covers
+multi-address A, out-of-order CNAME chains, PTR, NXDOMAIN/NODATA even when a
+hosts entry exists, SERVFAIL/REFUSED, truncation to TCP, wrong ID/source/
+question, a silent server with exactly two configured attempts, failover,
+search suffixes and both forward/reverse hosts fallback without a server.
+The fixtures never use external DNS, bind only 127.0.0.1 and are reached as
+10.0.2.2. Host-side assertions inspect actual query sequences.
+
+`make test-resolver-robust` includes 40,000 mutations each for the codec,
+answer parser, and full gethostbyname path through res_search, query creation,
+reply matching, transport error handling and result parsing. Mutated replies
+can be truncated and can corrupt headers, compression and RDATA. The tests
+run under ASan/UBSan with deterministic seeds; separate known-answer cases
+assert behavior before mutation. `make test-tcpip` includes these suites and
+all database/configuration/entropy/guest/nslookup acceptance, alongside the
+existing stack and affected kernel/userland regressions.
+
+Native scope adaptations: `/etc/resolv.qemu` replaces the planned 16-byte
+sample name; `gethost.3` plus man aliases replaces the overlong manual
+filename. Unpredictable query IDs require RDRAND (enabled in QEMU profiles);
+no entropy source means EIO. Legacy BIND finger/view commands remain outside
+the requested IPv4 name-resolution client scope. Resolver state and result
+buffers remain non-reentrant, as in the pinned baseline.
+
+The native host lookup answer buffer is 4096 bytes; a larger TCP answer is
+safely drained/truncated and rejected by the host parser. General nslookup
+queries and AXFR accept the DNS TCP length range. Interactive lexer input
+uses an interruptible native read adapter because ordinary stdio retries
+EINTR. Its SIGINT path discards partial scanner input using the kernel's
+supported user signal-context/longjmp contract, and leaves resolver resource
+cleanup on the normal query-return path. Acceptance verifies interrupts both
+at the input prompt and during a query, followed by successful lookups.
+
+Debug/nslookup printers decode MX/AFSDB preferences, SOA fields, quoted
+TXT/HINFO strings, related domain-name records, WKS bitmaps and legacy
+32-bit identifiers. Known-type RDATA lengths are checked before printing;
+unknown types retain their numeric type and bounded byte count. Native
+acceptance asserts MX, TXT and SOA values in addition to A/PTR results.
+
+The exposed native LP64 resolver state is 392 bytes: options at offset 8,
+server addresses at 20, ID at 68, search pointers at 72, default domain at
+128 and print flags at 384. Header ABI checks pin this layout.

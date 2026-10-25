@@ -61,14 +61,31 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <signal.h>
+#include <setjmp.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 static int query_type=T_A,query_class=C_IN,status;
 static struct sockaddr_in initial_server;
-static volatile sig_atomic_t interrupted;
+static volatile sig_atomic_t interrupted,reading_input;
+static jmp_buf prompt_jump;
 char rootServerName[]="ns.nic.ddn.mil";
-static void interrupt(int n){(void)n;interrupted=1;signal(SIGINT,interrupt);}
+static void interrupt(int n)
+{
+    (void)n;interrupted=1;signal(SIGINT,interrupt);
+    /* Nexix signal contexts live in user memory and support handler longjmp.
+     * Jump only out of lexer input, never through resolver/stdio allocation. */
+    if(reading_input)longjmp(prompt_jump,1);
+}
+int nslookup_input(FILE *file)
+{
+    if(file!=stdin)return getc(file);
+    reading_input=1;
+    if(interrupted){reading_input=0;return EOF;}
+    unsigned char c;ssize_t n=read(fileno(file),&c,1);
+    reading_input=0;
+    return n==1?c:EOF;
+}
 static int equal(const char *a,const char *b)
 {while(*a&&*b){unsigned x=(unsigned char)*a++,y=(unsigned char)*b++;if(x>='a'&&x<='z')x-=32;if(y>='a'&&y<='z')y-=32;if(x!=y)return 0;}return *a==*b;}
 static unsigned words(const char *line,char buffer[2048],char **out,unsigned limit)
@@ -210,8 +227,13 @@ int main(int argc,char **argv)
     initial_server=_res.nsaddr;
     if(i<argc&&strcmp(argv[i],"-"))return lookup(argv[i],stdout);
     show_server(stdout);
-    for(;;){interrupted=0;fputs("> ",stdout);fflush(stdout);int result=yylex();
-        if(interrupted){clearerr(stdin);_res_close();fputc('\n',stdout);continue;}
+    for(;;){
+        interrupted=0;
+        if(setjmp(prompt_jump)){
+            reading_input=0;nslookup_lexer_reset();clearerr(stdin);_res_close();fputc('\n',stdout);continue;
+        }
+        fputs("> ",stdout);fflush(stdout);int result=yylex();
+        if(interrupted){nslookup_lexer_reset();clearerr(stdin);_res_close();fputc('\n',stdout);continue;}
         if(!result)break;
     }
     endhostent();return status;

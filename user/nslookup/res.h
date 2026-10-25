@@ -10,6 +10,8 @@ void ListHosts(const char *,int);
 void ListHostsByType(const char *,int);
 void Finger(const char *,int);
 void ViewList(const char *);
+int nslookup_input(FILE *);
+void nslookup_lexer_reset(void);
 int yylex(void);
 int yywrap(void);
 #endif

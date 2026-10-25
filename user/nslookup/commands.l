@@ -96,6 +96,8 @@
  */
 
 #include "res.h"
+/* Native stdio retries EINTR; interactive reads must reach the prompt. */
+#define getc nslookup_input
 extern char rootServerName[];
 void PrintHelp(void);
 
@@ -217,3 +219,13 @@ NAME	[A-Za-z0-9.*=_/-]
 					}
 \n					{ ; }
 %%
+
+/* Discard lookahead and partial tokens after an input interrupt. */
+void nslookup_lexer_reset(void)
+{
+    extern int yyprevious;
+    yysptr=yysbuf;
+    yyprevious=10;
+    yyleng=0;
+    yymorfg=0;
+}

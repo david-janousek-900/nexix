@@ -19,6 +19,8 @@ the [socket ABI, descriptors, operations and options](sockets.md) and
 [ping and nc](nettools.md) and [optional network startup with the QEMU profile](netstart.md)
 are in place, [whole-stack robustness tests](networking-robustness.md) cover them, and
 guest acceptance against isolated host services passes (`make test-tcpip`).
+**Name resolution tasks 444–455 are also complete**, with the
+[resolver, databases and nslookup](resolver.md) and isolated acceptance.
 Numbered implementation tasks **412–431** in
 [tasks.md](tasks.md#tcpip-implementation-020) track these milestones and count
 toward roadmap totals, separately from V7 inventory component ownership.
